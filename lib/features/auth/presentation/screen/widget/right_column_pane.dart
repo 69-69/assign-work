@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:flutter/material.dart';
 
 import 'master_reset.dart';
@@ -22,7 +22,7 @@ class RightColumnPane extends StatelessWidget {
 
   Container _buildRightColumn(BuildContext context) {
     return Container(
-      color: kLightBlueColor.withAlpha((0.9 * 255).toInt()),
+      color: kLightBlueColor.toAlpha(0.9),
       width: context.screenWidth,
       height: context.screenHeight,
       padding: const EdgeInsets.all(20),
@@ -49,7 +49,7 @@ class RightColumnPane extends StatelessWidget {
               signOutButton ?? MasterResetButton(),
             ],
           ),
-          divLine,
+          HorizontalDivider(thickness: 8.0),
           ...children,
         ],
       ),

@@ -60,9 +60,9 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     on<UpdateCustomer>(_onUpdateCustomer);
     on<DeleteCustomer>(_onDeleteCustomer);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_CustomersLoaded<T>>(_onCustomerLoaded);
-    on<_CustomerLoaded<T>>(_onSingleCustomerLoaded);
-    on<_CustomerError>(_onCustomerLoadError);
+    on<_CustomersLoaded<T>>(_onCustomersLoaded);
+    on<_CustomerLoaded<T>>(_onCustomerLoaded);
+    on<_CustomerError>(_onCustomerError);
   }
 
   Future<void> _onRefreshCustomers(
@@ -79,7 +79,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       final data = _toList(snapshot);
 
       // Emit the loaded state with the refreshed data
-      emit(CustomerLoaded<T>(data));
+      emit(CustomersLoaded<T>(data));
     } catch (e) {
       // Emit an error state in case of failure
       emit(CustomerError<T>(e.toString()));
@@ -99,7 +99,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
           final data = _toList(snapshot);
 
           // Update internal state in the BLoC to reflect data loaded
-          emit(CustomerLoaded<T>(data));
+          emit(CustomersLoaded<T>(data));
 
           // Trigger an event to handle the loaded data
           // add(_CustomerLoadedEvent<T>(data));
@@ -179,7 +179,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
 
       if (localData != null) {
         final data = fromFirestore(localData.data, localData.id);
-        emit(SingleCustomerLoaded<T>(data));
+        emit(CustomerLoaded<T>(data));
       } else {
         emit(CustomerError<T>('Document not found'));
       }
@@ -201,7 +201,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
 
       if (localData.isNotEmpty) {
         final data = _toList(localData);
-        emit(CustomerLoaded<T>(data));
+        emit(CustomersLoaded<T>(data));
       } else {
         emit(CustomerError<T>('Data not found'));
       }
@@ -224,7 +224,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       );
 
       var localData = _toList(data);
-      emit(CustomerLoaded<T>(localData));
+      emit(CustomersLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
       emit(CustomerError<T>('Error searching data: $e'));
@@ -318,27 +318,24 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     _ShortIDLoaded<T> event,
     Emitter<CustomerState<T>> emit,
   ) {
-    emit(SingleCustomerLoaded<T>(event.shortID));
+    emit(CustomerLoaded<T>(event.shortID));
+  }
+
+  void _onCustomersLoaded(
+    _CustomersLoaded<T> event,
+    Emitter<CustomerState<T>> emit,
+  ) {
+    emit(CustomersLoaded<T>(event.data));
   }
 
   void _onCustomerLoaded(
-    _CustomersLoaded<T> event,
+    _CustomerLoaded<T> event,
     Emitter<CustomerState<T>> emit,
   ) {
     emit(CustomerLoaded<T>(event.data));
   }
 
-  void _onSingleCustomerLoaded(
-    _CustomerLoaded<T> event,
-    Emitter<CustomerState<T>> emit,
-  ) {
-    emit(SingleCustomerLoaded<T>(event.data));
-  }
-
-  void _onCustomerLoadError(
-    _CustomerError event,
-    Emitter<CustomerState<T>> emit,
-  ) {
+  void _onCustomerError(_CustomerError event, Emitter<CustomerState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'customer_bloc');
     emit(CustomerError<T>(event.error));

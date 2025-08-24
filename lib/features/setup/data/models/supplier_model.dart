@@ -87,7 +87,7 @@ class Supplier extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && contactPersonName.isEmpty;
+  bool get isEmpty => id.isEmpty && (name.isEmpty || contactPersonName.isEmpty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -97,7 +97,7 @@ class Supplier extends Equatable {
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
-  /// Current / Today's Products/Stocks
+  /// Current / Today's Products/Items/Stocks
   bool get isToday {
     var dt = createdAt.toDateTime;
 
@@ -109,18 +109,20 @@ class Supplier extends Equatable {
   String get itemAsString => name.toTitleCase;
 
   static get notFound => Supplier(
-    name: 'No Data',
-    address: 'No Data',
-    contactPersonName: 'No Data',
-    createdBy: 'No Data',
+    name: 'no data',
+    address: 'no data',
+    contactPersonName: 'no data',
+    createdBy: 'no data',
   );
 
   /// Filter Search
   bool filterByAny(String filter) =>
+      id.contains(filter) ||
       name.contains(filter) ||
+      phone.contains(filter) ||
+      email!.contains(filter) ||
       contactPersonName.contains(filter) ||
-      address.contains(filter) ||
-      phone.contains(filter);
+      address.contains(filter);
 
   /// [findCategoriesById]
   static Iterable<Supplier> findCategoriesById(
@@ -169,7 +171,7 @@ class Supplier extends Equatable {
     updatedAt,
   ];
 
-  /// ToList for Product-Supplier address [toListL]
+  /// ToList for Items/Products-Supplier address [toListL]
   List<String> toListL() => [
     id,
     name.toTitleCase,

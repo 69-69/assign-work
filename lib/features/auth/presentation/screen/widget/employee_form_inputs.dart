@@ -2,7 +2,7 @@ import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/employee/employee_sign_in_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,7 +41,7 @@ class EmailInput extends StatelessWidget {
         hintText: label,
         label: Text(label, semanticsLabel: label),
         alignLabelWithHint: true,
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         errorText: state.email.displayError != null ? 'Invalid email' : null,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.email, size: 15),
@@ -188,7 +188,7 @@ class _EmployeePasscodeInputState extends State<EmployeePasscodeInput> {
     return InputDecoration(
       isDense: true,
       contentPadding: const EdgeInsets.all(1.0),
-      fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+      fillColor: kGrayColor.toAlpha(0.1),
       hintText: isTemporary ? null : label,
       label: Text(label, semanticsLabel: label),
       helperText: isTemporary ? helperText : null,
@@ -216,7 +216,7 @@ class _EmployeePasscodeInputState extends State<EmployeePasscodeInput> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      color: kLightColor,
+      txtColor: kLightColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       onPressed: _generateAndDispatchPasscode,
@@ -254,6 +254,7 @@ class EmployeeSignInButton extends StatelessWidget {
       builder: (context, state) {
         return _buildButton(
           context,
+          isDisabled: !state.isValid,
           inProgress: state.status.isInProgress,
           onPress: (state.email.isValid && state.passcode.isValid)
               ? () => context.read<EmployeeSignInBloc>().add(
@@ -268,10 +269,12 @@ class EmployeeSignInButton extends StatelessWidget {
   _buildButton(
     BuildContext context, {
     bool inProgress = false,
+    bool isDisabled = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
     label: inProgress ? "Please wait..." : "Sign In",
     onPressed: onPress,
+    isDisabled: isDisabled,
   );
 }
 

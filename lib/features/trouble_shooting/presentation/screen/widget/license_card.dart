@@ -49,7 +49,13 @@ class LicenseCard extends StatelessWidget {
       height: context.screenHeight * 0.6,
       child: EntitlementTabView(
         tabs: _tabContent
-            .map((tab) => {'label': tab.label, 'icon': tab.icon})
+            .map(
+              (tab) => {
+                'label': tab.label,
+                'icon': tab.icon,
+                'tooltip': tab.displayName,
+              },
+            )
             .toList(),
         isVerticalTab: true,
         children: _buildEntitlementSelectors(context, _tabContent),

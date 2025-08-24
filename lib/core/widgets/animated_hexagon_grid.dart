@@ -69,8 +69,8 @@ class _AnimatedHexagonGridState extends State<AnimatedHexagonGrid>
                 ),
                 child: Hexagon(
                   size: hexSize,
-                  color: (col.isEven ? kWarningColor : kOrangeColor).withAlpha(
-                    (0.9 * 255).toInt(),
+                  color: (col.isEven ? kWarningColor : kOrangeColor).toAlpha(
+                    (0.9),
                   ),
                 ),
               );

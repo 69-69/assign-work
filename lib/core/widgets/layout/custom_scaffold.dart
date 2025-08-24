@@ -84,6 +84,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     return _AppBar(
       authState: authState,
       title: widget.title,
+      showSearchBar: widget.tiles.isNotEmpty,
       appBar: widget.appBar,
       subTitle: widget.subTitle,
       actions: widget.actions,
@@ -240,6 +241,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? backButton;
   final Function()? onPressed;
   final PreferredSizeWidget? appBar;
+  final bool showSearchBar;
 
   const _AppBar({
     required this.authState,
@@ -250,6 +252,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backButton,
     this.onPressed,
     this.appBar,
+    this.showSearchBar = false,
   });
 
   @override
@@ -275,12 +278,14 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
   List<Widget> _buildActions() {
     return actions ??
         [
-          _iconButton(
-            'Workspace search',
-            icon: Icons.search,
-            onPressed: onPressed,
-          ),
-          SizedBox(width: 10),
+          if (showSearchBar) ...[
+            _iconButton(
+              'Workspace search',
+              icon: Icons.search,
+              onPressed: onPressed,
+            ),
+            SizedBox(width: 10),
+          ],
           Stack(
             children: [
               _iconButton(

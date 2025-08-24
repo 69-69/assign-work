@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/employee/employee_sign_in_bloc.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_sign_in_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/license_warning/license_warning.dart';
 import 'package:flutter/material.dart';
 import 'package:formz/formz.dart';
@@ -21,7 +21,7 @@ extension ShowSignInAlert on BuildContext {
     );
   }
 
-  void showWorkspaceSignInAlert(WorkspaceSignInState state) {
+  void showWorkspaceSignInAlert(WorkspaceAuthState state) {
     final isInputValid = state.email.isValid && state.password.isValid;
     final hasFailed = state.status.isFailure;
     final rawMessage = state.errorMessage ?? '';

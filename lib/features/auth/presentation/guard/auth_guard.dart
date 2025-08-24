@@ -92,16 +92,44 @@ class WorkspaceRoleGuard {
     BuildContext context,
     bool Function(Workspace) roleCheck,
   ) {
+    AuthState authState;
+
+    try {
+      // Try to watch the AuthBloc (only works inside widget build context)
+      authState = context.watch<AuthBloc>().state;
+    } catch (_) {
+      // Fallback: use read() if watch() isn't allowed
+      try {
+        authState = context.read<AuthBloc>().state;
+      } catch (_) {
+        // No access to authBloc in this context
+        return false;
+      }
+    }
+
+    final workspace = authState.workspace;
+    if (authState.authStatus == AuthStatus.authenticated && workspace != null) {
+      return roleCheck(workspace);
+    }
+
+    return false;
+  }
+
+  /*static bool _canAccess(
+    BuildContext context,
+    bool Function(Workspace) roleCheck,
+  ) {
     final authState = context.watch<AuthBloc>().state;
 
     if (authState.authStatus == AuthStatus.authenticated) {
       final workspace = authState.workspace;
+      prettyPrint('role-check', workspace.toString());
       if (workspace != null) {
         return roleCheck(workspace);
       }
     }
     return false;
-  }
+  }*/
 
   static bool canAccessOnboarding(BuildContext context) {
     return _canAccess(
@@ -110,10 +138,10 @@ class WorkspaceRoleGuard {
     );
   }
 
-  static bool canAccessSubscriberDashboard(BuildContext context) {
+  static bool canAccessTenantDashboard(BuildContext context) {
     return _canAccess(
       context,
-      (workspace) => workspace.canAccessSubscriberDashboard(workspace),
+      (workspace) => workspace.canAccessTenantDashboard(workspace),
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/animated_hexagon_grid.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
@@ -194,10 +195,10 @@ class _RightColumnPane extends StatelessWidget {
   }
 
   _buildOpenCreateWorkspaceButton(BuildContext context) {
-    return ElevatedButton.icon(
+    return context.elevatedIconBtn(
+      Icon(Icons.workspaces_outline, color: kLightColor),
       style: ElevatedButton.styleFrom(backgroundColor: kGrayBlueColor),
       onPressed: () => context.openCreateWorkspacePopUp(),
-      icon: const Icon(Icons.workspaces_outline, color: kLightColor),
       label: Text(
         'Setup New Workspace',
         overflow: TextOverflow.ellipsis,

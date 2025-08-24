@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dashboard_metrics.dart';
 import 'package:assign_erp/core/widgets/delayed_tooltip.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -89,7 +90,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         isUnknownPermission(access) ||
         cxt.isLicensed(access) ||
         cxt.hasPermission(access);
-    return can;
+    return true;
   }
 
   @override
@@ -152,13 +153,13 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
     return Container(
       margin: const EdgeInsets.only(right: 20),
       alignment: Alignment.centerRight,
-      child: ElevatedButton.icon(
+      child: context.elevatedIconBtn(
+        Icon(Icons.analytics_outlined, color: kLightColor),
         label: Text(
           'Show Metrics',
           style: context.textTheme.bodyMedium?.copyWith(color: kLightColor),
         ),
         onPressed: _toggleMetricsVisibility,
-        icon: const Icon(Icons.analytics_outlined, color: kLightColor),
         style: ElevatedButton.styleFrom(
           backgroundColor: kBrightPrimaryColor.toAlpha(0.6),
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -357,8 +358,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
   ) async {
     final role = context.workspace?.role;
 
-    if (route == RouteNames.liveChatSupport &&
-        role != WorkspaceRole.subscriber) {
+    if (route == RouteNames.liveChatSupport && role != WorkspaceRole.tenant) {
       await context.confirmAction<bool>(
         Text('Please use Agent Support/Chat for assistance.'),
         title: "Live Chat Support",

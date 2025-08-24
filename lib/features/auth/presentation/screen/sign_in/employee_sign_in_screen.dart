@@ -2,10 +2,12 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/animated_hexagon_grid.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/index.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/employee_form_inputs.dart';
@@ -31,13 +33,18 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
   final PrintoutSetupCacheService _printoutService =
       PrintoutSetupCacheService();
   final ScrollController _scrollController = ScrollController();
-  bool isOnboardingAllowed = false;
   String? companyLogo;
 
   @override
   void initState() {
     super.initState();
     _loadCompanyLogo();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   _loadCompanyLogo() async {
@@ -47,19 +54,14 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
     }
   }
 
-  void _canAccessOnboarding() {
-    // If current workspace-role can create first-time Agent Workspace
-    isOnboardingAllowed = WorkspaceRoleGuard.canAccessOnboarding(context);
-    if (isOnboardingAllowed != isOnboardingAllowed) {
-      setState(() => isOnboardingAllowed = isOnboardingAllowed);
-    }
-    // prettyPrint('steve', SecretHasher.hash('TEMP-451282'));
+  bool _canAccessOnboarding() {
+    final work = (context.read<AuthBloc>().state).workspace;
+    return work?.role == WorkspaceRole.developer ||
+        work?.role == WorkspaceRole.onboarding;
   }
 
   @override
   Widget build(BuildContext context) {
-    _canAccessOnboarding();
-
     /*MINE-STEVE
     return BlocProvider(
       create: (context) {
@@ -102,6 +104,8 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
   }
 
   _buildLayout(BuildContext context) {
+    final canAccess = _canAccessOnboarding();
+
     return AdaptiveLayout(
       firstFlex: 3,
       isSizedBox: false,
@@ -121,7 +125,7 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
             ),
           ),
         ),
-        _RightColumnPane(isOnboardingAllowed: isOnboardingAllowed),
+        _RightColumnPane(isOnboardingAllowed: canAccess),
       ],
     );
   }
@@ -173,10 +177,10 @@ class _RightColumnPane extends StatelessWidget {
   }
 
   _buildOpenCreateWorkspaceButton(BuildContext context) {
-    return ElevatedButton.icon(
+    return context.elevatedIconBtn(
+      const Icon(Icons.workspaces_outline, color: kLightColor),
       style: ElevatedButton.styleFrom(backgroundColor: kGrayBlueColor),
       onPressed: () => context.openCreateWorkspacePopUp(),
-      icon: const Icon(Icons.workspaces_outline, color: kLightColor),
       label: Text(
         'Setup New Workspace',
         overflow: TextOverflow.ellipsis,

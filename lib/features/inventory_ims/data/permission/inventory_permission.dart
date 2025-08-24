@@ -54,10 +54,10 @@ enum InventoryPermission {
   viewRFQ,
   updateRFQ,
   deleteRFQ,
-  // Product Category
-  manageProductCategory,
-  // Product Suppliers/Vendors
-  manageProductSuppliers,
+  // Item Category
+  manageItemCategory,
+  // Item Suppliers/Vendors
+  manageItemSuppliers,
   // Customer
   manageCustomers,
   createCustomer,
@@ -322,8 +322,7 @@ final List<AccessControl> _stockPermissions = [
   AccessControl(
     module: "ims stock",
     title: "Edit inventory items",
-    description:
-        "Allow users to update product names, prices, or stock details.",
+    description: "Allow users to update item names, prices, or stock details.",
     access: InventoryPermission.updateStock,
   ),
   AccessControl(

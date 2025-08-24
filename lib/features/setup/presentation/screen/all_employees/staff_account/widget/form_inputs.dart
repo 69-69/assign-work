@@ -3,10 +3,10 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_roles.dart';
-import 'package:assign_erp/features/setup/data/models/role_model.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/features/setup/presentation/screen/all_employees/staff_account/widget/search_role.dart';
+import 'package:assign_erp/features/setup/presentation/screen/company/widget/search_departments.dart';
 import 'package:assign_erp/features/setup/presentation/screen/company/widget/search_stores.dart';
 import 'package:flutter/material.dart';
 
@@ -31,13 +31,13 @@ class NameAndMobile extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomTextField(
-          labelText: 'Full name',
+          label: 'Full name',
           onChanged: onNameChanged,
           controller: nameController,
           keyboardType: TextInputType.name,
         ),
         CustomTextField(
-          labelText: 'Mobile number',
+          label: 'Mobile number',
           onChanged: onMobileChanged,
           controller: mobileController,
           keyboardType: TextInputType.number,
@@ -47,20 +47,41 @@ class NameAndMobile extends StatelessWidget {
   }
 }
 
-/// Employee Role & Email [EmailAndRole]
-class EmailAndRole extends StatelessWidget {
-  const EmailAndRole({
+/// Employee Roles [EmployeeRoleDropdown]
+class EmployeeRoleDropdown extends StatelessWidget {
+  const EmployeeRoleDropdown({
     super.key,
     required this.onRoleChanged,
+    this.serverRole,
+  });
+
+  final Function(String?, String?) onRoleChanged;
+  final String? serverRole;
+
+  @override
+  Widget build(BuildContext context) {
+    return SearchRole(
+      key: Key('key-emp-role'),
+      initialValue: serverRole,
+      onChanged: (id, role) => onRoleChanged(id, role),
+    );
+  }
+}
+
+/// Employee Temporal passCode & Email [EmailAndPasscode]
+class EmailAndPasscode extends StatelessWidget {
+  const EmailAndPasscode({
+    super.key,
     required this.emailController,
     this.onEmailChanged,
-    this.serverRole,
+    this.passcodeController,
+    this.onPasscodeChanged,
   });
 
   final TextEditingController emailController;
   final ValueChanged? onEmailChanged;
-  final Function(String?, String?) onRoleChanged;
-  final String? serverRole;
+  final TextEditingController? passcodeController;
+  final Function(String?)? onPasscodeChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -68,40 +89,35 @@ class EmailAndRole extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomTextField(
-          labelText: 'Email address',
+          label: 'Employee email',
           onChanged: onEmailChanged,
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
         ),
-        RoleDropdown(
-          key: Key('key-emp-role'),
-          serverValue: serverRole,
-          onChanged: (id, role) => onRoleChanged(id, role),
-        ),
-        /*CustomDropdown(
-          items: employeeRolesToList(),
-          labelText: 'employee role',
-          serverValue: serverRole,
-          onValueChange: (String? v) => onRoleChanged(v),
-        ),*/
+        if (passcodeController != null) ...{
+          TemporaryPasscode(
+            controller: passcodeController!,
+            onChanged: onPasscodeChanged!,
+          ),
+        },
       ],
     );
   }
 }
 
-/// Passcode & Store locations Dropdown [StoreLocationsDropdown]
-class StoreLocationsAndPasscode extends StatelessWidget {
+/// Passcode & Store locations Dropdown [StoreLocationsAndDepartment]
+class StoreLocationsAndDepartment extends StatelessWidget {
   final Function(String, String) onStoresChange;
-  final TextEditingController passcodeController;
-  final Function(String?) onPasscodeChanged;
-  final String? serverValue;
+  final String? initialStore;
+  final Function(String, String, String) onDepartChanged;
+  final String? initialValue;
 
-  const StoreLocationsAndPasscode({
+  const StoreLocationsAndDepartment({
     super.key,
-    this.serverValue,
+    this.initialStore,
+    this.initialValue,
     required this.onStoresChange,
-    required this.onPasscodeChanged,
-    required this.passcodeController,
+    required this.onDepartChanged,
   });
 
   @override
@@ -109,13 +125,13 @@ class StoreLocationsAndPasscode extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TemporaryPasscode(
-          controller: passcodeController,
-          onChanged: onPasscodeChanged,
+        DepartmentDropdown(
+          initialValue: initialValue,
+          onChanged: onDepartChanged,
         ),
         StoreLocationsDropdown(
           onChange: onStoresChange,
-          serverValue: serverValue,
+          initialValue: initialValue,
         ),
       ],
     );
@@ -191,7 +207,7 @@ class _TemporaryPasscodeState extends State<TemporaryPasscode> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      color: kLightColor,
+      txtColor: kLightColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       onPressed: () => _controller.text = _generateTemporaryPasscode(),
@@ -220,86 +236,65 @@ class _TemporaryPasscodeState extends State<TemporaryPasscode> {
 
 /// Store locations Dropdown [StoreLocationsDropdown]
 class StoreLocationsDropdown extends StatelessWidget {
-  final String? serverValue;
+  final String? initialValue;
   final Function(String, String) onChange;
 
   const StoreLocationsDropdown({
     super.key,
     required this.onChange,
-    this.serverValue,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
     return SearchStores(
-      serverValue: serverValue,
+      initialValue: initialValue,
       onChanged: (id, store) => onChange(id, store),
     );
   }
 }
 
-/// Account Status & Store Locations [AccountStatusAndStoreLocations]
-class AccountStatusAndStoreLocations extends StatelessWidget {
-  const AccountStatusAndStoreLocations({
+/// Account Status Dropdown [AccountStatusDropdown]
+class AccountStatusDropdown extends StatelessWidget {
+  const AccountStatusDropdown({
     super.key,
     this.serverStatus,
     required this.onStatusChanged,
-    required this.onStoresChange,
-    this.serverStore,
   });
 
-  final Function(String?, String?) onStoresChange;
-  final String? serverStore;
   final Function(String?) onStatusChanged;
   final String? serverStatus;
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CustomDropdown(
-          key: key,
-          items: employeeAccountStatusList,
-          labelText: employeeAccountStatusList.first,
-          serverValue: serverStatus,
-          onValueChange: (String? v) => onStatusChanged(v),
-        ),
-        StoreLocationsDropdown(
-          onChange: onStoresChange,
-          serverValue: serverStore,
-        ),
-      ],
+    return StaticDropdown(
+      key: key,
+      items: employeeAccountStatusList,
+      label: employeeAccountStatusList.first,
+      initialValue: serverStatus,
+      onValueChange: (String? v) => onStatusChanged(v),
     );
   }
 }
 
-/// Employee Role Dropdown [RoleDropdown]
-class RoleDropdown extends StatelessWidget {
-  final String? serverValue;
-  final Function(String, String) onChanged;
+/// Company's Departments [DepartmentDropdown]
+class DepartmentDropdown extends StatelessWidget {
+  final String? initialValue;
+  final Function(String, String, String) onChanged;
 
-  const RoleDropdown({super.key, this.serverValue, required this.onChanged});
+  const DepartmentDropdown({
+    super.key,
+    this.initialValue,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdownSearch<Role>(
-      labelText: (serverValue ?? 'Assign Employee Role...').toTitleCase,
-      asyncItems: (String filter, loadProps) async => await GetRoles.load(),
-      filterFn: (role, filter) {
-        // var f = filter.isEmpty ? (serverValue ?? '') : filter;
-        return role.filterByAny(filter);
-      },
-      itemAsString: (role) => role.itemAsString,
-      onChanged: (role) => onChanged(role!.id, role.name),
-      validator: (role) => role == null ? 'Employee Role is required' : null,
+    return SearchDepartments(
+      initialValue: initialValue,
+      onChanged: (id, code, name) => onChanged(id, code, name),
     );
   }
-
-  /*_getProductCategory() async {
-    final categories = await GetProductCategory.load();
-    return categories.map((m) => m.name).toList();
-  }*/
 }
 
 /*
@@ -330,7 +325,7 @@ class RoleAndStores extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
         ),
         SearchStores(
-          serverValue: serverStore,
+          initialValue: serverStore,
           onChanged: (id, store) => onStoreChanged(id, store),
         ),
       ],

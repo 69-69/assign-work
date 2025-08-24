@@ -7,10 +7,10 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/order_model.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/widget/form_inputs.dart';
@@ -42,17 +42,17 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
 
   // Updates the product details in the Form by setting the unit price,
   // product ID, & name based on the provided Product instance.
-  set _setProductId(Product p) {
+  set _setItemId(Item p) {
     _unitPriceController.text = '${p.sellingPrice}';
-    _selectedProductId = p.id;
-    _selectedProductName = p.name;
+    _selectedItemId = p.id;
+    _selectedItemName = p.name;
   }
 
   bool _isEnabledTotalAmt = false;
 
-  String? _selectedProductId;
-  String? _selectedProductName;
-  String? _selectedPaymentTerms;
+  String? _selectedItemId;
+  String? _selectedItemName;
+  String? _selectedPayMethod;
   String? _selectedPaymentStatus;
   String? _selectedOrderStatus;
   String? _selectedOrderType;
@@ -128,10 +128,10 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
   }
 
   Orders get _orderData => _order.copyWith(
-    productId: _selectedProductId ?? _order.productId,
+    itemId: _selectedItemId ?? _order.itemId,
     storeNumber: _order.storeNumber,
     customerId: _order.customerId,
-    productName: _selectedProductName ?? _order.productName,
+    itemName: _selectedItemName ?? _order.itemName,
     barcode: _barcodeController.text,
     status: _selectedOrderStatus ?? _order.status,
     orderType: _selectedOrderType ?? _order.orderType,
@@ -144,7 +144,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
     discountPercent:
         double.tryParse(_discountPercentController.text) ??
         _order.discountPercent,
-    paymentTerms: _selectedPaymentTerms ?? _order.paymentTerms,
+    paymentMethod: _selectedPayMethod ?? _order.paymentMethod,
     paymentStatus: _selectedPaymentStatus ?? _order.paymentStatus,
     taxPercent:
         double.tryParse(_taxPercentController.text) ?? _order.taxPercent,
@@ -215,10 +215,10 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         Text('Update Order Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         OrdersStatusDropdown(
-          serverValue: _order.status,
+          initialValue: _order.status,
           onChange: (s) => _updateStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -239,13 +239,13 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: [
         const SizedBox(height: 20.0),
-        ProductIdAndQuantityInput(
-          serverValue: _order.productName,
+        ItemIdAndQuantityInput(
+          initialValue: _order.itemName,
           qtyController: _quantityController,
           onQtyChanged: (_) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
-          onChanged: (product) => setState(() => _setProductId = product),
+          onChanged: (item) => setState(() => _setItemId = item),
         ),
         const SizedBox(height: 20.0),
         SubTotalAndUnitPriceInput(
@@ -260,17 +260,17 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         ),
         const SizedBox(height: 20.0),
         OrderStatusAndTypesDropdown(
-          serverType: _order.orderType,
+          initialType: _order.orderType,
           onTypeChange: (t) => setState(() => _selectedOrderType = t),
-          serverStatus: _order.status,
+          initialStatus: _order.status,
           onStatusChange: (s) => setState(() => _selectedOrderStatus = s),
         ),
         const SizedBox(height: 20.0),
         ShippingAndDeliveryDateInput(
           labelDelivery: "Delivery date",
           labelShipping: "Shipping date",
-          serverDeliveryDate: _order.getDeliveryDate,
-          serverShippingDate: _order.getShippingDate,
+          initialDelivery: _order.getDeliveryDate,
+          initialShipping: _order.getShippingDate,
           onDeliveryChanged: (d) => setState(() => _selectedDeliveryDate = d),
           onShippingChanged: (d) => setState(() => _selectedShippingDate = d),
         ),
@@ -303,8 +303,8 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         const SizedBox(height: 20.0),
         DeliveryAmtPaymentMethodInput(
           deliveryController: _deliveryAmountController,
-          serverValue: _order.paymentTerms,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentTerms = s),
+          initialPayMethod: _order.paymentMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPayMethod = s),
           onChanged: (s) {
             _calculateTotalAmount();
             if (_formKey.currentState!.validate()) setState(() {});
@@ -312,8 +312,8 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         ),
         const SizedBox(height: 20.0),
         ValidityAndOrderSource(
-          serverValidityDate: _order.validityDate,
-          serverOrderSource: _order.orderSource,
+          initialValidity: _order.validityDate,
+          initialOrder: _order.orderSource,
           onSourceChanged: (s) => setState(() => _selectedOrderSource = s),
           onValidityChanged: (date) =>
               setState(() => _selectedValidityDate = date),
@@ -321,7 +321,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         const SizedBox(height: 20.0),
         AmountPaidAndPaymentStatusDropdown(
           amountPaidController: _amountPaidController,
-          serverStatus: _order.paymentStatus,
+          initialStatus: _order.paymentStatus,
           onAmountPaidChanged: (s) => setState(() {}),
           onStatusChanged: (s) => setState(() => _selectedPaymentStatus = s),
         ),

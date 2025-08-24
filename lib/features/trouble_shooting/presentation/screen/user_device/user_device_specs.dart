@@ -6,6 +6,7 @@ import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/data_backup_manager.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/file_doc_manager.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/column_row_builder.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -69,7 +70,7 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _buildDeviceSpecs(context),
         Padding(
           padding: EdgeInsets.only(top: 20.0),
@@ -81,7 +82,7 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
             ),
           ),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _buildCopyAppDataDirectoryPath(context),
         _buildCopyLocalBackupPath(context),
         _buildDeleteDeviceInfo(context),

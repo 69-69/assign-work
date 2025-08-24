@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/barcode_scanner.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/bloc/product/product_bloc.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/bloc/item/item_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,7 +15,7 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
   final Object? auxField;
   final Object? optField;
   final Function(dynamic)? onChanged;
-  final ProductBloc firestoreBloc;
+  final ItemBloc firestoreBloc;
 
   CustomSearchDelegate({
     required this.firestoreBloc,
@@ -68,7 +68,7 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
         },
       );
     } else {
-      await context.showProductScanWarningDialog();
+      await context.showItemScanWarningDialog();
     }
   }
 
@@ -85,7 +85,7 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
       );
     }
 
-    return BlocBuilder<ProductBloc, InventoryState>(
+    return BlocBuilder<ItemBloc, InventoryState>(
       bloc: firestoreBloc,
       builder: (context, state) {
         return switch (state) {

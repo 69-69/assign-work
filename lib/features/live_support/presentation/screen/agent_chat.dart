@@ -72,7 +72,7 @@ class _AgentChatDashboardState extends State<AgentChatDashboard> {
   /* 🧭 LEFT PANEL: Chat list
   _buildLeftPane(BuildContext context) {
     return Container(
-      color: kLightBlueColor.withAlpha((0.3 * 255).toInt()),
+      color: kLightBlueColor.toAlpha(0.3)),
       child: ChatOverviewPane(
         workspaceId: _clientWorkspaceId,
         onChatSelected: _selectChat,
@@ -403,7 +403,7 @@ class _ChatDetailPaneState extends State<ChatDetailPane> {
         label: const Text('Live Support'),
         alignLabelWithHint: true,
         filled: true,
-        fillColor: kLightBlueColor.withAlpha((0.5 * 255).toInt()),
+        fillColor: kLightBlueColor.toAlpha(0.5)),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.support_agent, size: 15),
         suffixIcon: IconButton(

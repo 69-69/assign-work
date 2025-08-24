@@ -50,14 +50,14 @@ abstract class RouteNames {
   /// ───────────────────────── 📦 Inventory Module ─────────────────────────
   static const invoice = 'invoice_screen';
   static const orders = 'all_orders_screen';
-  static const productCategories = 'product_categories_screen';
-  static const productSuppliers = 'product_suppliers_screen';
+  static const itemCategories = 'product_categories_screen';
+  static const itemSuppliers = 'product_suppliers_screen';
   static const salesOrders = 'sales_orders_screen';
   static const imsPurchaseOrders = 'inventory_purchase_orders_screen';
   static const miscOrders = 'miscellaneous_orders_screen';
   static const imsRequestForQuote = 'inventory_request_for_quote_screen';
   static const deliveries = 'deliveries_screen';
-  static const products = 'products_screen';
+  static const items = 'products_screen';
   static const sales = 'sales_screen';
   static const ordersTracking = 'orders_tracking';
   static const inventReports = 'invent_reports_screen';

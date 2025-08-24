@@ -13,13 +13,42 @@ extension SanitizeMap on Map? {
   bool get isNullEmpty => this == null || this!.isEmpty;
 }
 
+bool isNullOrEmpty2(Object? value) {
+  if (value == null) return true;
+  if (value is String && value.isEmpty) return true;
+  if (value is Iterable && value.isEmpty) return true;
+  if (value is Map && value.isEmpty) return true;
+  return false;
+}
+
+extension UniversalIsNullOrEmpty on Object? {
+  bool get isNullOrEmpty {
+    if (this == null || this == "null" || this == "null null") {
+      return true;
+    }
+
+    if (this is String && (this as String).isEmpty) return true;
+    if (this is Iterable && (this as Iterable).isEmpty) return true;
+    if (this is Map && (this as Map).isEmpty) return true;
+
+    // Fallback for custom objects that define `isEmpty`
+    try {
+      return (this as dynamic).isEmpty == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  bool get isNotNullNorEmpty => !isNullOrEmpty;
+}
+
 /// Check if s STRING is empty or null [isNullOrEmpty]
 extension SanitizeExtensions on String? {
-  bool get isNullOrEmpty =>
+  /*bool get isNullOrEmpty =>
       this == null ||
       this!.trim().isEmpty ||
       this == "null" ||
-      this == "null null";
+      this == "null null";*/
 
   bool get isNumeric => double.tryParse(this ?? '') != null;
 
@@ -133,7 +162,7 @@ extension CaseSenitive on String {
     final baseUsername = split(
       '@',
     )[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), ''); // Removes non-alphanumeric
-    final randomSuffix = '5'.generateUID;
+    final randomSuffix = '5'.generateUID(type: UIDType.numeric);
     return '${baseUsername}_$randomSuffix';
   }
 

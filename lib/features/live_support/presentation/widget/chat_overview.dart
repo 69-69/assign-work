@@ -100,7 +100,7 @@ class _ChatOverviewPaneState extends State<ChatOverviewPane>
           ChatBloc(firestore: FirebaseFirestore.instance)
             ..add(LoadChatOverviews<LiveChatMessage>(workspaceId: workspaceId)),
       child: Container(
-        color: kGrayColor.withAlpha((0.2 * 255).toInt()),
+        color: kGrayColor.toAlpha(0.2)),
         child:*/
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _liveSupportService.getChatOverviews(workspaceId: workspaceId),
@@ -111,12 +111,9 @@ class _ChatOverviewPaneState extends State<ChatOverviewPane>
 
         return Container(
           decoration: BoxDecoration(
-            color: kGrayColor.withAlpha((0.2 * 255).toInt()),
+            color: kGrayColor.toAlpha(0.2),
             border: Border(
-              right: BorderSide(
-                width: 10,
-                color: kPrimaryColor.withAlpha((1 * 255).toInt()),
-              ),
+              right: BorderSide(width: 10, color: kPrimaryColor.toAlpha(1)),
             ),
           ),
           child: !snapshot.hasData || snapshot.data?.size == 0

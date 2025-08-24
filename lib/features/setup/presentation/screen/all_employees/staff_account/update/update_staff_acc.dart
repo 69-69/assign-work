@@ -1,10 +1,10 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/setup/data/models/employee_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/create_acc/employee_bloc.dart';
@@ -36,9 +36,7 @@ class _UpdateStaffAccForm extends StatefulWidget {
 class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
   Employee get _employee => widget.employee;
 
-  String? _selectedRoleId;
   String? _selectedStatus;
-  String? _selectedStoreNumber;
 
   final _formKey = GlobalKey<FormState>();
   late final _nameController = TextEditingController(text: _employee.fullName);
@@ -56,19 +54,14 @@ class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
   }
 
   Future<void> _onSubmit() async {
-    if (_formKey.currentState!.validate()) {
+    if (_isValid) {
       /// Update employee account
       final item = _employee.copyWith(
         fullName: _nameController.text,
         email: _emailController.text,
         mobileNumber: _phoneController.text,
-        storeNumber: _selectedStoreNumber ?? _employee.storeNumber,
-        roleId: _selectedRoleId ?? _employee.roleId,
-        // role: Employee.getRoleByString(_selectedRole ?? _employee.role.name),
+        status: _selectedStatus ?? _employee.status,
         updatedBy: context.employee!.fullName,
-        // status: _employee.status,
-        // workspaceId: _employee.workspaceId,
-        // createdBy: _employee.createdBy,
       );
 
       context.read<EmployeeBloc>().add(
@@ -106,21 +99,6 @@ class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
     _toastMsg('status');
   }
 
-  /// Update Employee store location
-  void _updateStoreLocation(String storeNumber) {
-    _employee.copyWith(storeNumber: storeNumber);
-    setState(() => _selectedStoreNumber = storeNumber);
-
-    context.read<EmployeeBloc>().add(
-      UpdateSetup<Employee>(
-        documentId: _employee.id,
-        mapData: {'storeNumber': storeNumber},
-      ),
-    );
-
-    _toastMsg('store location');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -134,64 +112,44 @@ class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text(
-          'Account Status & Store Location',
-          style: context.textTheme.titleLarge,
+        FormGroupCard(
+          title: 'Account Status',
+          children: [
+            AccountStatusDropdown(
+              serverStatus: _selectedStatus ?? _employee.status,
+              onStatusChanged: (v) =>
+                  v.isNullOrEmpty ? null : _updateAccountStatus(v!),
+            ),
+          ],
         ),
-        const SizedBox(height: 10.0),
-        AccountStatusAndStoreLocations(
-          key: const Key('Update-employee-role-acc-Status'),
-          serverStore: _employee.storeNumber,
-          serverStatus: _selectedStatus ?? _employee.status,
-          onStoresChange: (id, role) =>
-              id.isNullOrEmpty ? null : _updateStoreLocation(id!),
-          onStatusChanged: (v) =>
-              v.isNullOrEmpty ? null : _updateAccountStatus(v!),
-        ),
-        divLine,
-        _formBody(),
-      ],
-    );
-  }
-
-  ExpansionTile _formBody() {
-    return ExpansionTile(
-      dense: true,
-      title: Text(
-        'Manage this Account',
-        textAlign: TextAlign.center,
-        style: context.textTheme.titleLarge,
-      ),
-      subtitle: Text(
-        _employee.fullName.toTitleCase,
-        textAlign: TextAlign.center,
-      ),
-      childrenPadding: const EdgeInsets.only(bottom: 20.0),
-      children: <Widget>[
-        const SizedBox(height: 20.0),
-        NameAndMobile(
-          nameController: _nameController,
-          mobileController: _phoneController,
-          onNameChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onMobileChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 20.0),
-        EmailAndRole(
-          serverRole: _employee.role,
-          emailController: _emailController,
-          onEmailChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onRoleChanged: (id, role) =>
-              setState(() => _selectedRoleId = id ?? ''),
+        HorizontalDivider(thickness: 8.0),
+        FormGroupCard(
+          title: 'Employee\'s Details',
+          children: [
+            NameAndMobile(
+              nameController: _nameController,
+              mobileController: _phoneController,
+              onNameChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+              onMobileChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+            ),
+            const SizedBox(height: 20.0),
+            EmailAndPasscode(
+              emailController: _emailController,
+              onEmailChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+            ),
+          ],
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(onPressed: _onSubmit),
       ],
     );
   }
+
+  bool get _isValid => _formKey.currentState!.validate();
 }

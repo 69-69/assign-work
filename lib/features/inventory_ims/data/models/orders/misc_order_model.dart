@@ -10,9 +10,9 @@ class MiscOrder extends Equatable {
   final String moNumber;
   final String storeNumber;
   final String supplierId;
-  final String productId;
+  final String itemId;
   final double unitPrice;
-  final String productName;
+  final String itemName;
   final int quantity;
   final String status;
   final String? shipTo;
@@ -29,11 +29,11 @@ class MiscOrder extends Equatable {
     this.id = '',
     this.moNumber = '',
     required this.storeNumber,
-    required this.productId,
+    required this.itemId,
     required this.supplierId,
     required this.status,
     required this.quantity,
-    required this.productName,
+    required this.itemName,
     required this.unitPrice,
     required this.paymentMethod,
     this.shipTo,
@@ -54,10 +54,10 @@ class MiscOrder extends Equatable {
       id: documentId,
       moNumber: data['moNumber'] ?? '',
       storeNumber: data['storeNumber'] ?? '',
-      productId: data['productId'] ?? '',
+      itemId: data['itemId'] ?? '',
       supplierId: data['supplierId'] ?? '',
       status: data['status'] ?? '',
-      productName: data['productName'] ?? '',
+      itemName: data['itemName'] ?? '',
       quantity: data['quantity'] ?? 0,
       unitPrice: data['unitPrice'] ?? 0.0,
       paymentMethod: data['paymentMethod'] ?? '',
@@ -77,9 +77,9 @@ class MiscOrder extends Equatable {
     'id': id,
     'moNumber': moNumber,
     'storeNumber': storeNumber,
-    'productId': productId,
+    'itemId': itemId,
     'supplierId': supplierId,
-    'productName': productName,
+    'itemName': itemName,
     'unitPrice': unitPrice,
     'quantity': quantity,
     'status': status,
@@ -114,7 +114,7 @@ class MiscOrder extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && productId.isEmpty;
+  bool get isEmpty => id.isEmpty && itemId.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -139,7 +139,7 @@ class MiscOrder extends Equatable {
   /// Formatted to Date Only in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
-  /// Current / Today's Products/Stocks
+  /// Current / Today's items/Stocks
   bool get isToday {
     var dt = createdAt.toDateTime;
 
@@ -152,8 +152,8 @@ class MiscOrder extends Equatable {
   bool filterByAny(String filter) =>
       storeNumber.contains(filter) ||
       moNumber.contains(filter) ||
-      productId.contains(filter) ||
-      productName.contains(filter) ||
+      itemId.contains(filter) ||
+      itemName.contains(filter) ||
       status.contains(filter) ||
       supplierId.contains(filter) ||
       createdBy.contains(filter) ||
@@ -175,7 +175,7 @@ class MiscOrder extends Equatable {
 
   @override
   String toString() =>
-      'SO: $moNumber - $productName @ ${isToday ? 'Today' : 'Past'}';
+      'SO: $moNumber - $itemName @ ${isToday ? 'Today' : 'Past'}';
 
   /// copyWith method
   MiscOrder copyWith({
@@ -183,8 +183,8 @@ class MiscOrder extends Equatable {
     String? moNumber,
     String? storeNumber,
     String? supplierId,
-    String? productId,
-    String? productName,
+    String? itemId,
+    String? itemName,
     double? unitPrice,
     int? quantity,
     String? status,
@@ -203,8 +203,8 @@ class MiscOrder extends Equatable {
       storeNumber: storeNumber ?? this.storeNumber,
       moNumber: moNumber ?? this.moNumber,
       supplierId: supplierId ?? this.supplierId,
-      productId: productId ?? this.productId,
-      productName: productName ?? this.productName,
+      itemId: itemId ?? this.itemId,
+      itemName: itemName ?? this.itemName,
       unitPrice: unitPrice ?? this.unitPrice,
       quantity: quantity ?? this.quantity,
       status: status ?? this.status,
@@ -225,10 +225,10 @@ class MiscOrder extends Equatable {
     id,
     storeNumber,
     moNumber,
-    productId,
+    itemId,
     supplierId,
     status,
-    productName,
+    itemName,
     quantity,
     unitPrice,
     paymentMethod,
@@ -250,8 +250,8 @@ class MiscOrder extends Equatable {
       moNumber,
       supplierId,
       status.toTitleCase,
-      productId,
-      productName.toTitleCase,
+      itemId,
+      itemName.toTitleCase,
       '$ghanaCedis$unitPrice',
       '$quantity',
       paymentMethod.toTitleCase,
@@ -277,8 +277,8 @@ class MiscOrder extends Equatable {
     'MO Number',
     'Supplier ID',
     'Status',
-    'Product ID',
-    'Product Name',
+    'Item ID',
+    'Item Name',
     'Unit Price',
     'Quantity',
     'Payment Terms',

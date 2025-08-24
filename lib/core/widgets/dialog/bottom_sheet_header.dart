@@ -44,7 +44,7 @@ class DialogHeader extends StatelessWidget {
                 onPressed: onBackPress ?? () => Navigator.pop(context),
                 icon: Icon(
                   Icons.adaptive.arrow_back,
-                  color: (color ?? customColor).withAlpha((0.5 * 255).toInt()),
+                  color: (color ?? customColor).toAlpha(0.5),
                 ),
                 constraints: const BoxConstraints(),
               ),

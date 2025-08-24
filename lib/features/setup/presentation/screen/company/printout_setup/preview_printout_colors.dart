@@ -182,7 +182,7 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
 
         var isSelected = previewIndex == index;
 
-        var fadeColor = paletteColor.withAlpha((0.6 * 255).toInt());
+        var fadeColor = paletteColor.toAlpha(0.6);
         return Card(
           elevation: 20,
           color: paletteColor,

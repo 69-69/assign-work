@@ -23,7 +23,7 @@ const appPermissions = [
 
 enum EmployeeRole {
   /* 1- Full access to read, write, and execute operations.*/
-  storeOwner,
+  businessOwner,
   /* 2- Read and write access, suitable for overseeing team and project data.*/
   manager,
   /* 3- Full access to read, write, and handles the management of inventory levels, including stocking items, ordering new products, tracking stock levels*/

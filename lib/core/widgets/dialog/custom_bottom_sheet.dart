@@ -60,6 +60,7 @@ extension ShowBottomSheet<T> on BuildContext {
             children: [
               if (!isSmall && showZoomIcon) ...{
                 _buildZoomIcon(value, context, zoomLevel),
+                const SizedBox(height: 10),
               },
               Expanded(child: child!),
             ],
@@ -78,11 +79,12 @@ extension ShowBottomSheet<T> on BuildContext {
     return Align(
       alignment: Alignment.topCenter,
       child: IconButton(
+        tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
         style: IconButton.styleFrom(
           padding: EdgeInsets.zero,
           shape: LinearBorder.none,
           backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor)
-              .withAlpha((0.4 * 255).toInt()),
+              .toAlpha(0.4 * 255),
         ),
         icon:
             Icon(

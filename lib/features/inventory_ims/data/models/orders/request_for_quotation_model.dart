@@ -5,25 +5,40 @@ import 'package:equatable/equatable.dart';
 
 var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
 
+/// @TODO request for quotation fields
+// * Terms & conditions
+// * List of invited suppliers
+// * Attachments (drawings/specs)
+// * Responses (linked or stored in sub-table)
+
+// Calculated net price from the line items
+/*double get netPrice {
+    double total = 0;
+    for (var item in lineItems) {
+      total += item.unitPrice * item.quantity;
+    }
+    return total - (total * discountPercent / 100) + (total * taxPercent / 100);
+  }*/
+
 class RequestForQuotation extends Equatable {
   final String id; // Firestore will assign a unique ID (documentId)
   final String storeNumber;
   final String rfqNumber;
   final String supplierId;
-  // final List<RFQLineItem> lineItems; // A list of items in the RFQ
-  final String productName;
-
-  final double unitPrice;
-  final int quantity;
+  final List<RFQLineItem> lineItems; // A list of items in the RFQ
 
   final String status;
 
-  final String? remarks;
+  // new
+  final String title;
+  final String currency;
+  final String department;
+  final String validityDate;
+  final String? deliveryAddress;
+
+  final String? notes;
 
   final double taxPercent;
-  final double discountPercent;
-
-  final double netPrice;
 
   final DateTime? deadline;
   final DateTime? deliveryDate;
@@ -33,33 +48,19 @@ class RequestForQuotation extends Equatable {
   final String updatedBy;
   final DateTime updatedAt;
 
-  /// @TODO request for quotation fields
-  // * Terms & conditions
-  // * List of invited suppliers
-  // * Attachments (drawings/specs)
-  // * Responses (linked or stored in sub-table)
-
-  // Calculated net price from the line items
-  /*double get netPrice {
-    double total = 0;
-    for (var item in lineItems) {
-      total += item.unitPrice * item.quantity;
-    }
-    return total - (total * discountPercent / 100) + (total * taxPercent / 100);
-  }*/
-
   RequestForQuotation({
     this.id = '',
+    required this.title,
     this.rfqNumber = '',
     required this.storeNumber,
     required this.supplierId,
     required this.status,
-    required this.quantity,
-    required this.productName,
-    this.unitPrice = 0.0,
-    this.remarks,
-    this.netPrice = 0.0,
-    this.discountPercent = 0.0,
+    required this.lineItems,
+    this.department = '',
+    this.notes,
+    this.validityDate = '',
+    this.currency = 'GHC',
+    this.deliveryAddress = '',
     this.taxPercent = 0.0,
     DateTime? deadline,
     DateTime? deliveryDate,
@@ -73,25 +74,27 @@ class RequestForQuotation extends Equatable {
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [RequestForQuotation.fromMap]
-  factory RequestForQuotation.fromMap(
-    Map<String, dynamic> data,
-    String documentId,
-  ) {
+  factory RequestForQuotation.fromMap(Map<String, dynamic> data, String docId) {
     return RequestForQuotation(
-      id: documentId,
+      id: docId,
+      title: data['title'] ?? '',
+      department: data['department'] ?? '',
       storeNumber: data['storeNumber'] ?? '',
       rfqNumber: data['rfqNumber'] ?? '',
       supplierId: data['supplierId'] ?? '',
       status: data['status'] ?? '',
-      productName: data['productName'] ?? '',
-      quantity: data['quantity'] ?? 0,
-      unitPrice: data['unitPrice'] ?? 0.0,
-      remarks: data['remarks'] ?? '',
-      netPrice: data['netPrice'] ?? 0.0,
+      lineItems:
+          (data['lineItems'] as List<dynamic>?)
+              ?.map((i) => RFQLineItem.fromMap(i.cast<String, dynamic>()))
+              .toList() ??
+          [],
+      notes: data['notes'] ?? '',
       taxPercent: data['taxPercent'] ?? 0.0,
-      discountPercent: data['discountPercent'] ?? 0.0,
       deadline: toDateTimeFn(data['deadline']),
       deliveryDate: toDateTimeFn(data['deliveryDate']),
+      validityDate: data['validityDate'] ?? '',
+      currency: data['currency'] ?? '',
+      deliveryAddress: data['deliveryAddress'] ?? '',
       createdBy: data['createdBy'] ?? '',
       createdAt: toDateTimeFn(data['createdAt']),
       updatedBy: data['updatedBy'] ?? '',
@@ -102,19 +105,20 @@ class RequestForQuotation extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'title': title,
+    'department': department,
     'storeNumber': storeNumber,
     'rfqNumber': rfqNumber,
     'supplierId': supplierId,
-    'productName': productName,
-    'unitPrice': unitPrice,
-    'quantity': quantity,
+    'lineItems': lineItems.map((item) => item.toMap()).toList(),
     'status': status,
-    'remarks': remarks,
-    'netPrice': netPrice,
+    'notes': notes,
     'taxPercent': taxPercent,
-    'discountPercent': discountPercent,
     'deadline': deadline,
     'deliveryDate': deliveryDate,
+    'validityDate': validityDate,
+    'currency': currency,
+    'deliveryAddress': deliveryAddress,
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
@@ -124,8 +128,8 @@ class RequestForQuotation extends Equatable {
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
     var newMap = _mapTemp();
-    newMap['deadline'] = deadline.toISOString;
-    newMap['deliveryDate'] = deliveryDate.toISOString;
+    newMap['deadline'] = deadline?.toISOString;
+    newMap['deliveryDate'] = deliveryDate?.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
 
@@ -143,15 +147,22 @@ class RequestForQuotation extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => productName.isEmpty;
+  // --- Calculations ---
 
+  double get subTotal =>
+      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+
+  double get discountAmt =>
+      lineItems.fold(0.0, (sum, item) => sum + item.discountAmt);
+
+  double get taxAmt =>
+      lineItems.fold(0.0, (sum, item) => sum + item.taxAmt(taxPercent));
+
+  double get netTotal => subTotal - discountAmt + taxAmt;
+
+  // --- Utilities ---
+  bool get isEmpty => lineItems.isEmpty;
   bool get isNotEmpty => !isEmpty;
-
-  double get subTotal => quantity * unitPrice;
-
-  double get discountAmt => (discountPercent / 100) * subTotal;
-
-  double get taxAmt => (taxPercent / 100) * (subTotal - discountAmt);
 
   /// approved POs [isApproved]
   bool get isAwarded => status == 'awarded';
@@ -181,18 +192,27 @@ class RequestForQuotation extends Equatable {
   bool filterByAny(String filter) =>
       storeNumber.contains(filter) ||
       rfqNumber.contains(filter) ||
-      productName.contains(filter) ||
+      department.contains(filter) ||
+      title.contains(filter) ||
       status.contains(filter) ||
-      supplierId.contains(filter);
+      supplierId.contains(filter) ||
+      (notes ?? '').contains(filter) ||
+      validityDate.contains(filter) ||
+      currency.contains(filter) ||
+      (deliveryAddress ?? '').contains(filter) ||
+      taxPercent.toString().contains(filter) ||
+      getDeadlineDate.contains(filter) ||
+      getDeliveryDate.contains(filter) ||
+      lineItems.map((e) => e.filterByAny(filter)).toList().contains(true);
 
-  /// [findRequestForQuotationById]
-  static Iterable<RequestForQuotation> findRequestForQuotationById(
+  /// [findRFQById]
+  static Iterable<RequestForQuotation> findRFQById(
     List<RequestForQuotation> quotes,
     String quoteId,
   ) => quotes.where((quote) => quote.id == quoteId);
 
-  /// [filterRequestForQuotationByDate]
-  static List<RequestForQuotation> filterRequestForQuotationByDate(
+  /// [filterRFQByDate]
+  static List<RequestForQuotation> filterRFQByDate(
     List<RequestForQuotation> quotes, {
     bool isSameDay = true,
   }) => quotes
@@ -208,24 +228,26 @@ class RequestForQuotation extends Equatable {
   ) => quotes.where((quote) => quote.isAwarded).toList();
 
   @override
-  String toString() => 'RFQ: $rfqNumber - $productName';
+  String toString() => 'RFQ: $rfqNumber - $supplierId';
 
   /// copyWith method
   RequestForQuotation copyWith({
     String? id,
+    String? title,
+    String? department,
     String? storeNumber,
     String? rfqNumber,
     String? supplierId,
-    String? productName,
-    double? unitPrice,
+    List<RFQLineItem>? lineItems,
     int? quantity,
     String? status,
-    String? remarks,
-    double? netPrice,
+    String? notes,
     double? taxPercent,
-    double? discountPercent,
     DateTime? deadline,
     DateTime? deliveryDate,
+    String? validityDate,
+    String? currency,
+    String? deliveryAddress,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -233,19 +255,20 @@ class RequestForQuotation extends Equatable {
   }) {
     return RequestForQuotation(
       id: id ?? this.id,
+      title: title ?? this.title,
+      department: department ?? this.department,
       storeNumber: storeNumber ?? this.storeNumber,
       rfqNumber: rfqNumber ?? this.rfqNumber,
       supplierId: supplierId ?? this.supplierId,
-      productName: productName ?? this.productName,
-      unitPrice: unitPrice ?? this.unitPrice,
-      quantity: quantity ?? this.quantity,
+      lineItems: lineItems ?? this.lineItems,
       status: status ?? this.status,
-      remarks: remarks ?? this.remarks,
-      netPrice: netPrice ?? this.netPrice,
+      notes: notes ?? this.notes,
       deadline: deadline ?? this.deadline,
       deliveryDate: deliveryDate ?? this.deliveryDate,
-      discountPercent: discountPercent ?? this.discountPercent,
       taxPercent: taxPercent ?? this.taxPercent,
+      validityDate: validityDate ?? this.validityDate,
+      currency: currency ?? this.currency,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -256,19 +279,20 @@ class RequestForQuotation extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    title,
     storeNumber,
     rfqNumber,
     supplierId,
+    department,
     status,
-    productName,
-    quantity,
-    unitPrice,
-    remarks,
-    netPrice,
+    lineItems.map((e) => e.props).toList(),
+    notes,
     deadline ?? '',
     deliveryDate ?? '',
     taxPercent,
-    discountPercent,
+    validityDate,
+    currency,
+    deliveryAddress,
     createdBy,
     createdAt,
     updatedBy,
@@ -276,41 +300,27 @@ class RequestForQuotation extends Equatable {
   ];
 
   /// ToList for RequestPriceQuotation [itemAsList]
-  List<String> itemAsList({int? start, int? end}) {
-    var list = [
-      id,
-      storeNumber,
-      rfqNumber,
-      supplierId,
-      status.toTitleCase,
-      productName.toTitleCase,
-      '$ghanaCedis$unitPrice',
-      '$quantity',
-      '$discountPercent% = $ghanaCedis$discountAmt',
-      '$ghanaCedis$netPrice',
-      '$taxPercent% = $ghanaCedis$taxAmt',
-      getDeadlineDate,
-      getDeliveryDate,
-      createdBy.toTitleCase,
-      getCreatedAt,
-      updatedBy.toTitleCase,
-      getUpdatedAt,
-    ];
-
-    return list;
-  }
+  List<String> get itemAsList => [
+    id,
+    storeNumber,
+    rfqNumber,
+    status.toTitleCase,
+    // lineItems.map((e) => e.itemAsList).toList().join(', '),
+    '$taxPercent% = $currency$taxAmt',
+    getDeadlineDate,
+    getDeliveryDate,
+    createdBy.toTitleCase,
+    getCreatedAt,
+    updatedBy.toTitleCase,
+    getUpdatedAt,
+  ];
 
   static List<String> get dataTableHeader => const [
     'ID',
     'Store Number',
     'RFQ Number',
-    'Supplier ID',
     'Status',
-    'Product Name',
-    'Unit Price',
-    'Quantity',
-    'Discount',
-    'Net Price',
+    // 'lineItems',
     'Tax',
     'Quotation Deadline',
     'Delivery Date',
@@ -321,17 +331,87 @@ class RequestForQuotation extends Equatable {
   ];
 }
 
+/// RFQ Line Items
 class RFQLineItem extends Equatable {
-  final String productName;
+  final String itemName;
   final double unitPrice;
   final int quantity;
+  final double discountPercent;
 
   const RFQLineItem({
-    required this.productName,
-    required this.unitPrice,
+    required this.itemName,
     required this.quantity,
+    this.unitPrice = 0.0,
+    this.discountPercent = 0.0,
   });
 
+  double get netPrice => unitPrice * quantity;
+
+  double get subTotal => quantity * unitPrice;
+
+  double get discountAmt => (discountPercent / 100) * netPrice;
+
+  double taxAmt(double taxPercent) =>
+      (taxPercent / 100) * (subTotal - discountAmt);
+
+  bool get isEmpty => itemName.isEmpty;
+
+  bool get isNotEmpty => !isEmpty;
+
+  factory RFQLineItem.fromMap(Map<String, dynamic> data) {
+    return RFQLineItem(
+      itemName: data['itemName'] ?? '',
+      quantity: int.tryParse('${data['quantity']}') ?? 0,
+      unitPrice: double.tryParse('${data['unitPrice']}') ?? 0.0,
+      discountPercent: double.tryParse('${data['discountPercent']}') ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'itemName': itemName,
+    'unitPrice': unitPrice,
+    'quantity': quantity,
+    'discountPercent': discountPercent,
+  };
+
+  bool filterByAny(String filter) =>
+      itemName.contains(filter) ||
+      quantity.toString().contains(filter) ||
+      discountPercent.toString().contains(filter) ||
+      unitPrice.toString().contains(filter) ||
+      netPrice.toString().contains(filter);
+
+  RFQLineItem copyWith({
+    String? itemName,
+    double? unitPrice,
+    int? quantity,
+    double? discountPercent,
+  }) {
+    return RFQLineItem(
+      itemName: itemName ?? this.itemName,
+      unitPrice: unitPrice ?? this.unitPrice,
+      quantity: quantity ?? this.quantity,
+      discountPercent: discountPercent ?? this.discountPercent,
+    );
+  }
+
   @override
-  List<Object?> get props => [productName, unitPrice, quantity];
+  List<Object?> get props => [itemName, unitPrice, quantity, discountPercent];
+
+  static List<String> get dataTableHeader => const [
+    'Item Name',
+    'Unit Price',
+    'Quantity',
+    'Discount',
+    'Net Price',
+  ];
+
+  /// ToList for RequestPriceQuotation [itemAsList]
+  List<String> get itemAsList => [
+    itemName.toTitleCase,
+    '$ghanaCedis$unitPrice',
+    '$quantity',
+    '$discountPercent% = $ghanaCedis$discountAmt',
+    '$ghanaCedis$netPrice',
+  ];
 }

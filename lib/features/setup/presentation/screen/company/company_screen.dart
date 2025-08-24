@@ -12,15 +12,21 @@ class CompanyScreen extends StatelessWidget {
 
   CustomTab _buildBody() {
     return const CustomTab(
-      length: 3,
+      length: 4,
       isColoredTab: false,
       indicatorWeight: 1.0,
       tabs: [
         {'label': 'company', 'icon': Icons.home_work},
+        {'label': 'departments', 'icon': Icons.groups},
         {'label': 'add stores', 'icon': Icons.store},
         {'label': 'PDFs / Print Setup', 'icon': Icons.print},
       ],
-      children: [ListCompanyInfo(), ListCompanyStores(), PrintoutSetup()],
+      children: [
+        ListCompanyInfo(),
+        ListDepartments(),
+        ListCompanyStores(),
+        PrintoutSetup(),
+      ],
     );
   }
 }

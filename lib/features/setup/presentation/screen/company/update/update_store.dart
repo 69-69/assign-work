@@ -40,7 +40,7 @@ class _UpdateStoreFormState extends State<_UpdateStoreForm> {
   late final _nameController = TextEditingController(text: _store.name);
   late final _phoneController = TextEditingController(text: _store.phone);
   late final _locationController = TextEditingController(text: _store.location);
-  late final _remarksController = TextEditingController(text: _store.remarks);
+  late final _remarksController = TextEditingController(text: _store.notes);
 
   @override
   void dispose() {
@@ -56,7 +56,7 @@ class _UpdateStoreFormState extends State<_UpdateStoreForm> {
         name: _nameController.text,
         phone: _phoneController.text,
         location: _locationController.text,
-        remarks: _remarksController.text,
+        notes: _remarksController.text,
         createdBy: _store.createdBy,
         updatedBy: context.employee!.fullName,
       );

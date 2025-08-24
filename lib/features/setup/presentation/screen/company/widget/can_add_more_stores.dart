@@ -14,8 +14,8 @@ import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CompanyStoreX on BuildContext {
-  /// Restricts multi-location (store/shop) additions based on the workspace subscription.
+extension CompanyStoreBranches on BuildContext {
+  /// Restricts multi-location (branch/store/shop) additions based on the workspace subscription.
   ///
   /// Limits the number of branch stores or shops a company (subscriber) can add, according to the
   /// maximum number of allowed devices defined in the current Workspace subscription license.
@@ -23,34 +23,38 @@ extension CompanyStoreX on BuildContext {
   bool get canAddMoreStores {
     final workspace = this.workspace;
     if (workspace == null) return false; // no workspace, no action
+    return totalStores < workspace.maxAllowedDevices;
+  }
 
+  /// [totalStores] Returns the total number of branch stores or shops a company (subscriber) has added.
+  int get totalStores {
     final state = watch<CompanyStoresBloc>().state;
-
-    final canAddMoreStores = state is SetupsLoaded<CompanyStores>
-        ? state.data.length < workspace.maxAllowedDevices
-        : false; // disallow while loading or unknown state
-
-    return canAddMoreStores;
+    if (state is! SetupsLoaded<CompanyStores>) return 0;
+    return state.data.length;
   }
 
   Future<void> onSwitchStore(String storeNumber, {String location = ''}) async {
     // Confirm the action
-    final isConfirmed = await confirmUserActionDialog(onAccept: 'Switch Store');
+    final isConfirmed = await confirmUserActionDialog(
+      onAccept: 'Switch Branch (Store)',
+    );
 
     if (mounted && isConfirmed) {
       final msg =
-          'Store location changed to ${location.toTitleCase}\nstore number $storeNumber';
+          'Branch (Store) location changed to ${location.toTitleCase}\nBranch (Store) number $storeNumber';
       // Show progress dialog while updating store number
       await progressBarDialog(
-        child: const Text('Please wait...while switching store'),
+        child: const Text('Please wait...while switching Branch (Store)'),
         request: _updateStoreNumber(
           msg,
           storeNumber: storeNumber,
           location: location,
         ),
         onSuccess: (_) => showAlertOverlay(msg),
-        onError: (error) =>
-            showAlertOverlay('Store switching failed', bgColor: kDangerColor),
+        onError: (error) => showAlertOverlay(
+          'Branch (Store) switching failed',
+          bgColor: kDangerColor,
+        ),
       );
     }
   }
@@ -76,7 +80,7 @@ extension CompanyStoreX on BuildContext {
         if (mounted) {
           final isDone = await confirmDone(
             Text(msg),
-            title: 'Store Location Changed',
+            title: 'Business Location Changed',
             barrierDismissible: false,
           );
           if (isDone) {
@@ -84,11 +88,11 @@ extension CompanyStoreX on BuildContext {
           }
         }
       } else {
-        throw Exception("Switching store failed. Employee not found.");
+        throw Exception("Switching Branch (Store) failed. Employee not found.");
       }
     } catch (e) {
       showAlertOverlay(
-        'Error switching store: ${e.toString()}',
+        'Error switching branch (store): ${e.toString()}',
         bgColor: kDangerColor,
       );
       rethrow;
@@ -98,11 +102,11 @@ extension CompanyStoreX on BuildContext {
   Future<bool> showUpgradeDialog() async {
     return await confirmAction(
       Text(
-        'You cannot add more stores. Please extend your subscription license to add more stores.\nKindly contact support for more information.',
+        'You cannot add more branches (stores). Please extend your subscription license to add more stores.\nKindly contact support for more information.',
       ),
       onAccept: 'Done',
       onReject: 'Cancel',
-      title: 'Can\'t Add More Stores',
+      title: 'Can\'t Add More',
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_enum.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/widget/search_orders.dart';
 import 'package:flutter/material.dart';
 
@@ -40,15 +40,15 @@ class DeliveryPersonAndPhoneInput extends StatelessWidget {
 
 /// Order Status & Order Types Dropdown [DeliveryStatusAndTypesDropdown]
 class DeliveryStatusAndTypesDropdown extends StatelessWidget {
-  final String? serverType;
+  final String? initialType;
   final void Function(dynamic s) onTypeChange;
-  final String? serverStatus;
+  final String? initialStatus;
   final void Function(dynamic s) onStatusChange;
 
   const DeliveryStatusAndTypesDropdown({
     super.key,
-    this.serverType,
-    this.serverStatus,
+    this.initialType,
+    this.initialStatus,
     required this.onTypeChange,
     required this.onStatusChange,
   });
@@ -59,11 +59,11 @@ class DeliveryStatusAndTypesDropdown extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DeliveryTypeDropdown(
-          serverType: serverType,
+          initialType: initialType,
           onValueChange: onTypeChange,
         ),
         DeliveryStatusDropdown(
-          serverStatus: serverStatus,
+          initialStatus: initialStatus,
           onChange: onStatusChange,
         ),
       ],
@@ -83,7 +83,7 @@ class RemarksTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Remarks...',
+      label: 'Remarks...',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
@@ -98,18 +98,18 @@ class RemarksTextField extends StatelessWidget {
 class OrderNumberDropdown extends StatelessWidget {
   const OrderNumberDropdown({
     super.key,
-    this.serverValue,
+    this.initialValue,
     required this.onChanged,
   });
 
-  final String? serverValue;
+  final String? initialValue;
   final Function(String, String) onChanged;
 
   @override
   Widget build(BuildContext context) {
     return SearchOrders(
       isDropdown: true,
-      serverValue: serverValue,
+      initialValue: initialValue,
       onChanged: onChanged,
     );
   }
@@ -125,7 +125,7 @@ class DeliveryPersonTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Delivery person',
+      label: 'Delivery person',
       controller: controller,
       onChanged: onChanged,
       helperText: 'Optional',
@@ -145,7 +145,7 @@ class DeliveryPhoneTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Delivery phone',
+      label: 'Delivery phone',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
@@ -158,21 +158,21 @@ class DeliveryPhoneTextField extends StatelessWidget {
 /// Delivery Transportation [DeliveryTypeDropdown]
 class DeliveryTypeDropdown extends StatelessWidget {
   final void Function(dynamic s) onValueChange;
-  final String? serverType;
+  final String? initialType;
 
   const DeliveryTypeDropdown({
     super.key,
     required this.onValueChange,
-    this.serverType,
+    this.initialType,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: deliveryTypes,
-      labelText: 'delivery type',
-      serverValue: serverType,
+      label: 'delivery type',
+      initialValue: initialType,
       onValueChange: (String? v) => onValueChange(v),
     );
   }
@@ -181,21 +181,21 @@ class DeliveryTypeDropdown extends StatelessWidget {
 /// Delivery Status [DeliveryStatusDropdown]
 class DeliveryStatusDropdown extends StatelessWidget {
   final void Function(dynamic s) onChange;
-  final String? serverStatus;
+  final String? initialStatus;
 
   const DeliveryStatusDropdown({
     super.key,
     required this.onChange,
-    this.serverStatus,
+    this.initialStatus,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: deliveryStatus,
-      labelText: 'delivery status',
-      serverValue: serverStatus,
+      label: 'delivery status',
+      initialValue: initialStatus,
       onValueChange: (String? v) => onChange(v),
     );
   }

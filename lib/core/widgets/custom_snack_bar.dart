@@ -63,6 +63,7 @@ extension ScaffoldSnackBar on BuildContext {
     String message, {
     Color? bgColor,
     String? label,
+    bool isTop = false,
     VoidCallback? onPressed,
     int? duration,
   }) {
@@ -81,51 +82,50 @@ extension ScaffoldSnackBar on BuildContext {
 
     assert(overlayEntry == null);
 
-    overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: 50.0,
-        left: 20.0,
-        right: 20.0,
-        child: Material(
-          color: kTransparentColor,
-          child: Container(
-            decoration: BoxDecoration(
-              color: bgColor ?? Colors.green,
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-            ),
-            padding: const EdgeInsets.all(6.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: context.copyPasteText(
-                    child: Text(
-                      message,
-                      style: const TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+    atTop(Widget child) =>
+        Positioned(top: 80.0, left: 20.0, right: 20.0, child: child);
+
+    atBottom(Widget child) =>
+        Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
+
+    buildBody(BuildContext context) => Material(
+      color: kTransparentColor,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor ?? Colors.green,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        padding: const EdgeInsets.all(6.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: context.copyPasteText(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
                 ),
-                if (label != null)
-                  TextButton(
-                    onPressed: onPressed ?? removeHighlightOverlay,
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.black12,
-                    ),
-                    child: Text(
-                      label,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: removeHighlightOverlay,
-                ),
-              ],
+              ),
             ),
-          ),
+            if (label != null)
+              TextButton(
+                onPressed: onPressed ?? removeHighlightOverlay,
+                style: TextButton.styleFrom(backgroundColor: Colors.black12),
+                child: Text(label, style: const TextStyle(color: Colors.white)),
+              ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: removeHighlightOverlay,
+            ),
+          ],
         ),
       ),
+    );
+
+    overlayEntry = OverlayEntry(
+      builder: (context) =>
+          isTop ? atTop(buildBody(context)) : atBottom(buildBody(context)),
     );
 
     overlay.insert(overlayEntry!);

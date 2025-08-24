@@ -432,8 +432,8 @@ class _WorkspaceInfoCard extends StatelessWidget {
           Divider(thickness: 6),
           _buildListTile(
             context,
-            title: 'SUBSCRIPTION: ${context.getSubscriptionName}',
-            subtitle: 'Valid Until: ${workspace?.expiresOn.toStandardDT}',
+            title: 'SUB.: ${context.getSubscriptionName}',
+            subtitle: 'Validity: ${workspace?.expiresOn.toStandardDT}',
           ),
           _buildListTile(
             context,

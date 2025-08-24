@@ -29,18 +29,18 @@ class _AddSalesForm extends StatefulWidget {
 
 class _AddSalesFormState extends State<_AddSalesForm> {
   bool _isEnabledOrderNumber = false;
-  bool _isEnabledProductId = false;
+  bool _isEnabledItemId = false;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
   String _subTotal = '';
   String _selectedCustomerId = '';
   String? _selectedSaleStatus;
-  String? _selectedPaymentMethod;
+  String? _selectedPayMethod;
 
   final _formKey = GlobalKey<FormState>();
   final _orderNumberController = TextEditingController();
   final _receiptNumberController = TextEditingController();
-  final _productIdController = TextEditingController();
+  final _itemIdController = TextEditingController();
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _totalAmtController = TextEditingController();
@@ -49,8 +49,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
   final _taxPercentController = TextEditingController();
   final _discountPercentController = TextEditingController();
 
-  void _toggleEditProductId() =>
-      setState(() => _isEnabledProductId = !_isEnabledProductId);
+  void _toggleEditItemId() =>
+      setState(() => _isEnabledItemId = !_isEnabledItemId);
 
   void _toggleEditOrderNumber() =>
       setState(() => _isEnabledOrderNumber = !_isEnabledOrderNumber);
@@ -75,7 +75,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
 
     _quantityController.dispose();
     _orderNumberController.dispose();
-    _productIdController.dispose();
+    _itemIdController.dispose();
     _unitPriceController.dispose();
     _discountPercentController.dispose();
     _receiptNumberController.dispose();
@@ -90,7 +90,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         status: _selectedSaleStatus ?? '',
         receiptNumber: _receiptNumberController.text,
         orderNumber: _orderNumberController.text,
-        productId: _productIdController.text,
+        itemId: _itemIdController.text,
         customerId: _selectedCustomerId,
         quantity: int.parse(_quantityController.text),
         unitPrice: _toDouble(_unitPriceController.text),
@@ -99,7 +99,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         taxPercent: _toDouble(_taxPercentController.text),
         // Total Amount
         totalAmount: _toDouble(_totalAmtController.text),
-        paymentMethod: _selectedPaymentMethod ?? '',
+        payMethod: _selectedPayMethod ?? '',
         storeNumber: context.employee!.storeNumber,
         createdBy: context.employee!.fullName,
       );
@@ -149,14 +149,14 @@ class _AddSalesFormState extends State<_AddSalesForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        OrderNumberAndProductId(
+        OrderNumberAndItemId(
           enableOrderNumber: _isEnabledOrderNumber,
           onOrderNumberEdited: _toggleEditOrderNumber,
-          enableProductId: _isEnabledProductId,
-          onProductIdEdited: _toggleEditProductId,
+          enableItemId: _isEnabledItemId,
+          onItemIdEdited: _toggleEditItemId,
           orderNumberController: _orderNumberController,
-          productIdController: _productIdController,
-          onProductIdChanged: (s) {
+          itemIdController: _itemIdController,
+          onItemIdChanged: (s) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
           onIdChanged: (s) {
@@ -176,7 +176,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         ),
         const SizedBox(height: 20.0),
         SaleStatusDropdown(
-          serverValue: _selectedSaleStatus,
+          initialValue: _selectedSaleStatus,
           onStatusChange: (s) => setState(() => _selectedSaleStatus = s),
         ),
         const SizedBox(height: 20.0),
@@ -206,8 +206,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         const SizedBox(height: 20.0),
         TotalAmtAndPaymentMethod(
           totalAmtController: _totalAmtController,
-          serverValue: _selectedPaymentMethod,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          initialPayMethod: _selectedPayMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPayMethod = s),
           onChanged: (t) {
             if (_formKey.currentState!.validate()) {
               setState(() {});

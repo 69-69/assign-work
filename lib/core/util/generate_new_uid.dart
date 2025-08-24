@@ -7,8 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 extension GenerateUID on String {
   static final _dbCollectionPaths = {
-    'user': workspaceAccDBCollectionPath,
-    'product': productsDBCollectionPath,
+    'work': workspaceAccDBCollectionPath,
+    'item': itemsDBCollectionPath,
     'order': ordersDBCollectionPath,
     'purchase': purchaseOrdersDBCollectionPath,
     'misc': miscOrdersDBCollectionPath,
@@ -17,9 +17,9 @@ extension GenerateUID on String {
     'delivery': deliveryDBCollectionPath,
     'invoice': invoiceDBCollectionPath,
     'customer': customersDBCollectionPath,
-    'store': storeLocationsDBCollectionPath,
     'pOrder': posOrdersDBCollectionPath,
     'pSale': posSalesDBCollectionPath,
+    'employee': employeesDBCollectionPath,
   };
 
   String get _dbCollectionPath => _dbCollectionPaths[this] ?? 'unknownPath';
@@ -33,9 +33,9 @@ extension GenerateUID on String {
 
     final allData =
         await shortIdBloc.stream.firstWhere(
-              (state) => state is SingleDataLoaded<ShortUID>,
+              (state) => state is ItemLoaded<ShortUID>,
             )
-            as SingleDataLoaded<ShortUID>;
+            as ItemLoaded<ShortUID>;
 
     return allData.data.shortId;
   }
@@ -75,4 +75,46 @@ extension GenerateUID on String {
 
     return result;
   }*/
+
+  /// Generates a unique department code based on the provided name and existing codes [generateUniqueCode].
+  /// @param name The name of the department.
+  /// @param existingCodes (Optional) A list of existing department codes.
+  /// @return The generated department code.
+  /// @throws Exception if the name is empty.
+  /// @example 'Sales'.generateUniqueCode()
+  ///
+  String generateUniqueCode([List<String>? existingCodes]) {
+    final name = this;
+    if (name.trim().isEmpty) return '';
+
+    existingCodes ??= []; // Default to empty list if null
+
+    final words = name
+        .trim()
+        .toUpperCase()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
+
+    // Step 1: Build abbreviation
+    String abbreviation;
+    if (words.length == 1) {
+      // No spaces — take first 3 characters
+      abbreviation = words.first.substring(0, words.first.length.clamp(1, 3));
+    } else {
+      // Take first letter of each word
+      abbreviation = words.map((word) => word[0]).join();
+    }
+
+    // Step 2: Generate a unique code
+    final d = DateTime.now();
+    String shortPad = '-${d.second}${d.minute}-${d.year}${d.hour}${d.day}';
+
+    String candidate;
+    do {
+      candidate = abbreviation + shortPad;
+    } while (existingCodes.contains(candidate));
+
+    return candidate;
+  }
 }

@@ -2,29 +2,40 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 
-/// Form text field [CustomDropdown]
-class CustomDropdown extends StatelessWidget {
+/// Form text field [StaticDropdown]
+/// A customizable dropdown widget that supports both standard
+/// DropdownButtonFormField and the newer DropdownMenu UI.
+///
+/// Use this for selecting from a static list of options.
+/// Provides optional helper text, validation, and icon support.
+///
+/// Set [isMenu] to true to use the newer DropdownMenu with search.
+class StaticDropdown extends StatelessWidget {
   final bool isMenu;
   final Widget? icon;
   final List<String> items;
-  final String? serverValue;
-  final String labelText;
+  final String? initialValue;
+  final String label;
   final String? helperText;
   final InputDecoration? inputDecoration;
   final String? Function(String?)? validator;
   final void Function(String?) onValueChange;
 
-  const CustomDropdown({
+  /// [inLabel] If TRUE `helperText` is applied to the label, else to the input field.
+  final bool inLabel;
+
+  const StaticDropdown({
     super.key,
     required this.items,
-    required this.labelText,
+    required this.label,
     required this.onValueChange,
     this.inputDecoration,
-    this.serverValue,
+    this.initialValue,
     this.helperText,
     this.validator,
     this.icon,
     this.isMenu = false,
+    this.inLabel = true,
   });
 
   @override
@@ -33,11 +44,15 @@ class CustomDropdown extends StatelessWidget {
   }
 
   DropdownButtonFormField<String> _buildDropdownButton(BuildContext context) {
+    String? helpText;
+    if (helperText != null) {
+      helpText = inLabel ? '($helperText)' : helperText;
+    }
+
     final defaultVal =
-        (!serverValue.isNullOrEmpty && items.contains(serverValue))
-        ? serverValue
+        (!initialValue.isNullOrEmpty && items.contains(initialValue))
+        ? initialValue
         : items.first;
-    final helpText = helperText != null ? '($helperText)' : '';
 
     return DropdownButtonFormField<String>(
       isExpanded: true,
@@ -48,8 +63,8 @@ class CustomDropdown extends StatelessWidget {
           inputDecoration ??
           InputDecoration(
             isDense: true,
-            labelText: '${labelText.toTitleCase} $helpText',
-            // helperText: helperText,
+            labelText: '${label.toTitleCase} ${helpText ?? ''}',
+            helperText: helpText,
             labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
           ),
       items: items.map<DropdownMenuItem<String>>((e) {
@@ -59,6 +74,7 @@ class CustomDropdown extends StatelessWidget {
             e.toTitleCase,
             softWrap: true,
             overflow: TextOverflow.fade,
+            style: const TextStyle(fontWeight: FontWeight.normal),
           ),
         );
       }).toList(),
@@ -71,7 +87,7 @@ class CustomDropdown extends StatelessWidget {
             String label = items.first.toLowercaseAll;
 
             if (v.isEmpty || v.contains(label)) {
-              return 'Please enter $labelText';
+              return 'Please enter $label';
             }
             return null;
           },
@@ -80,15 +96,17 @@ class CustomDropdown extends StatelessWidget {
 
   DropdownMenu<String> _buildDropdownMenu() {
     final defaultVal =
-        (!serverValue.isNullOrEmpty && items.contains(serverValue))
-        ? serverValue
+        (!initialValue.isNullOrEmpty && items.contains(initialValue))
+        ? initialValue
         : items.first;
     final helpText = helperText != null ? '($helperText)' : '';
 
     return DropdownMenu<String>(
       trailingIcon: icon,
-      hintText: '$labelText $helpText',
+      hintText: '$label $helpText',
       initialSelection: defaultVal,
+
+      textStyle: const TextStyle(fontWeight: FontWeight.normal),
       dropdownMenuEntries: items
           .map((item) => DropdownMenuEntry(value: item, label: item))
           .toList(),
@@ -115,7 +133,14 @@ class CustomDropdown extends StatelessWidget {
   }
 }
 
-class CustomDropdownSearch<T> extends StatelessWidget {
+/// Form text field [AsyncSearchDropdown]
+/// A searchable dropdown widget that supports asynchronous loading of items.
+///
+/// Use this when you need to fetch dropdown items from a remote source
+/// or handle large lists with filtering support.
+///
+/// Provides search, custom filter logic, validation, and no-data callbacks.
+class AsyncSearchDropdown<T> extends StatelessWidget {
   final String labelText;
   final String? helperText;
   final IconData? trailingIcon;
@@ -123,9 +148,10 @@ class CustomDropdownSearch<T> extends StatelessWidget {
   final Function(T)? itemAsString;
   final String? Function(T?)? validator;
   final Function(T, String) filterFn;
+  final void Function()? onNoDataFound;
   final Future<List<T>> Function(String, LoadProps?)? asyncItems;
 
-  const CustomDropdownSearch({
+  const AsyncSearchDropdown({
     super.key,
     required this.labelText,
     required this.filterFn,
@@ -135,6 +161,7 @@ class CustomDropdownSearch<T> extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.trailingIcon,
+    this.onNoDataFound,
   });
 
   @override
@@ -152,7 +179,14 @@ class CustomDropdownSearch<T> extends StatelessWidget {
       // for filtering by user string
       compareFn: (obj1, obj2) => obj1 == obj2,
       // for selection comparison
-      items: asyncItems!,
+      items: (String filter, LoadProps? loadProps) async {
+        final results = await asyncItems!(filter, loadProps);
+        if (results.isEmpty) {
+          onNoDataFound?.call();
+        }
+        return results;
+      },
+
       // FutureOr<List<T>> Function(String, LoadProps?)? items
       // Future<List<T>> Function(String)? items,
       itemAsString: (T obj) => itemAsString!(obj),
@@ -166,8 +200,7 @@ class CustomDropdownSearch<T> extends StatelessWidget {
       decoratorProps: DropDownDecoratorProps(
         decoration: InputDecoration(labelText: '$labelText $helpText'),
       ),
-      validator:
-          validator ?? (T? obj) => obj == null ? 'Please $labelText' : null,
+      validator: validator ?? (T? obj) => obj == null ? labelText : null,
     );
   }
 }

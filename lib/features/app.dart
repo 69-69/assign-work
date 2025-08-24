@@ -36,8 +36,8 @@ class App extends StatelessWidget {
     final blocProviders = [
       // _bloc<AuthBloc>(() => AuthBloc(authRepository: _authRepo)),
       _bloc<AccessControlCubit>(() => AccessControlCubit(_accessControlRepo)),
-      _bloc<WorkspaceSignInBloc>(
-        () => WorkspaceSignInBloc(authRepository: _authRepo),
+      _bloc<WorkspaceAuthBloc>(
+        () => WorkspaceAuthBloc(authRepository: _authRepo),
       ),
       _bloc<EmployeeSignInBloc>(
         () => EmployeeSignInBloc(authRepository: _authRepo),
@@ -52,7 +52,7 @@ class App extends StatelessWidget {
       _bloc<CategoryBloc>(() => CategoryBloc(firestore: _fireStore)),
       _bloc<SupplierBloc>(() => SupplierBloc(firestore: _fireStore)),
       _bloc<EmployeeBloc>(() => EmployeeBloc(firestore: _fireStore)),
-      _bloc<ProductBloc>(() => ProductBloc(firestore: _fireStore)),
+      _bloc<ItemBloc>(() => ItemBloc(firestore: _fireStore)),
       _bloc<OrderBloc>(() => OrderBloc(firestore: _fireStore)),
       _bloc<PurchaseOrderBloc>(() => PurchaseOrderBloc(firestore: _fireStore)),
       _bloc<MiscOrderBloc>(() => MiscOrderBloc(firestore: _fireStore)),
@@ -73,7 +73,7 @@ class App extends StatelessWidget {
       _bloc<SubscriptionBloc>(() => SubscriptionBloc(firestore: _fireStore)),
       // Software User Guide BlocProvider
       _bloc<HowToBloc>(() => HowToBloc(firestore: _fireStore)),
-      // _bloc<ChatOverviewBloc>(() => ChatOverviewBloc(firestore: _fireStore)),
+      _bloc<DepartmentBloc>(() => DepartmentBloc(firestore: _fireStore)),
     ];
 
     // https://bloclibrary.dev/tutorials/flutter-login/
@@ -225,7 +225,6 @@ class _AppViewState extends State<_AppView> {
         return '/${RouteNames.verifyWorkspaceEmail}';
 
       default:
-        prettyPrint('Steve-id', 'steve');
         // Handle unexpected cases by returning null
         return null;
     }

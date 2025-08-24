@@ -30,31 +30,31 @@ class PrintOrderInvoice {
 
   // Sample function to aggregate Invoice data
   List<PrintItem> _generateInvoice() {
-    final invoiceProducts = orders.asMap().entries.map((entry) {
+    final invoiceItems = orders.asMap().entries.map((entry) {
       // final index = entry.key;
       final order = entry.value;
 
       return PrintItem(
-        sku: order.productId,
-        productName: _toCap(order.productName),
+        sku: order.itemId,
+        itemName: _toCap(order.itemName),
         unitPrice: order.unitPrice,
         quantity: order.quantity,
         discountPercent: order.discountPercent,
         validityDate: order.validityDate,
         deliveryAmt: order.deliveryAmount,
         taxPercent: order.taxPercent,
-        paymentTerms: _toCap('${order.paymentTerms} - ${order.paymentStatus}'),
+        paymentTerms: _toCap('${order.paymentMethod} - ${order.paymentStatus}'),
       );
     }).toList();
 
-    return invoiceProducts;
+    return invoiceItems;
   }
 
   Future<Uint8List> _issuePrinting(
     String title, {
     PdfPageFormat format = PdfPageFormat.a4,
   }) async {
-    List<PrintItem> invoiceProducts = _generateInvoice();
+    List<PrintItem> invoiceItems = _generateInvoice();
 
     /// Replace 'SO' in the orderNumber with 'IN'
     /// EX: SO-632-20246872 as Order number, will be IN-632-20246872 as Invoice number
@@ -63,7 +63,7 @@ class PrintOrderInvoice {
     final invoice = PrintInvoice(
       title: title,
       invoiceNumber: invoiceNumber,
-      products: invoiceProducts,
+      products: invoiceItems,
       customerId: customer.isEmpty
           ? orders.first.customerId
           : customer.customerId,

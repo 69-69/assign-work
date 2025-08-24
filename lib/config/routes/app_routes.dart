@@ -215,7 +215,7 @@ GoRoute _inventoryRoute() {
   final List<({String name, Widget screen})> inventoryRoutes = [
     (name: RouteNames.invoice, screen: const InvoiceScreen()),
     (name: RouteNames.deliveries, screen: const DeliveryScreen()),
-    (name: RouteNames.products, screen: const ProductScreen()),
+    (name: RouteNames.items, screen: const ProductScreen()),
     (name: RouteNames.sales, screen: const SaleScreen()),
     (name: RouteNames.inventReports, screen: const ReportsAnalyticsScreen()),
   ];

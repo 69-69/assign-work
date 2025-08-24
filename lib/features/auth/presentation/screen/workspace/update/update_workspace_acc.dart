@@ -204,7 +204,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           ),
         ),
         deleteButtonTooltipMessage: 'Remove',
-        backgroundColor: randomBgColors[index].withAlpha((0.3 * 255).toInt()),
+        backgroundColor: randomBgColors[index].toAlpha(0.3),
         deleteIcon: const Icon(size: 16, Icons.clear, color: kTextColor),
         onDeleted: () async {
           final isConfirmed = await context.confirmUserActionDialog(

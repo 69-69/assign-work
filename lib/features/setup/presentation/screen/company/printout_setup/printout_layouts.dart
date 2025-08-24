@@ -170,7 +170,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
           secondary: IconButton(
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
-              backgroundColor: kWarningColor.withAlpha((0.5 * 255).toInt()),
+              backgroundColor: kWarningColor.toAlpha(0.5),
             ),
             onPressed: () =>
                 context.previewLayout(img: assetName, layoutName: label),

@@ -144,7 +144,7 @@ extension POSTiles on dynamic {
     final posFinanceTiles = defaultTiles[5];
 
     return {
-      EmployeeRole.storeOwner: defaultTiles,
+      EmployeeRole.businessOwner: defaultTiles,
       EmployeeRole.manager: defaultTiles,
       EmployeeRole.developer: defaultTiles,
       EmployeeRole.sale: [posSalesTiles],

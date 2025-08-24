@@ -12,14 +12,19 @@ class PurchaseOrder extends Equatable {
   final String supplierId;
   // final List<POLineItem> lineItems; // A list of items in the RFQ
 
-  final String productName;
+  final String itemName;
   final String currency;
 
   final double unitPrice;
   final int quantity;
 
   final String status;
-  final String paymentTerms;
+
+  /// [payTerms] When the payment is due and if any discounts apply
+  final String payTerms;
+
+  /// [payMethod] How the payment is made (the financial instrument or channel)
+  final String payMethod;
 
   final String? remarks;
 
@@ -52,10 +57,11 @@ class PurchaseOrder extends Equatable {
     required this.supplierId,
     required this.status,
     required this.quantity,
-    required this.productName,
+    required this.itemName,
     this.orderType = 'purchase order',
     required this.unitPrice,
-    required this.paymentTerms,
+    required this.payTerms,
+    required this.payMethod,
     this.remarks,
     this.subTotal = 0.0,
     this.approvedBy = '',
@@ -79,12 +85,13 @@ class PurchaseOrder extends Equatable {
       poNumber: data['poNumber'] ?? '',
       supplierId: data['supplierId'] ?? '',
       status: data['status'] ?? '',
-      productName: data['productName'] ?? '',
+      itemName: data['itemName'] ?? '',
       currency: data['currency'] ?? '',
       orderType: data['orderType'] ?? 'purchase order',
       quantity: data['quantity'] ?? 0,
       unitPrice: data['unitPrice'] ?? 0.0,
-      paymentTerms: data['paymentTerms'] ?? '',
+      payTerms: data['payTerms'] ?? '',
+      payMethod: data['payMethod'] ?? '',
       remarks: data['remarks'] ?? '',
       subTotal: data['subTotal'] ?? 0.0,
       taxPercent: data['taxPercent'] ?? 0.0,
@@ -105,13 +112,14 @@ class PurchaseOrder extends Equatable {
     'storeNumber': storeNumber,
     'poNumber': poNumber,
     'supplierId': supplierId,
-    'productName': productName,
+    'itemName': itemName,
     'currency': currency,
     'unitPrice': unitPrice,
     'quantity': quantity,
     'status': status,
     'orderType': orderType,
-    'paymentTerms': paymentTerms,
+    'payTerms': payTerms,
+    'payMethod': payMethod,
     'remarks': remarks,
     'subTotal': subTotal,
     'approvedBy': approvedBy,
@@ -145,7 +153,7 @@ class PurchaseOrder extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => productName.isEmpty;
+  bool get isEmpty => itemName.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -181,11 +189,11 @@ class PurchaseOrder extends Equatable {
   bool filterByAny(String filter) =>
       poNumber.contains(filter) ||
       storeNumber.contains(filter) ||
-      productName.contains(filter) ||
+      itemName.contains(filter) ||
       status.contains(filter) ||
       supplierId.contains(filter) ||
       currency.contains(filter) ||
-      paymentTerms.contains(filter);
+      payTerms.contains(filter);
 
   /// [findPurchaseOrderById]
   static Iterable<PurchaseOrder> findPurchaseOrderById(
@@ -210,7 +218,7 @@ class PurchaseOrder extends Equatable {
 
   @override
   String toString() =>
-      'PO: $poNumber - $productName @ ${isToday ? 'Today' : 'Past'}';
+      'PO: $poNumber - $itemName @ ${isToday ? 'Today' : 'Past'}';
 
   /// copyWith method
   PurchaseOrder copyWith({
@@ -218,13 +226,14 @@ class PurchaseOrder extends Equatable {
     String? storeNumber,
     String? poNumber,
     String? supplierId,
-    String? productName,
+    String? itemName,
     String? currency,
     String? orderType,
     double? unitPrice,
     int? quantity,
     String? status,
-    String? paymentTerms,
+    String? payTerms,
+    String? payMethod,
     String? remarks,
     double? subTotal,
     String? approvedBy,
@@ -242,13 +251,14 @@ class PurchaseOrder extends Equatable {
       storeNumber: storeNumber ?? this.storeNumber,
       poNumber: poNumber ?? this.poNumber,
       supplierId: supplierId ?? this.supplierId,
-      productName: productName ?? this.productName,
+      itemName: itemName ?? this.itemName,
       currency: currency ?? this.currency,
       unitPrice: unitPrice ?? this.unitPrice,
       orderType: orderType ?? this.orderType,
       quantity: quantity ?? this.quantity,
       status: status ?? this.status,
-      paymentTerms: paymentTerms ?? this.paymentTerms,
+      payTerms: payTerms ?? this.payTerms,
+      payMethod: payMethod ?? this.payMethod,
       remarks: remarks ?? this.remarks,
       subTotal: subTotal ?? this.subTotal,
       approvedBy: approvedBy ?? this.approvedBy,
@@ -270,12 +280,13 @@ class PurchaseOrder extends Equatable {
     poNumber,
     supplierId,
     status,
-    productName,
+    itemName,
     currency,
     quantity,
     orderType,
     unitPrice,
-    paymentTerms,
+    payTerms,
+    payMethod,
     remarks,
     subTotal,
     deliveryDate ?? '',
@@ -299,8 +310,9 @@ class PurchaseOrder extends Equatable {
       orderType.toTitleCase,
       status.toTitleCase,
       currency.toTitleCase,
-      paymentTerms.toTitleCase,
-      productName.toTitleCase,
+      payTerms.toTitleCase,
+      payMethod.toTitleCase,
+      itemName.toTitleCase,
       '$ghanaCedis$unitPrice',
       '$quantity',
       '$ghanaCedis$subTotal',
@@ -332,7 +344,8 @@ class PurchaseOrder extends Equatable {
     'Status',
     'Currency',
     'Payment Terms',
-    'Product Name',
+    'Payment Method',
+    'Item Name',
     'Unit Price',
     'Quantity',
     'SubTotal',
@@ -349,16 +362,16 @@ class PurchaseOrder extends Equatable {
 }
 
 class POLineItem extends Equatable {
-  final String productName;
+  final String itemName;
   final double unitPrice;
   final int quantity;
 
   const POLineItem({
-    required this.productName,
+    required this.itemName,
     required this.unitPrice,
     required this.quantity,
   });
 
   @override
-  List<Object?> get props => [productName, unitPrice, quantity];
+  List<Object?> get props => [itemName, unitPrice, quantity];
 }

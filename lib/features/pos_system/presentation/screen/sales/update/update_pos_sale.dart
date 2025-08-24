@@ -7,7 +7,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_sale_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
@@ -40,14 +40,14 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
   POSSale get _sale => widget.sale;
 
   bool _isEnabledOrderNumber = false;
-  bool _isEnabledProductId = false;
+  bool _isEnabledItemId = false;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
   String _subTotal = '';
   String? _selectedSaleStatus;
   String _selectedCustomerId = '';
 
-  late String _selectedPaymentMethod = _sale.paymentMethod;
+  late String _selectedPaymentMethod = _sale.payMethod;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -64,9 +64,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
   late final _orderNumberController = TextEditingController(
     text: _sale.orderNumber,
   );
-  late final _productIdController = TextEditingController(
-    text: _sale.productId,
-  );
+  late final _itemIdController = TextEditingController(text: _sale.itemId);
   late final _receiptNumberController = TextEditingController(
     text: _sale.receiptNumber,
   );
@@ -79,8 +77,8 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
     text: '${_sale.taxPercent}',
   );
 
-  void _toggleEditProductId() =>
-      setState(() => _isEnabledProductId = !_isEnabledProductId);
+  void _toggleEditItemId() =>
+      setState(() => _isEnabledItemId = !_isEnabledItemId);
 
   void _toggleEditOrderNumber() =>
       setState(() => _isEnabledOrderNumber = !_isEnabledOrderNumber);
@@ -105,7 +103,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
 
     _quantityController.dispose();
     _orderNumberController.dispose();
-    _productIdController.dispose();
+    _itemIdController.dispose();
     _unitPriceController.dispose();
     _discountPercentController.dispose();
     _receiptNumberController.dispose();
@@ -120,7 +118,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         status: _selectedSaleStatus,
         receiptNumber: _receiptNumberController.text,
         orderNumber: _orderNumberController.text,
-        productId: _productIdController.text,
+        itemId: _itemIdController.text,
         customerId: _selectedCustomerId,
         quantity: int.tryParse(_quantityController.text),
         unitPrice: _strToDouble(_unitPriceController.text),
@@ -129,7 +127,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         taxPercent: _strToDouble(_taxPercentController.text),
         // Total Amount
         totalAmount: _strToDouble(_totalAmtController.text),
-        paymentMethod: _selectedPaymentMethod,
+        payMethod: _selectedPaymentMethod,
         storeNumber: _sale.storeNumber,
 
         createdBy: _sale.createdBy,
@@ -184,10 +182,10 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         Text('Update Sales Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         SaleStatusDropdown(
-          serverValue: _sale.status,
+          initialValue: _sale.status,
           onStatusChange: (s) => _updatePOSStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -227,14 +225,14 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        OrderNumberAndProductId(
+        OrderNumberAndItemId(
           enableOrderNumber: _isEnabledOrderNumber,
           onOrderNumberEdited: _toggleEditOrderNumber,
-          enableProductId: _isEnabledProductId,
-          onProductIdEdited: _toggleEditProductId,
+          enableItemId: _isEnabledItemId,
+          onItemIdEdited: _toggleEditItemId,
           orderNumberController: _orderNumberController,
-          productIdController: _productIdController,
-          onProductIdChanged: (s) {
+          itemIdController: _itemIdController,
+          onItemIdChanged: (s) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
           onIdChanged: (s) {
@@ -254,7 +252,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         ),
         const SizedBox(height: 20.0),
         SaleStatusDropdown(
-          serverValue: _sale.status,
+          initialValue: _sale.status,
           onStatusChange: (s) => setState(() => _selectedSaleStatus = s),
         ),
         const SizedBox(height: 20.0),
@@ -284,8 +282,8 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         const SizedBox(height: 20.0),
         TotalAmtAndPaymentMethod(
           totalAmtController: _totalAmtController,
-          serverValue: _selectedPaymentMethod,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          initialPayMethod: _selectedPaymentMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPaymentMethod = s),
           onChanged: (t) {
             if (_formKey.currentState!.validate()) {
               setState(() {});
@@ -347,7 +345,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
     children: List.generate(
       selectedSales.length,
       (index) => InputChip(
-        label: Text(selectedSales[index].productName),
+        label: Text(selectedSales[index].itemName),
         onDeleted: () {
           setState(() {
             selectedSales.removeAt(index);

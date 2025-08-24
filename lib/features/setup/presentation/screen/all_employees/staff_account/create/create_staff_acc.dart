@@ -1,10 +1,14 @@
 import 'package:assign_erp/core/constants/account_status.dart';
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/setup/data/models/employee_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/create_acc/employee_bloc.dart';
@@ -16,7 +20,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreateStaffAcc<T> on BuildContext {
   Future<void> openCreateStaffAcc() => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Add New Staff', body: _CreateStaffAccForm()),
+    child: FormBottomSheet(
+      title: 'Add New Employee',
+      body: _CreateStaffAccForm(),
+    ),
   );
 }
 
@@ -30,7 +37,9 @@ class _CreateStaffAccForm extends StatefulWidget {
 class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
   String _selectedRoleId = '';
   String _selectedRole = '';
+  String _selectedDepartCode = '';
   String _selectedStoreNumber = '';
+  String _newEmployeeId = '';
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -38,21 +47,27 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
   final _phoneController = TextEditingController();
   final _passcodeController = TextEditingController();
 
+  void _generateEmployeeId() async {
+    await 'employee'.getShortUID(
+      onChanged: (s) => setState(() => _newEmployeeId = s),
+    );
+  }
+
   @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    super.dispose();
+  void initState() {
+    _generateEmployeeId();
+    super.initState();
   }
 
   Employee get _employee => Employee(
+    employeeId: _newEmployeeId,
     fullName: _nameController.text,
     email: _emailController.text,
     mobileNumber: _phoneController.text,
     storeNumber: _selectedStoreNumber,
     roleId: _selectedRoleId,
     role: _selectedRole,
+    departmentCode: _selectedDepartCode,
     status: AccountStatus.enabled.label,
     workspaceId: context.workspace!.id,
     passCode: SecretHasher.hash(_passcodeController.text),
@@ -60,7 +75,7 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
   );
 
   Future<void> _onSubmit() async {
-    if (_formKey.currentState!.validate()) {
+    if (_isValid) {
       /// Create employee account
       final item = _employee;
 
@@ -72,9 +87,18 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
         context.showAlertOverlay(
           '${_nameController.text.toTitleCase} successfully created',
         );
+        _generateEmployeeId(); // get a new staff id
         Navigator.pop(context);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -86,53 +110,79 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
     );
   }
 
+  _buildEmployeeId() => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh Employee ID',
+        count: _newEmployeeId,
+        bgColor: kPrimaryColor,
+        isTotal: false,
+        onPressed: _generateEmployeeId,
+      ),
+    ),
+  );
+
   Column _buildBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const SizedBox(height: 20.0),
-        NameAndMobile(
-          nameController: _nameController,
-          mobileController: _phoneController,
-          onNameChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onMobileChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
+        _buildEmployeeId(),
+        FormGroupCard(
+          title: 'Employee\'s Details',
+          children: [
+            NameAndMobile(
+              nameController: _nameController,
+              mobileController: _phoneController,
+              onNameChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+              onMobileChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+            ),
+            const SizedBox(height: 20.0),
+            EmailAndPasscode(
+              emailController: _emailController,
+              passcodeController: _passcodeController,
+              onEmailChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+              onPasscodeChanged: (s) {
+                if (_isValid) setState(() {});
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 20.0),
-        EmailAndRole(
-          emailController: _emailController,
-          onEmailChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onRoleChanged: (id, role) {
-            if (_formKey.currentState!.validate()) {
-              setState(() {
-                _selectedRoleId = id!;
-                _selectedRole = role!;
-              });
-            }
-          },
-        ),
-        const SizedBox(height: 20.0),
-        StoreLocationsAndPasscode(
-          passcodeController: _passcodeController,
-          onPasscodeChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onStoresChange: (id, store) =>
-              setState(() => _selectedStoreNumber = id),
+        FormGroupCard(
+          title: 'Role & Permission',
+          children: [
+            StoreLocationsAndDepartment(
+              onDepartChanged: (id, code, name) {
+                if (_isValid) setState(() => _selectedDepartCode = code);
+              },
+              onStoresChange: (id, store) =>
+                  setState(() => _selectedStoreNumber = id),
+            ),
+            const SizedBox(height: 20.0),
+            EmployeeRoleDropdown(
+              onRoleChanged: (id, role) => setState(() {
+                _selectedRoleId = id ?? '';
+                _selectedRole = role ?? '';
+              }),
+            ),
+          ],
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: 'Add Staff',
+          label: 'Add Employee',
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],
     );
   }
+
+  bool get _isValid => _formKey.currentState!.validate();
 }

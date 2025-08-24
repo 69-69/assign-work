@@ -10,10 +10,10 @@ class AccessControlRepository {
   AccessControlRepository(this._firestore);
 
   /// Fetches workspace licenses (subscriptions) for a given workspace.
-  Future<LoadResult<String>> fetchLicensesForSubscription(
+  Future<LoadResult<String, String>> fetchLicensesForSubscription(
     String subscriptionId,
   ) async {
-    final noData = LoadResult<String>(meta: 'unknown', data: {});
+    final noData = LoadResult<String, String>(meta: 'unknown', data: {});
 
     final doc = await _genericCollection(
       subscriptionDBCollectionPath,
@@ -40,17 +40,17 @@ class AccessControlRepository {
         .whereType<String>()
         .toSet();
 
-    return LoadResult<String>(meta: subscriptionName, data: licenses);
+    return LoadResult<String, String>(meta: subscriptionName, data: licenses);
     // return List<String>.from(data['licenses']).toSet();
   }
 
   /// Fetches permissions for a given role within a workspace context.
-  Future<LoadResult<String>> fetchPermissionsForRole(
+  Future<LoadResult<String, String>> fetchPermissionsForRole(
     String roleId, {
     String? workspaceId,
     String? workspaceRole,
   }) async {
-    final noData = LoadResult<String>(meta: 'unknown', data: {});
+    final noData = LoadResult<String, String>(meta: 'unknown', data: {});
 
     if (workspaceId == null || workspaceRole == null) {
       return noData;
@@ -82,7 +82,7 @@ class AccessControlRepository {
         .whereType<String>()
         .toSet();
 
-    return LoadResult<String>(meta: roleName, data: permissions);
+    return LoadResult<String, String>(meta: roleName, data: permissions);
   }
 
   /// Provides a Firestore CollectionReference to the roles collection.

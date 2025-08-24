@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -102,7 +103,7 @@ class _ListDeliveriesState extends State<ListDeliveries> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        context.buildTotalItems(
+        context.actionInfoButton(
           'Refresh Deliveries',
           label: 'Deliveries',
           count: deliveries.length,
@@ -219,12 +220,12 @@ class _IssueMultiDelete extends StatelessWidget {
     );
   }
 
-  ElevatedButton _buildDeleteButton(BuildContext context) {
-    return ElevatedButton.icon(
+  _buildDeleteButton(BuildContext context) {
+    return context.elevatedIconBtn(
+      Icon(Icons.delete, color: kLightColor),
       style: OutlinedButton.styleFrom(
         backgroundColor: context.colorScheme.error,
       ),
-      icon: const Icon(Icons.delete, color: kLightColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

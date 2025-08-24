@@ -10,10 +10,10 @@ import 'package:printing/printing.dart';
 
 /// Print Request For Quotation [PrintRFQ]
 class PrintRequestForQuotation {
-  final List<RequestForQuotation> quotes;
+  final RequestForQuotation quote;
   final Supplier supplier;
 
-  PrintRequestForQuotation({required this.quotes, required this.supplier});
+  PrintRequestForQuotation({required this.quote, required this.supplier});
 
   void onPrintRFQ() {
     // Direct-Printing: This is where we print the document
@@ -30,18 +30,18 @@ class PrintRequestForQuotation {
 
   // Sample function to aggregate Request For Quotation data
   List<PrintItem> _generateRFQ() {
-    final invoiceProducts = quotes.asMap().entries.map((entry) {
+    final invoiceProducts = quote.lineItems.asMap().entries.map((entry) {
       // final index = entry.key;
-      final order = entry.value;
+      final item = entry.value;
 
       return PrintItem(
-        sku: order.supplierId,
-        productName: _toCap(order.productName),
-        unitPrice: order.unitPrice,
-        quantity: order.quantity,
-        discountPercent: order.discountPercent,
-        validityDate: order.getDeliveryDate,
-        taxPercent: order.taxPercent,
+        sku: quote.supplierId,
+        itemName: _toCap(item.itemName),
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        discountPercent: item.discountPercent,
+        validityDate: quote.getDeliveryDate,
+        taxPercent: quote.taxPercent,
         paymentTerms: 'Not Specified',
       );
     }).toList();
@@ -51,12 +51,12 @@ class PrintRequestForQuotation {
   Future<Uint8List> _issuePrinting({
     PdfPageFormat format = PdfPageFormat.a4,
   }) async {
-    List<PrintItem> invoiceProducts = _generateRFQ();
+    List<PrintItem> invoiceItems = _generateRFQ();
 
     /// this.first or first references List<Quotes>
     final rfq = PrintRFQ2(
-      rfqNumber: quotes.first.rfqNumber,
-      products: invoiceProducts,
+      rfqNumber: quote.rfqNumber,
+      items: invoiceItems,
       supplierEmail: supplier.email,
       supplierName: _toCap(supplier.name),
       supplierAddress: _toCap(supplier.address),

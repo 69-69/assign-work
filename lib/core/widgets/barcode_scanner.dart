@@ -1,7 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_mobile_vision_2/flutter_mobile_vision_2.dart';
@@ -54,7 +55,7 @@ class BarcodeScannerWithTextField extends StatelessWidget {
       children: [
         Expanded(
           child: CustomTextField(
-            labelText: 'Barcode',
+            label: 'Barcode',
             controller: controller,
             onChanged: onChanged,
             keyboardType: TextInputType.text,
@@ -62,8 +63,8 @@ class BarcodeScannerWithTextField extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10.0),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.qr_code_scanner),
+        context.elevatedIconBtn(
+          const Icon(Icons.qr_code_scanner),
           onPressed: () {
             context.scanBarcode(
               barcode: (s) {

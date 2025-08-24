@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -5,7 +7,6 @@ import 'package:assign_erp/features/setup/data/models/company_stores_model.dart'
 import 'package:assign_erp/features/setup/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/screen/company/add/add_store_locations.dart';
-import 'package:assign_erp/features/setup/presentation/screen/company/update/update_store.dart';
 import 'package:assign_erp/features/setup/presentation/screen/company/widget/can_add_more_stores.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -28,12 +29,6 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       child: CustomScaffold(
         noAppBar: true,
         body: _buildBody(),
-        floatingActionButton: context.canAddMoreStores
-            ? context.buildFloatingBtn(
-                'Add Stores',
-                onPressed: () => context.openAddStoreLocations(),
-              )
-            : const SizedBox.shrink(),
         bottomNavigationBar: const SizedBox.shrink(),
       ),
     );
@@ -83,12 +78,27 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
   }
 
   _buildAnyWidget(List<CompanyStores> sales) {
-    return context.buildTotalItems(
-      'Refresh Stores',
-      label: 'Stores',
-      count: sales.length,
-      onPressed: () =>
-          context.read<CompanyStoresBloc>().add(RefreshSetups<CompanyStores>()),
+    return Wrap(
+      spacing: 10.0,
+      alignment: WrapAlignment.spaceBetween,
+      children: [
+        context.actionInfoButton(
+          'Refresh Stores',
+          label: 'Stores',
+          count: sales.length,
+          onPressed: () => context.read<CompanyStoresBloc>().add(
+            RefreshSetups<CompanyStores>(),
+          ),
+        ),
+        context.elevatedIconBtn(
+          Icon(Icons.store, color: kLightColor),
+          label: 'Add Stores',
+          tooltip: 'Company\'s Stores or Branches',
+          onPressed: () => context.openAddStoreLocations(),
+          bgColor: kDangerColor,
+          txtColor: kLightColor,
+        ),
+      ],
     );
   }
 
@@ -97,7 +107,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
 
   Future<void> _onEditTap(List<CompanyStores> stores, String id) async {
     final store = _findStoresById(stores, id);
-    await context.openUpdateStore(store: store);
+    await context.openAddStoreLocations(serverStore: store);
   }
 
   Future<void> _onDeleteTap(List<CompanyStores> stores, String id) async {
@@ -108,7 +118,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       if (mounted && isConfirmed) {
         /// Delete specific Store
         context.read<CompanyStoresBloc>().add(
-          DeleteSetup(documentId: store.id),
+          DeleteSetup<String>(documentId: store.id),
         );
       }
     }

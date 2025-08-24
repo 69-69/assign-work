@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -12,6 +13,7 @@ class CustomTab extends StatefulWidget {
   final double indicatorWeight;
   final List<Widget> children;
   final bool isScrollable;
+  final bool hideIcon;
   final bool isColoredTab;
   final bool isVerticalTab;
   final bool showScrollUpButton;
@@ -28,11 +30,12 @@ class CustomTab extends StatefulWidget {
     required this.tabs,
     this.length,
     required this.children,
+    this.hideIcon = true,
     this.isColoredTab = true,
     this.isScrollable = false,
     this.isVerticalTab = false,
     this.openThisTab = 0,
-    this.indicatorWeight = 6.0,
+    this.indicatorWeight = 1.0,
     this.onTapChanged,
     this.padding,
     this.showScrollUpButton = false,
@@ -47,7 +50,7 @@ class _CustomTabState extends State<CustomTab>
   late TabController _tabController;
   // late List<bool> _loadedTabs;
   Set<int> loadedTabs = {};
-  bool _isNavigationRailVisible = true; // State variable for toggle
+  bool _isNavigationRailVisible = false; // State variable for toggle
   get _length => widget.length ?? widget.tabs.length;
 
   @override
@@ -118,6 +121,7 @@ class _CustomTabState extends State<CustomTab>
     );
   }
 
+  // Left side vertical tabs
   Row _buildVerticalTabs(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,16 +130,16 @@ class _CustomTabState extends State<CustomTab>
           mainAxisSize: MainAxisSize.min,
           children: [
             // Toggle button for NavigationRail visibility
-            IconButton(
-              icon: Icon(
-                _isNavigationRailVisible
-                    ? Icons.arrow_back
-                    : Icons.arrow_forward,
-              ),
+            context.iconButton(
+              _isNavigationRailVisible
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
+              iconColor: kPrimaryLightColor,
+              tooltip:
+                  '${_isNavigationRailVisible ? 'Expand' : 'Collapse'} Navigation',
               onPressed: _toggleNavigationRail,
             ),
-            // Conditionally display the NavigationRail
-            if (_isNavigationRailVisible) Expanded(child: _buildSideNavRail()),
+            Expanded(child: _buildSideNavRail()),
           ],
         ),
         const VerticalDivider(thickness: 1, width: 1),
@@ -152,8 +156,9 @@ class _CustomTabState extends State<CustomTab>
       showScrollUpButton: widget.showScrollUpButton,
       child: SizedBox(
         height: context.screenHeight * 0.9,
+        width: _isNavigationRailVisible ? 50 : 100,
         child: NavigationRail(
-          indicatorColor: kLightBlueColor,
+          indicatorColor: kTransparentColor,
           selectedIndex: _tabController.index,
           onDestinationSelected: (index) {
             _tabController.animateTo(index);
@@ -163,12 +168,19 @@ class _CustomTabState extends State<CustomTab>
           // Set the visual properties for the selected destination
           selectedLabelTextStyle: const TextStyle(
             color: kPrimaryLightColor,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
           destinations: widget.tabs.map<NavigationRailDestination>((t) {
+            final icon = t['icon'];
+            final label = t['label'].toString().toTitleCase;
             return NavigationRailDestination(
-              icon: Icon(t['icon']),
-              label: Text(t['label'].toString().toTitleCase),
+              icon: Tooltip(message: label, child: Icon(icon)),
+              label: Text(
+                _isNavigationRailVisible ? '' : label,
+                textAlign: TextAlign.center,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 3),
+              selectedIcon: Icon(icon, color: kPrimaryLightColor),
             );
           }).toList(),
         ),
@@ -176,6 +188,7 @@ class _CustomTabState extends State<CustomTab>
     );
   }
 
+  // Top side horizontal tabs
   Widget _buildHorizontalTabs(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -192,7 +205,7 @@ class _CustomTabState extends State<CustomTab>
   Widget _buildColoredTabBar(BuildContext context) {
     return widget.isColoredTab
         ? ColoredBox(
-            color: context.colorScheme.secondaryContainer, // kLightBlueColor
+            color: context.secondaryContainerColor,
             child: _buildTabBar(context),
           ).addNeumorphism()
         : _buildTabBar(context);
@@ -231,19 +244,26 @@ class _CustomTabState extends State<CustomTab>
       controller: _tabController,
       isScrollable: widget.isScrollable,
       indicatorSize: TabBarIndicatorSize.tab,
-      labelStyle: widget.isColoredTab
-          ? context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w400)
-          : context.textTheme.titleSmall,
-      padding:
-          widget.padding ?? const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
-      tabs: widget.tabs
-          .map<Widget>(
-            (t) => Tab(
-              text: t['label'].toString().toTitleCase,
-              icon: Icon(t['icon']),
-            ),
-          )
-          .toList(),
+      padding: widget.padding ?? EdgeInsets.zero,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w500),
+      labelColor: kPrimaryLightColor,
+      tabs: widget.tabs.map<Widget>((t) {
+        final label = t['label'].toString().toTitleCase;
+        final isActive = _tabController.index == widget.tabs.indexOf(t);
+        return Tab(
+          text: label,
+          icon: widget.hideIcon
+              ? null
+              : Tooltip(
+                  message: label,
+                  child: Icon(
+                    t['icon'],
+                    color: isActive ? kPrimaryLightColor : null,
+                  ),
+                ),
+          iconMargin: EdgeInsets.zero,
+        );
+      }).toList(),
       onTap: _handleTabTap,
     );
   }

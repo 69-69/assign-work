@@ -27,7 +27,7 @@ class GetOrders {
     return allData.data;
   }
 
-  /// Get by either orderNumber, customerId, productName [byAnyTerm]
+  /// Get by either orderNumber, customerId, itemName [byAnyTerm]
   /// @Return: `List<Orders>`
   static Future<List<Orders>> byAnyTerm(term) async {
     final ordersBloc = OrderBloc(firestore: FirebaseFirestore.instance);
@@ -37,7 +37,7 @@ class GetOrders {
       SearchInventory<Orders>(
         field: 'orderNumber',
         optField: 'customerId',
-        auxField: 'productName',
+        auxField: 'itemName',
         query: term,
       ),
     );

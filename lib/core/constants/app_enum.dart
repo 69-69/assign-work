@@ -1,4 +1,5 @@
-const worspaceCategories = [
+const workspaceCategories = [
+  'Select Business type',
   'Retail Stores',
   'Pharmacies',
   'Healthcare',
@@ -6,7 +7,12 @@ const worspaceCategories = [
   'Wholesale',
   'Hospitality',
   'Construction',
+  'Transportation',
+  'Financial Services',
+  'Insurance',
+  'E-commerce',
   'Real Estate Firms',
+  'IT, Telecommunications',
   'Logistics, Supply Chain',
   'Education',
   'Professional Services',
@@ -15,8 +21,25 @@ const worspaceCategories = [
   'Energy and Utilities',
 ];
 
+/// [paymentTerms] When the payment is due and if any discounts apply
 const paymentTerms = [
-  'payment terms',
+  'Select Payment terms',
+  'Net 15 – Full payment due within 15 days of invoice',
+  'Net 30 – Full payment due within 30 days of invoice',
+  'Net 45 – Full payment due within 45 days of invoice',
+  'Net 60 – Full payment due within 60 days of invoice',
+  '2/10 Net 30 – 2% discount if paid within 10 days; full due in 30 days',
+  '50% Advance, 50% on Delivery – Partial upfront payment, remainder on delivery',
+  'Cash on Delivery (COD) – Full payment upon delivery',
+  'Due on Receipt – Full payment due immediately upon invoicing',
+  'Cash in Advance (CIA) – Full payment before delivery',
+  'Milestone Payments – Based on project phases or deliverables',
+  'Other – Specify in Notes',
+];
+
+/// [paymentMethod] How the payment is made (the financial instrument or channel)
+const paymentMethod = [
+  'Select Payment method',
   'cash',
   'credit',
   'cheque',
@@ -30,7 +53,7 @@ const paymentTerms = [
 ];
 
 const currencyType = [
-  'currency',
+  'Select currency',
   'GHC',
   'USD',
   'EUR',
@@ -44,7 +67,7 @@ const currencyType = [
 ];
 
 const paymentStatus = [
-  'payment status',
+  'Select Payment status',
   'unpaid',
   'fully paid',
   'installment',
@@ -52,7 +75,7 @@ const paymentStatus = [
 ];
 
 const invoiceType = [
-  'invoice type',
+  'Select Invoice type',
   'proforma invoice',
   'final invoice',
   'purchase order',
@@ -60,13 +83,20 @@ const invoiceType = [
   'receipt',
 ];
 
-const category = ['category', 'small', 'medium', 'large', 'x-large', 'general'];
+const itemCategory = [
+  'Select category',
+  'small',
+  'medium',
+  'large',
+  'x-large',
+  'general',
+];
 
 /// Sales Statuses
-const saleStatus = ['sale status', 'pending', 'completed', 'returned'];
+const saleStatus = ['Select Sale status', 'pending', 'completed', 'returned'];
 
 const deliveryTypes = [
-  'delivery type',
+  'Select Delivery type',
   'in-person',
   'car',
   'motor rider',
@@ -83,7 +113,7 @@ const deliveryTypes = [
 
 /// Delivery Statuses
 const deliveryStatus = [
-  'delivery status',
+  'Select Delivery status',
   'pending',
   'packed',
   'shipped / dispatched', // dispatched
@@ -106,17 +136,17 @@ const _rFqPrStatus = [
 ];
 
 /// Request For Quotation Statuses
-const requestForQuoteStatus = ['quote status', ..._rFqPrStatus];
+const requestForQuoteStatus = ['Select Quote status', ..._rFqPrStatus];
 
 /// Purchase Requisition Statuses
-const requisitionStatus = ['requisition status', ..._rFqPrStatus];
+const requisitionStatus = ['Select Requisition status', ..._rFqPrStatus];
 
 /// Orders Sources
 const orderSources = ['order source', 'website', 'in store', 'mobile app'];
 
 /// Orders (SO) Statuses
 const orderStatus = [
-  'order status',
+  'Select Order status',
   'pending',
   'processing',
   'production',
@@ -128,7 +158,7 @@ const orderStatus = [
 
 /// Purchase Order (PO) Statuses
 const purchaseOrderStatus = [
-  'order status',
+  'Select Order status',
   'draft',
   'pending approval',
   'approved',
@@ -144,11 +174,15 @@ const purchaseOrderStatus = [
 ];
 
 /// Sale Order: SO
-final List<String> orderTypes = ['order type', 'sales order', 'return order'];
+final List<String> orderTypes = [
+  'Select Order type',
+  'sales order',
+  'return order',
+];
 
 /// Miscellaneous Orders: any types of orders
 final List<String> miscOrderTypes = [
-  'order type',
+  'Select Order type',
   'return order',
   'transfer order',
   'work order',
@@ -160,6 +194,34 @@ final List<String> miscOrderTypes = [
   'subscription order',
 ];
 
+/// [departmentsList] List of Departments in the company
+final List<String> departmentsList = [
+  'Select Internal departments',
+  'Bakery',
+  'Produce',
+  'Butchery / Meat',
+  'Seafood',
+  'Grocery',
+  'Dairy',
+  'Frozen Foods',
+  'Beverages',
+  'Health & Beauty',
+  'Pharmacy',
+  'Household Supplies',
+  'Maintenance',
+  'Facilities',
+  'Warehouse / Stockroom',
+  'Receiving',
+  'Cash Office',
+  'Customer Service',
+  'IT / Technical',
+  'Finance / Accounting',
+  'HR / Admin',
+  'Security',
+  'Store Management',
+  'other',
+];
+
 /// User Guide Categories
 final List<String> userGuideCategories = [
   'agent',
@@ -167,5 +229,6 @@ final List<String> userGuideCategories = [
   'pos',
   'crm',
   'inventory',
+  'procurement',
   'warehouse',
 ];

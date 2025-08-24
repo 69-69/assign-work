@@ -39,8 +39,18 @@ extension SizeConfig on BuildContext {
   /// Get screen width [screenWidth]
   double get screenWidth => mediaSize.width;
 
+  /// Get screen width by provided size [screenWidth]
+  /// USAGE: context.dynamicWidth(0.5);
+  double dynamicWidth(double size) =>
+      isMobile ? mediaSize.width : mediaSize.width * size;
+
   /// Get screen height [screenHeight]
   double get screenHeight => mediaSize.height;
+
+  /// Get screen height by provided size [screenHeight]
+  /// USAGE: context.dynamicHeight(0.5);
+  double dynamicHeight(double size) =>
+      isMobile ? mediaSize.height : mediaSize.height * size;
 
   /// Large screens >=1100 (desktop, TV) [isDesktop]
   bool get isDesktop => screenWidth >= 1100;
@@ -57,28 +67,21 @@ extension SizeConfig on BuildContext {
   /// Is a large screen or tablet [isLargeScreen]
   bool get isLargeScreen => screenWidth >= 650;
 
-  /// Responsive Text-Size: Change size based on ScreenSize [textScaleFactor]
-  double get textScaleFactor => max(1, min((screenWidth / 1400) * 2.0, 2.0));
+  /// Responsive Text-Size: Change size based on ScreenSize [textScaleFactor] 1400
+  double get textScaleFactor => max(1, min((screenWidth / 1700) * 2.0, 2.0));
 
   /// Get Screen/Device Orientation either in Landscape or portrait mode [orientation]
   Orientation get orientation => mediaQueryData.orientation;
 
-  /// Screen/Device Orientation is in Landscape mode [isLandscapeMode]
-  bool get isLandscapeMode =>
-      mediaQueryData.orientation == Orientation.landscape;
+  /// Screen/Device Orientation is in Landscape mode (Longest Screen/Device width) [isLandscapeMode]
+  bool get isLandscapeMode => orientation == Orientation.landscape;
 
-  /// Screen/Device Orientation is in portrait mode [isPortraitMode]
-  bool get isPortraitMode => mediaQueryData.orientation == Orientation.portrait;
+  /// Screen/Device Orientation is in portrait mode (Shortest Screen/Device width) [isPortraitMode]
+  bool get isPortraitMode => orientation == Orientation.portrait;
 
   /// Get magnitudes of the Screen/Device width and the height [mediaLongSize]
-  double get mediaLongSize => mediaSize.longestSide;
+  double get isMediaLongSize => mediaSize.longestSide;
 
   /// Get magnitudes of the Screen/Device width and the height [mediaShortSize]
-  double get mediaShortSize => mediaSize.shortestSide;
-
-  /// Check if its the Longest Screen/Device width [isMediaLongSize]
-  bool get isMediaLongSize => orientation == Orientation.landscape;
-
-  /// Check if its the Shortest Screen/Device width [isMediaShortSize]
-  bool get isMediaShortSize => orientation == Orientation.portrait;
+  double get isMediaShortSize => mediaSize.shortestSide;
 }

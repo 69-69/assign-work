@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -98,7 +99,7 @@ class _ListFinanceState extends State<ListFinance> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        context.buildTotalItems(
+        context.actionInfoButton(
           'Refresh Finance',
           label: 'Finance',
           count: orders.length,
@@ -246,7 +247,7 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
         runAlignment: WrapAlignment.start,
         crossAxisAlignment: WrapCrossAlignment.start,
         children: [
-          _buildPrintButton(),
+          _buildPrintButton(context),
           _buildNote(),
           _buildDeleteButton(context),
         ],
@@ -254,8 +255,9 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
     );
   }
 
-  ElevatedButton _buildPrintButton() {
-    return ElevatedButton.icon(
+  _buildPrintButton(BuildContext context) {
+    return context.elevatedIconBtn(
+      Icon(Icons.print, color: kWarningColor),
       style: ElevatedButton.styleFrom(
         shape: const RoundedRectangleBorder(
           side: BorderSide(color: kWarningColor),
@@ -270,7 +272,6 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
           customer: cus,
         ).onPrintIn(title: 'proforma invoice');
       },
-      icon: const Icon(Icons.print, color: kWarningColor),
       label: const Text('Print', style: TextStyle(color: kWarningColor)),
     );
   }
@@ -284,18 +285,18 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
     );
   }
 
-  ElevatedButton _buildDeleteButton(BuildContext context) {
-    return ElevatedButton.icon(
+  _buildDeleteButton(BuildContext context) {
+    return context.elevatedIconBtn(
+      Icon(Icons.delete, color: kLightColor),
       style: OutlinedButton.styleFrom(
         backgroundColor: context.colorScheme.error,
       ),
-      icon: const Icon(Icons.delete, color: kLightColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {
           final ids = orders.map((o) => o.id).toList();
 
-          // Remove order from Orders-DB
+          // Remove all selected orders
           OrderBloc(
             firestore: FirebaseFirestore.instance,
           ).add(DeleteInventory<List<String>>(documentId: ids));

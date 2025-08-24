@@ -4,6 +4,7 @@ import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/barcode_scanner.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
@@ -11,7 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_products.dart';
+import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_items.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_order_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
@@ -46,7 +47,7 @@ class ScanToAddOrder extends StatelessWidget {
         if (deviceOS.android || deviceOS.ios) {
           await _scanProduct(context);
         } else {
-          await context.showProductScanWarningDialog();
+          await context.showItemScanWarningDialog();
         }
       },
     );
@@ -62,7 +63,7 @@ class ScanToAddOrder extends StatelessWidget {
       barcode: (s) async {
         if (s.isNotEmpty) {
           // Fetch product by barcode
-          final product = await GetProducts.findByBarcode(s.trim());
+          final product = await GetItems.findByBarcode(s.trim());
 
           if (context.mounted && product != null) {
             // Maps each product's ID to its cost price for sales recording purposes
@@ -73,14 +74,14 @@ class ScanToAddOrder extends StatelessWidget {
               customerId: '',
               status: 'completed',
               barcode: product.barcode,
-              productId: product.id,
-              productName: product.name,
+              itemId: product.id,
+              itemName: product.name,
               unitPrice: product.sellingPrice,
               quantity: 1,
               discountAmount: product.discountAmt,
               discountPercent: product.discountPercent,
               totalAmount: (product.sellingPrice - product.discountAmt),
-              paymentMethod: 'cash',
+              payMethod: 'cash',
               storeNumber: context.employee!.storeNumber,
               createdBy: context.employee!.fullName,
             );
@@ -109,16 +110,16 @@ class ScanToAddOrder extends StatelessWidget {
       child: _ScannedItems(
         orders: _orders,
         costPrices: _costPricesMap,
-        existingQuantity: (String productId, int qty) {
-          _existingQuantityUpdate(productId, qty);
+        existingQuantity: (String itemId, int qty) {
+          _existingQuantityUpdate(itemId, qty);
         },
       ),
     );
   }
 
-  void _existingQuantityUpdate(String productId, int qty) {
-    if (productId.isNotEmpty) {
-      final index = _orders.indexWhere((order) => order.productId == productId);
+  void _existingQuantityUpdate(String itemId, int qty) {
+    if (itemId.isNotEmpty) {
+      final index = _orders.indexWhere((order) => order.itemId == itemId);
 
       // Order exists, update quantity
       if (index != -1) {
@@ -167,7 +168,7 @@ class ScanToAddOrder extends StatelessWidget {
     // Check if an order with the same product ID or barcode exists
     final index = _orders.indexWhere(
       (existingOrder) =>
-          existingOrder.productId == newOrder.productId ||
+          existingOrder.itemId == newOrder.itemId ||
           existingOrder.barcode == newOrder.barcode,
     );
 
@@ -239,7 +240,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
         totalAmount: newTotalAmount,
       );
 
-      widget.existingQuantity(order.productId, order.quantity);
+      widget.existingQuantity(order.itemId, order.quantity);
     });
   }
 
@@ -247,7 +248,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
     var ord = _orders[index];
     setState(() => _orders.removeAt(index));
 
-    widget.existingQuantity(ord.productId, 0);
+    widget.existingQuantity(ord.itemId, 0);
   }
 
   // Adding an item at specific index
@@ -343,13 +344,12 @@ class _ScannedItemsState extends State<_ScannedItems> {
 
   ListTile _buildProductCard(POSOrder order, int index) {
     return ListTile(
-      // key: ValueKey('${order.productId}$index'),
       dense: true,
       contentPadding: EdgeInsets.zero,
       minTileHeight: 48,
       title: Text(
         softWrap: true,
-        order.productName.toTitleCase,
+        order.itemName.toTitleCase,
         style: context.textTheme.titleMedium,
       ),
       subtitle: Text(
@@ -377,7 +377,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
       minTileHeight: 48,
       title: Text(
         softWrap: true,
-        order.productName.toTitleCase,
+        order.itemName.toTitleCase,
         style: context.textTheme.titleMedium,
       ),
       subtitle: Text(
@@ -394,11 +394,11 @@ class _ScannedItemsState extends State<_ScannedItems> {
     Widget? child,
   }) {
     return Dismissible(
-      key: ValueKey('${order.productId}$index'),
+      key: ValueKey('${order.itemId}$index'),
       direction: DismissDirection.endToStart,
       behavior: HitTestBehavior.translucent,
       background: _buildBackground(
-        kDangerColor.withAlpha((0.4 * 255).toInt()),
+        kDangerColor.toAlpha(0.4),
         Icons.delete,
         kDangerColor,
       ),
@@ -406,7 +406,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
         _removeOrderAt(index);
 
         context.showAlertOverlay(
-          '${order.productName.toUpperCaseAll} removed from list',
+          '${order.itemName.toUpperCaseAll} removed from list',
           label: 'Undo',
           onPressed: () => _addOrderAt(index, order),
         );
@@ -428,7 +428,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
           : DismissDirection.startToEnd,
       // Only allow start-to-end swipe when not in checkout mode
       secondaryBackground: _buildBackground(
-        kDangerColor.withAlpha((0.4 * 255).toInt()),
+        kDangerColor.toAlpha(0.4),
         Icons.arrow_back,
         kDangerColor,
       ),
@@ -452,9 +452,9 @@ class _ScannedItemsState extends State<_ScannedItems> {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
+          child: context.elevatedIconBtn(
+            const Icon(Icons.swap_horiz, color: kLightColor),
             onPressed: () {},
-            icon: const Icon(Icons.swap_horiz, color: kLightColor),
             label: Text(
               'Swipe to ${_continueToCheckout ? 'Checkout' : 'Continue'}',
               style: const TextStyle(color: kLightColor),
@@ -588,7 +588,7 @@ class _QtyCountState extends State<_QtyCount> {
       icon: Icon(icon, color: kPrimaryColor),
       style: IconButton.styleFrom(
         elevation: 20,
-        backgroundColor: kLightBlueColor.withAlpha((0.5 * 255).toInt()),
+        backgroundColor: kLightBlueColor.toAlpha(0.5),
         padding: EdgeInsets.zero,
       ),
       onPressed: onPressed,

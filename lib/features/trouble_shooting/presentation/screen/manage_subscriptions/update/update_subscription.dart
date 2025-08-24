@@ -134,8 +134,8 @@ class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
           EffectiveAndExpiryDateInput(
             labelExpiry: "Expiry date",
             labelManufacture: "Effective date",
-            serverExpiryDate: _subscription.getExpiresOn,
-            serverEffectiveDate: _subscription.getEffectiveFrom,
+            initialExpiryDate: _subscription.getExpiresOn,
+            initialEffectiveDate: _subscription.getEffectiveFrom,
             onExpiryChanged: (d) => setState(() => _selectedExpiryDate = d),
             onEffectiveChanged: (d) =>
                 setState(() => _selectedEffectiveDate = d),

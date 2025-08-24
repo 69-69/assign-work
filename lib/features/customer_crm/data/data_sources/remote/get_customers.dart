@@ -7,6 +7,15 @@ class GetAllCustomers {
   // Dispatch an event to load the data
   // static final customerBloc = CustomerAccountBloc(firestore: FirebaseFirestore.instance);
 
+  static Future<CustomersLoaded<Customer>> _dataLoadedState(
+    CustomerBloc bloc,
+  ) async {
+    return await bloc.stream.firstWhere(
+          (state) => state is CustomersLoaded<Customer>,
+        )
+        as CustomersLoaded<Customer>;
+  }
+
   static Future<List<Customer>> load() async {
     final customerBloc = CustomerAccountBloc(
       firestore: FirebaseFirestore.instance,
@@ -16,13 +25,9 @@ class GetAllCustomers {
     customerBloc.add(GetCustomers<Customer>());
 
     // Ensure to wait for the data to be loaded
-    final state =
-        await customerBloc.stream.firstWhere(
-              (state) => state is CustomerLoaded<Customer>,
-            )
-            as CustomerLoaded<Customer>;
+    final state = await _dataLoadedState(customerBloc);
 
-    return state.data.isEmpty ? [Customer.notFound] : state.data;
+    return state.data;
   }
 
   /// Get by either customerId, name, phone_number [byAnyTerm]
@@ -43,13 +48,9 @@ class GetAllCustomers {
     );
 
     // Ensure to wait for the data to be loaded
-    final state =
-        await customerBloc.stream.firstWhere(
-              (state) => state is CustomerLoaded<Customer>,
-            )
-            as CustomerLoaded<Customer>;
+    final state = await _dataLoadedState(customerBloc);
 
-    return state.data.isEmpty ? [Customer.notFound] : state.data;
+    return state.data;
   }
 
   static Future<Customer> byCustomerId(customerId) async {
@@ -65,9 +66,9 @@ class GetAllCustomers {
     // Ensure to wait for the data to be loaded
     final state =
         await customerBloc.stream.firstWhere(
-              (state) => state is SingleCustomerLoaded<Customer>,
+              (state) => state is CustomerLoaded<Customer>,
             )
-            as SingleCustomerLoaded<Customer>;
+            as CustomerLoaded<Customer>;
 
     return state.data.isEmpty ? Customer.notFound : state.data;
   }

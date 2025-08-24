@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/bloc/product/product_bloc.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/bloc/item/item_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +23,8 @@ class _ReportScreenState extends State<ReportScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          ProductBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetInventories<Product>()),
+          ItemBloc(firestore: FirebaseFirestore.instance)
+            ..add(GetInventories<Item>()),
       child: CustomScrollBar(
         controller: _scrollController,
         child: _buildBody(),
@@ -32,25 +32,23 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  BlocBuilder<ProductBloc, InventoryState<Product>> _buildBody() {
-    return BlocBuilder<ProductBloc, InventoryState<Product>>(
+  BlocBuilder<ItemBloc, InventoryState<Item>> _buildBody() {
+    return BlocBuilder<ItemBloc, InventoryState<Item>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingInventory<Product>() => context.loader,
-          InventoriesLoaded<Product>(data: var results) =>
+          LoadingInventory<Item>() => context.loader,
+          InventoriesLoaded<Item>(data: var results) =>
             results.isEmpty
                 ? context.buildNoResult()
                 : _buildReportContent(context, results),
-          InventoryError<Product>(error: var error) => context.buildError(
-            error,
-          ),
+          InventoryError<Item>(error: var error) => context.buildError(error),
           _ => const SizedBox.shrink(),
         };
       },
     );
   }
 
-  Widget _buildReportContent(BuildContext context, List<Product> products) {
+  Widget _buildReportContent(BuildContext context, List<Item> products) {
     const sizedBox = SizedBox(height: 20.0);
     var height = 300.0;
 
@@ -93,7 +91,7 @@ class _ReportScreenState extends State<ReportScreen> {
     ),
   );
 
-  BarChartData _buildInventoryChart(List<Product> products) {
+  BarChartData _buildInventoryChart(List<Item> products) {
     return BarChartData(
       barGroups: products
           .map(
@@ -114,7 +112,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  BarChartData _buildSalesChart(List<Product> products) {
+  BarChartData _buildSalesChart(List<Item> products) {
     return BarChartData(
       barGroups: products
           .map(
@@ -135,7 +133,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  LineChartData _buildTurnoverRateChart(List<Product> products) {
+  LineChartData _buildTurnoverRateChart(List<Item> products) {
     return LineChartData(
       lineBarsData: [
         LineChartBarData(
@@ -158,7 +156,7 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  LineChartData _buildForecastChart(List<Product> products) {
+  LineChartData _buildForecastChart(List<Item> products) {
     return LineChartData(
       lineBarsData: products.map((product) {
         return LineChartBarData(
@@ -174,7 +172,7 @@ class _ReportScreenState extends State<ReportScreen> {
           barWidth: 4.0,
           belowBarData: BarAreaData(
             show: true,
-            color: kWarningColor.withAlpha((0.3 * 255).toInt()),
+            color: kWarningColor.toAlpha(0.3),
           ),
         );
       }).toList(),

@@ -9,7 +9,7 @@ extension ProcurementTiles on dynamic {
   List<DashboardTile> get supplierManagementTiles {
     final tilesData = [
       {
-        'label': 'supplier - account',
+        'label': 'suppliers - account',
         'icon': Icons.account_balance,
         'action': RouteNames.supplierAccount,
         'param': {},
@@ -17,7 +17,7 @@ extension ProcurementTiles on dynamic {
         'description': 'create and manage supplier accounts',
       },
       {
-        'label': 'supplier - evaluation',
+        'label': 'suppliers - evaluation',
         'icon': Icons.star_half_outlined,
         'action': RouteNames.supplierEvaluation,
         'param': {},
@@ -76,7 +76,7 @@ extension ProcurementTiles on dynamic {
             'manage internal request by departments for needed items before a PO is created',
       },
       {
-        'label': 'request - for quotation',
+        'label': 'request - for quotes',
         'icon': Icons.request_page_outlined,
         'action': RouteNames.proRequestForQuote,
         'param': {},
@@ -93,7 +93,7 @@ extension ProcurementTiles on dynamic {
         'description': 'generate POs to suppliers to request goods or services',
       },
       {
-        'label': 'supplier - management',
+        'label': 'suppliers - management',
         'icon': Icons.store_mall_directory_outlined,
         'action': RouteNames.supplierManagement,
         'param': {},
@@ -109,6 +109,7 @@ extension ProcurementTiles on dynamic {
 
     return defaultTiles;
   }
+
   /*
 Yes — **each of those modules** in your procurement system **requires its own form info (data capture)** to fulfill its role effectively. Below is a detailed explanation of **what kind of form data you need for each module**:
 
@@ -176,7 +177,7 @@ Yes — **each of those modules** in your procurement system **requires its own 
 * Purpose of request
 * Line items:
 
-  * Product name or category
+  * Item name or category
   * Estimated quantity
   * Reason
 * Attachments (e.g., memos, specs)

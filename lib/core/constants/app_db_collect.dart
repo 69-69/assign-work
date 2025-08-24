@@ -50,8 +50,8 @@ const rolesDBCollectionPath = 'roles_db';
 /// Firebase collection for invoices
 const invoiceDBCollectionPath = 'invoice_inventory_db';
 
-/// Firebase collection for products
-const productsDBCollectionPath = 'products_inventory_db';
+/// Firebase collection for items
+const itemsDBCollectionPath = 'items_inventory_db';
 
 /// Firebase collection for sales records
 const salesDBCollectionPath = 'sales_inventory_db';
@@ -96,17 +96,20 @@ const employeesDBCollectionPath = 'employee_account_db';
 // for tracking employees auth sessions
 const employeeSessionLogsCollectionPath = 'employee_session_logs';
 
+/// Firebase collection for company departments
+const departmentsDBCollectionPath = 'departments_db';
+
 /// Firebase collection for company store locations/branches (Multi-Locations Feature)
 const storeLocationsDBCollectionPath = 'store_locations_db';
 
 /// Firebase collection for general company information setup: logo, name, address, etc.
 const companyInfoDBCollectionPath = 'company_info_db';
 
-/// Firebase collection for product suppliers
-const supplierDBCollectionPath = 'product_suppliers_db';
+/// Firebase collection for item/product suppliers
+const supplierDBCollectionPath = 'item_suppliers_db';
 
-/// Firebase collection for product categories
-const categoryDBCollectionPath = 'product_categories_db';
+/// Firebase collection for item/product categories
+const categoryDBCollectionPath = 'item_categories_db';
 
 // ---------------------------
 // 🧾 POS (Point of Sale) System

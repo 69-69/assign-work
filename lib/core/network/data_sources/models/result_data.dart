@@ -21,9 +21,9 @@ class Failure<T> extends Result<T> {
 /// 2. [meta] - Optional metadata related to the fetched data (e.g., role name, status, etc.).
 ///
 /// The metadata type is generic (T), allowing flexibility in the kind of metadata it holds.
-class LoadResult<T> {
+class LoadResult<T, K> {
   /// [data] The data that is fetched (usually a `Set<String>`).
-  final Set<String> data;
+  final Set<K> data;
 
   /// [meta] Optional metadata related to the data (e.g., role name).
   final T? meta;

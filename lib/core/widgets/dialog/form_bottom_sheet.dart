@@ -10,6 +10,8 @@ class FormBottomSheet extends StatelessWidget {
   final Widget body;
   final String? subtitle;
   final Color? subTitleColor;
+  final double? initialChildSize;
+  final double? maxChildSize;
 
   const FormBottomSheet({
     super.key,
@@ -17,14 +19,16 @@ class FormBottomSheet extends StatelessWidget {
     required this.body,
     this.subtitle,
     this.subTitleColor,
+    this.initialChildSize,
+    this.maxChildSize,
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
-      initialChildSize: 0.9,
-      maxChildSize: 0.9,
+      initialChildSize: initialChildSize ?? 0.98,
+      maxChildSize: maxChildSize ?? 0.98,
       header: _buildHeader(context),
       child: _buildBody(context),
     );

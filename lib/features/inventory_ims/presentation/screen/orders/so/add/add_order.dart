@@ -15,8 +15,8 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/customer_crm/data/data_sources/remote/get_customers.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/order_model.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/widget/form_inputs.dart';
@@ -48,8 +48,8 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
   bool _isEnabledTotalAmt = false;
   String _newSONumber = '';
   String _selectedCustomerId = '';
-  String _selectedProductId = '';
-  String _selectedProductName = '';
+  String _selectedItemId = '';
+  String _selectedItemName = '';
   String? _selectedOrderStatus;
   String? _selectedOrderType;
   String? _selectedPaymentMethod;
@@ -107,11 +107,11 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
   }
 
   // Updates the product details in the Form by setting the unit price,
-  // product ID, & name based on the provided Product instance.
-  set _setProductId(Product p) {
+  // item ID, & name based on the provided Product instance.
+  set _setItemId(Item p) {
     _unitPriceController.text = '${p.sellingPrice}';
-    _selectedProductId = p.id;
-    _selectedProductName = p.name;
+    _selectedItemId = p.id;
+    _selectedItemName = p.name;
   }
 
   void _toggleCheckbox(bool? value) {
@@ -134,13 +134,13 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
     status: _selectedOrderStatus ?? '',
     barcode: _barcodeController.text,
     orderType: _selectedOrderType ?? '',
-    productId: _selectedProductId,
-    productName: _selectedProductName,
+    itemId: _selectedItemId,
+    itemName: _selectedItemName,
     customerId: _selectedCustomerId,
     quantity: int.tryParse(_quantityController.text) ?? 0,
     unitPrice: _strToDouble(_unitPriceController.text),
     deliveryAmount: _strToDouble(_deliveryAmountController.text),
-    paymentTerms: _selectedPaymentMethod ?? '',
+    paymentMethod: _selectedPaymentMethod ?? '',
     paymentStatus: _selectedPaymentStatus ?? '',
     discountPercent: _strToDouble(_discountPercentController.text),
     taxPercent: _strToDouble(_taxPercentController.text),
@@ -205,9 +205,9 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
     _deliveryAmountController.clear();
     _taxPercentController.clear();
     _amountPaidController.clear();
-    _selectedProductId = '';
+    _selectedItemId = '';
     _selectedOrderSource = '';
-    _selectedProductName = '';
+    _selectedItemName = '';
     _selectedPaymentStatus = null;
     _selectedOrderType = null;
     _selectedPaymentMethod = null;
@@ -256,14 +256,14 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      '${o.productName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
+                      '${o.itemName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
                           .toTitleCase,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    deleteButtonTooltipMessage: 'Remove ${o.productName}',
-                    backgroundColor: kGrayColor.withAlpha((0.3 * 255).toInt()),
+                    deleteButtonTooltipMessage: 'Remove ${o.itemName}',
+                    backgroundColor: kGrayColor.toAlpha(0.3),
                     deleteIcon: const Icon(
                       size: 16,
                       Icons.clear,
@@ -277,42 +277,24 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
     );
   }
 
+  _buildSONumber() => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh SO Number',
+        count: _newSONumber,
+        bgColor: kPrimaryColor,
+        isTotal: false,
+        onPressed: _generateSONumber,
+      ),
+    ),
+  );
+
   _buildBody() {
     return Column(
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            RichText(
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: 'Order Number:\n',
-                style: context.textTheme.titleLarge?.copyWith(
-                  overflow: TextOverflow.ellipsis,
-                  fontWeight: FontWeight.bold,
-                ),
-                children: [
-                  TextSpan(
-                    text: _newSONumber,
-                    style: context.textTheme.titleLarge?.copyWith(
-                      overflow: TextOverflow.ellipsis,
-                      color: kDangerColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            FittedBox(
-              child: context.buildRefreshButton(
-                'Refresh Order Number',
-                onPressed: _generateSONumber,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 10.0),
+        _buildSONumber(),
+        const SizedBox(height: 10.0),
         CustomerIDInput(
           onChanged: (id, name) async {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
@@ -328,12 +310,12 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
           },
         ),
         const SizedBox(height: 20.0),
-        ProductIdAndQuantityInput(
+        ItemIdAndQuantityInput(
           qtyController: _quantityController,
           onQtyChanged: (_) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
-          onChanged: (product) => setState(() => _setProductId = product),
+          onChanged: (item) => setState(() => _setItemId = item),
         ),
         const SizedBox(height: 20.0),
         SubTotalAndUnitPriceInput(
@@ -348,9 +330,9 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
         ),
         const SizedBox(height: 20.0),
         OrderStatusAndTypesDropdown(
-          serverType: _selectedOrderType,
+          initialType: _selectedOrderType,
           onTypeChange: (t) => setState(() => _selectedOrderType = t),
-          serverStatus: _selectedOrderStatus,
+          initialStatus: _selectedOrderStatus,
           onStatusChange: (s) => setState(() => _selectedOrderStatus = s),
         ),
         const SizedBox(height: 20.0),
@@ -394,8 +376,8 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
         const SizedBox(height: 20.0),
         DeliveryAmtPaymentMethodInput(
           deliveryController: _deliveryAmountController,
-          serverValue: _selectedPaymentMethod,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          initialPayMethod: _selectedPaymentMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPaymentMethod = s),
           onChanged: (s) {
             _calculateTotalAmount();
             if (_formKey.currentState!.validate()) setState(() {});

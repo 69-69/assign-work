@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_enum.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
 /// Title & Category TextField [TitleCategoryInput]
@@ -52,11 +52,11 @@ class GuideCategoryDropdown extends StatelessWidget {
       ...userGuideCategories,
     ];
 
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: categoryList,
-      labelText: 'guide category',
-      serverValue: serverCategory,
+      label: 'guide category',
+      initialValue: serverCategory,
       onValueChange: (String? v) => onCategoryChange(v),
     );
   }
@@ -74,7 +74,7 @@ class DescTextField extends StatelessWidget {
     return CustomTextField(
       controller: descController,
       onChanged: onDescChanged,
-      labelText: 'Description...',
+      label: 'Description...',
       helperText: 'Optional',
       keyboardType: TextInputType.multiline,
       maxLines: 4,
@@ -93,7 +93,7 @@ class UrlTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Youtube URL',
+      label: 'Youtube URL',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.url,
@@ -111,7 +111,7 @@ class TitleTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Title',
+      label: 'Title',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,

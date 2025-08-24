@@ -1,16 +1,19 @@
 // WORKSPACE ROLE or ACCOUNT TYPE
 enum WorkspaceRole {
-  /// Role for creating first-time Agent Workspaces [onboarding].
+  /// Workspace Role for creating first-time Agent Workspaces [onboarding].
   onboarding,
 
-  /// Role for agents to manage their own and client's (tenants) workspaces [agentFranchise].
+  /// Workspace Role for agents to manage their own and client's (tenants) workspaces [agentFranchise].
   agentFranchise,
 
-  /// Role for paid subscribers (tenants) workspaces [subscriber].
-  subscriber,
+  /// Workspace Role for paid subscribers (tenants) workspaces [tenant].
+  tenant,
 
-  /// Role for developers to troubleshoot, manage tenants workspaces & subscriptions [developer].
+  /// Workspace Role for developers to troubleshoot, manage tenants workspaces & subscriptions [developer].
   developer,
+
+  /// Workspace Role for UnAuthorized/unknown/fake users [unknown].
+  unknown,
 }
 
 extension WorkspaceRoleExtension on WorkspaceRole {
@@ -19,8 +22,9 @@ extension WorkspaceRoleExtension on WorkspaceRole {
     var role = switch (this) {
       WorkspaceRole.onboarding => 'onboarding',
       WorkspaceRole.agentFranchise => 'agentFranchise',
-      WorkspaceRole.subscriber => 'subscriber',
+      WorkspaceRole.tenant => 'tenant',
       WorkspaceRole.developer => 'developer',
+      _ => 'unknown',
     };
     return role;
   }
@@ -42,9 +46,9 @@ extension WorkspaceRoleExtension on WorkspaceRole {
   WorkspaceRole get assign {
     return switch (this) {
       WorkspaceRole.onboarding => WorkspaceRole.agentFranchise,
-      WorkspaceRole.agentFranchise => WorkspaceRole.subscriber,
-      WorkspaceRole.developer => WorkspaceRole.developer,
-      _ => WorkspaceRole.subscriber,
+      WorkspaceRole.agentFranchise => WorkspaceRole.tenant,
+      WorkspaceRole.developer => WorkspaceRole.onboarding,
+      _ => WorkspaceRole.tenant,
     };
   }
 }

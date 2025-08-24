@@ -77,7 +77,7 @@ extension CustomerTiles on dynamic {
     final statementTile = DashboardTile.filter(defaultTiles, ['activities']);
 
     return {
-      EmployeeRole.storeOwner: defaultTiles,
+      EmployeeRole.businessOwner: defaultTiles,
       EmployeeRole.manager: defaultTiles,
       EmployeeRole.developer: defaultTiles,
       EmployeeRole.sale: defaultTiles,

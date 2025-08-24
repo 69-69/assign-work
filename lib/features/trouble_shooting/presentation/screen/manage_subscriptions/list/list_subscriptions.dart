@@ -74,7 +74,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
           'Create Subscription',
           onPressed: () async => await context.openCreateNewSubscription(),
           bgColor: kDangerColor,
-          color: kLightColor,
+          txtColor: kLightColor,
         ),
         if (_isChecked == true) ...{
           context.elevatedButton(
@@ -90,7 +90,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
               );
             },
             bgColor: kGrayBlueColor,
-            color: kLightColor,
+            txtColor: kLightColor,
           ),
         },
       ],

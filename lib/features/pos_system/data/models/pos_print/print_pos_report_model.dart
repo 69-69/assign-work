@@ -99,7 +99,7 @@ class PrintPOSReport {
   /// Computer Generate Notice [_computerGenerated]
   pw.Center _computerGenerated() => pw.Center(
     child: pw.Text(
-      'This is Computer Generated $_reportTitle',
+      'Electronic version - $_reportTitle',
       textAlign: pw.TextAlign.center,
     ),
   );

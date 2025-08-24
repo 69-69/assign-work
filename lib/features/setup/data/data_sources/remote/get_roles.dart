@@ -4,6 +4,11 @@ import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetRoles {
+  static Future<SetupsLoaded<Role>> _dataLoadedState(RoleBloc bloc) async {
+    return await bloc.stream.firstWhere((state) => state is SetupsLoaded<Role>)
+        as SetupsLoaded<Role>;
+  }
+
   static Future<List<Role>> load() async {
     // Ensure to wait for the data to be loaded
     final state =
@@ -13,6 +18,20 @@ class GetRoles {
             as SetupsLoaded<Role>;
 
     return state.data.isEmpty ? [] : state.data;
+  }
+
+  /// Get by either name [byAnyTerm]
+  /// @Return: `List<Role>`
+  static Future<List<Role>> byAnyTerm(term) async {
+    final itemBloc = RoleBloc(firestore: FirebaseFirestore.instance);
+
+    // Load all data initially to pass to the search delegate
+    itemBloc.add(SearchSetup<Role>(field: 'name', query: term));
+
+    // Ensure to wait for the data to be loaded
+    final state = await _dataLoadedState(itemBloc);
+
+    return state.data;
   }
 
   /*/// Get by RoleId [byRoleId]

@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
@@ -15,56 +14,90 @@ class ErrorLogs extends StatefulWidget {
 }
 
 class _ErrorLogsState extends State<ErrorLogs> {
+  List<ErrorLog> _logs = [];
+  final List<String> _selectedIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshLogs();
+  }
+
+  void _refreshLogs() {
+    setState(() {
+      _logs = ErrorLogCache().getLogs(); // ✅ Expecting List<ErrorLog>
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    return _buildCard(context);
+  }
+
+  Widget _buildCard(BuildContext context) {
+    return DynamicDataTable(
+      skip: false,
+      showIDToggle: true,
+      anyWidget: _anyWidget(),
+      headers: ErrorLog.dataTableHeader,
+      rows: _logs.map((l) => l.toListL()).toList(),
+      onDeleteTap: (row) async => await _onDeleteTap(row.first),
+      onAllChecked:
+          (
+            bool isChecked,
+            List<bool> isAllChecked,
+            List<List<String>> checkedRows,
+          ) {
+            setState(() {
+              _selectedIds.clear();
+              if (isChecked) {
+                _selectedIds.addAll(checkedRows.map((e) => e.first));
+              }
+            });
+          },
+    );
+  }
+
+  Widget _anyWidget() {
     return Wrap(
-      alignment: WrapAlignment.center,
+      spacing: 10.0,
+      runSpacing: 10.0,
+      runAlignment: WrapAlignment.spaceBetween,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: Text(
-            'Error Logs'.toUpperCaseAll,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: kPrimaryLightColor,
-              fontWeight: FontWeight.bold,
-              overflow: TextOverflow.ellipsis,
+        if (_selectedIds.isNotEmpty) ...[
+          context.elevatedIconBtn(
+            Icon(Icons.delete, color: kLightColor),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: context.colorScheme.error,
             ),
-            textScaler: TextScaler.linear(context.textScaleFactor * 0.8),
+            onPressed: () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (!isConfirmed) return;
+
+              for (final id in _selectedIds) {
+                await ErrorLogCache().clearById(id);
+              }
+
+              _selectedIds.clear();
+              _refreshLogs();
+            },
+            label: const Text(
+              'Delete all',
+              style: TextStyle(color: kLightColor),
+            ),
           ),
-        ),
-        _buildCard(context),
+        ],
       ],
     );
   }
 
-  List<ErrorLog> _errorLogs() => ErrorLogCache().getLogs();
+  Future<void> _onDeleteTap(String id) async {
+    if (id.isEmpty) return;
 
-  Widget _buildCard(BuildContext context) {
-    final logs = _errorLogs();
-
-    return DynamicDataTable(
-      skip: false,
-      showIDToggle: true,
-      headers: ErrorLog.dataTableHeader,
-      anyWidgetAlignment: WrapAlignment.end,
-      rows: logs.map((l) => l.toListL()).toList(),
-      onDeleteTap: (row) async => await _onDeleteTap(logs, row),
-    );
-  }
-
-  Future<void> _onDeleteTap(List<ErrorLog> logs, List<String> row) async {
-    {
-      final log = ErrorLog.findLogsById(logs, row.first).first;
-      {
-        final isConfirmed = await context.confirmUserActionDialog();
-        if (isConfirmed) {
-          await ErrorLogCache().clearById(log.id ?? '');
-          if (mounted) {
-            Navigator.of(context).pop();
-          }
-        }
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (isConfirmed) {
+      await ErrorLogCache().clearById(id);
+      _refreshLogs();
     }
   }
 }

@@ -3,7 +3,7 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_sign_in_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/workspace_form_inputs.dart';
 import 'package:flutter/material.dart';
@@ -50,10 +50,10 @@ class ChangeWorkspacePassword extends StatelessWidget {
     );
   }
 
-  BlocListener<WorkspaceSignInBloc, WorkspaceSignInState> _buildFormBody(
+  BlocListener<WorkspaceAuthBloc, WorkspaceAuthState> _buildFormBody(
     BuildContext context,
   ) {
-    return BlocListener<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocListener<WorkspaceAuthBloc, WorkspaceAuthState>(
       listenWhen: (oldState, newState) => oldState.status != newState.status,
       listener: (_, state) => _showSignUpAlert(state, context),
       child: Container(
@@ -67,7 +67,7 @@ class ChangeWorkspacePassword extends StatelessWidget {
   }
 
   /// Shows the alert overlay if there is a failure state.
-  void _showSignUpAlert(WorkspaceSignInState state, BuildContext context) {
+  void _showSignUpAlert(WorkspaceAuthState state, BuildContext context) {
     if (state.password.isValid && state.status.isFailure) {
       const msg = 'Something went wrong! Kindly try again...';
 

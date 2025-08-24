@@ -26,6 +26,12 @@ class Permission extends Equatable {
 
   Map<String, dynamic> toMap() => {'module': module, 'permission': permission};
 
+  bool filterByAny(String filter) {
+    final term = filter.toLowercaseAll;
+    return module.toLowercaseAll.contains(term) ||
+        permission.toLowercaseAll.contains(term);
+  }
+
   /// Equality check needed for storing in `Set<Permission>`.
   @override
   bool operator ==(Object other) =>

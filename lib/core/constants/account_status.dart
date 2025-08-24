@@ -37,4 +37,4 @@ const kTemporaryPasscodePrefix = 'TEMP-';
 const int kTemporaryPasscodeLength = 5;
 
 /// 🏬 Default (Main) Tenant's organization store/shop ID for multi-stores locations
-final mainStoreNumber = 'STO-Main-${DateTime.now().year}';
+// final mainStoreNumber = 'STO-Main-${DateTime.now().year}';

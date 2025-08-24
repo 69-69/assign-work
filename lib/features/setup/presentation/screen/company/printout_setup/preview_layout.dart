@@ -23,8 +23,7 @@ class _Layout extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
-      sheetBgColor:
-          kTextColor, // kCupertinoModalBarrierColor.withAlpha((0.4 * 255).toInt()),
+      sheetBgColor: kTextColor, // kCupertinoModalBarrierColor.toAlpha(0.4)),
       initialChildSize: 0.90,
       maxChildSize: 0.90,
       header: _buildHeader(context),

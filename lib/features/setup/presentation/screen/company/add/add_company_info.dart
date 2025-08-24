@@ -3,6 +3,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/setup/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:assign_erp/features/setup/data/models/company_info_model.dart';
@@ -16,10 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddCompanyInfo<T> on BuildContext {
   Future<void> openAddCompanyInfo({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
-      title: 'Add Company Info',
-      body: _AddCompanyInfoForm(),
-    ),
+    child: FormBottomSheet(title: 'Setup Company', body: _AddCompanyInfoForm()),
   );
 }
 
@@ -110,38 +108,42 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const SizedBox(height: 20.0),
-        CompanyNameAndEmailInput(
-          nameController: _nameController,
-          emailController: _emailController,
-          onNameChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onEmailChanged: (s) => setState(() {}),
+        FormGroupCard(
+          title: 'Company Info',
+          children: [
+            CompanyNameAndEmailInput(
+              nameController: _nameController,
+              emailController: _emailController,
+              onNameChanged: (s) {
+                if (_formKey.currentState!.validate()) setState(() {});
+              },
+              onEmailChanged: (s) => setState(() {}),
+            ),
+            const SizedBox(height: 20.0),
+            PhoneAndAltPhoneInput(
+              phoneController: _phoneController,
+              altPhoneController: _altPhoneController,
+              onPhoneChanged: (s) {
+                if (_formKey.currentState!.validate()) setState(() {});
+              },
+              onAltPhoneChanged: (s) => setState(() {}),
+            ),
+            const SizedBox(height: 20.0),
+            FaxAndAddressTextField(
+              addressController: _addressController,
+              faxController: _faxNumberController,
+              onFaxChanged: (s) => setState(() {}),
+              onAddressChanged: (s) => setState(() {}),
+            ),
+            const SizedBox(height: 20.0),
+            UploadCompanyLogo(
+              uploadedFilePath: (s) {
+                setState(() => _uploadedLogoPath = s);
+              },
+            ),
+            const SizedBox(height: 20.0),
+          ],
         ),
-        const SizedBox(height: 20.0),
-        PhoneAndAltPhoneInput(
-          phoneController: _phoneController,
-          altPhoneController: _altPhoneController,
-          onPhoneChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onAltPhoneChanged: (s) => setState(() {}),
-        ),
-        const SizedBox(height: 20.0),
-        FaxAndAddressTextField(
-          addressController: _addressController,
-          faxController: _faxNumberController,
-          onFaxChanged: (s) => setState(() {}),
-          onAddressChanged: (s) => setState(() {}),
-        ),
-        const SizedBox(height: 20.0),
-        UploadCompanyLogo(
-          uploadedFilePath: (s) {
-            setState(() => _uploadedLogoPath = s);
-          },
-        ),
-        const SizedBox(height: 20.0),
         context.confirmableActionButton(
           label: 'Create Info',
           onPressed: _onSubmit,

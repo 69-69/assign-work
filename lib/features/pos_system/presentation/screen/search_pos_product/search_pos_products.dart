@@ -4,8 +4,8 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/search/custom_search_delegate.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/bloc/product/product_bloc.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/bloc/item/item_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -25,13 +25,13 @@ class SearchPosProducts extends StatelessWidget {
         ),
       ),
       onPressed: () async {
-        final productBloc = ProductBloc(firestore: FirebaseFirestore.instance);
-        final List<Product> allData = []; // Populate with actual data
+        final productBloc = ItemBloc(firestore: FirebaseFirestore.instance);
+        final List<Item> allData = []; // Populate with actual data
 
         if (context.mounted) {
           showSearch(
             context: context,
-            delegate: CustomSearchDelegate<Product>(
+            delegate: CustomSearchDelegate<Item>(
               firestoreBloc: productBloc,
               allData: allData,
               field: 'name',
@@ -39,7 +39,7 @@ class SearchPosProducts extends StatelessWidget {
               auxField: 'barcode',
               hintText: 'Search...by name, category, barcode...',
               onChanged: (s) {
-                Product product = s as Product;
+                Item product = s as Item;
                 _buildShowSearchResults(context, product);
               },
             ),
@@ -66,7 +66,7 @@ class SearchPosProducts extends StatelessWidget {
     );
   }
 
-  Future<void> _buildShowSearchResults(BuildContext context, Product product) {
+  Future<void> _buildShowSearchResults(BuildContext context, Item product) {
     return context.confirmDone(
       Wrap(
         direction: Axis.vertical,

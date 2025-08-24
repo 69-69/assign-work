@@ -1,5 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -51,28 +52,35 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     );
   }
 
-  ({List<Workspace> expired, List<Workspace> unExpired}) _filterExpiry(
-    List<Workspace> workspaces,
-  ) {
+  ({
+    List<Workspace> expired,
+    List<Workspace> unExpired,
+    List<Workspace> unKnown,
+  })
+  _filterExpiry(List<Workspace> workspaces) {
     final unExpired = Workspace.filterStatus(workspaces);
     final expired = Workspace.filterStatus(workspaces, expired: true);
+    final unKnown = Workspace.filterUnknown(workspaces);
 
-    return (expired: expired, unExpired: unExpired);
+    return (expired: expired, unExpired: unExpired, unKnown: unKnown);
   }
 
   Widget _buildCard(BuildContext context, List<Workspace> workspaces) {
-    final filters = _filterExpiry(workspaces);
+    final data = _filterExpiry(workspaces);
+    final expiredWorkspaces = data.expired.map((w) => w.itemAsList()).toList();
+    // These are FAKE/UNKNOWN Workspaces
+    final unKnownWorkspaces = data.unKnown.map((w) => w.itemAsList()).toList();
 
     return DynamicDataTable(
       skip: true,
       skipPos: 1,
       showIDToggle: true,
       headers: Workspace.dataTableHeader,
-      anyWidget: _buildAnyWidget(filters.unExpired),
-      rows: filters.unExpired.map((w) => w.itemAsList()).toList(),
-      childrenRow: filters.expired.map((w) => w.itemAsList()).toList(),
+      anyWidget: _buildAnyWidget(data.unExpired),
+      rows: data.unExpired.map((w) => w.itemAsList()).toList(),
+      childrenRow: [...unKnownWorkspaces, ...expiredWorkspaces],
       onEditTap: (row) async => await _onEditTap(workspaces, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(row[0], row[1]),
       onChecked: (bool? isChecked, List<String> row) =>
           _onChecked(workspaces, row.first, isChecked),
       optButtonIcon: Icons.support_agent,
@@ -90,7 +98,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
       runSpacing: 10.0,
       runAlignment: WrapAlignment.spaceBetween,
       children: [
-        context.buildTotalItems(
+        context.actionInfoButton(
           'Refresh Workspaces',
           label: 'Workspaces',
           count: tenants.length,
@@ -111,7 +119,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
               );
             },
             bgColor: kGrayBlueColor,
-            color: kLightColor,
+            txtColor: kLightColor,
           ),
         },
       ],
@@ -146,16 +154,18 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     });
   }
 
-  Future<void> _onDeleteTap(String workspaceId) async {
+  Future<void> _onDeleteTap(String workspaceId, String workspaceRole) async {
     {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
-        // Delete Tenant Workspace
-        context.read<AllTenantsBloc>().add(
-          DeleteTenant<String>(documentId: workspaceId),
+        AllTenantsBloc allTenantsBloc = context.read<AllTenantsBloc>();
+        // Delete Tenant Associated Data
+        await allTenantsBloc.deleteTenantData(
+          workspaceId,
+          workspaceRole.toLowerCaseFirst,
         );
-
-        Navigator.of(context).pop();
+        // Delete Tenant Workspace
+        allTenantsBloc.add(DeleteTenant<String>(documentId: workspaceId));
       }
     }
   }

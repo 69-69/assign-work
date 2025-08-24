@@ -138,7 +138,7 @@ class _AddGuideFormState extends State<_AddGuideForm> {
                       ),
                     ),
                     deleteButtonTooltipMessage: 'Remove ${o.title}',
-                    backgroundColor: kGrayColor.withAlpha((0.3 * 255).toInt()),
+                    backgroundColor: kGrayColor.toAlpha(0.3),
                     deleteIcon: const Icon(
                       size: 16,
                       Icons.clear,

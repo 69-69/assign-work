@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/color_convention_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/setup/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:assign_erp/features/setup/presentation/screen/company/printout_setup/preview_printout_colors.dart';
@@ -106,7 +107,7 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
       children: [
         _buildPaletteTitle(context),
         _buildPalette(),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         if (_selectedPalette.isNotEmpty) ...{
           PreviewPrintoutColors(paletteColors: _selectedPalette),
         },
@@ -180,7 +181,7 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
     final paletteColor = colorPalettes[index].first;
 
     var isSelected = _selectedPaletteIndex == index;
-    var fadeColor = paletteColor.withAlpha((0.6 * 255).toInt());
+    var fadeColor = paletteColor.toAlpha(0.6);
     return Card(
       elevation: 20,
       color: paletteColor,

@@ -305,7 +305,7 @@ class _ClientChatDashboardState extends State<ClientChatDashboard> {
         label: const Text('Live Support'),
         alignLabelWithHint: true,
         filled: true,
-        fillColor: kLightBlueColor.withAlpha((0.5 * 255).toInt()),
+        fillColor: kLightBlueColor.toAlpha(0.5)),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.support_agent, size: 15),
         suffixIcon: IconButton(
@@ -429,7 +429,7 @@ class _ClientChatDashboardState extends State<ClientChatDashboard> {
         label: const Text('Live Support'),
         alignLabelWithHint: true,
         filled: true,
-        fillColor: kLightBlueColor.withAlpha((0.5 * 255).toInt()),
+        fillColor: kLightBlueColor.toAlpha(0.5)),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.support_agent, size: 15),
         suffixIcon: IconButton(

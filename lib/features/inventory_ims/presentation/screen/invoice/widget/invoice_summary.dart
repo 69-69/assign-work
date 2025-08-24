@@ -37,7 +37,7 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
   }
 
   List get _keysToRemove => [
-    'productId',
+    'itemId',
     'customerId',
     'status',
     'barcode',
@@ -171,10 +171,10 @@ class _InvoiceTypeAndValidityDropdown extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: CustomDropdown(
+            child: StaticDropdown(
               key: key,
               items: invoiceType,
-              labelText: 'invoice type',
+              label: 'invoice type',
               onValueChange: (String? v) => onInvoiceChange(v),
             ),
           ),

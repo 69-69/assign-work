@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/sale_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
@@ -42,7 +42,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
 
   late double _discountAmount = _sale.discountAmount;
   late double _taxAmount = _sale.taxAmount;
-  late String _selectedPaymentTerms = _sale.paymentTerms;
+  late String _selectedPayMethod = _sale.paymentMethod;
   late String _selectedPaymentStatus = _sale.paymentStatus;
   late String _selectedSaleStatus = _sale.status;
 
@@ -57,7 +57,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
   late final _totalAmtController = TextEditingController(
     text: '${_sale.totalAmount}',
   );
-  late final _remarksController = TextEditingController(text: _sale.remarks);
+  late final _notesController = TextEditingController(text: _sale.notes);
   late final _amountPaidController = TextEditingController(
     text: '${_sale.amountPaid}',
   );
@@ -126,8 +126,8 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         // Total Amount
         totalAmount:
             _strToDouble(_totalAmtController.text) ?? _sale.totalAmount,
-        paymentTerms: _selectedPaymentTerms,
-        remarks: _remarksController.text,
+        paymentMethod: _selectedPayMethod,
+        notes: _notesController.text,
         createdBy: _sale.createdBy,
         updatedBy: context.employee!.fullName,
       );
@@ -180,10 +180,10 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         Text('Update Sales Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         SalesStatusDropdown(
-          serverValue: _sale.status,
+          initialValue: _sale.status,
           onChanged: (s) => _updateStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -248,8 +248,8 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         const SizedBox(height: 20.0),
         DeliveryAmtPaymentMethodInput(
           deliveryController: _deliveryAmountController,
-          serverValue: _selectedPaymentTerms,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentTerms = s),
+          initialPayMethod: _selectedPayMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPayMethod = s),
           onChanged: (s) {
             _calculateTotalAmount();
             setState(() {});
@@ -257,8 +257,8 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         ),
         const Divider(thickness: 10.0, height: 50),
         SalesAndPaymentStatusDropdown(
-          serverSale: _sale.status,
-          serverPayment: _sale.paymentStatus,
+          initialSale: _sale.status,
+          initialPayment: _sale.paymentStatus,
           onSaleChanged: (s) => setState(() => _selectedSaleStatus = s),
           onPaymentChanged: (s) => setState(() => _selectedPaymentStatus = s),
         ),
@@ -266,7 +266,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         RemarksAndTotalAmtTextField(
           enable: _isEnabledTotalAmt,
           onEdited: _toggleEditTotalAmt,
-          remarksController: _remarksController,
+          remarksController: _notesController,
           totalAmtController: _totalAmtController,
           onTotalAmtChanged: (t) {
             if (_formKey.currentState!.validate()) {

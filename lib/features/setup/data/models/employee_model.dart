@@ -8,6 +8,9 @@ var _today = DateTime.now();
 /// Role-Based Access-Control [Employee]
 class Employee extends Equatable {
   final String id;
+
+  /// [employeeId] employee/staff Unique ID for Employee's Tag or Card
+  final String employeeId;
   final String storeNumber;
   final String workspaceId;
   final String fullName;
@@ -15,6 +18,7 @@ class Employee extends Equatable {
   final String username;
   final String role; // role name
   final String roleId;
+  final String departmentCode;
   final String email;
   final String status;
 
@@ -26,6 +30,7 @@ class Employee extends Equatable {
 
   Employee({
     this.id = '',
+    this.employeeId = '',
     required this.workspaceId,
     this.storeNumber = '', // fallback main-Store,
     this.username = '',
@@ -33,6 +38,7 @@ class Employee extends Equatable {
     required this.mobileNumber,
     required this.role,
     required this.roleId,
+    required this.departmentCode,
     required this.email,
     required this.status,
     this.passCode = '',
@@ -49,10 +55,12 @@ class Employee extends Equatable {
   factory Employee.fromMap(Map<String, dynamic> map, {String? id}) {
     return Employee(
       id: (id ?? map['id']) ?? '',
+      employeeId: map['employeeId'] ?? '',
       workspaceId: map['workspaceId'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       role: map['role'] ?? '',
       roleId: map['roleId'] ?? '',
+      departmentCode: map['departmentCode'] ?? '',
       email: map['email'] ?? '',
       fullName: map['fullName'] ?? '',
       mobileNumber: map['mobileNumber'] ?? '',
@@ -66,22 +74,16 @@ class Employee extends Equatable {
     );
   }
 
-  /*static EmployeeRole getRoleByString(String role) =>
-      EmployeeRole.values.firstWhere(
-        (e) => roleAsString(e) == role,
-        orElse: () => EmployeeRole.unknown,
-      );
-
-  static String roleAsString(EmployeeRole e) => e.toString().split('.').last;
-*/
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'employeeId': employeeId,
     'workspaceId': workspaceId,
     'storeNumber': storeNumber,
     'username': email.emailToUsername,
     'role': role,
     'roleId': roleId,
+    'departmentCode': departmentCode,
     'email': email,
     'fullName': fullName,
     'mobileNumber': mobileNumber,
@@ -113,12 +115,14 @@ class Employee extends Equatable {
 
   Employee copyWith({
     String? id,
+    String? employeeId,
     String? storeNumber,
     String? username,
     String? fullName,
     String? mobileNumber,
     String? role,
     String? roleId,
+    String? departmentCode,
     String? email,
     String? passCode,
     String? status,
@@ -130,12 +134,14 @@ class Employee extends Equatable {
   }) {
     return Employee(
       id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
       storeNumber: storeNumber ?? this.storeNumber,
       username: username ?? this.username,
       fullName: fullName ?? this.fullName,
       mobileNumber: mobileNumber ?? this.mobileNumber,
       role: role ?? this.role,
       roleId: roleId ?? this.roleId,
+      departmentCode: departmentCode ?? this.departmentCode,
       email: email ?? this.email,
       status: status ?? this.status,
       passCode: passCode ?? this.passCode,
@@ -179,9 +185,11 @@ class Employee extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    employeeId,
     workspaceId,
     role,
     roleId,
+    departmentCode,
     email,
     username,
     fullName,
@@ -197,9 +205,10 @@ class Employee extends Equatable {
 
   /// ToList for Employee [itemAsList]
   List<String> itemAsList() => [
-    email,
+    employeeId,
     id,
     status.toTitleCase,
+    departmentCode,
     role.toTitleCase,
     storeNumber.toTitleCase,
     fullName.toTitleCase,
@@ -211,11 +220,12 @@ class Employee extends Equatable {
   ];
 
   static List<String> get dataTableHeader => const [
-    'Email',
+    'Employee ID',
     'ID',
     'Status',
+    'Dept. Code',
     'Role',
-    'Store number',
+    'Store no.',
     'Name',
     'Mobile',
     'Created At',

@@ -32,7 +32,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
           ClientsLoaded<AgentClient>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'setup new workspace',
+                    'Setup New Workspace',
                     onPressed: () => context.openCreateWorkspacePopUp(),
                   )
                 : _buildCard(context, results),
@@ -80,7 +80,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
   }
 
   _buildAnyWidget(List<Workspace> tenants) {
-    return context.buildTotalItems(
+    return context.actionInfoButton(
       'Refresh Workspaces',
       label: 'Workspaces',
       count: tenants.length,

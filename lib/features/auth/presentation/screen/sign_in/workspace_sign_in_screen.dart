@@ -2,10 +2,11 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/animated_hexagon_grid.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_sign_in_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/form_title.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/left_column_pane.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/right_column_pane.dart';
@@ -42,10 +43,10 @@ class WorkspaceSignInScreen extends StatelessWidget {
     );
   }
 
-  BlocListener<WorkspaceSignInBloc, WorkspaceSignInState> _buildBody(
+  BlocListener<WorkspaceAuthBloc, WorkspaceAuthState> _buildBody(
     BuildContext context,
   ) {
-    return BlocListener<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocListener<WorkspaceAuthBloc, WorkspaceAuthState>(
       listenWhen: (oldState, newState) => oldState.status != newState.status,
       listener: (_, state) => context.showWorkspaceSignInAlert(state),
       child: Container(
@@ -93,7 +94,7 @@ class WorkspaceSignInScreen extends StatelessWidget {
       children: [
         const Flexible(child: EmailInput()),
         const SizedBox(height: 20),
-        const Flexible(child: PasswordInput()),
+        const Flexible(child: PasswordInput(hidePlaceholder: true)),
         const SizedBox(height: 5),
         Flexible(child: WorkspaceSignInButton(onPressed: (v) {})),
       ],
@@ -121,17 +122,17 @@ class _RightColumnPane extends StatelessWidget {
     );
   }
 
-  _buildForgotPasswordBtn(BuildContext context) {
-    return ElevatedButton.icon(
+  _buildForgotPasswordBtn(BuildContext cxt) {
+    return cxt.elevatedIconBtn(
+      Icon(Icons.help_outline, color: kLightColor),
       style: ElevatedButton.styleFrom(backgroundColor: kGrayBlueColor),
-      icon: const Icon(Icons.help_outline, color: kLightColor),
       label: Text(
         "Forgot Password?",
         semanticsLabel: "Forgot Password",
         overflow: TextOverflow.ellipsis,
-        style: context.textTheme.titleLarge?.copyWith(color: kLightColor),
+        style: cxt.textTheme.titleLarge?.copyWith(color: kLightColor),
       ),
-      onPressed: () async => await context.openForgotWorkspacePopUp(),
+      onPressed: () async => await cxt.openForgotWorkspacePopUp(),
     );
   }
 }

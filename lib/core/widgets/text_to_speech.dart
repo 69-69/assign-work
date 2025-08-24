@@ -203,11 +203,11 @@ class TextToSpeechState extends State<TextToSpeech> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
-      child: CustomDropdown(
+      child: StaticDropdown(
         icon: const Icon(Icons.support_agent, color: kDangerColor),
         items: voiceNames,
-        labelText: 'Voice Type',
-        serverValue: selectedVoiceName,
+        label: 'Voice Type',
+        initialValue: selectedVoiceName,
         onValueChange: (String? value) {
           if (value != null) {
             final selectedVoice = _voices.firstWhere(
@@ -239,7 +239,7 @@ class TextToSpeechState extends State<TextToSpeech> {
       ),
       items: voiceNames,
       labelText: 'Voice Type',
-      serverValue: selectedVoiceName,
+      initialValue: selectedVoiceName,
       onValueChange: (String? value) {
         if (value != null) {
           final selectedVoice = _voices.firstWhere(

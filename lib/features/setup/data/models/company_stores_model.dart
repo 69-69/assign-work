@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/util/format_date_utl.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
@@ -10,7 +11,7 @@ class CompanyStores extends Equatable {
   final String name;
   final String phone;
   final String location;
-  final String? remarks;
+  final String? notes;
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -22,7 +23,7 @@ class CompanyStores extends Equatable {
     this.phone = '',
     required this.location,
     required this.storeNumber,
-    this.remarks,
+    this.notes,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -31,14 +32,14 @@ class CompanyStores extends Equatable {
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [StoreLocation.fromMap]
-  factory CompanyStores.fromMap(Map<String, dynamic> data, String documentId) {
+  factory CompanyStores.fromMap(Map<String, dynamic> data, {String? id}) {
     return CompanyStores(
-      id: documentId,
+      id: id ?? data['id'] ?? '',
       name: data['name'] ?? '',
       phone: data['phone'] ?? '',
       location: data['location'] ?? '',
       storeNumber: data['storeNumber'] ?? '',
-      remarks: data['remarks'] ?? '',
+      notes: data['notes'] ?? '',
       createdBy: data['createdBy'] ?? '',
       createdAt: toDateTimeFn(data['createdAt']),
       updatedBy: data['updatedBy'] ?? '',
@@ -53,7 +54,7 @@ class CompanyStores extends Equatable {
     'phone': phone,
     'location': location,
     'storeNumber': storeNumber,
-    'remarks': remarks,
+    'notes': notes,
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
@@ -122,7 +123,7 @@ class CompanyStores extends Equatable {
     String? phone,
     String? location,
     String? storeNumber,
-    String? remarks,
+    String? notes,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -134,7 +135,7 @@ class CompanyStores extends Equatable {
       phone: phone ?? this.phone,
       location: location ?? this.location,
       storeNumber: storeNumber ?? this.storeNumber,
-      remarks: remarks ?? this.remarks,
+      notes: notes ?? this.notes,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -149,7 +150,7 @@ class CompanyStores extends Equatable {
     phone,
     location,
     storeNumber,
-    remarks,
+    notes,
     createdBy,
     createdAt,
     updatedBy,
@@ -163,7 +164,7 @@ class CompanyStores extends Equatable {
     name.toTitleCase,
     phone,
     location.toTitleCase,
-    (remarks ?? 'none').toTitleCase,
+    (notes ?? 'none').toTitleCase,
     createdBy.toTitleCase,
     getCreatedAt,
     updatedBy.toTitleCase,
@@ -176,10 +177,27 @@ class CompanyStores extends Equatable {
     'Name',
     'Phone',
     'Address / Location',
-    'Remarks',
+    'Notes',
     'Created By',
     'Created At',
     'Updated By',
     'Updated At',
   ];
+}
+
+/// [businessOwnerDefaultStoreLocation] This is the Business owner's default Store Location
+/// during first-time workspace setup(Workspace Creation)
+Map<String, dynamic> businessOwnerDefaultStoreLocation({
+  required String id,
+  required String name,
+  required String location,
+}) {
+  return CompanyStores(
+    id: id,
+    name: name,
+    location: location,
+    storeNumber: location.generateUniqueCode(),
+    notes: 'this is the business headquarters',
+    createdBy: 'system',
+  ).toMap();
 }

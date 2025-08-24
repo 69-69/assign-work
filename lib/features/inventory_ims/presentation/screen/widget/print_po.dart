@@ -30,28 +30,28 @@ class PrintPurchaseOrder {
 
   // Sample function to aggregate Invoice data
   List<PrintItem> _generatePO() {
-    final invoiceProducts = orders.asMap().entries.map((entry) {
+    final invoiceItems = orders.asMap().entries.map((entry) {
       // final index = entry.key;
       final order = entry.value;
 
       return PrintItem(
         sku: order.supplierId,
-        productName: _toCap(order.productName),
+        itemName: _toCap(order.itemName),
         unitPrice: order.unitPrice,
         quantity: order.quantity,
         discountPercent: order.discountPercent,
         validityDate: order.getDeliveryDate,
         taxPercent: order.taxPercent,
-        paymentTerms: _toCap(order.paymentTerms),
+        paymentTerms: _toCap(order.payTerms),
       );
     }).toList();
-    return invoiceProducts;
+    return invoiceItems;
   }
 
   Future<Uint8List> _issuePrinting({
     PdfPageFormat format = PdfPageFormat.a4,
   }) async {
-    List<PrintItem> invoiceProducts = _generatePO();
+    List<PrintItem> invoiceItems = _generatePO();
 
     // lookup approved-by in the list of Orders (POs)
     final approvedBy = orders
@@ -64,7 +64,7 @@ class PrintPurchaseOrder {
       approvedBy: _toCap(
         approvedBy.isNullOrEmpty ? 'Authorized Signatory' : approvedBy!,
       ),
-      products: invoiceProducts,
+      items: invoiceItems,
       supplierEmail: supplier.email,
       supplierName: _toCap(supplier.name),
       supplierAddress: _toCap(supplier.address),

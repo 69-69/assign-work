@@ -6,7 +6,6 @@ import 'package:assign_erp/features/agent/data/models/agent_client_model.dart';
 import 'package:assign_erp/features/agent/presentation/bloc/agent_bloc.dart';
 import 'package:assign_erp/features/agent/presentation/bloc/client/agent_clients_bloc.dart';
 import 'package:assign_erp/features/agent/presentation/screen/list/agent_clients_workspaces.dart';
-import 'package:assign_erp/features/agent/presentation/screen/widget/header_wrap.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/create/create_workspace_acc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +22,7 @@ class AgentApp extends StatelessWidget {
             ..add(LoadClients<AgentClient>()),
       child: CustomScaffold(
         title: clienteleScreenTitle.toUpperCaseAll,
-        body: HeaderWrap(
-          title: 'Client Workspaces'.toUpperCaseAll,
-          body: AgentClientsWorkspaces(),
-        ),
+        body: AgentClientsWorkspaces(),
         floatingActionButton: context.buildFloatingBtn(
           'setup new workspace',
           icon: Icons.workspaces_outline,

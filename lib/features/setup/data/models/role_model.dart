@@ -112,7 +112,7 @@ class Role extends Equatable {
 
   /// Filter
   bool filterByAny(String filter) =>
-      name.contains(filter) || permissions.any((p) => filterByAny(filter));
+      name.contains(filter) || permissions.any((p) => p.filterByAny(filter));
 
   @override
   List<Object?> get props => [

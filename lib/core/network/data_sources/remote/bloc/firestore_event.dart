@@ -9,32 +9,32 @@ sealed class FirestoreEvent<T> extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetData<T> extends FirestoreEvent<T> {}
+class GetItems<T> extends FirestoreEvent<T> {}
 
-class GetMultipleDataByIDs<T> extends FirestoreEvent<T> {
+class GetItemsByIDs<T> extends FirestoreEvent<T> {
   final List<String> documentIDs;
 
-  const GetMultipleDataByIDs({required this.documentIDs});
+  const GetItemsByIDs({required this.documentIDs});
 
   @override
   List<Object?> get props => [documentIDs];
 }
 
-class GetDataById<T> extends FirestoreEvent<T> {
+class GetItemById<T> extends FirestoreEvent<T> {
   final Object? field;
   final String documentId;
 
-  const GetDataById({required this.documentId, this.field});
+  const GetItemById({required this.documentId, this.field});
 
   @override
   List<Object?> get props => [documentId, field];
 }
 
-class GetAllDataWithSameId<T> extends FirestoreEvent<T> {
+class GetItemsWithSameId<T> extends FirestoreEvent<T> {
   final Object? field;
   final String documentId;
 
-  const GetAllDataWithSameId({required this.documentId, this.field});
+  const GetItemsWithSameId({required this.documentId, this.field});
 
   @override
   List<Object?> get props => [documentId, field];
@@ -43,9 +43,9 @@ class GetAllDataWithSameId<T> extends FirestoreEvent<T> {
 /// For Generating Short UID [GetShortID]
 class GetShortID<T> extends FirestoreEvent<T> {}
 
-class RefreshData<T> extends FirestoreEvent<T> {}
+class RefreshItems<T> extends FirestoreEvent<T> {}
 
-class SearchData<T> extends FirestoreEvent<T> {
+class SearchItems<T> extends FirestoreEvent<T> {
   /// Query_Term / Search_Term [query]
   final String query;
 
@@ -58,7 +58,7 @@ class SearchData<T> extends FirestoreEvent<T> {
   /// Third_Field_Name[auxField]
   final Object? auxField;
 
-  const SearchData({
+  const SearchItems({
     this.field,
     this.optField,
     this.auxField,
@@ -69,13 +69,13 @@ class SearchData<T> extends FirestoreEvent<T> {
   List<Object?> get props => [field, optField, auxField, query];
 }
 
-class AddData<T> extends FirestoreEvent<T> {
+class AddItem<T> extends FirestoreEvent<T> {
   final T data;
 
   ///NOTE: If not provided, Firestore will assign a unique ID (documentId) [documentId]
   final String? documentId;
 
-  const AddData({this.documentId, required this.data});
+  const AddItem({this.documentId, required this.data});
 
   @override
   List<Object?> get props => [documentId, data];
@@ -84,31 +84,31 @@ class AddData<T> extends FirestoreEvent<T> {
 /// T data: Generic Data Update: using Model-Class
 ///   --OR-- Note:: use Generic or Map data update
 /// Map? mapData: `Map<String, dynamic>?` Data Update
-class UpdateData<T> extends FirestoreEvent<T> {
+class UpdateItem<T> extends FirestoreEvent<T> {
   final T? data;
   final Map<String, dynamic>? mapData;
   final String documentId;
 
-  const UpdateData({required this.documentId, this.data, this.mapData});
+  const UpdateItem({required this.documentId, this.data, this.mapData});
 
   @override
   List<Object?> get props => [data, documentId];
 }
 
-class DeleteData<T> extends FirestoreEvent<T> {
+class DeleteItem<T> extends FirestoreEvent<T> {
   final String documentId;
 
-  const DeleteData({required this.documentId});
+  const DeleteItem({required this.documentId});
 
   @override
   List<Object?> get props => [documentId];
 }
 
 /// Internal events for state updates
-class _DataLoaded<T> extends FirestoreEvent<T> {
+class _ItemsLoaded<T> extends FirestoreEvent<T> {
   final List<T> data;
 
-  const _DataLoaded(this.data);
+  const _ItemsLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
@@ -123,19 +123,19 @@ class _ShortIDLoaded<T> extends FirestoreEvent<T> {
   List<Object?> get props => [shortID];
 }
 
-class _SingleDataLoaded<T> extends FirestoreEvent<T> {
+class _ItemLoaded<T> extends FirestoreEvent<T> {
   final T data;
 
-  const _SingleDataLoaded(this.data);
+  const _ItemLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
 }
 
-class _DataLoadError extends FirestoreEvent {
+class _ItemLoadError extends FirestoreEvent {
   final String error;
 
-  const _DataLoadError(this.error);
+  const _ItemLoadError(this.error);
 
   @override
   List<Object?> get props => [error];

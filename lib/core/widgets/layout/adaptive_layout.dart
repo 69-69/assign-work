@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:flutter/material.dart';
 
 class AdaptiveLayout extends StatelessWidget {
   // adaptive: If false, layout won't switch between ROWS and COLUMNS
@@ -12,6 +12,9 @@ class AdaptiveLayout extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   final Function(double)? layoutWidth;
 
+  /// [preventLastWrap] Don't wrap the last child with Expanded
+  final bool preventLastWrap;
+
   const AdaptiveLayout({
     super.key,
     required this.children,
@@ -22,6 +25,7 @@ class AdaptiveLayout extends StatelessWidget {
     this.crossAxisAlignment = CrossAxisAlignment.center,
     this.layoutWidth,
     this.firstFlex,
+    this.preventLastWrap = false,
   });
 
   @override
@@ -50,11 +54,11 @@ class AdaptiveLayout extends StatelessWidget {
         final isMoreTallThanWide = constraints.maxHeight > constraints.maxWidth;
 
         var device = switch (isMoreTallThanWide) {
-        /// Its in Portrait Mode: Tall Screen Height
+          /// Its in Portrait Mode: Tall Screen Height
           true => _buildColumn(),
 
-        /// Its in LandScape Mode: Wide Screen Width
-          _ => _buildRow()
+          /// Its in LandScape Mode: Wide Screen Width
+          _ => _buildRow(),
         };
 
         return device;
@@ -71,37 +75,46 @@ class AdaptiveLayout extends StatelessWidget {
         : _buildRow(c: _isAdaptive(isColumn));
   }
 
-  Row _buildRow({List<Widget>? c}) =>
-      Row(
-        mainAxisSize: mainAxisSize,
-        mainAxisAlignment: mainAxisAlignment,
-        crossAxisAlignment: crossAxisAlignment,
-        children: c ?? children,
-      );
+  Row _buildRow({List<Widget>? c}) => Row(
+    mainAxisSize: mainAxisSize,
+    mainAxisAlignment: mainAxisAlignment,
+    crossAxisAlignment: crossAxisAlignment,
+    children: c ?? children,
+  );
 
-  Column _buildColumn({List<Widget>? c}) =>
-      Column(
-        mainAxisSize: mainAxisSize,
-        mainAxisAlignment: mainAxisAlignment,
-        crossAxisAlignment: crossAxisAlignment,
-        children: c ?? children,
-      );
+  Column _buildColumn({List<Widget>? c}) => Column(
+    mainAxisSize: mainAxisSize,
+    mainAxisAlignment: mainAxisAlignment,
+    crossAxisAlignment: crossAxisAlignment,
+    children: c ?? children,
+  );
 
   List<Widget> _isAdaptive(bool isColumn) {
     if (children.isEmpty) return [];
 
     List<Widget> result = [];
-    SizedBox space =
-    isColumn ? const SizedBox(height: 20.0) : const SizedBox(width: 20.0);
+    SizedBox space = isColumn
+        ? const SizedBox(height: 20.0)
+        : const SizedBox(width: 20.0);
 
     for (int i = 0; i < children.length; i++) {
-      var flex = i > 0 ? 1 : (firstFlex ?? 1);
+      bool isLast = i == children.length - 1;
+      int flex = i > 0 ? 1 : (firstFlex ?? 1);
 
-      final child =
-      isColumn ? children[i] : Expanded(flex: flex, child: children[i]);
+      Widget child;
+
+      if (isColumn) {
+        child = children[i];
+      } else {
+        // Apply Expanded only if it's not the last child or if wrapping is allowed
+        child = (isLast && preventLastWrap)
+            ? children[i]
+            : Expanded(flex: flex, child: children[i]);
+      }
 
       result.add(child);
 
+      // Add spacing only if not the last child
       if (isSizedBox && i < children.length - 1) {
         result.add(space);
       }

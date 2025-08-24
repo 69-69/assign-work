@@ -13,7 +13,7 @@ import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_order_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
@@ -45,16 +45,16 @@ class _AddOrderFormState extends State<_AddOrderForm> {
   bool _isEnabledTotalAmt = false;
   bool isMultipleOrders = false;
 
-  double _productCostPrice = 0.0;
+  double _itemCostPrice = 0.0;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
 
   String _newOrderNumber = '';
   String _selectedCustomerId = '';
-  String _selectedProductId = '';
-  String _selectedProductName = '';
+  String _selectedItemId = '';
+  String _selectedItemName = '';
   String? _selectedOrderStatus;
-  String? _selectedPaymentMethod;
+  String? _selectedPayMethod;
 
   final List<POSOrder> _orders = [];
 
@@ -107,13 +107,13 @@ class _AddOrderFormState extends State<_AddOrderForm> {
 
   double _strToDouble(String s) => double.tryParse(s) ?? 0.0;
 
-  // Updates the product details in the form based on the provided Product instance.
-  // Sets the unit price, product ID, product name, and cost price.
-  set _setProductId(Product p) {
+  // Updates the item details in the form based on the provided Product instance.
+  // Sets the unit price, product ID, item name, and cost price.
+  set _setItemId(Item p) {
     _unitPriceController.text = '${p.sellingPrice}';
-    _selectedProductId = p.id;
-    _selectedProductName = p.name;
-    _productCostPrice = p.costPrice;
+    _selectedItemId = p.id;
+    _selectedItemName = p.name;
+    _itemCostPrice = p.costPrice;
   }
 
   void _generateOrderNumber() async {
@@ -126,12 +126,12 @@ class _AddOrderFormState extends State<_AddOrderForm> {
     orderNumber: _newOrderNumber,
     status: _selectedOrderStatus ?? '',
     barcode: _barcodeController.text,
-    productId: _selectedProductId,
-    productName: _selectedProductName,
+    itemId: _selectedItemId,
+    itemName: _selectedItemName,
     customerId: _selectedCustomerId,
     quantity: int.tryParse(_quantityController.text) ?? 0,
     unitPrice: _strToDouble(_unitPriceController.text),
-    paymentMethod: _selectedPaymentMethod ?? '',
+    payMethod: _selectedPayMethod ?? '',
     discountPercent: _strToDouble(_discountPercentController.text),
     taxPercent: _strToDouble(_taxPercentController.text),
     discountAmount: _discountAmount,
@@ -145,7 +145,7 @@ class _AddOrderFormState extends State<_AddOrderForm> {
     if (_formKey.currentState!.validate()) {
       _orders.add(_orderData);
       // Maps each product's ID to its cost price for sales recording purposes
-      _costPricesMap.addAll({_orderData.productId: _productCostPrice});
+      _costPricesMap.addAll({_orderData.itemId: _itemCostPrice});
 
       context.read<POSOrderBloc>().add(AddPOS<List<POSOrder>>(data: _orders));
 
@@ -179,9 +179,9 @@ class _AddOrderFormState extends State<_AddOrderForm> {
       setState(() => isMultipleOrders = true);
       _orders.add(_orderData);
 
-      if (_productCostPrice > 0) {
+      if (_itemCostPrice > 0) {
         debugPrint('form data added');
-        _costPricesMap.addAll({_orderData.productId: _productCostPrice});
+        _costPricesMap.addAll({_orderData.itemId: _itemCostPrice});
       }
 
       context.showAlertOverlay('Order added to list');
@@ -196,8 +196,8 @@ class _AddOrderFormState extends State<_AddOrderForm> {
     _totalAmtController.clear();
     _discountPercentController.clear();
     _taxPercentController.clear();
-    _selectedProductId = '';
-    _selectedProductName = '';
+    _selectedItemId = '';
+    _selectedItemName = '';
     _selectedOrderStatus = null;
     _discountAmount = 0.0;
     _taxAmount = 0.0;
@@ -241,14 +241,14 @@ class _AddOrderFormState extends State<_AddOrderForm> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      '${o.productName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
+                      '${o.itemName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
                           .toTitleCase,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    deleteButtonTooltipMessage: 'Remove ${o.productName}',
-                    backgroundColor: kGrayColor.withAlpha((0.3 * 255).toInt()),
+                    deleteButtonTooltipMessage: 'Remove ${o.itemName}',
+                    backgroundColor: kGrayColor.toAlpha(0.3),
                     deleteIcon: const Icon(
                       size: 16,
                       Icons.clear,
@@ -262,41 +262,25 @@ class _AddOrderFormState extends State<_AddOrderForm> {
     );
   }
 
+  _buildOrderNumber() => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh Order Number',
+        count: _newOrderNumber,
+        bgColor: kPrimaryColor,
+        isTotal: false,
+        onPressed: _generateOrderNumber,
+      ),
+    ),
+  );
+
   _buildBody() {
     return Column(
       children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            RichText(
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: 'Order Number:\n',
-                style: context.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                children: [
-                  TextSpan(
-                    text: _newOrderNumber,
-                    style: context.textTheme.titleLarge?.copyWith(
-                      color: kDangerColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            FittedBox(
-              child: context.buildRefreshButton(
-                'Refresh Order Number',
-                onPressed: _generateOrderNumber,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20.0),
-        CustomerAndProductId(
+        _buildOrderNumber(),
+        const SizedBox(height: 10.0),
+        CustomerAndItemId(
           onCustomerChanged: (id, name) async {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
             /// hence, generate new Customer-ID
@@ -309,8 +293,7 @@ class _AddOrderFormState extends State<_AddOrderForm> {
               setState(() => _selectedCustomerId = id);
             }
           },
-          onProductChanged: (product) =>
-              setState(() => _setProductId = product),
+          onItemChanged: (product) => setState(() => _setItemId = product),
         ),
         const SizedBox(height: 20.0),
         UnitPriceAndQuantityInput(
@@ -329,7 +312,7 @@ class _AddOrderFormState extends State<_AddOrderForm> {
           onSubTotalChange: (t) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
-          serverStatus: _selectedOrderStatus,
+          initialStatus: _selectedOrderStatus,
           onStatusChange: (s) => setState(() => _selectedOrderStatus = s),
         ),
         const SizedBox(height: 20.0),
@@ -362,17 +345,17 @@ class _AddOrderFormState extends State<_AddOrderForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        TotalAmountAndPaymentMethod(
+        TotalAmountAndPayMethod(
           enable: _isEnabledTotalAmt,
           onEdited: _toggleEditTotalAmt,
           totalAmtController: _totalAmtController,
-          serverValue: _selectedPaymentMethod,
+          initialPayMethod: _selectedPayMethod,
           onTotalAmtChanged: (t) {
             if (_formKey.currentState!.validate()) {
               setState(() {});
             }
           },
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          onPaymentChanged: (s) => setState(() => _selectedPayMethod = s),
         ),
         const SizedBox(height: 20.0),
         Wrap(

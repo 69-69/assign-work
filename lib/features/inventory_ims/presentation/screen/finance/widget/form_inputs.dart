@@ -3,36 +3,40 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_enum.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/search_customer.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/products/widget/search_product.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/items/widget/search_items.dart';
 import 'package:flutter/material.dart';
 
 /// Customer ID TextField [CustomerIDInput]
 class CustomerIDInput extends StatelessWidget {
-  const CustomerIDInput({super.key, this.serverValue, required this.onChanged});
+  const CustomerIDInput({
+    super.key,
+    this.initialValue,
+    required this.onChanged,
+  });
 
-  final String? serverValue;
+  final String? initialValue;
   final Function(String, String) onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SearchCustomer(serverValue: serverValue, onChanged: onChanged);
+    return SearchCustomer(initialValue: initialValue, onChanged: onChanged);
   }
 }
 
-/// ProductId & Quantity TextField/Dropdown [ProductIdAndQuantityInput]
-class ProductIdAndQuantityInput extends StatelessWidget {
-  const ProductIdAndQuantityInput({
+/// ItemId & Quantity TextField/Dropdown [ItemIdAndQuantityInput]
+class ItemIdAndQuantityInput extends StatelessWidget {
+  const ItemIdAndQuantityInput({
     super.key,
-    this.serverValue,
+    this.initialValue,
     required this.onChanged,
     required this.onQtyChanged,
     required this.qtyController,
   });
 
-  final String? serverValue;
+  final String? initialValue;
   final ValueChanged onChanged;
   final ValueChanged onQtyChanged;
   final TextEditingController qtyController;
@@ -42,9 +46,9 @@ class ProductIdAndQuantityInput extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SearchProducts(
+        SearchItems(
           isDropdown: true,
-          serverValue: serverValue,
+          initialValue: initialValue,
           onChanged: onChanged,
         ),
         QuantityTextField(controller: qtyController, onChanged: onQtyChanged),
@@ -55,15 +59,15 @@ class ProductIdAndQuantityInput extends StatelessWidget {
 
 /// Order Status & Order Types Dropdown [_OrderStatusAndTypesDropdown]
 class OrderStatusAndTypesDropdown extends StatelessWidget {
-  final String? serverType;
+  final String? initialType;
   final void Function(dynamic s) onTypeChange;
-  final String? serverStatus;
+  final String? initialStatus;
   final void Function(dynamic s) onStatusChange;
 
   const OrderStatusAndTypesDropdown({
     super.key,
-    this.serverType,
-    this.serverStatus,
+    this.initialType,
+    this.initialStatus,
     required this.onTypeChange,
     required this.onStatusChange,
   });
@@ -74,11 +78,11 @@ class OrderStatusAndTypesDropdown extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         OrdersTypesDropdown(
-          serverValue: serverType,
+          initialValue: initialType,
           onValueChange: onTypeChange,
         ),
         OrdersStatusDropdown(
-          serverValue: serverStatus,
+          initialValue: initialStatus,
           onChange: onStatusChange,
         ),
       ],
@@ -95,12 +99,12 @@ class ShippingAndDeliveryDateInput extends StatelessWidget {
     this.onQuantityChanged,
     required this.onDeliveryChanged,
     required this.onShippingChanged,
-    this.serverDeliveryDate,
-    this.serverShippingDate,
+    this.initialDeliveryDate,
+    this.initialShippingDate,
   });
 
-  final String? serverDeliveryDate;
-  final String? serverShippingDate;
+  final String? initialDeliveryDate;
+  final String? initialShippingDate;
   final String? labelDelivery;
   final String? labelShipping;
   final ValueChanged? onQuantityChanged;
@@ -113,14 +117,14 @@ class ShippingAndDeliveryDateInput extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DatePicker(
-          serverDate: serverShippingDate,
+          initialDate: initialShippingDate,
           label: labelShipping,
           restorationId: 'Shipping date',
           selectedDate: onShippingChanged,
           helperText: 'Optional',
         ),
         DatePicker(
-          serverDate: serverDeliveryDate,
+          initialDate: initialDeliveryDate,
           label: labelDelivery,
           restorationId: 'Delivery date',
           selectedDate: onDeliveryChanged,
@@ -136,14 +140,14 @@ class ValidityAndOrderSource extends StatelessWidget {
   const ValidityAndOrderSource({
     super.key,
     this.labelValidity,
-    this.serverOrderSource,
-    this.serverValidityDate,
+    this.initialOrderSource,
+    this.initialValidityDate,
     required this.onSourceChanged,
     required this.onValidityChanged,
   });
 
-  final String? serverOrderSource;
-  final String? serverValidityDate;
+  final String? initialOrderSource;
+  final String? initialValidityDate;
   final String? labelValidity;
   final Function(String?) onSourceChanged;
   final Function(DateTime) onValidityChanged;
@@ -153,15 +157,15 @@ class ValidityAndOrderSource extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        CustomDropdown(
+        StaticDropdown(
           key: key,
           items: orderSources,
-          labelText: 'order source',
-          serverValue: serverOrderSource,
+          label: 'order source',
+          initialValue: initialOrderSource,
           onValueChange: (String? v) => onSourceChanged(v),
         ),
         DatePicker(
-          serverDate: serverValidityDate,
+          initialDate: initialValidityDate,
           label: labelValidity ?? 'Validity date',
           restorationId: 'Validity date',
           selectedDate: onValidityChanged,
@@ -251,10 +255,10 @@ class AmountPaidAndPaymentStatusDropdown extends StatelessWidget {
     required this.amountPaidController,
     required this.onAmountPaidChanged,
     required this.onStatusChanged,
-    this.serverStatus,
+    this.initialStatus,
   });
 
-  final String? serverStatus;
+  final String? initialStatus;
   final ValueChanged onStatusChanged;
   final ValueChanged onAmountPaidChanged;
   final TextEditingController amountPaidController;
@@ -269,7 +273,7 @@ class AmountPaidAndPaymentStatusDropdown extends StatelessWidget {
           onChanged: onAmountPaidChanged,
         ),
         PaymentStatusDropdown(
-          serverValue: serverStatus,
+          initialValue: initialStatus,
           onChanged: onStatusChanged,
         ),
       ],
@@ -289,7 +293,7 @@ class AmountPaidTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Amount paid',
+      label: 'Amount paid',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -322,7 +326,7 @@ class TotalAmountTextField extends StatelessWidget {
           enable: enable,
           controller: controller,
           onChanged: onChanged,
-          labelText: 'Total amount',
+          label: 'Total amount',
           keyboardType: TextInputType.number,
         ),
         TextButton(
@@ -345,7 +349,7 @@ class RemarksTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Remarks...',
+      label: 'Remarks...',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
@@ -366,7 +370,7 @@ class QuantityTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Quantity',
+      label: 'Quantity',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -384,7 +388,7 @@ class UnitPriceTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Unit price',
+      label: 'Unit price',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -402,7 +406,7 @@ class SubTotalTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Sub total',
+      label: 'Sub total',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -445,15 +449,15 @@ class DiscountPercentTextField extends StatelessWidget {
 class DeliveryAmtPaymentMethodInput extends StatelessWidget {
   const DeliveryAmtPaymentMethodInput({
     super.key,
-    this.serverValue,
+    this.initialValue,
     required this.onChanged,
     required this.onPaymentChanged,
     required this.deliveryController,
   });
 
+  final String? initialValue;
   final ValueChanged onChanged;
   final ValueChanged onPaymentChanged;
-  final String? serverValue;
   final TextEditingController deliveryController;
 
   @override
@@ -465,8 +469,8 @@ class DeliveryAmtPaymentMethodInput extends StatelessWidget {
           controller: deliveryController,
           onChanged: onChanged,
         ),
-        PaymentTermDropdown(
-          serverValue: serverValue,
+        PaymentMethodDropdown(
+          initialValue: initialValue,
           onChanged: onPaymentChanged,
         ),
       ],
@@ -537,7 +541,7 @@ class TaxPercentTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Tax Percent',
+      label: 'Tax Percent',
       onChanged: onChanged,
       controller: controller,
       keyboardType: TextInputType.number,
@@ -563,7 +567,7 @@ class DeliveryAmountTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Delivery amount',
+      label: 'Delivery amount',
       controller: controller,
       onChanged: onChanged,
       helperText: 'Optional',
@@ -577,43 +581,43 @@ class DeliveryAmountTextField extends StatelessWidget {
 class PaymentStatusDropdown extends StatelessWidget {
   const PaymentStatusDropdown({
     super.key,
-    this.serverValue,
+    this.initialValue,
     required this.onChanged,
   });
 
   final ValueChanged onChanged;
-  final String? serverValue;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: paymentStatus,
-      labelText: 'payment status',
-      serverValue: serverValue,
+      label: 'payment status',
+      initialValue: initialValue,
       onValueChange: (String? v) => onChanged(v),
     );
   }
 }
 
-/// Payment Terms Dropdown [PaymentTermDropdown]
-class PaymentTermDropdown extends StatelessWidget {
-  final String? serverValue;
+/// Payment Terms Dropdown [PaymentMethodDropdown]
+class PaymentMethodDropdown extends StatelessWidget {
+  final String? initialValue;
   final void Function(dynamic s) onChanged;
 
-  const PaymentTermDropdown({
+  const PaymentMethodDropdown({
     super.key,
     required this.onChanged,
-    this.serverValue,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
-      items: paymentTerms,
-      labelText: 'payment terms',
-      serverValue: serverValue,
+      items: paymentMethod,
+      label: 'payment method',
+      initialValue: initialValue,
       onValueChange: (String? v) => onChanged(v),
     );
   }
@@ -621,22 +625,22 @@ class PaymentTermDropdown extends StatelessWidget {
 
 /// Orders Status [OrdersStatusDropdown]
 class OrdersStatusDropdown extends StatelessWidget {
-  final String? serverValue;
+  final String? initialValue;
   final void Function(dynamic s) onChange;
 
   const OrdersStatusDropdown({
     super.key,
     required this.onChange,
-    this.serverValue,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: orderStatus,
-      labelText: 'order status',
-      serverValue: serverValue,
+      label: 'order status',
+      initialValue: initialValue,
       onValueChange: (String? v) => onChange(v),
     );
   }
@@ -644,22 +648,22 @@ class OrdersStatusDropdown extends StatelessWidget {
 
 /// Orders Status [OrdersTypesDropdown]
 class OrdersTypesDropdown extends StatelessWidget {
-  final String? serverValue;
+  final String? initialValue;
   final void Function(dynamic s) onValueChange;
 
   const OrdersTypesDropdown({
     super.key,
     required this.onValueChange,
-    this.serverValue,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: orderTypes,
-      labelText: 'order type',
-      serverValue: serverValue,
+      label: 'order type',
+      initialValue: initialValue,
       onValueChange: (String? v) => onValueChange(v),
     );
   }

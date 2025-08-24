@@ -71,19 +71,19 @@ class PurchaseRequisition {
 }
 
 class RequisitionLineItem {
-  final String productNameOrCategory;
+  final String itemNameOrCategory;
   final int estimatedQuantity;
   final String reason;
 
   RequisitionLineItem({
-    required this.productNameOrCategory,
+    required this.itemNameOrCategory,
     required this.estimatedQuantity,
     required this.reason,
   });
 
   factory RequisitionLineItem.fromJson(Map<String, dynamic> json) {
     return RequisitionLineItem(
-      productNameOrCategory: json['productNameOrCategory'],
+      itemNameOrCategory: json['itemNameOrCategory'],
       estimatedQuantity: json['estimatedQuantity'],
       reason: json['reason'],
     );
@@ -91,7 +91,7 @@ class RequisitionLineItem {
 
   Map<String, dynamic> toJson() {
     return {
-      'productNameOrCategory': productNameOrCategory,
+      'itemNameOrCategory': itemNameOrCategory,
       'estimatedQuantity': estimatedQuantity,
       'reason': reason,
     };
@@ -107,12 +107,12 @@ final requisition = PurchaseRequisition(
   purpose: 'Replace old laptops for new hires',
   lineItems: [
     RequisitionLineItem(
-      productNameOrCategory: 'Laptop - Dell XPS 13',
+      itemNameOrCategory: 'Laptop - Dell XPS 13',
       estimatedQuantity: 5,
       reason: 'For onboarding new employees',
     ),
     RequisitionLineItem(
-      productNameOrCategory: 'USB-C Docking Station',
+      itemNameOrCategory: 'USB-C Docking Station',
       estimatedQuantity: 5,
       reason: 'To support multiple monitors',
     ),

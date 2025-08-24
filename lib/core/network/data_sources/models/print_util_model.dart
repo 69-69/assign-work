@@ -113,10 +113,10 @@ class IssuerCompany {
   );
 }
 
-/// Print Products Invoice, Proforma, RequestForQuotation, DeliveryNote [PrintItem]
+/// Print Items Invoice, Proforma, RequestForQuotation, DeliveryNote [PrintItem]
 class PrintItem {
   const PrintItem({
-    required this.productName,
+    required this.itemName,
     required this.unitPrice,
     required this.quantity,
     required this.discountPercent,
@@ -129,7 +129,7 @@ class PrintItem {
 
   final String? sku;
   final double discountPercent;
-  final String productName;
+  final String itemName;
   final double unitPrice;
   final int quantity;
   final String? validityDate;
@@ -155,7 +155,7 @@ class PrintItem {
       case 'sku#' || '#' || 'no':
         return count.toString();
       case 'item description' || 'item':
-        return productName;
+        return itemName;
       case 'quantity' || 'qty':
         return quantity.toString();
       case 'unit price' || 'price':

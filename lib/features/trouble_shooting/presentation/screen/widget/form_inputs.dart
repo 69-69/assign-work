@@ -1,10 +1,8 @@
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/features/trouble_shooting/data/data_sources/remote/get_subscriptions.dart';
-import 'package:assign_erp/features/trouble_shooting/data/models/subscription_model.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/search_subscription.dart';
 import 'package:flutter/material.dart';
 
 /// Subscription Name & Fee TextField [SubscriptionNameAndFee]
@@ -31,7 +29,7 @@ class SubscriptionNameAndFee extends StatelessWidget {
       children: [
         CustomTextField(
           enable: enable,
-          labelText: 'Subscription name',
+          label: 'Subscription name',
           onChanged: onNameChanged,
           controller: nameController,
           keyboardType: TextInputType.name,
@@ -63,7 +61,7 @@ class SubscriptionFee extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomTextField(
       enable: enable,
-      labelText: 'Subscription Fee',
+      label: 'Subscription Fee',
       onChanged: onSubscribeFeeChanged,
       controller: subscribeFeeController,
       keyboardType: TextInputType.number,
@@ -83,16 +81,16 @@ class SubscriptionFee extends StatelessWidget {
 
 /// Subscription Licenses Dropdown [SubscriptionAndTotalDevicesDropdown]
 class SubscriptionAndTotalDevicesDropdown extends StatelessWidget {
-  final String? serverSub;
-  final String? serverTotalDevices;
+  final String? initialSub;
+  final String? initialTotalDevices;
   final Function(String?) onTotalDevicesChanged;
-  final Function(String, String, DateTime?, DateTime?) onChanged;
+  final Function(String, String, double, DateTime?, DateTime?) onChanged;
 
   const SubscriptionAndTotalDevicesDropdown({
     super.key,
-    this.serverSub,
+    this.initialSub,
     required this.onChanged,
-    this.serverTotalDevices,
+    this.initialTotalDevices,
     required this.onTotalDevicesChanged,
   });
 
@@ -101,34 +99,26 @@ class SubscriptionAndTotalDevicesDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        CustomDropdown(
+        StaticDropdown(
           key: key,
           items: List.generate(20, (i) => '$i'),
-          labelText: 'total devices',
-          serverValue: serverTotalDevices,
+          label: 'total devices',
+          initialValue: initialTotalDevices,
           onValueChange: (String? v) => onTotalDevicesChanged(v),
         ),
-        CustomDropdownSearch<Subscription>(
-          labelText: (serverSub ?? 'Search Subscription...').toTitleCase,
-          asyncItems: (String filter, loadProps) async =>
-              await GetSubscriptions.load(),
-          filterFn: (sub, filter) {
-            var f = filter.isEmpty ? (serverSub ?? '') : filter;
-            return sub.filterByAny(f);
-          },
-          itemAsString: (sub) => sub.itemAsString,
-          onChanged: (sub) =>
-              onChanged(sub!.id, sub.name, sub.effectiveFrom, sub.expiresOn),
-          validator: (sub) => sub == null ? 'Subscription is required' : null,
+        SearchSubscription(
+          initialValue: initialSub,
+          onChanged: (sub) => onChanged(
+            sub!.id,
+            sub.name,
+            sub.fee,
+            sub.effectiveFrom,
+            sub.expiresOn,
+          ),
         ),
       ],
     );
   }
-
-  /*_getProductCategory() async {
-    final categories = await GetProductCategory.load();
-    return categories.map((m) => m.name).toList();
-  }*/
 }
 
 /// Expiry & Effective Date Picker [EffectiveAndExpiryDateInput]
@@ -140,12 +130,12 @@ class EffectiveAndExpiryDateInput extends StatelessWidget {
     this.onQuantityChanged,
     required this.onExpiryChanged,
     required this.onEffectiveChanged,
-    this.serverExpiryDate,
-    this.serverEffectiveDate,
+    this.initialExpiryDate,
+    this.initialEffectiveDate,
   });
 
-  final String? serverExpiryDate;
-  final String? serverEffectiveDate;
+  final String? initialExpiryDate;
+  final String? initialEffectiveDate;
   final String? labelExpiry;
   final String? labelManufacture;
   final ValueChanged? onQuantityChanged;
@@ -159,13 +149,13 @@ class EffectiveAndExpiryDateInput extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DatePicker(
-          serverDate: serverEffectiveDate,
+          initialDate: initialEffectiveDate,
           label: labelManufacture,
           restorationId: 'Effective date',
           selectedDate: onEffectiveChanged,
         ),
         DatePicker(
-          serverDate: serverExpiryDate,
+          initialDate: initialExpiryDate,
           label: labelExpiry,
           restorationId: 'Expiry date',
           selectedDate: onExpiryChanged,

@@ -8,7 +8,7 @@ import 'package:printing/printing.dart';
 
 class PrintRFQ2 {
   PrintRFQ2({
-    required this.products,
+    required this.items,
     required this.supplierEmail,
     required this.supplierName,
     required this.supplierAddress,
@@ -19,7 +19,7 @@ class PrintRFQ2 {
     // required this.accentColor,
   });
 
-  final List<PrintItem> products;
+  final List<PrintItem> items;
   final String? supplierEmail;
   final String supplierName;
   final String supplierAddress;
@@ -36,7 +36,7 @@ class PrintRFQ2 {
   String? _bgShape;*/
 
   String? get _deliveryDate =>
-      products.map<String?>((p) => p.validityDate).reduce((a, b) => a ?? b);
+      items.map<String?>((p) => p.validityDate).reduce((a, b) => a ?? b);
 
   String get _rfqTitle => 'Request For Quotation';
 
@@ -103,7 +103,7 @@ class PrintRFQ2 {
   /// Computer Generate Notice [_computerGenerated]
   pw.Center _computerGenerated() => pw.Center(
     child: pw.Text(
-      'This is Computer Generated $_rfqTitle',
+      'Electronic version - $_rfqTitle',
       textAlign: pw.TextAlign.center,
     ),
   );
@@ -200,7 +200,7 @@ class PrintRFQ2 {
               softWrap: true,
               textAlign: pw.TextAlign.end,
               text: pw.TextSpan(
-                text: 'Contact Person ',
+                text: 'Contact Person: ',
                 style: pw.TextStyle(
                   color: _pdfColors.footerColor,
                   fontWeight: pw.FontWeight.bold,
@@ -483,10 +483,10 @@ class PrintRFQ2 {
         (col) => tableHeaders[col].toTitleCase,
       ),
       data: List<List<String>>.generate(
-        products.length,
+        items.length,
         (row) => List<String>.generate(
           tableHeaders.length,
-          (col) => products[row].getIndex(tableHeaders[col], row),
+          (col) => items[row].getIndex(tableHeaders[col], row),
         ),
       ),
     );

@@ -30,19 +30,19 @@ class _AddSalesForm extends StatefulWidget {
 class _AddSalesFormState extends State<_AddSalesForm> {
   bool _isEnabledOrderNumber = false;
   bool _isEnabledTotalAmt = false;
-  bool _isEnabledProductId = false;
+  bool _isEnabledItemId = false;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
   String _subTotal = '';
   String _selectedCustomerId = '';
-  String? _selectedPaymentMethod;
+  String? _selectedPayMethod;
   String? _selectedPaymentStatus;
   String? _selectedSaleStatus;
 
   final _formKey = GlobalKey<FormState>();
   final _orderNumberController = TextEditingController();
   final _invoiceNumberController = TextEditingController();
-  final _productIdController = TextEditingController();
+  final _itemIdController = TextEditingController();
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _totalAmtController = TextEditingController();
@@ -58,8 +58,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
   void _toggleEditTotalAmt() =>
       setState(() => _isEnabledTotalAmt = !_isEnabledTotalAmt);
 
-  void _toggleEditProductId() =>
-      setState(() => _isEnabledProductId = !_isEnabledProductId);
+  void _toggleEditItemId() =>
+      setState(() => _isEnabledItemId = !_isEnabledItemId);
 
   void _toggleEditOrderNumber() =>
       setState(() => _isEnabledOrderNumber = !_isEnabledOrderNumber);
@@ -85,7 +85,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
     _amountPaidController.dispose();
     _quantityController.dispose();
     _orderNumberController.dispose();
-    _productIdController.dispose();
+    _itemIdController.dispose();
     _unitPriceController.dispose();
     _discountController.dispose();
     _deliveryAmountController.dispose();
@@ -98,7 +98,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
     if (_formKey.currentState!.validate()) {
       final item = Sale(
         orderNumber: _orderNumberController.text,
-        productId: _productIdController.text,
+        itemId: _itemIdController.text,
         customerId: _selectedCustomerId,
         quantity: int.parse(_quantityController.text),
         unitPrice: double.tryParse(_unitPriceController.text) ?? 0.0,
@@ -111,7 +111,7 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         // Total Amount
         amountPaid: double.tryParse(_amountPaidController.text) ?? 0.0,
         totalAmount: double.tryParse(_totalAmtController.text) ?? 0.0,
-        paymentTerms: _selectedPaymentMethod ?? '',
+        paymentMethod: _selectedPayMethod ?? '',
         paymentStatus: _selectedPaymentStatus ?? '',
         status: _selectedSaleStatus ?? '',
 
@@ -162,14 +162,14 @@ class _AddSalesFormState extends State<_AddSalesForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        OrderNumberAndProductIdInput(
+        OrderNumberAndItemIdInput(
           enableOrderNumber: _isEnabledOrderNumber,
           onOrderNumberEdited: _toggleEditOrderNumber,
-          enableProductId: _isEnabledProductId,
-          onProductIdEdited: _toggleEditProductId,
+          enableItemId: _isEnabledItemId,
+          onItemIdEdited: _toggleEditItemId,
           orderNumberController: _orderNumberController,
-          productIdController: _productIdController,
-          onProductIdChanged: (s) {
+          itemIdController: _itemIdController,
+          onItemIdChanged: (s) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
           onIdChanged: (s) {
@@ -221,8 +221,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         const SizedBox(height: 20.0),
         DeliveryAmtPaymentMethodInput(
           deliveryController: _deliveryAmountController,
-          serverValue: _selectedPaymentMethod,
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          initialPayMethod: _selectedPayMethod,
+          onPayMethodChanged: (s) => setState(() => _selectedPayMethod = s),
           onChanged: (s) {
             _calculateTotalAmount();
             setState(() {});

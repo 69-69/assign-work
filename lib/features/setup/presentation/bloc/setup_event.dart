@@ -9,7 +9,9 @@ sealed class SetupEvent<T> extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetSetups<T> extends SetupEvent<T> {}
+class GetSetups<T> extends SetupEvent<T> {
+  const GetSetups();
+}
 
 class RefreshSetups<T> extends SetupEvent<T> {}
 
@@ -100,7 +102,7 @@ class OverrideSetup<T> extends UpdateSetup<T> {
 }
 
 class DeleteSetup<T> extends SetupEvent<T> {
-  final String documentId;
+  final T documentId;
 
   const DeleteSetup({required this.documentId});
 
@@ -109,10 +111,10 @@ class DeleteSetup<T> extends SetupEvent<T> {
 }
 
 /// Internal events for state updates
-class _SetupLoaded<T> extends SetupEvent<T> {
+class _SetupsLoaded<T> extends SetupEvent<T> {
   final List<T> data;
 
-  const _SetupLoaded(this.data);
+  const _SetupsLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
@@ -127,10 +129,10 @@ class _ShortIDLoaded<T> extends SetupEvent<T> {
   List<Object?> get props => [shortID];
 }
 
-class _SingleSetupLoaded<T> extends SetupEvent<T> {
+class _SetupLoaded<T> extends SetupEvent<T> {
   final T data;
 
-  const _SingleSetupLoaded(this.data);
+  const _SetupLoaded(this.data);
 
   @override
   List<Object?> get props => [data];

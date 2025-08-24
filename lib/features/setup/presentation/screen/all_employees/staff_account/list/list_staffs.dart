@@ -1,4 +1,3 @@
-import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
@@ -7,9 +6,9 @@ import 'package:assign_erp/features/setup/data/models/employee_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/screen/all_employees/staff_account/index.dart';
+import 'package:assign_erp/features/setup/presentation/screen/all_employees/staff_account/widget/assign_department_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class ListStaffs extends StatefulWidget {
   const ListStaffs({super.key});
@@ -35,7 +34,7 @@ class _ListStaffsState extends State<ListStaffs> {
           SetupsLoaded<Employee>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Add Staff',
+                    'Add Employee',
                     onPressed: () => context.openCreateStaffAcc(),
                   )
                 : _buildCard(context, results),
@@ -88,42 +87,44 @@ class _ListStaffsState extends State<ListStaffs> {
       children: [
         context.elevatedIconBtn(
           Icon(Icons.person_add, color: kLightColor),
-          label: 'Add Staff',
+          label: 'Add Employee',
           onPressed: () async => await context.openCreateStaffAcc(),
           bgColor: kDangerColor,
-          color: kLightColor,
-        ),
-        context.elevatedButton(
-          'Roles & Permissions',
-          onPressed: () => context.pushNamed(
-            RouteNames.manageRoles,
-            pathParameters: {'openTab': '2'},
-          ),
-          bgColor: kGrayBlueColor,
-          color: kLightColor,
+          txtColor: kLightColor,
         ),
         if (_isChecked == true) ...[
           context.elevatedButton(
             'Assign Role',
-            tooltip: 'Assign Employee to a Role',
+            tooltip: 'Assign Employee to Role',
             onPressed: () async => await context.openAssignEmployeeRoleDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
             ),
             bgColor: kPrimaryAccentColor,
-            color: kLightColor,
+            txtColor: kLightColor,
+          ),
+          context.elevatedButton(
+            'Assign Department',
+            tooltip: 'Assign Employee to Department',
+            onPressed: () async =>
+                await context.openAssignEmployeeDepartmentDialog(
+                  employeeId: _selectedEmployee!.id,
+                  employeeName: _selectedEmployee?.fullName,
+                ),
+            bgColor: kPrimaryLightColor,
+            txtColor: kLightColor,
           ),
 
           context.elevatedButton(
             'Assign Store',
-            tooltip: 'Assign Employee to a Store',
+            tooltip: 'Assign Employee to Store',
             onPressed: () async =>
                 await context.assignEmployeeToStoreLocationDialog(
                   employeeId: _selectedEmployee!.id,
                   employeeName: _selectedEmployee?.fullName,
                 ),
             bgColor: kWarningColor,
-            color: kLightColor,
+            txtColor: kLightColor,
           ),
         ],
       ],
@@ -149,7 +150,9 @@ class _ListStaffsState extends State<ListStaffs> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific Employee Account
-        context.read<EmployeeBloc>().add(DeleteSetup(documentId: employee.id));
+        context.read<EmployeeBloc>().add(
+          DeleteSetup<String>(documentId: employee.id),
+        );
       }
     }
   }

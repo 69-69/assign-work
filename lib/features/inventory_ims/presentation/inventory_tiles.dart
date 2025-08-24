@@ -10,7 +10,7 @@ extension InventoryTiles on dynamic {
   List<DashboardTile> get ordersTiles {
     final tilesData = [
       {
-        'label': 'sales order',
+        'label': 'sales - order',
         'icon': Icons.trending_up,
         'action': RouteNames.salesOrders,
         'param': {},
@@ -35,7 +35,7 @@ extension InventoryTiles on dynamic {
             'create additional orders that may include special requests, one-time purchases',
       },
       {
-        'label': 'request - for quotation',
+        'label': 'request - for quotes',
         'icon': Icons.request_page_outlined,
         'action': RouteNames.imsRequestForQuote,
         'param': {},
@@ -50,14 +50,14 @@ extension InventoryTiles on dynamic {
 
   List<DashboardTile> get inventoryTiles {
     final tilesData = [
-      // products tab
+      // items tab
       {
         'label': 'stocks',
         'icon': Icons.receipt_long,
-        'action': RouteNames.products,
+        'action': RouteNames.items,
         'param': {},
         'access': _getValue(InventoryPermission.manageStock),
-        'description': 'add or create new products to the inventory.',
+        'description': 'add or create new items to the inventory.',
       },
       // orders tab
       {
@@ -70,22 +70,22 @@ extension InventoryTiles on dynamic {
             'create purchase orders (POs), sales orders (SOs), and miscellaneous orders (MOs) for suppliers or customers',
       },
       {
-        'label': 'Product Categories',
+        'label': 'Item Categories',
         'icon': Icons.dashboard_customize_outlined,
-        'action': RouteNames.productCategories,
+        'action': RouteNames.itemCategories,
         'param': {},
-        'access': _getValue(InventoryPermission.manageProductCategory),
+        'access': _getValue(InventoryPermission.manageItemCategory),
         'description':
-            'Organize products into categories for easier tracking and reporting.',
+            'Organize items into categories for easier tracking and reporting.',
       },
       {
-        'label': 'Product Suppliers',
+        'label': 'Item Suppliers',
         'icon': Icons.local_shipping,
-        'action': RouteNames.productSuppliers,
+        'action': RouteNames.itemSuppliers,
         'param': {},
-        'access': _getValue(InventoryPermission.manageProductSuppliers),
+        'access': _getValue(InventoryPermission.manageItemSuppliers),
         'description':
-            'Manage suppliers linked to specific products for sourcing and restocking.',
+            'Manage suppliers linked to specific items for sourcing and restocking.',
       },
       // deliveries tab
       {
@@ -269,7 +269,7 @@ extension InventoryTiles on dynamic {
 
     // Role Based Access Control
     return {
-      EmployeeRole.storeOwner: defaultTiles,
+      EmployeeRole.businessOwner: defaultTiles,
       EmployeeRole.manager: defaultTiles,
       EmployeeRole.sale: [salesTile],
       EmployeeRole.developer: defaultTiles,

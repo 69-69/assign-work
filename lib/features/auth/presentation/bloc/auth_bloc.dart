@@ -49,6 +49,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Listen to the merged stream and add each event to the Bloc's event stream.
         // This allows the Bloc to process events from both streams.
         .listen((event) {
+          prettyPrint('Received event', 'new event received');
           if (!isClosed) {
             add(event);
           } else {

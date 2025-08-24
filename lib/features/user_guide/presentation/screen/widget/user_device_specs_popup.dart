@@ -38,7 +38,7 @@ class _LiveSupportState extends State<_LiveSupport> {
 
   _buildBody(BuildContext context) {
     return Container(
-      color: kGrayColor.withAlpha((0.2 * 255).toInt()),
+      color: kGrayColor.toAlpha(0.2),
       alignment: Alignment.bottomLeft,
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

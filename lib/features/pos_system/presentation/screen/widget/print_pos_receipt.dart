@@ -39,12 +39,12 @@ class PrintPOSSalesReceipt {
       final order = entry.value;
 
       return PrintItem(
-        productName: _toCap(order.productName),
+        itemName: _toCap(order.itemName),
         unitPrice: order.unitPrice,
         quantity: order.quantity,
         discountPercent: order.discountPercent,
         taxPercent: order.taxPercent,
-        paymentTerms: _toCap(order.paymentMethod),
+        paymentTerms: _toCap(order.payMethod),
       );
     }).toList();
 

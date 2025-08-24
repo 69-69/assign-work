@@ -212,8 +212,7 @@ final List<AccessControl> _inventoryPermissions = [
   AccessControl(
     module: "pos inventory",
     title: "Edit inventory items",
-    description:
-        "Allow users to update product names, prices, or stock details.",
+    description: "Allow users to update item names, prices, or stock details.",
     access: PosPermission.updatePosInventory,
   ),
   AccessControl(
@@ -283,8 +282,8 @@ final List<AccessControl> posPermissions = [
 /*/// Set Up Permissions for Each Role [rolePermissions]
 final Map<EmployeeRole, RolePermissionContext<PosPermission>> rolePermissions =
     {
-      EmployeeRole.storeOwner: RolePermissionContext<PosPermission>(
-        role: EmployeeRole.storeOwner,
+      EmployeeRole.businessOwner: RolePermissionContext<PosPermission>(
+        role: EmployeeRole.businessOwner,
         permissions: PosPermission.values.toSet(),
       ),
       EmployeeRole.manager: RolePermissionContext<PosPermission>(

@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -11,8 +12,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AttendanceScreen extends StatelessWidget {
+class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
+
+  @override
+  State<AttendanceScreen> createState() => _AttendanceScreenState();
+}
+
+class _AttendanceScreenState extends State<AttendanceScreen> {
+  final List<String> _selectedIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -53,19 +61,65 @@ class AttendanceScreen extends StatelessWidget {
       skipPos: 2,
       showIDToggle: true,
       headers: Attendance.dataTableHeader,
-      anyWidgetAlignment: WrapAlignment.end,
+      anyWidget: _anyWidget(cxt),
       rows: attendances.map((d) => d.itemAsList()).toList(),
       editLabel: 'View Areas',
       editIcon: Icons.explore_outlined,
-      onEditTap: (row) async => _onViewedTap(cxt, attendances, row[1]),
+      onEditTap: (row) async => _onViewTap(cxt, attendances, row[1]),
       onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row[1]),
+      onAllChecked:
+          (
+            bool isChecked,
+            List<bool> isAllChecked,
+            List<List<String>> checkedRows,
+          ) {
+            setState(() {
+              _selectedIds.clear();
+              if (isChecked) {
+                _selectedIds.addAll(checkedRows.map((e) => e[1]));
+              }
+            });
+          },
+    );
+  }
+
+  Widget _anyWidget(BuildContext cxt) {
+    return Wrap(
+      spacing: 10.0,
+      runSpacing: 10.0,
+      runAlignment: WrapAlignment.spaceBetween,
+      children: [
+        if (_selectedIds.isNotEmpty) ...[
+          context.elevatedIconBtn(
+            Icon(Icons.delete, color: kLightColor),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: context.colorScheme.error,
+            ),
+            onPressed: () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (cxt.mounted && isConfirmed) {
+                /// Delete all selected Attendance
+                cxt.read<AttendanceBloc>().add(
+                  DeleteSetup<List<String>>(documentId: _selectedIds),
+                );
+                _selectedIds.clear();
+                setState(() {});
+              }
+            },
+            label: const Text(
+              'Delete all',
+              style: TextStyle(color: kLightColor),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
   Attendance _findAttendance(List<Attendance> attendances, String userId) =>
       Attendance.findById(attendances, userId);
 
-  Future<void> _onViewedTap(
+  Future<void> _onViewTap(
     BuildContext cxt,
     List<Attendance> attendances,
     String userId,
@@ -119,16 +173,15 @@ class AttendanceScreen extends StatelessWidget {
     List<Attendance> attendances,
     String userId,
   ) async {
-    {
-      Attendance attendance = _findAttendance(attendances, userId);
+    Attendance attendance = _findAttendance(attendances, userId);
+    // prettyPrint('attendance', attendance.id);
 
-      final isConfirmed = await cxt.confirmUserActionDialog();
-      if (cxt.mounted && isConfirmed) {
-        /// Delete specific Attendance
-        cxt.read<AttendanceBloc>().add(
-          DeleteSetup<String>(documentId: attendance.id),
-        );
-      }
+    final isConfirmed = await cxt.confirmUserActionDialog();
+    if (cxt.mounted && isConfirmed) {
+      /// Delete specific Attendance
+      cxt.read<AttendanceBloc>().add(
+        DeleteSetup<String>(documentId: attendance.id),
+      );
     }
   }
 }

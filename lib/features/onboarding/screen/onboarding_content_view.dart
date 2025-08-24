@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/delayed_animation.dart';
 import 'package:assign_erp/features/onboarding/data/onboarding_data.dart';
 import 'package:flutter/material.dart';
@@ -55,15 +56,8 @@ class OnBoardingContentView extends StatelessWidget {
   SizedBox buildNextButton(BuildContext context) {
     return SizedBox(
       width: context.screenWidth * 0.5,
-      child: ElevatedButton.icon(
-        onPressed: onPressedNext,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _onBoardingButtonColors[currentIndex],
-          padding: const EdgeInsets.all(10),
-          // shape: const StadiumBorder(),
-        ),
-        iconAlignment: IconAlignment.end,
-        icon: Row(
+      child: context.elevatedIconBtn(
+        Row(
           children: List.generate(
             currentIndex + 1,
             (index) => Icon(
@@ -73,6 +67,13 @@ class OnBoardingContentView extends StatelessWidget {
             ),
           ),
         ),
+        onPressed: onPressedNext,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _onBoardingButtonColors[currentIndex],
+          padding: const EdgeInsets.all(10),
+          // shape: const StadiumBorder(),
+        ),
+        iconAlignment: IconAlignment.end,
         label: Text('Next', style: TextStyle(color: kLightColor)),
       ),
     );

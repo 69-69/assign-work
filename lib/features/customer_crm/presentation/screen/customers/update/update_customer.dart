@@ -110,7 +110,7 @@ class _UpdateCustomerBodyState extends State<_UpdateCustomerBody> {
       children: <Widget>[
         CustomerNameAndBirthDayInput(
           nameController: _nameController,
-          serverDate: _customer.getBirthDay,
+          initialDate: _customer.getBirthDay,
           onDateChanged: (t) => setState(() => _selectedBirthday = t),
           onNameChanged: (s) {
             if (_formKey.currentState!.validate()) setState(() {});

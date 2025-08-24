@@ -31,7 +31,7 @@ class FirestoreHelper {
   (String role, String id) get _workspaceDetails {
     final workspace = _authCacheService.getWorkspace();
     return (
-      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.subscriber.label,
+      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.tenant.label,
       _workspaceId ?? workspace?.id ?? '',
     );
   }
@@ -51,16 +51,9 @@ class FirestoreHelper {
       ),
       CollectionType.global => _getGlobalCollectionRef(collectionPath),
       CollectionType.chats => getChatCollectionRef(collectionPath),
-      CollectionType.stores => getStoresCollectionRef(collectionPath),
-      CollectionType.clients => getAgentClientsCollectionRef(collectionPath),
+      CollectionType.stores => _getStoresCollectionRef(collectionPath),
+      CollectionType.clients => _getAgentClientsCollectionRef(collectionPath),
     };
-
-    /*// Determine whether to use a global collection reference or a workspace-scoped one.
-    return useGlobalRef
-        ? _getGlobalCollectionRef(collectionPath) // Global reference
-        : _getWorkspaceCollectionRef(
-            collectionPath,
-          ); // Workspace-scoped reference*/
   }
 
   /// Returns a workspace-scoped collection reference: `/workspaceRole/workspaceId/collectionPath`
@@ -80,7 +73,7 @@ class FirestoreHelper {
   /// Returns a collection inside a specific store (e.g. products, inventory).
   ///
   /// Example path: `/workspaceRole/workspaceId/stores/storeNumber/collectionPath`
-  CollectionReference<Map<String, dynamic>> getStoresCollectionRef(
+  CollectionReference<Map<String, dynamic>> _getStoresCollectionRef(
     String collectionPath,
   ) {
     final storeNumber = _authCacheService.getEmployee()?.storeNumber ?? '';
@@ -106,7 +99,7 @@ class FirestoreHelper {
   }
 
   /// Returns the agent-clients mapping reference: `/collectionPath/workspaceId/clients`
-  CollectionReference<Map<String, dynamic>> getAgentClientsCollectionRef(
+  CollectionReference<Map<String, dynamic>> _getAgentClientsCollectionRef(
     String collectionPath,
   ) {
     final (_, id) = _workspaceDetails;
@@ -125,17 +118,4 @@ class FirestoreHelper {
       allow read, write: if request.auth != null && request.auth.uid == subscriberId;
     }
   }
-}
-
-Question to AI:
-  you have an ERP system; inventory system, POS, CRM and Warehouse system,
-  with multiple subscribers with their individual workspaces. The ERP is developed
-  in dart flutter for desktop and mobile app using firebase database.
-
-  Question: how can the ERP system create a distinct or respective firestore database for subscribers once they sign in to the application in flutter
-
-  **OR**
-  To manage distinct Firestore databases for each subscriber in your ERP system,
-  you'll need a way to dynamically create and access a unique database instance
-  for each subscriber upon login. Here’s a step-by-step guide to achieve this in a Flutter application using Firebase:
-*/
+}*/

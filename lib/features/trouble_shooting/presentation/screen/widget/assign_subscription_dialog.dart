@@ -65,21 +65,24 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
           children: [
             SubscriptionAndTotalDevicesDropdown(
               onTotalDevicesChanged: (v) {
-                _updateSpecificData(context, {'maxAllowedDevices': v});
+                _updateSpecificData(context, {
+                  'maxAllowedDevices': int.tryParse(v ?? ''),
+                });
 
-                context.showCustomSnackBar(
+                context.showAlertOverlay(
                   "$_workspaceName's Max allowed devices updated successfully",
                 );
               },
-              onChanged: (id, name, effectiveFrom, expiresOn) {
+              onChanged: (id, name, fee, effectiveFrom, expiresOn) {
                 _updateSpecificData(context, {
                   'subscriptionId': id,
-                  'expiresOn': expiresOn,
-                  'effectiveFrom': effectiveFrom,
+                  'subscriptionFee': fee,
+                  'expiresOn': expiresOn?.millisecondsSinceEpoch,
+                  'effectiveFrom': effectiveFrom?.millisecondsSinceEpoch,
                 });
 
-                context.showCustomSnackBar(
-                  'Subscription assigned to $_workspaceName successfully',
+                context.showAlertOverlay(
+                  'Subscription successfully assigned to $_workspaceName',
                 );
               },
             ),

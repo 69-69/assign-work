@@ -50,7 +50,7 @@ extension SetupTiles on dynamic {
         'icon': Icons.category,
         'action': RouteNames.productConfig,
         'param': {'openTab': '3'},
-        'access': _getValue(SetupPermission.manageProductCategory),
+        'access': _getValue(SetupPermission.manageItemCategory),
         'description':
             "add suppliers & product categories to fit the company's specific needs",
       },

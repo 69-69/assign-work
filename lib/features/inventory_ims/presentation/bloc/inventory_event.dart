@@ -102,10 +102,10 @@ class DeleteInventory<T> extends InventoryEvent<T> {
 }
 
 /// Internal events for state updates
-class _InventoryLoaded<T> extends InventoryEvent<T> {
+class _InventoriesLoaded<T> extends InventoryEvent<T> {
   final List<T> data;
 
-  const _InventoryLoaded(this.data);
+  const _InventoriesLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
@@ -120,10 +120,10 @@ class _ShortIDLoaded<T> extends InventoryEvent<T> {
   List<Object?> get props => [shortID];
 }
 
-class _SingleInventoryLoaded<T> extends InventoryEvent<T> {
+class _InventoryLoaded<T> extends InventoryEvent<T> {
   final T data;
 
-  const _SingleInventoryLoaded(this.data);
+  const _InventoryLoaded(this.data);
 
   @override
   List<Object?> get props => [data];

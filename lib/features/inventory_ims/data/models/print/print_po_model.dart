@@ -9,7 +9,7 @@ import 'package:printing/printing.dart';
 
 class PrintPO {
   PrintPO({
-    required this.products,
+    required this.items,
     required this.supplierEmail,
     required this.supplierName,
     required this.supplierAddress,
@@ -22,7 +22,7 @@ class PrintPO {
     // required this.accentColor,
   });
 
-  final List<PrintItem> products;
+  final List<PrintItem> items;
   final String approvedBy;
   final String? supplierEmail;
   final String supplierName;
@@ -41,20 +41,20 @@ class PrintPO {
   String? _bgShape;*/
 
   double get _subTotal =>
-      products.map<double>((p) => p.totalNetPrice).reduce((a, b) => a + b);
+      items.map<double>((p) => p.totalNetPrice).reduce((a, b) => a + b);
 
   double get _tax =>
-      products.map<double>((p) => p.taxPercent).reduce((a, b) => a + b);
+      items.map<double>((p) => p.taxPercent).reduce((a, b) => a + b);
 
   double get _taxAmount => (_tax / 100) * _subTotal;
 
   String? get _paymentTerms =>
-      products.map<String?>((p) => p.paymentTerms).reduce((a, b) => a ?? b);
+      items.map<String?>((p) => p.paymentTerms).reduce((a, b) => a ?? b);
 
   double get _grandTotalPrice => _subTotal + _taxAmount;
 
   String? get _deliveryDate =>
-      products.map<String?>((p) => p.validityDate).reduce((a, b) => a ?? b);
+      items.map<String?>((p) => p.validityDate).reduce((a, b) => a ?? b);
 
   String get _poTitle => 'Purchase Order';
 
@@ -123,7 +123,7 @@ class PrintPO {
   /// Computer Generate Notice [_computerGenerated]
   pw.Center _computerGenerated() => pw.Center(
     child: pw.Text(
-      'This is Computer Generated $_poTitle',
+      'Electronic version - $_poTitle',
       textAlign: pw.TextAlign.center,
     ),
   );
@@ -220,7 +220,7 @@ class PrintPO {
               softWrap: true,
               textAlign: pw.TextAlign.end,
               text: pw.TextSpan(
-                text: 'Contact Person ',
+                text: 'Contact Person: ',
                 style: pw.TextStyle(
                   color: _pdfColors.footerColor,
                   fontWeight: pw.FontWeight.bold,
@@ -547,10 +547,10 @@ class PrintPO {
         (col) => tableHeaders[col].toTitleCase,
       ),
       data: List<List<String>>.generate(
-        products.length,
+        items.length,
         (row) => List<String>.generate(
           tableHeaders.length,
-          (col) => products[row].getIndex(tableHeaders[col], row),
+          (col) => items[row].getIndex(tableHeaders[col], row),
         ),
       ),
     );

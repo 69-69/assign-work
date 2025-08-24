@@ -58,12 +58,13 @@ class LiveChatRepository extends FirestoreRepository {
   }
 
   /// Emit Data / Add Event to Stream [_emitDataToStream]
-  void _emitDataToStream({bool isDelete = false}) {
+  /// @Param reEmit: If TRUE refetch/emit data
+  void _emitDataToStream({bool reEmit = false}) {
     if (!_isDataControllerClosed) {
       final data = _getFromCache();
 
-      // Emit only if 'data has changed or is delete operation' to avoid duplicate entries in the UI
-      if (isDelete || data.isEmpty || !listEquals(data, _lastEmittedData)) {
+      // Emit only if 'data has changed or reEmit is true' to avoid duplicate entries in the UI
+      if (reEmit || data.isEmpty || !listEquals(data, _lastEmittedData)) {
         _dataController.add(data); // Use the new list reference
         // Update the last emitted data to prevent re-emit
         _lastEmittedData = data;

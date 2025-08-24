@@ -10,7 +10,7 @@ extension LicenseWarningDialog on BuildContext {
     context: this,
     isDismissible: false,
     isScrollControlled: true,
-    backgroundColor: Colors.red.withAlpha((0.5 * 255).toInt()),
+    backgroundColor: Colors.red.toAlpha(0.5),
     constraints: BoxConstraints(maxWidth: screenWidth),
     builder: (_) => const LicenseWarning(),
   );
@@ -24,7 +24,7 @@ class LicenseWarning extends StatelessWidget {
     return CustomDialog(
       title: DialogTitle(
         title: 'Upgrade your Plan'.toUpperCaseAll,
-        subtitle: "Oops, Device Limit Reached!",
+        subtitle: "Oops, Expired or Device Limit Reached!",
         txtColor: kLightColor,
         fontSize: 18,
         textScaler: TextScaler.linear(context.textScaleFactor),
@@ -43,13 +43,13 @@ class LicenseWarning extends StatelessWidget {
   _buildBody(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      width: context.screenWidth * 0.6,
+      width: context.dynamicWidth(0.6),
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: kDangerColor)),
       ),
       child: Text(
-        "You've reached the limit of devices for your current plan. To continue using your account, please remove a device or upgrade your subscription to support more devices. If you need help, our 24/7 support team is here for you.\n\nThank You!",
+        "Either Software is unlicensed or you've reached the limit of devices for your current plan. To continue using your account, please remove a device or upgrade your subscription to support more devices. If you need help, our 24/7 support team is here for you.\n\nThank You!",
         textAlign: TextAlign.center,
         style: context.textTheme.bodyLarge?.copyWith(
           color: kLightColor,

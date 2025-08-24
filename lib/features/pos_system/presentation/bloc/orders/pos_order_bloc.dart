@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_sale_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
@@ -26,7 +26,7 @@ class POSOrderBloc extends POSBloc<POSOrder> {
     // Prepare a list to hold all the Firestore add operations.
     final List<Future<void>> addOperations = orders.map((order) async {
       // Retrieve the cost price for the product, defaulting to 0.0 if not found.
-      final double costPrice = costPricesMap[order.productId] ?? 0.0;
+      final double costPrice = costPricesMap[order.itemId] ?? 0.0;
 
       // Create a Sales object from the POSOrder with initial data.
       final POSSale sale = POSSale.fromMap(order.toMap(), '');
@@ -52,7 +52,7 @@ class POSOrderBloc extends POSBloc<POSOrder> {
         _firestore.collection(posSalesDBCollectionPath).add(saleMap),
 
         // Update the quantity of the product
-        _updateProductQty(order.productId, order.quantity),
+        _updateItemQty(order.itemId, order.quantity),
       ]);
     }).toList();
 
@@ -64,27 +64,25 @@ class POSOrderBloc extends POSBloc<POSOrder> {
   }
 
   // Function to update the product quantity
-  Future<void> _updateProductQty(String productId, int orderQuantity) async {
+  Future<void> _updateItemQty(String itemId, int orderQuantity) async {
     try {
       // Construct a reference to the document of the product in Firestore
-      final docRef = _firestore
-          .collection(productsDBCollectionPath)
-          .doc(productId);
+      final docRef = _firestore.collection(itemsDBCollectionPath).doc(itemId);
 
       // Retrieve the current data of the product document from Firestore
       final docSnapshot = await docRef.get();
 
       // Check if the document exists and has data
       if (docSnapshot.exists) {
-        final productData = docSnapshot.data();
-        if (productData != null) {
+        final itemData = docSnapshot.data();
+        if (itemData != null) {
           // Convert the Firestore data into a Product object using a factory method
-          final fromProduct = Product.fromMap(productData, docSnapshot.id);
+          final fromItem = Item.fromMap(itemData, docSnapshot.id);
 
-          if (fromProduct.quantity > 0) {
+          if (fromItem.quantity > 0) {
             // Calculate the new outStock & quantity after updating
-            final newQty = fromProduct.quantity - orderQuantity;
-            final newOutStock = fromProduct.outOfStock + orderQuantity;
+            final newQty = fromItem.quantity - orderQuantity;
+            final newOutStock = fromItem.outOfStock + orderQuantity;
 
             // Update product quantity & out of Stock in Firestore-DB
             await docRef.update({

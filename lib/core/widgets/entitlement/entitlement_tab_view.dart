@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:flutter/material.dart';
 
 class EntitlementTabView extends StatefulWidget {
@@ -72,7 +73,12 @@ class EntitlementTabViewState extends State<EntitlementTabView>
       isScrollable: true,
       labelStyle: context.textTheme.titleSmall,
       tabs: _tabs
-          .map((t) => Tab(text: t['label'].toString(), icon: Icon(t['icon'])))
+          .map(
+            (t) => Tooltip(
+              message: '${t['tooltip']}'.toTitleCase,
+              child: Tab(text: t['label'].toString(), icon: Icon(t['icon'])),
+            ),
+          )
           .toList(),
       onTap: (_) {
         setState(() {}); // Rebuild to update IndexedStack index
@@ -97,9 +103,12 @@ class EntitlementTabViewState extends State<EntitlementTabView>
           ),
           destinations: _tabs
               .map(
-                (tab) => NavigationRailDestination(
-                  icon: Icon(tab['icon']),
-                  label: Text(tab['label'] ?? 'Unnamed'),
+                (t) => NavigationRailDestination(
+                  icon: Icon(t['icon']),
+                  label: Tooltip(
+                    message: '${t['tooltip']}'.toTitleCase,
+                    child: Text(t['label'] ?? 'Unnamed'),
+                  ),
                 ),
               )
               .toList(),

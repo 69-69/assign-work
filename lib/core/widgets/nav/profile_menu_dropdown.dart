@@ -179,8 +179,8 @@ class ProfileMenuDropdown extends StatelessWidget {
           const Divider(thickness: 4),
           _buildListTile(
             context,
-            title: 'SUBSCRIPTION: ${context.readSubscriptionName}',
-            subtitle: 'Valid Until: ${workspace.expiresOn.toStandardDT}',
+            title: 'SUB.: ${context.readSubscriptionName}',
+            subtitle: 'Validity: ${workspace.expiresOn.toStandardDT}',
           ),
           const Divider(thickness: 0.4),
           _buildListTile(
@@ -364,8 +364,8 @@ class ProfileMenuDropdown extends StatelessWidget {
 
           _buildListTile(
             context,
-            title: 'SUBSCRIPTION: ${workspace.license.name}',
-            subtitle: 'Valid Until: ${workspace.expiresOn.toStandardDT}',
+            title: 'SUB.: ${workspace.license.name}',
+            subtitle: 'Validity: ${workspace.expiresOn.toStandardDT}',
           ),
           _buildListTile(
             context,

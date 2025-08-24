@@ -52,7 +52,7 @@ class POSApp extends StatelessWidget {
         "Daily Sales": 34,
         "Monthly Revenue": 34,
         "Refunds": 210,
-        "Top Product": 780,
+        "Top Item": 780,
         "customers Today": 5,
       },
     );

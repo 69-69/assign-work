@@ -11,6 +11,7 @@ import 'package:assign_erp/core/network/data_sources/remote/repository/firestore
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/device_info_service.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/access_control/domain/repository/access_control_repository.dart';
@@ -19,7 +20,10 @@ import 'package:assign_erp/features/auth/data/data_sources/remote/geo_location_s
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_creation_stages.dart';
 import 'package:assign_erp/features/setup/data/models/attendance_model.dart';
+import 'package:assign_erp/features/setup/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/setup/data/models/department_model.dart';
 import 'package:assign_erp/features/setup/data/models/employee_model.dart';
 import 'package:assign_erp/features/setup/data/permission/setup_permission.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -53,6 +57,11 @@ class AuthRepository extends FirestoreRepository {
          collectionRef: firestore.collection(workspaceAccDBCollectionPath),
        );
 
+  /// A temporary variable to hold new-user's Workspace ID & Agent ID
+  String _newWorkspaceId = '';
+  bool isRegistered = false;
+  String _registrarAgentId = '';
+
   final _controller = StreamController<AuthStatus>.broadcast();
 
   User? get firebaseUser => _firebaseAuth.currentUser;
@@ -66,16 +75,14 @@ class AuthRepository extends FirestoreRepository {
   Stream<AuthStatus> get authStatusChanges async* {
     await Future<void>.delayed(kRProgressDelay);
 
-    yield (firebaseUser?.uid ?? '').isNotEmpty
-        ? AuthStatus.authenticated
-        : AuthStatus.unauthenticated;
+    if (!isRegistered) {
+      yield (firebaseUser?.uid ?? '').isNotEmpty
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated;
+    }
 
     yield* _controller.stream;
   }
-
-  /// A temporary variable to hold new-user's Workspace ID & Agent ID
-  String _newWorkspaceId = '';
-  String _registrarAgentId = '';
 
   Future<Workspace?> getWorkspace({String? uid}) async {
     try {
@@ -107,7 +114,9 @@ class AuthRepository extends FirestoreRepository {
       // Return null if no valid data found
       return null;
     } catch (e /*, stackTrace*/) {
-      _handleAuthException("An error occurred during sign-in.");
+      _handleAuthException(
+        "An error occurred during getting signed-In workspace data.",
+      );
       return null; // Return null or handle the exception according to your needs
     }
   }
@@ -125,7 +134,9 @@ class AuthRepository extends FirestoreRepository {
       // Return null if the document does not exist or is empty
       return null;
     } catch (e /*, stackTrace*/) {
-      _handleAuthException("An error occurred during sign-in.");
+      _handleAuthException(
+        "An error occurred during getting signed-In employee data.",
+      );
       return null; // Return null or handle the exception according to your needs
     }
   }
@@ -141,7 +152,7 @@ class AuthRepository extends FirestoreRepository {
   WorkspaceRole get assignWorkspaceRole {
     Workspace? cacheWorkspace = _getWorkspaceCache();
 
-    return cacheWorkspace?.role.assign ?? WorkspaceRole.subscriber;
+    return cacheWorkspace?.role.assign ?? WorkspaceRole.tenant;
   }
 
   Future<void> _cacheWorkspace(Workspace workspace) async =>
@@ -167,20 +178,19 @@ class AuthRepository extends FirestoreRepository {
       // Convert doc data to Workspace
       final workspace = Workspace.fromMap(doc.data());
 
+      final subMsg = '$errorPrefix:Software is unlicensed / expired';
+      if (workspace.subscriptionId.isEmpty) {
+        return Failure(message: subMsg);
+      }
       final sub = await accessControlRepo.fetchLicensesForSubscription(
         workspace.subscriptionId,
       );
 
       // Validate workspace and license status
-      final isUnlicensed =
-          sub.data.isEmpty ||
-          workspace.isExpired ||
-          workspace.subscriptionId.isEmpty;
+      final isUnlicensed = sub.data.isEmpty || workspace.isExpired;
 
       if (isUnlicensed) {
-        return Failure(
-          message: '$errorPrefix:Software is unlicensed / expired',
-        );
+        return Failure(message: subMsg);
       }
 
       final userDeviceId = await DeviceInfoService.getDeviceId();
@@ -206,9 +216,10 @@ class AuthRepository extends FirestoreRepository {
 
       return Success(data: doc);
     } catch (e) {
-      _handleAuthException("An error occurred during sign-in.");
+      var e2 = "An error occurred while validating workspace sign-in.";
+      _handleAuthException(e2);
 
-      return Failure(message: 'An error occurred during sign-in.');
+      return Failure(message: e2);
     }
   }
 
@@ -281,11 +292,11 @@ class AuthRepository extends FirestoreRepository {
       // Handle Firebase authentication exceptions with a specific message
       _handleAuthException(
         e,
-        message: e.message ?? "An error occurred during sign-in.",
+        message: e.message ?? "An error occurred during workspace sign-in.",
       );
       return (
         workspace: null,
-        message: e.message ?? 'An error occurred during sign-in.',
+        message: e.message ?? 'An error occurred during workspace sign-in.',
       );
     } catch (e) {
       // Handle any other exceptions with a general message
@@ -444,24 +455,28 @@ class AuthRepository extends FirestoreRepository {
   /// Creates a new workspace by registering a user and setting up related data.
   ///
   /// [email] - The email address for the new user.
-  /// [fullName] - The full name of the new user.
+  /// [clientName] - The full name of the new user.
   /// [password] - The password for the new user.
   /// [mobileNumber] - The mobile number of the new user.
-  /// [createWorkspace]
+  /// [registerNewWorkspace]
   /// Returns a [Future<bool>] indicating whether the workspace creation was successful.
-  Future<bool> createWorkspace({
+  Future<bool> registerNewWorkspace({
     required String workspaceName,
     required String email,
-    required String fullName,
+    required String address,
+    required String clientName,
     required String password,
     required String mobileNumber,
     required String workspaceCategory,
     required String employeeTemporaryPasscode,
+    required void Function(WorkspaceCreationStage) onProgress,
   }) async {
     try {
-      // Store  agent ID temporarily, so we don't loose it when newUser is created
+      // Store agent ID temporarily, so we don't loose it when newUser is created
       _registrarAgentId = firebaseUser!.uid;
 
+      // Call stage update here
+      onProgress(WorkspaceCreationStage.registeringEmail);
       // Create a new User via Firebase Authentication.
       final UserCredential userCredential = await _createUser(email, password);
       final User? newUser = userCredential.user;
@@ -469,45 +484,68 @@ class AuthRepository extends FirestoreRepository {
       if (newUser != null && newUser.uid != _registrarAgentId) {
         // Store user ID temporarily, so we don't loose it when signOut
         _newWorkspaceId = newUser.uid;
+        isRegistered = true;
 
         // Send email verification to the new newUser.
         await _sendEmailVerification(newUser);
 
-        // Sign out immediately
+        // Sign out immediately after sending verification email.
+        // This prevents a situation where the new user remains signed in on the agent's device.
         await _firebaseAuth.signOut();
 
-        // FOR ORGANIZATION'S WORKSPACE CREATION: Create and save workspace data
+        // FOR ORGANIZATION'S WORKSPACE CREATION/SETUP
+        onProgress(WorkspaceCreationStage.creatingWorkspace);
         await _createWorkspace(
           email: email,
-          fullName: fullName,
+          address: address,
+          clientName: clientName,
           mobileNumber: mobileNumber,
           workspaceName: workspaceName,
           workspaceCategory: workspaceCategory,
           agentId: _registrarAgentId,
         );
 
-        // FOR EMPLOYEE CREATION: Create and save employee data
+        // FOR ROLE-PERMISSION CREATION (Business Owner)
+        onProgress(WorkspaceCreationStage.creatingDefaultRolePermission);
+        final role = await _businessOwnerDefaultPermissions();
+
+        // FOR STORE LOCATION CREATION (Business Owner)
+        onProgress(WorkspaceCreationStage.creatingDefaultBusinessLocation);
+        final storeNumber = await _businessOwnerDefaultBusinessLocation(
+          address: address,
+          company: workspaceName,
+        );
+
+        // FOR DEPARTMENT CREATION (Business Owner)
+        onProgress(WorkspaceCreationStage.creatingDefaultDepartment);
+        final departmentCode = await _businessOwnerDefaultDepartment();
+
+        // FOR EMPLOYEE CREATION (Business Owner/Manager)
+        onProgress(WorkspaceCreationStage.creatingEmployee);
         await _createEmployee(
           email: email,
-          fullName: fullName,
+          fullName: clientName,
+          storeNumber: storeNumber,
           mobileNumber: mobileNumber,
           createdBy: _registrarAgentId,
           employeePasscode: employeeTemporaryPasscode,
+          code: departmentCode,
+          role: role,
         );
 
-        // Link Agent to their Tenants/Clients
-        await _linkAgentToClientWorkspace(
-          agentId: _registrarAgentId,
-          clientWorkspaceId: _newWorkspaceId,
-        );
+        // Link Agent to their Tenants/Clients workspace (AGENT -> CLIENT)
+        onProgress(WorkspaceCreationStage.linkingAgent);
+        await _linkAgentToClientWorkspace(clientWorkspaceId: _newWorkspaceId);
 
+        onProgress(WorkspaceCreationStage.success);
         // SignOut current Workspace & Employee, if new Workspace setup was successfully
-        await signOut();
-        _controller.add(AuthStatus.unauthenticated);
+        // await signOut();
+        // _controller.add(AuthStatus.unauthenticated);
 
         return true;
       }
 
+      onProgress(WorkspaceCreationStage.failure);
       // Return false if newUser creation was unsuccessful.
       return false;
     } on FirebaseAuthException catch (e) {
@@ -527,18 +565,17 @@ class AuthRepository extends FirestoreRepository {
   /// Associates an agent with a client workspace.
   /// Firestore path: /agent_clients/{agentId}/clients/{clientWorkspaceId}
   Future<bool> _linkAgentToClientWorkspace({
-    required String agentId,
     required String clientWorkspaceId,
   }) async {
     try {
       /// NOTE: workspaceId is used as agentId
       await _genericCollection(
-        collectionType: CollectionType.global,
+        collectionType: CollectionType.clients,
         collectionPath: agentClientsDBCollection,
-      ).doc(agentId).collection('clients').doc(clientWorkspaceId).set({
-        'clientWorkspaceId': clientWorkspaceId,
+      ).doc(clientWorkspaceId).set({
         'commission': [],
-        'assignedAt': _today.toISOString,
+        'clientWorkspaceId': clientWorkspaceId,
+        'assignedAt': _today.millisecondsSinceEpoch,
       });
 
       return true;
@@ -578,7 +615,7 @@ class AuthRepository extends FirestoreRepository {
   /// Parameters:
   /// - [workspaceName]: The name of the client's company or workspace.
   /// - [email]: The email address associated with the workspace.
-  /// - [fullName]: The full name of the client or customer.
+  /// - [clientName]: The full name of the client or customer.
   /// - [mobileNumber]: The client's mobile phone number.
   /// - [workspaceCategory]: The type of business type (e.g., real estate, retail, logistics).
   /// - [agentId]: The ID of the agent who is creating or updating the workspace.
@@ -586,7 +623,8 @@ class AuthRepository extends FirestoreRepository {
   /// Returns a [Future<void>]. [_createWorkspace]
   Future<void> _createWorkspace({
     required String email,
-    required String fullName,
+    required String address,
+    required String clientName,
     required String mobileNumber,
     required String workspaceName,
     required String workspaceCategory,
@@ -599,14 +637,20 @@ class AuthRepository extends FirestoreRepository {
       role: assignWorkspaceRole,
       email: email,
       agentId: aId,
+      address: address,
       subscriptionId: '',
       name: workspaceName,
-      clientName: fullName,
+      clientName: clientName,
       mobileNumber: mobileNumber,
       category: workspaceCategory,
     );
+    final newMap = workspace.toMap();
+    // update map
+    newMap['effectiveFrom'] = _today.millisecondsSinceEpoch;
+    newMap['expiresOn'] = _today.millisecondsSinceEpoch;
+    newMap['createdAt'] = _today.millisecondsSinceEpoch;
 
-    await overrideById(_newWorkspaceId, data: workspace.toMap());
+    await overrideById(_newWorkspaceId, data: newMap);
   }
 
   /// Creates and saves employee data in Firestore.
@@ -620,17 +664,15 @@ class AuthRepository extends FirestoreRepository {
   Future<void> _createEmployee({
     required String email,
     required String fullName,
+    required String storeNumber,
     required String mobileNumber,
     required String employeePasscode,
     required String createdBy,
+    required String code,
+    required ({String id, String name}) role,
   }) async {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
-
-    final role = await _defaultStoreOwnerPermissions(
-      workspaceRole,
-      workspaceId,
-    );
 
     // Add a new document to the collection and get its reference
     final DocumentReference docRef = _genericCollection(
@@ -641,42 +683,114 @@ class AuthRepository extends FirestoreRepository {
     // Extract the document ID
 
     final byWho = await getEmployee();
+    final empId = (await 'employee'.getShortStr());
 
     // Create an Employee instance with the document ID
     final employee = Employee(
       id: docRef.id,
       workspaceId: workspaceId,
+      employeeId: empId ?? '',
       roleId: role.id,
       role: role.name,
+      departmentCode: code,
       email: email,
       fullName: fullName,
       mobileNumber: mobileNumber,
-      storeNumber: mainStoreNumber,
+      storeNumber: storeNumber,
       status: AccountStatus.enabled.label,
       createdBy: byWho?.fullName ?? createdBy,
       passCode: SecretHasher.hash(employeePasscode),
     );
 
+    final newMap = employee.toMap();
+    // update map
+    newMap['updatedAt'] = _today.millisecondsSinceEpoch;
+    newMap['createdAt'] = _today.millisecondsSinceEpoch;
+
     // Add the employee data to the Firestore collection
-    await docRef.set(employee.toMap());
+    await docRef.set(newMap);
   }
 
-  /// [_defaultStoreOwnerPermissions] This is the default permissions for the store owner
+  /// [_businessOwnerDefaultPermissions] This is the Business owner's default permissions
   /// during first-time workspace setup(Workspace Creation)
-  Future<({String id, String name})> _defaultStoreOwnerPermissions(
-    String workspaceRole,
-    String workspaceId,
-  ) async {
-    final defaultPerm = defaultStoreOwnerPermissions;
+  /// @return `Future<({String id, String name})>`
+  Future<({String id, String name})> _businessOwnerDefaultPermissions() async {
+    final workspaceId = _newWorkspaceId;
+    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
 
-    final docRef = await _genericCollection(
+    final docRef = _genericCollection(
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
-      collectionType: CollectionType.global,
       collectionPath: rolesDBCollectionPath,
-    ).add(defaultPerm);
+    ).doc();
+
+    final defaultPerm = businessOwnerDefaultPermissions(id: docRef.id);
+
+    // update map
+    defaultPerm['updatedAt'] = _today.millisecondsSinceEpoch;
+    defaultPerm['createdAt'] = _today.millisecondsSinceEpoch;
+
+    await docRef.set(defaultPerm);
 
     return (id: docRef.id, name: defaultPerm['name'] as String);
+  }
+
+  /// [_businessOwnerDefaultDepartment] This is the Business owner's default department
+  /// during first-time workspace setup(Workspace Creation)
+  /// @return `Future<String>`
+  Future<String> _businessOwnerDefaultDepartment() async {
+    final workspaceId = _newWorkspaceId;
+    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+
+    final docRef = _genericCollection(
+      workspaceId: workspaceId,
+      workspaceRole: workspaceRole,
+      collectionPath: departmentsDBCollectionPath,
+    ).doc();
+
+    final defaultDepart = businessOwnerDefaultDepartment(id: docRef.id);
+
+    // update map
+    defaultDepart['updatedAt'] = _today.millisecondsSinceEpoch;
+    defaultDepart['createdAt'] = _today.millisecondsSinceEpoch;
+
+    await docRef.set(defaultDepart);
+
+    return defaultDepart['code'] as String;
+  }
+
+  /// [_businessOwnerDefaultBusinessLocation] This is the Business owner's default store location
+  /// during first-time workspace setup(Workspace Creation)
+  ///
+  /// @param address - The address of the store location.
+  /// @param company - The name of the company.
+  /// @return `Future<String>`
+  Future<String> _businessOwnerDefaultBusinessLocation({
+    required String address,
+    required String company,
+  }) async {
+    final workspaceId = _newWorkspaceId;
+    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+
+    final docRef = _genericCollection(
+      workspaceId: workspaceId,
+      workspaceRole: workspaceRole,
+      collectionPath: storeLocationsDBCollectionPath,
+    ).doc();
+
+    final defaultBranch = businessOwnerDefaultStoreLocation(
+      id: docRef.id,
+      name: company,
+      location: address,
+    );
+
+    // update map
+    defaultBranch['updatedAt'] = _today.millisecondsSinceEpoch;
+    defaultBranch['createdAt'] = _today.millisecondsSinceEpoch;
+
+    await docRef.set(defaultBranch);
+
+    return defaultBranch['storeNumber'] as String;
   }
 
   /// Provides a [CollectionReference] for specified collection path.
@@ -852,7 +966,7 @@ class AuthRepository extends FirestoreRepository {
 
     // Log successful authentication
     await _logAuthSession(
-      doc.id,
+      data['employeeId'],
       'sign-in',
       name: data['fullName'],
       workspaceId: workId,
@@ -1000,16 +1114,16 @@ class AuthRepository extends FirestoreRepository {
 
   // Log signOut sessions for tracking and analytics
   Future<void> _logSignOut() async {
-    Workspace? cacheWorkspace = _getWorkspaceCache();
+    Workspace? cacheWork = _getWorkspaceCache();
     Employee? cacheEmp = _getEmployeeCache();
 
-    if (cacheWorkspace == null) return;
+    if (cacheWork == null) return;
 
-    final workId = cacheWorkspace.id;
-    final workRole = getEnumName<WorkspaceRole>(cacheWorkspace.role);
+    final workId = cacheWork.id;
+    final workRole = getEnumName<WorkspaceRole>(cacheWork.role);
 
     await _logAuthSession(
-      firebaseUser?.uid ?? cacheWorkspace.id,
+      cacheEmp?.employeeId ?? cacheWork.id,
       'sign-out',
       name: cacheEmp?.fullName,
       workspaceId: workId,

@@ -11,19 +11,19 @@ sealed class CustomerState<T> extends Equatable {
 
 class LoadingCustomers<T> extends CustomerState<T> {}
 
-class CustomerLoaded<T> extends CustomerState<T> {
+class CustomersLoaded<T> extends CustomerState<T> {
   final List<T> data;
 
-  const CustomerLoaded(this.data);
+  const CustomersLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
 }
 
-class SingleCustomerLoaded<T> extends CustomerState<T> {
+class CustomerLoaded<T> extends CustomerState<T> {
   final T data;
 
-  const SingleCustomerLoaded(this.data);
+  const CustomerLoaded(this.data);
 
   @override
   List<Object?> get props => [data];

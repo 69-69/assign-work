@@ -46,7 +46,7 @@ class AssignStoreLocation extends StatelessWidget {
     return CustomDialog(
       title: DialogTitle(
         title: 'Assign Store Location',
-        subtitle: 'Assign a store to $_employeeName',
+        subtitle: 'Assign store to $_employeeName',
       ),
       body: _buildBody(context),
       actions: [],

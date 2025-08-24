@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/delivery_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/delivery/delivery_bloc.dart';
@@ -133,10 +133,10 @@ class _UpdateDeliveryBodyState extends State<_UpdateDeliveryBody> {
         Text('Update Delivery Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         DeliveryStatusDropdown(
-          serverStatus: _delivery.status,
+          initialStatus: _delivery.status,
           onChange: (s) => _updateStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -158,14 +158,14 @@ class _UpdateDeliveryBodyState extends State<_UpdateDeliveryBody> {
       children: [
         const SizedBox(height: 20),
         OrderNumberDropdown(
-          serverValue: _delivery.orderNumber,
-          onChanged: (orderNumber, productName) =>
+          initialValue: _delivery.orderNumber,
+          onChanged: (orderNumber, itemName) =>
               setState(() => _selectedOrderNumber = orderNumber),
         ),
         const SizedBox(height: 20),
         DeliveryStatusAndTypesDropdown(
-          serverStatus: _delivery.status,
-          serverType: _delivery.deliveryType,
+          initialStatus: _delivery.status,
+          initialType: _delivery.deliveryType,
           onTypeChange: (t) => setState(() => _selectedDeliveryType = t),
           onStatusChange: (s) => setState(() => _selectedDeliveryStatus = s),
         ),

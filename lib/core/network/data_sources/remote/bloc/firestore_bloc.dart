@@ -41,40 +41,40 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
          collectionPath: collectionPath,
          collectionRef: firestore.collection(collectionPath),
        ),
-       super(LoadingData<T>()) {
+       super(LoadingItems<T>()) {
     _initialize();
     // Start loading data from Firestore-DB (Remote)
     // to LocalStorage/Cache (Hive) & refresh Cache
     // _dataRepository.refreshCacheData();
 
     _dataRepository.dataStream.listen(
-      (cacheData) => add(_DataLoaded<T>(_toList(cacheData))),
+      (cacheData) => add(_ItemsLoaded<T>(_toList(cacheData))),
     );
   }
 
   Future<void> _initialize() async {
-    on<RefreshData<T>>(_onRefreshData);
+    on<RefreshItems<T>>(_onRefreshItems);
     on<GetShortID<T>>(_onGetShortID);
-    on<GetData<T>>(_onGetData);
-    on<GetDataById<T>>(_onGetDataById);
-    on<GetMultipleDataByIDs<T>>(_onGetMultipleDataByIDs);
-    on<GetAllDataWithSameId<T>>(_onGetAllDataWithSameId);
-    on<SearchData<T>>(_onSearchData);
-    on<AddData<T>>(_onAddData);
-    on<AddData<List<T>>>(_onAddMultipleData);
-    on<UpdateData>(_onUpdateData);
-    on<DeleteData>(_onDeleteData);
+    on<GetItems<T>>(_onGetItems);
+    on<GetItemById<T>>(_onGetItemById);
+    on<GetItemsByIDs<T>>(_onGetItemsByIDs);
+    on<GetItemsWithSameId<T>>(_onGetItemsWithSameId);
+    on<SearchItems<T>>(_onSearchItems);
+    on<AddItem<T>>(_onAddItem);
+    on<AddItem<List<T>>>(_onAddMultiItems);
+    on<UpdateItem>(_onUpdateItem);
+    on<DeleteItem>(_onDeleteItem);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_DataLoaded<T>>(_onDataLoaded);
-    on<_SingleDataLoaded<T>>(_onSingleDataLoaded);
-    on<_DataLoadError>(_onDataLoadError);
+    on<_ItemsLoaded<T>>(_onItemsLoaded);
+    on<_ItemLoaded<T>>(_onItemLoaded);
+    on<_ItemLoadError>(_onItemLoadError);
   }
 
-  Future<void> _onRefreshData(
-    RefreshData<T> event,
+  Future<void> _onRefreshItems(
+    RefreshItems<T> event,
     Emitter<FirestoreState> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
     try {
       // Trigger data refresh in the DataRepository
       await _dataRepository.refreshCacheData();
@@ -84,10 +84,10 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       final data = _toList(snapshot);
 
       // Emit the loaded state with the refreshed data
-      emit(DataLoaded<T>(data));
+      emit(ItemsLoaded<T>(data));
     } catch (e) {
       // Emit an error state in case of failure
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
@@ -95,7 +95,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     GetShortID<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
 
     try {
       /// Generate shortId for UI/UX Usage (ex: customer-id)
@@ -107,19 +107,19 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
         final data = fromFirestore({'shortId': shortId}, '');
         add(_ShortIDLoaded<T>(data));
       } else {
-        emit(DataError<T>('Generating Short Id failed'));
+        emit(ItemError<T>('Generating Short Id failed'));
       }
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  /// Load All Data Function [_onGetData]
-  Future<void> _onGetData(
-    GetData<T> event,
+  /// Load All Data Function [_onGetItems]
+  Future<void> _onGetItems(
+    GetItems<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
 
     try {
       _subscription = _dataRepository.getAllCacheData().listen(
@@ -127,7 +127,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
           final data = _toList(snapshot);
 
           // Update internal state in the BLoC to reflect data loaded
-          emit(DataLoaded<T>(data));
+          emit(ItemsLoaded<T>(data));
 
           // Trigger an event to handle the loaded data
           // add(_DataLoadedEvent<T>(data));
@@ -136,7 +136,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
           // emit(DataAddedState<T>()); // For example, notify that data is added
         },
         onError: (e) {
-          add(_DataLoadError('Error loading data: $e'));
+          add(_ItemLoadError('Error loading data: $e'));
         },
       );
 
@@ -149,7 +149,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
 
       emit(DataLoadedState<T>(data));*/
     } catch (e) {
-      emit(DataError<T>('Error loading data: $e'));
+      emit(ItemError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
@@ -173,11 +173,11 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     });
   }*/
 
-  Future<void> _onGetMultipleDataByIDs(
-    GetMultipleDataByIDs<T> event,
+  Future<void> _onGetItemsByIDs(
+    GetItemsByIDs<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
     try {
       final localDataList = await _dataRepository.getMultipleDataByIDs(
         event.documentIDs,
@@ -186,19 +186,19 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       if (localDataList.isNotEmpty) {
         final data = _toList(localDataList);
 
-        add(_DataLoaded<T>(data));
+        add(_ItemsLoaded<T>(data));
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  Future<void> _onGetDataById(
-    GetDataById<T> event,
+  Future<void> _onGetItemById(
+    GetItemById<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
     try {
       final localData = await _dataRepository.getDataById(
         event.documentId,
@@ -207,20 +207,20 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
 
       if (localData != null) {
         final data = fromFirestore(localData.data, localData.id);
-        add(_SingleDataLoaded<T>(data));
+        add(_ItemLoaded<T>(data));
       } else {
-        emit(DataError<T>('Document not found'));
+        emit(ItemError<T>('Document not found'));
       }
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  Future<void> _onGetAllDataWithSameId(
-    GetAllDataWithSameId<T> event,
+  Future<void> _onGetItemsWithSameId(
+    GetItemsWithSameId<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
     try {
       final localData = await _dataRepository.getAllDataWithSameId(
         event.documentId,
@@ -229,20 +229,20 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
 
       if (localData.isNotEmpty) {
         final data = _toList(localData);
-        emit(DataLoaded<T>(data));
+        emit(ItemsLoaded<T>(data));
       } else {
-        emit(DataError<T>('Data not found'));
+        emit(ItemError<T>('Data not found'));
       }
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  Future<void> _onSearchData(
-    SearchData<T> event,
+  Future<void> _onSearchItems(
+    SearchItems<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
-    emit(LoadingData<T>());
+    emit(LoadingItems<T>());
     try {
       List<CacheData> data = await _dataRepository.searchData(
         field: event.field ?? '',
@@ -252,15 +252,15 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       );
 
       var localData = _toList(data);
-      emit(DataLoaded<T>(localData));
+      emit(ItemsLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
-      emit(DataError<T>('Error searching data: $e'));
+      emit(ItemError<T>('Error searching data: $e'));
     }
   }
 
-  Future<void> _onAddData(
-    AddData<T> event,
+  Future<void> _onAddItem(
+    AddItem<T> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
     try {
@@ -271,14 +271,14 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data added
-      emit(DataAdded<T>(message: 'Data added successfully'));
+      emit(ItemAdded<T>(message: 'Data added successfully'));
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  Future<void> _onAddMultipleData(
-    AddData<List<T>> event,
+  Future<void> _onAddMultiItems(
+    AddItem<List<T>> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
     try {
@@ -291,15 +291,15 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data added
-      emit(DataAdded<T>(message: 'Data added successfully'));
+      emit(ItemAdded<T>(message: 'Data added successfully'));
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateData(
-    UpdateData event,
+  Future<void> _onUpdateItem(
+    UpdateItem event,
     Emitter<FirestoreState<T>> emit,
   ) async {
     try {
@@ -315,14 +315,14 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       );
 
       // Update State: Notify that data updated
-      emit(DataUpdated<T>(message: 'data updated successfully'));
+      emit(ItemUpdated<T>(message: 'data updated successfully'));
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
-  Future<void> _onDeleteData(
-    DeleteData event,
+  Future<void> _onDeleteItem(
+    DeleteItem event,
     Emitter<FirestoreState<T>> emit,
   ) async {
     try {
@@ -330,13 +330,13 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       await _dataRepository.deleteData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
-      add(RefreshData<T>());
+      add(RefreshItems<T>());
       // add(GetData<T>());
 
       // Update State: Notify that data deleted
-      emit(DataDeleted<T>(message: 'data deleted successfully'));
+      emit(ItemDeleted<T>(message: 'data deleted successfully'));
     } catch (e) {
-      emit(DataError<T>(e.toString()));
+      emit(ItemError<T>(e.toString()));
     }
   }
 
@@ -344,24 +344,21 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     _ShortIDLoaded<T> event,
     Emitter<FirestoreState<T>> emit,
   ) {
-    emit(SingleDataLoaded<T>(event.shortID));
+    emit(ItemLoaded<T>(event.shortID));
   }
 
-  void _onDataLoaded(_DataLoaded<T> event, Emitter<FirestoreState<T>> emit) {
-    emit(DataLoaded<T>(event.data));
+  void _onItemsLoaded(_ItemsLoaded<T> event, Emitter<FirestoreState<T>> emit) {
+    emit(ItemsLoaded<T>(event.data));
   }
 
-  void _onSingleDataLoaded(
-    _SingleDataLoaded<T> event,
-    Emitter<FirestoreState<T>> emit,
-  ) {
-    emit(SingleDataLoaded<T>(event.data));
+  void _onItemLoaded(_ItemLoaded<T> event, Emitter<FirestoreState<T>> emit) {
+    emit(ItemLoaded<T>(event.data));
   }
 
-  void _onDataLoadError(_DataLoadError event, Emitter<FirestoreState<T>> emit) {
+  void _onItemLoadError(_ItemLoadError event, Emitter<FirestoreState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'firestore_bloc');
-    emit(DataError<T>(event.error));
+    emit(ItemError<T>(event.error));
   }
 
   List<T> _toList(List<CacheData> cacheData) {
@@ -643,7 +640,7 @@ hive_generator package in Dart and Flutter,
         await docRef.set(toFirestore(event.data));
       }
 
-      // Check if Product already exists, else create it
+      // Check if Item already exists, else create it
       // snapShot.exists ? snapShot : docRef.set(toFirestore(event.data));
 
       // _firestore.collection(collectionPath).add(toFirestore(event.data));

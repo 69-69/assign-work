@@ -7,7 +7,7 @@ export 'package:assign_erp/features/agent/presentation/bloc/index.dart';
 export 'package:assign_erp/features/auth/domain/repository/index.dart';
 export 'package:assign_erp/features/auth/presentation/bloc/index.dart';
 export 'package:assign_erp/features/customer_crm/presentation/bloc/create_acc/customer_acc_bloc.dart';
-export 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+export 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 export 'package:assign_erp/features/inventory_ims/presentation/bloc/index.dart';
 export 'package:assign_erp/features/live_support/presentation/bloc/index.dart';
 export 'package:assign_erp/features/setup/presentation/bloc/create_roles/role_bloc.dart';

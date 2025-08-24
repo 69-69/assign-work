@@ -53,11 +53,12 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
   String? _selectedPOStatus;
   String? _selectedCurrency;
   String? _selectedPaymentTerms;
+  String? _selectedPaymentMethod;
   DateTime? _selectedDeliveryDate;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
 
-  final _productDescController = TextEditingController();
+  final _itemNameController = TextEditingController();
   final _quantityController = TextEditingController();
   final _unitPriceController = TextEditingController();
   final _totalAmtController = TextEditingController();
@@ -108,12 +109,13 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
     poNumber: _newPONumber,
     status: _selectedPOStatus ?? '',
     supplierId: _selectedSupplierId,
-    productName: _productDescController.text,
+    itemName: _itemNameController.text,
     orderType: 'purchase order',
     currency: _selectedCurrency ?? '',
     quantity: int.tryParse(_quantityController.text) ?? 0,
     unitPrice: _strToDouble(_unitPriceController.text),
-    paymentTerms: _selectedPaymentTerms ?? '',
+    payTerms: _selectedPaymentTerms ?? '',
+    payMethod: _selectedPaymentMethod ?? '',
     deliveryDate: _selectedDeliveryDate,
     discountPercent: _strToDouble(_discountPercentController.text),
     taxPercent: _strToDouble(_taxPercentController.text),
@@ -174,7 +176,7 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
 
   void _clearFields() {
     _quantityController.clear();
-    _productDescController.clear();
+    _itemNameController.clear();
     _unitPriceController.clear();
     _totalAmtController.clear();
     _discountPercentController.clear();
@@ -199,7 +201,9 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
         runSpacing: 20,
         alignment: WrapAlignment.center,
         children: [
-          if (isMultipleOrders && _orders.isNotEmpty) _buildOrderPreviewChips(),
+          if (isMultipleOrders && _orders.isNotEmpty) ...{
+            SizedBox(height: 60, child: _buildOrderPreviewChips()),
+          },
           _buildBody(),
         ],
       ),
@@ -221,14 +225,14 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      '${o.productName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
+                      '${o.itemName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
                           .toTitleCase,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    deleteButtonTooltipMessage: 'Remove ${o.productName}',
-                    backgroundColor: kGrayColor.withAlpha((0.3 * 255).toInt()),
+                    deleteButtonTooltipMessage: 'Remove ${o.itemName}',
+                    backgroundColor: kGrayColor.toAlpha(0.3),
                     deleteIcon: const Icon(
                       size: 16,
                       Icons.clear,
@@ -246,14 +250,14 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildTitle(),
-        const SizedBox(width: 10.0),
+        _buildPONumber(),
+        const SizedBox(height: 10.0),
         SupplierIDInput(
           onChanged: (id, name) => setState(() => _selectedSupplierId = id),
         ),
         const SizedBox(height: 20.0),
         ProductDescTextField(
-          controller: _productDescController,
+          controller: _itemNameController,
           onChanged: (t) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
@@ -270,10 +274,14 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
           },
         ),
         const SizedBox(height: 20.0),
-        POStatusCurrencyPayTermsDropdown(
-          onPayChange: (t) => setState(() => _selectedPaymentTerms = t),
+        POStatusCurrencyDropdown(
           onStatusChange: (s) => setState(() => _selectedPOStatus = s),
           onCurrencyChange: (c) => setState(() => _selectedCurrency = c),
+        ),
+        const SizedBox(height: 20.0),
+        PayTermsAndMethodDropdown(
+          onPayTermsChange: (t) => setState(() => _selectedPaymentTerms = t),
+          onPayMethodChange: (t) => setState(() => _selectedPaymentMethod = t),
         ),
         const SizedBox(height: 20.0),
         ListTile(
@@ -333,38 +341,18 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
     );
   }
 
-  Row _buildTitle() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        RichText(
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            text: 'PO Number:\n',
-            style: context.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            children: [
-              TextSpan(
-                text: _newPONumber,
-                style: context.textTheme.titleLarge?.copyWith(
-                  color: kDangerColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        FittedBox(
-          child: context.buildRefreshButton(
-            'Refresh Order Number',
-            onPressed: _generatePONumber,
-          ),
-        ),
-      ],
-    );
-  }
+  _buildPONumber() => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh PO Number',
+        count: _newPONumber,
+        bgColor: kPrimaryColor,
+        isTotal: false,
+        onPressed: _generatePONumber,
+      ),
+    ),
+  );
 
   void _calculateSubTotal() {
     CalculateExtras.subTotal(

@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/delivery_model.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/sale_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,7 +20,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
   // Process Delivery Status and Update Order
   Future<void> isDelivered(String orderNumber) async {
     // Updates order status and records sales based on delivery information
-    _updateOrderAndProductAndRecordSales(orderNumber);
+    _updateOrderAndItemAndRecordSales(orderNumber);
 
     // Emits an event to update internal state or trigger UI refresh with updated delivery data
     add(GetInventories<Delivery>());
@@ -28,7 +28,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
 
   /// If the delivery status is changed to "delivered",
   /// then update the order status to "completed", update product quantity and record new Sales [updateOrderAndProductAndRecordSales]
-  Future<void> _updateOrderAndProductAndRecordSales(String orderNumber) async {
+  Future<void> _updateOrderAndItemAndRecordSales(String orderNumber) async {
     try {
       // Get a reference to the 'orders' collection in Firestore
       final orderColRef = _firestore.collection(ordersDBCollectionPath);
@@ -50,16 +50,14 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
             'status': 'completed',
           });
 
-          // Update Product Stock Quantity and record sales
-          final updateProductQtyAndRecordSalesFuture =
-              _updateProductQtyAndRecordSales(
-                orderToMap,
-              ); /*querySnapshot.size*/
+          // Update Item Stock Quantity and record sales
+          final updateItemQtyAndRecordSalesFuture =
+              _updateItemQtyAndRecordSales(orderToMap); /*querySnapshot.size*/
 
           // Wait for both operations to complete
           await Future.wait([
             updateOrderStatusFuture,
-            updateProductQtyAndRecordSalesFuture,
+            updateItemQtyAndRecordSalesFuture,
           ]);
         }).toList();
 
@@ -72,32 +70,30 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
     }
   }
 
-  // Function to update the product quantity and trigger record new sales
-  Future<void> _updateProductQtyAndRecordSales(
-    Map<String, dynamic> order,
-  ) async {
+  // Function to update the item quantity and trigger record new sales
+  Future<void> _updateItemQtyAndRecordSales(Map<String, dynamic> order) async {
     try {
       int orderQuantity = order['quantity'];
 
       // Construct a reference to the document of the product in Firestore
       final docRef = _firestore
-          .collection(productsDBCollectionPath)
-          .doc(order['productId']);
+          .collection(itemsDBCollectionPath)
+          .doc(order['itemId']);
 
       // Retrieve the current data of the product document from Firestore
       final docSnapshot = await docRef.get();
 
       // Check if the document exists and has data
       if (docSnapshot.exists) {
-        final productData = docSnapshot.data();
-        if (productData != null) {
+        final itemData = docSnapshot.data();
+        if (itemData != null) {
           // Convert the Firestore data into a Product object using a factory method
-          final fromProduct = Product.fromMap(productData, docSnapshot.id);
+          final fromItem = Item.fromMap(itemData, docSnapshot.id);
 
-          if (fromProduct.quantity > 0) {
+          if (fromItem.quantity > 0) {
             // Calculate the new outStock & quantity after updating
-            final newQty = fromProduct.quantity - orderQuantity;
-            final newOutStock = fromProduct.outOfStock + orderQuantity;
+            final newQty = fromItem.quantity - orderQuantity;
+            final newOutStock = fromItem.outOfStock + orderQuantity;
 
             // Execute parallel operations: update product quantity and create a new sale record
             await Future.wait([
@@ -105,7 +101,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
               docRef.update({'quantity': newQty, 'outOfStock': newOutStock}),
 
               // Add a new sale record with updated order details
-              _addNewSales(order, fromProduct.costPrice),
+              _addNewSales(order, fromItem.costPrice),
             ]);
           } else {
             // print('Product quantity is not sufficient for the update.');
@@ -192,7 +188,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
   Future<void> _updateProductQtyAndRecordSales(Map<String, dynamic> data, int newStockQuantity) async {
     // Construct a reference to the document of the product in Firestore
     DocumentReference<Map<String, dynamic>> docRef =
-    _firestore.collection(productsDBCollectionPath).doc(data['productId']);
+    _firestore.collection(productsDBCollectionPath).doc(data['itemId']);
 
     // Check if the document ID is not empty (document exists in Firestore)
     if (docRef.id.isNotEmpty) {

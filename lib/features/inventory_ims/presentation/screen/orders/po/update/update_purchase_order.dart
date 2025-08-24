@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/purchase_order_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
@@ -44,16 +44,15 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
   String _subTotal = '';
   String? _selectedSupplierId;
   String? _selectedPOStatus;
-  String? _selectedPaymentTerms;
+  String? _selectedPayTerms;
+  String? _selectedPayMethod;
   String? _selectedCurrency;
   DateTime? _selectedDeliveryDate;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
 
   final _formKey = GlobalKey<FormState>();
-  late final _productDescController = TextEditingController(
-    text: _order.productName,
-  );
+  late final _itemNameController = TextEditingController(text: _order.itemName);
   late final _quantityController = TextEditingController(
     text: '${_order.quantity}',
   );
@@ -108,10 +107,11 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
     storeNumber: _order.storeNumber,
     status: _selectedPOStatus ?? _order.status,
     supplierId: _selectedSupplierId ?? _order.supplierId,
-    productName: _productDescController.text,
+    itemName: _itemNameController.text,
     quantity: int.tryParse(_quantityController.text) ?? 0,
     unitPrice: _strToDouble(_unitPriceController.text),
-    paymentTerms: _selectedPaymentTerms ?? '',
+    payTerms: _selectedPayTerms ?? '',
+    payMethod: _selectedPayMethod ?? '',
     currency: _selectedCurrency ?? '',
     deliveryDate: _selectedDeliveryDate,
     discountPercent: _strToDouble(_discountPercentController.text),
@@ -174,10 +174,10 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
         Text('Update PO Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         POStatusDropdown(
-          serverValue: _order.status,
+          initialValue: _order.status,
           onChange: (s) => _updateStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -199,12 +199,12 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
       children: [
         const SizedBox(height: 20.0),
         SupplierIDInput(
-          serverValue: _order.supplierId,
+          initialValue: _order.supplierId,
           onChanged: (id, name) => setState(() => _selectedSupplierId = id),
         ),
         const SizedBox(height: 20.0),
         ProductDescTextField(
-          controller: _productDescController,
+          controller: _itemNameController,
           onChanged: (t) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
@@ -221,13 +221,18 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        POStatusCurrencyPayTermsDropdown(
-          serverPay: _order.paymentTerms,
-          onPayChange: (t) => setState(() => _selectedPaymentTerms = t),
-          serverStatus: _order.status,
+        POStatusCurrencyDropdown(
+          initialStatus: _order.status,
+          initialCurrency: _order.currency,
           onStatusChange: (s) => setState(() => _selectedPOStatus = s),
-          serverCurrency: _order.currency,
           onCurrencyChange: (c) => setState(() => _selectedCurrency = c),
+        ),
+        const SizedBox(height: 20.0),
+        PayTermsAndMethodDropdown(
+          initialPayTerms: _order.payTerms,
+          initialPayMethod: _order.payMethod,
+          onPayTermsChange: (t) => setState(() => _selectedPayTerms = t),
+          onPayMethodChange: (t) => setState(() => _selectedPayMethod = t),
         ),
         const SizedBox(height: 20.0),
         ListTile(
@@ -256,7 +261,7 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
         ),
         const SizedBox(height: 20.0),
         DeliveryDateAndTotalAmtInput(
-          serverDeliveryDate: '${_order.deliveryDate}',
+          initialDelivery: '${_order.deliveryDate}',
           enable: _isEnabledTotalAmt,
           onEdited: _toggleEditTotalAmt,
           totalAmtController: _totalAmtController,

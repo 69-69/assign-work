@@ -9,8 +9,6 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 
-const divLine = Divider(thickness: 10.0, height: 30.0);
-
 extension ScreenHelper on BuildContext {
   FloatingActionButton buildFloatingBtn(
     String label, {
@@ -191,37 +189,47 @@ extension ScreenHelper on BuildContext {
     );
   }
 
-  /// Product Scan Warning
-  Future<void> showProductScanWarningDialog() async {
+  /// Product/Item Scan Warning
+  Future<void> showItemScanWarningDialog() async {
     await confirmDone(
       barrierDismissible: false,
       title: "Scan Warning",
       const Text(
-        'Product Scan is accessible only on mobile devices.',
+        'Item Scan is accessible only on mobile devices.',
         style: TextStyle(color: kDarkTextColor),
       ),
     );
   }
 
-  /// Total item counts & refresh/sync button [buildTotalItems]
-  buildTotalItems(
+  /// Total item counts & refresh/sync button [actionInfoButton]
+  actionInfoButton(
     String tooltip, {
     String label = '',
-    int count = 0,
+    dynamic count = 0,
+    Color? bgColor,
+    Color? txtColor,
+    bool isTotal = true,
     VoidCallback? onPressed,
   }) {
+    final total = isTotal ? 'Total $count'.toUpperCaseAll : count;
+
     return FilledButton.icon(
-      icon: RefreshButton(tooltip: tooltip, callback: onPressed),
+      icon: RefreshButton(
+        tooltip: tooltip,
+        callback: onPressed,
+        bgColor: bgColor,
+        txtColor: txtColor,
+      ),
       onPressed: null,
       style: OutlinedButton.styleFrom(
         elevation: 30,
         shape: const StadiumBorder(),
         padding: const EdgeInsets.fromLTRB(1, 1, 10, 1),
-        backgroundColor: colorScheme.error,
+        backgroundColor: (bgColor ?? kDangerColor).toAlpha(0.7),
       ),
       label: Text(
-        'TOTAL: $count'.toUpperCaseAll,
-        style: ofTheme.textTheme.titleMedium?.copyWith(color: kLightColor),
+        total,
+        style: ofTheme.textTheme.titleSmall?.copyWith(color: kLightColor),
       ),
     );
   }
@@ -275,14 +283,14 @@ extension ScreenHelper on BuildContext {
                 ),
               ],
             ),
-            ElevatedButton.icon(
+            elevatedIconBtn(
+              Icon(icon, color: kLightColor),
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(backgroundColor: borderColor),
               label: Text(
                 (buttonLabel ?? label).toUpperCaseAll,
                 style: const TextStyle(color: kLightColor),
               ),
-              icon: Icon(icon, color: kLightColor),
             ),
           ],
         ),
@@ -292,10 +300,18 @@ extension ScreenHelper on BuildContext {
 }
 
 class RefreshButton extends StatefulWidget {
-  const RefreshButton({super.key, this.callback, this.tooltip = 'refresh'});
+  const RefreshButton({
+    super.key,
+    this.bgColor,
+    this.txtColor,
+    this.callback,
+    this.tooltip = 'refresh',
+  });
 
   final VoidCallback? callback;
   final String tooltip;
+  final Color? bgColor;
+  final Color? txtColor;
 
   @override
   State<RefreshButton> createState() => _RefreshButtonState();
@@ -303,7 +319,7 @@ class RefreshButton extends StatefulWidget {
 
 class _RefreshButtonState extends State<RefreshButton>
     with SingleTickerProviderStateMixin {
-  late Future<List<dynamic>> futureProducts;
+  late Future<List<dynamic>> futureItems;
   late AnimationController controller;
   late Animation colorAnimation;
   late Animation<double> rotateAnimation;
@@ -329,11 +345,14 @@ class _RefreshButtonState extends State<RefreshButton>
   Widget build(BuildContext context) {
     return AnimatedSync(
       widget.tooltip,
+      bgColor: widget.bgColor,
+      txtColor: widget.txtColor,
       animation: rotateAnimation,
       callback: () async {
         controller.forward();
         // alert user
         context.showAlertOverlay(
+          bgColor: kPrimaryAccentColor,
           '${widget.tooltip.replaceAll('Refresh', 'Refreshing')}...',
         );
         // delay & run callback function(refresh data)
@@ -352,12 +371,16 @@ class AnimatedSync extends AnimatedWidget {
   final String tooltip;
   final VoidCallback callback;
   final Animation<double> animation;
+  final Color? bgColor;
+  final Color? txtColor;
 
   const AnimatedSync(
     this.tooltip, {
     super.key,
     required this.animation,
     required this.callback,
+    this.bgColor,
+    this.txtColor,
   }) : super(listenable: animation);
 
   @override
@@ -367,13 +390,13 @@ class AnimatedSync extends AnimatedWidget {
     return Transform.rotate(
       angle: animation.value,
       child: IconButton(
-        color: kLightColor,
+        color: txtColor ?? kLightColor,
         tooltip: tooltip,
         style: IconButton.styleFrom(
           elevation: 30,
           minimumSize: const Size(35, 35),
           padding: EdgeInsets.zero,
-          backgroundColor: kDangerColor,
+          backgroundColor: bgColor ?? kDangerColor,
         ),
         icon: Icon(Icons.sync, color: kLightColor, semanticLabel: tooltip),
         onPressed: () => callback(),

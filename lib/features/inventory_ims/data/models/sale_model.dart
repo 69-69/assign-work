@@ -8,7 +8,7 @@ var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
 class Sale extends Equatable {
   final String id; // Firestore will assign a unique ID (documentId)
   final String orderNumber;
-  final String productId;
+  final String itemId;
   final String customerId;
   final String invoiceNumber;
   final int quantity;
@@ -23,10 +23,10 @@ class Sale extends Equatable {
   final double outstandingBalance;
   final double revenue;
   final double profit;
-  final String paymentTerms;
+  final String paymentMethod;
   final String paymentStatus;
   final String status;
-  final String? remarks;
+  final String? notes;
   final String storeNumber;
   final String createdBy;
   final DateTime createdAt;
@@ -36,7 +36,7 @@ class Sale extends Equatable {
   Sale({
     this.id = '',
     required this.orderNumber,
-    required this.productId,
+    required this.itemId,
     required this.customerId,
     this.invoiceNumber = '',
     required this.quantity,
@@ -51,11 +51,11 @@ class Sale extends Equatable {
     this.outstandingBalance = 0.0,
     this.revenue = 0.0,
     this.profit = 0.0,
-    required this.paymentTerms,
+    required this.paymentMethod,
     required this.paymentStatus,
     required this.status,
     this.storeNumber = '',
-    this.remarks,
+    this.notes,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -70,7 +70,7 @@ class Sale extends Equatable {
     return Sale(
       id: documentId,
       orderNumber: data['orderNumber'] ?? '',
-      productId: data['productId'] ?? '',
+      itemId: data['itemId'] ?? '',
       customerId: data['customerId'] ?? '',
       invoiceNumber:
           data['invoiceNumber'] ??
@@ -87,11 +87,11 @@ class Sale extends Equatable {
       outstandingBalance: data['outstandingBalance'] ?? arrears,
       revenue: data['revenue'] ?? rev,
       profit: data['profit'] ?? 0.0,
-      paymentTerms: data['paymentTerms'] ?? '',
+      paymentMethod: data['paymentMethod'] ?? '',
       paymentStatus: data['paymentStatus'] ?? '',
       status: data['status'] ?? '',
       storeNumber: data['storeNumber'] ?? '',
-      remarks: data['remarks'] ?? '',
+      notes: data['notes'] ?? '',
       createdBy: data['createdBy'] ?? '',
       createdAt: toDateTimeFn(data['createdAt']),
       updatedBy: data['updatedBy'] ?? '',
@@ -103,7 +103,7 @@ class Sale extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'orderNumber': orderNumber,
-    'productId': productId,
+    'itemId': itemId,
     'customerId': customerId,
     'invoiceNumber': invoiceNumber,
     'quantity': quantity,
@@ -112,7 +112,7 @@ class Sale extends Equatable {
     'taxPercent': taxPercent,
     'taxAmount': taxAmount,
     'storeNumber': storeNumber,
-    'remarks': remarks,
+    'notes': notes,
     'discountPercent': discountPercent,
     'discountAmount': discountAmount,
     'totalAmount': totalAmount,
@@ -120,7 +120,7 @@ class Sale extends Equatable {
     'outstandingBalance': outstandingBalance,
     'revenue': revenue,
     'profit': profit,
-    'paymentTerms': paymentTerms,
+    'paymentMethod': paymentMethod,
     'paymentStatus': paymentStatus,
     'status': status,
     'createdBy': createdBy,
@@ -147,7 +147,7 @@ class Sale extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && productId.isEmpty;
+  bool get isEmpty => id.isEmpty && itemId.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -215,7 +215,7 @@ class Sale extends Equatable {
     String? id,
     String? storeNumber,
     String? orderNumber,
-    String? productId,
+    String? itemId,
     String? customerId,
     String? invoiceNumber,
     int? quantity,
@@ -230,8 +230,8 @@ class Sale extends Equatable {
     double? outstandingBalance,
     double? revenue,
     double? profit,
-    String? remarks,
-    String? paymentTerms,
+    String? notes,
+    String? paymentMethod,
     String? paymentStatus,
     String? status,
     String? createdBy,
@@ -243,7 +243,7 @@ class Sale extends Equatable {
       id: id ?? this.id,
       storeNumber: storeNumber ?? this.storeNumber,
       orderNumber: orderNumber ?? this.orderNumber,
-      productId: productId ?? this.productId,
+      itemId: itemId ?? this.itemId,
       customerId: customerId ?? this.customerId,
       invoiceNumber: invoiceNumber ?? this.invoiceNumber,
       quantity: quantity ?? this.quantity,
@@ -258,10 +258,10 @@ class Sale extends Equatable {
       outstandingBalance: outstandingBalance ?? this.outstandingBalance,
       revenue: revenue ?? this.revenue,
       profit: profit ?? this.profit,
-      paymentTerms: paymentTerms ?? this.paymentTerms,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       status: status ?? this.status,
-      remarks: remarks ?? this.remarks,
+      notes: notes ?? this.notes,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -274,7 +274,7 @@ class Sale extends Equatable {
     id,
     storeNumber,
     orderNumber,
-    productId,
+    itemId,
     customerId,
     invoiceNumber,
     quantity,
@@ -290,8 +290,8 @@ class Sale extends Equatable {
     outstandingBalance,
     revenue,
     profit,
-    paymentTerms,
-    remarks,
+    paymentMethod,
+    notes,
     createdBy,
     createdAt,
     updatedBy,
@@ -304,9 +304,9 @@ class Sale extends Equatable {
     bool areStringFieldsValid = [
       storeNumber,
       orderNumber,
-      productId,
+      itemId,
       customerId,
-      paymentTerms,
+      paymentMethod,
       paymentStatus,
       status,
       createdBy,
@@ -324,7 +324,7 @@ class Sale extends Equatable {
   List<String> itemAsList() => [
     id,
     storeNumber,
-    productId.toUpperCaseAll,
+    itemId.toUpperCaseAll,
     orderNumber,
     invoiceNumber,
     customerId,
@@ -339,7 +339,7 @@ class Sale extends Equatable {
     '$ghanaCedis${getOutStandingBalance.toCurrency}',
     '$ghanaCedis${getRevenue.toCurrency}',
     '$ghanaCedis${profit.toCurrency}',
-    paymentTerms.toTitleCase,
+    paymentMethod.toTitleCase,
     paymentStatus.toTitleCase,
     createdBy.toTitleCase,
     getCreatedAt,

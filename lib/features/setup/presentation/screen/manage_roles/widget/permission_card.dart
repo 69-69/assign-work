@@ -101,7 +101,13 @@ class PermissionCard extends StatelessWidget {
       height: context.screenHeight * 0.6,
       child: EntitlementTabView(
         tabs: filteredTabs
-            .map((tab) => {'label': tab.label, 'icon': tab.icon})
+            .map(
+              (tab) => {
+                'label': tab.label,
+                'icon': tab.icon,
+                'tooltip': tab.displayName,
+              },
+            )
             .toList(),
         isVerticalTab: true,
         children: _buildEntitlementSelectors(context, filteredTabs),

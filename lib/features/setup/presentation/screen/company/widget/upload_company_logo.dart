@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/local/setup_printout_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -223,7 +224,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
         tooltip: 'Delete Logo',
         style: IconButton.styleFrom(
           elevation: 30,
-          backgroundColor: kDangerColor.withAlpha((0.5 * 255).toInt()),
+          backgroundColor: kDangerColor.toAlpha(0.5),
         ),
         onPressed: _deleteImgStarted,
         icon: const Icon(Icons.close, color: kLightColor),
@@ -231,11 +232,11 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
     );
   }
 
-  ElevatedButton _buildUploadBtn() {
-    return ElevatedButton.icon(
+  _buildUploadBtn() {
+    return context.elevatedIconBtn(
+      Icon(Icons.image),
       onPressed: _pickAndSaveImage,
       label: const Text('Upload Logo'),
-      icon: const Icon(Icons.image),
     );
   }
 }

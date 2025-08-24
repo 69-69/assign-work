@@ -90,7 +90,7 @@ class _AddDeliveryBodyState extends State<_AddDeliveryBody> {
       children: <Widget>[
         const SizedBox(height: 20.0),
         OrderNumberDropdown(
-          onChanged: (orderNumber, productName) =>
+          onChanged: (orderNumber, itemName) =>
               setState(() => _selectedOrderNumber = orderNumber),
         ),
         const SizedBox(height: 20.0),

@@ -9,58 +9,58 @@ sealed class FirestoreState<T> extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadingData<T> extends FirestoreState<T> {}
+class LoadingItems<T> extends FirestoreState<T> {}
 
-class DataLoaded<T> extends FirestoreState<T> {
+class ItemsLoaded<T> extends FirestoreState<T> {
   final List<T> data;
 
-  const DataLoaded(this.data);
+  const ItemsLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
 }
 
-class SingleDataLoaded<T> extends FirestoreState<T> {
+class ItemLoaded<T> extends FirestoreState<T> {
   final T data;
 
-  const SingleDataLoaded(this.data);
+  const ItemLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
 }
 
 // just
-class DataAdded<T> extends FirestoreState<T> {
+class ItemAdded<T> extends FirestoreState<T> {
   final String? message;
 
-  const DataAdded({this.message});
+  const ItemAdded({this.message});
 
   @override
   List<Object?> get props => [message];
 }
 
-class DataUpdated<T> extends FirestoreState<T> {
+class ItemUpdated<T> extends FirestoreState<T> {
   final String? message;
 
-  const DataUpdated({this.message});
+  const ItemUpdated({this.message});
 
   @override
   List<Object?> get props => [message];
 }
 
-class DataDeleted<T> extends FirestoreState<T> {
+class ItemDeleted<T> extends FirestoreState<T> {
   final String? message;
 
-  const DataDeleted({this.message});
+  const ItemDeleted({this.message});
 
   @override
   List<Object?> get props => [message];
 }
 
-class DataError<T> extends FirestoreState<T> {
+class ItemError<T> extends FirestoreState<T> {
   final String error;
 
-  const DataError(this.error);
+  const ItemError(this.error);
 
   @override
   List<Object?> get props => [error];

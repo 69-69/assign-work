@@ -28,7 +28,7 @@ class _ListCustomersState extends State<ListCustomers> {
       builder: (context, state) {
         return switch (state) {
           LoadingCustomers<Customer>() => context.loader,
-          CustomerLoaded<Customer>(data: var results) =>
+          CustomersLoaded<Customer>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
                     'Add New Customer',
@@ -64,7 +64,7 @@ class _ListCustomersState extends State<ListCustomers> {
   }
 
   _buildAnyWidget(List<Customer> customers) {
-    return context.buildTotalItems(
+    return context.actionInfoButton(
       'Refresh Customers',
       label: 'Customers',
       count: customers.length,

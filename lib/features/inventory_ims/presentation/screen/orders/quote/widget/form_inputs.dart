@@ -3,79 +3,103 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_enum.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/features/setup/presentation/screen/product_config/widget/search_suppliers.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/features/setup/presentation/screen/item_config/widget/search_suppliers.dart';
 import 'package:flutter/material.dart';
 
-/// Customer ID TextField [SupplierIDInput]
-class SupplierIDInput extends StatelessWidget {
-  const SupplierIDInput({super.key, this.serverValue, required this.onChanged});
+/// Items Suppliers Dropdown [SuppliersDropdown]
+class SuppliersDropdown extends StatelessWidget {
+  const SuppliersDropdown({
+    super.key,
+    this.initialValue,
+    required this.onChanged,
+  });
 
-  final String? serverValue;
+  final String? initialValue;
   final Function(String, String) onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SearchSuppliers(serverValue: serverValue, onChanged: onChanged);
+    return SearchSuppliers(initialValue: initialValue, onChanged: onChanged);
   }
 }
 
-/// Quantity & RFQStatus Dropdown TextField [QuantityAndRFQStatusDropdown]
-class QuantityAndRFQStatusDropdown extends StatelessWidget {
-  const QuantityAndRFQStatusDropdown({
+/// Suppliers & RFQStatus Dropdown TextField [SuppliersAndRFQStatusDropdown]
+class SuppliersAndRFQStatusDropdown extends StatelessWidget {
+  const SuppliersAndRFQStatusDropdown({
     super.key,
-    this.onQuantityChanged,
+    this.initialStatus,
     required this.onStatusChanged,
-    this.serverStatus,
-    this.quantityController,
+    this.initialSupplier,
+    required this.onSupplierChanged,
   });
 
-  final String? serverStatus;
-  final ValueChanged? onQuantityChanged;
+  final String? initialStatus;
   final void Function(dynamic) onStatusChanged;
-  final TextEditingController? quantityController;
+  final String? initialSupplier;
+  final void Function(String, String) onSupplierChanged;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        QuantityTextField(
-          controller: quantityController,
-          onChanged: onQuantityChanged,
+        SuppliersDropdown(
+          initialValue: initialSupplier,
+          onChanged: onSupplierChanged,
         ),
-        RFQStatusDropdown(serverValue: serverStatus, onChange: onStatusChanged),
+        RFQStatusDropdown(
+          initialValue: initialStatus,
+          onChange: onStatusChanged,
+        ),
       ],
     );
   }
 }
 
-/// NetPrice & RFQStatus Dropdown TextField [NetPriceAndRFQStatusDropdown]
-class NetPriceAndRFQStatusDropdown extends StatelessWidget {
-  const NetPriceAndRFQStatusDropdown({
+/// Validity & Payment Terms Dropdown TextField [ValidityAndPayTermsDropdown]
+class ValidityAndPayTermsDropdown extends StatelessWidget {
+  const ValidityAndPayTermsDropdown({
     super.key,
     this.onNetPriceChanged,
-    required this.onStatusChanged,
-    this.serverStatus,
+    required this.onPayTermsChanged,
+    this.initialPayTerms,
     this.netPriceController,
+    this.initialValidity,
+    this.labelValidity,
+    required this.onValidityChanged,
   });
 
-  final String? serverStatus;
+  final String? initialPayTerms;
   final ValueChanged? onNetPriceChanged;
-  final void Function(dynamic) onStatusChanged;
+  final void Function(dynamic) onPayTermsChanged;
   final TextEditingController? netPriceController;
+  final String? initialValidity;
+  final String? labelValidity;
+  final Function(DateTime) onValidityChanged;
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        NetPriceTextField(
+        DatePicker(
+          inLabel: false,
+          initialDate: initialValidity,
+          label: labelValidity ?? 'Validity date',
+          restorationId: 'Validity date',
+          selectedDate: onValidityChanged,
+          helperText: 'How long the quote remains valid',
+        ),
+        /*NetPriceTextField(
           controller: netPriceController,
           onChanged: onNetPriceChanged,
+        ),*/
+        PayTermsDropdown(
+          initialValue: initialPayTerms,
+          onChange: onPayTermsChanged,
         ),
-        RFQStatusDropdown(serverValue: serverStatus, onChange: onStatusChanged),
       ],
     );
   }
@@ -89,12 +113,12 @@ class DeadlineAndDeliveryDateInput extends StatelessWidget {
     this.labelDeadline,
     required this.onDeliveryChanged,
     required this.onDeadlineChanged,
-    this.serverDeliveryDate,
-    this.serverDeadlineDate,
+    this.initialDeliveryDate,
+    this.initialDeadlineDate,
   });
 
-  final String? serverDeliveryDate;
-  final String? serverDeadlineDate;
+  final String? initialDeliveryDate;
+  final String? initialDeadlineDate;
   final String? labelDelivery;
   final String? labelDeadline;
   final Function(DateTime) onDeliveryChanged;
@@ -107,18 +131,45 @@ class DeadlineAndDeliveryDateInput extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         DatePicker(
-          serverDate: serverDeliveryDate,
+          inLabel: false,
+          initialDate: initialDeliveryDate,
           label: labelDelivery,
           restorationId: 'Delivery date',
           selectedDate: onDeliveryChanged,
+          helperText: 'Expected date for item delivery',
         ),
         DatePicker(
-          serverDate: serverDeadlineDate,
+          inLabel: false,
+          initialDate: initialDeadlineDate,
           label: labelDeadline,
           restorationId: 'Deadline date',
           selectedDate: onDeadlineChanged,
+          helperText: 'Last date for supplier to submit quote.',
         ),
       ],
+    );
+  }
+}
+
+/// Currency Selection Dropdown [CurrencyDropdown]
+class CurrencyDropdown extends StatelessWidget {
+  final String? initialCurrency;
+  final void Function(dynamic s) onCurrencyChanged;
+
+  const CurrencyDropdown({
+    super.key,
+    this.initialCurrency,
+    required this.onCurrencyChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StaticDropdown(
+      key: key,
+      items: currencyType,
+      label: 'Select currency',
+      initialValue: initialCurrency,
+      onValueChange: (String? v) => onCurrencyChanged(v),
     );
   }
 }
@@ -207,7 +258,7 @@ class NetPriceTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Net price',
+      label: 'Net price',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -216,18 +267,47 @@ class NetPriceTextField extends StatelessWidget {
   }
 }
 
-/// [RemarksTextField]
-class RemarksTextField extends StatelessWidget {
+/// [DeliveryAddressTextField]
+class DeliveryAddressAndNotes extends StatelessWidget {
+  final TextEditingController? notesController;
+  final ValueChanged? onNotesChanged;
+  final TextEditingController? addressController;
+  final ValueChanged? onAddressChanged;
+
+  const DeliveryAddressAndNotes({
+    super.key,
+    this.addressController,
+    this.onAddressChanged,
+    this.notesController,
+    this.onNotesChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        DeliveryAddressTextField(
+          controller: addressController,
+          onChanged: onAddressChanged,
+        ),
+        NotesTextField(controller: notesController, onChanged: onNotesChanged),
+      ],
+    );
+  }
+}
+
+/// [DeliveryAddressTextField]
+class DeliveryAddressTextField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged? onChanged;
 
-  const RemarksTextField({super.key, this.controller, this.onChanged});
+  const DeliveryAddressTextField({super.key, this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Remarks...',
-      helperText: 'Optional',
+      label: 'Delivery address (if any)...',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.multiline,
@@ -237,17 +317,81 @@ class RemarksTextField extends StatelessWidget {
   }
 }
 
-/// Product Desc or name [ProductDescTextField]
-class ProductDescTextField extends StatelessWidget {
+/// [NotesTextField]
+class NotesTextField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged? onChanged;
 
-  const ProductDescTextField({super.key, this.controller, this.onChanged});
+  const NotesTextField({super.key, this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Product name or description...',
+      label: 'Additional Notes (if any)...',
+      controller: controller,
+      onChanged: onChanged,
+      keyboardType: TextInputType.multiline,
+      maxLines: 4,
+      validator: (s) => null,
+    );
+  }
+}
+
+/// [TitleAndDepartments]
+class TitleAndDepartments extends StatelessWidget {
+  final TextEditingController? controller;
+  final ValueChanged? onChanged;
+  final String? initialDepartment;
+  final void Function(dynamic s) onDepartmentChange;
+
+  const TitleAndDepartments({
+    super.key,
+    this.controller,
+    this.onChanged,
+    this.initialDepartment,
+    required this.onDepartmentChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CustomTextField(
+          controller: controller,
+          onChanged: onChanged,
+          inputDecoration: InputDecoration(
+            labelText: 'Title or subject...',
+            helperText: 'e.g., RFQ for Office Supplies',
+          ),
+          keyboardType: TextInputType.none,
+          validator: (s) => null,
+        ),
+        StaticDropdown(
+          key: key,
+          items: departmentsList,
+          label: 'internal departments',
+          inLabel: false,
+          helperText: 'e.g., HR, IT, Accounting',
+          initialValue: initialDepartment,
+          onValueChange: (String? v) => onDepartmentChange(v),
+        ),
+      ],
+    );
+  }
+}
+
+/// Item Desc or name [itemNameTextField]
+class ItemNameTextField extends StatelessWidget {
+  final TextEditingController? controller;
+  final ValueChanged? onChanged;
+
+  const ItemNameTextField({super.key, this.controller, this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextField(
+      label: 'Item name...',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
@@ -266,7 +410,7 @@ class QuantityTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Quantity',
+      label: 'Quantity',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -284,7 +428,7 @@ class UnitPriceTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Unit price',
+      label: 'Unit price',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.number,
@@ -339,7 +483,7 @@ class TaxPercentTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Tax Percent',
+      label: 'Tax Percent',
       onChanged: onChanged,
       controller: controller,
       keyboardType: TextInputType.number,
@@ -357,23 +501,77 @@ class TaxPercentTextField extends StatelessWidget {
 
 /// Request for Price Quote Status [RFQStatusDropdown]
 class RFQStatusDropdown extends StatelessWidget {
-  final String? serverValue;
+  final String? initialValue;
   final void Function(dynamic s) onChange;
 
   const RFQStatusDropdown({
     super.key,
     required this.onChange,
-    this.serverValue,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
-      items: ['quote status', ...requestForQuoteStatus],
-      labelText: 'quote status',
-      serverValue: serverValue,
+      items: requestForQuoteStatus,
+      label: 'quote status',
+      initialValue: initialValue,
       onValueChange: (String? v) => onChange(v),
     );
   }
 }
+
+/// Payment terms [PayTermsDropdown]
+class PayTermsDropdown extends StatelessWidget {
+  final String? initialValue;
+  final void Function(dynamic s) onChange;
+
+  const PayTermsDropdown({
+    super.key,
+    required this.onChange,
+    this.initialValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StaticDropdown(
+      key: key,
+      items: paymentTerms,
+      label: 'payment terms',
+      initialValue: initialValue,
+      onValueChange: (String? v) => onChange(v),
+    );
+  }
+}
+
+/*
+/// Quantity & RFQStatus Dropdown TextField [QuantityAndRFQStatusDropdown]
+class QuantityAndRFQStatusDropdown extends StatelessWidget {
+  const QuantityAndRFQStatusDropdown({
+    super.key,
+    this.onQuantityChanged,
+    required this.onStatusChanged,
+    this.initialStatus,
+    this.quantityController,
+  });
+
+  final String? initialStatus;
+  final ValueChanged? onQuantityChanged;
+  final void Function(dynamic) onStatusChanged;
+  final TextEditingController? quantityController;
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        QuantityTextField(
+          controller: quantityController,
+          onChanged: onQuantityChanged,
+        ),
+        RFQStatusDropdown(initialValue: initialStatus, onChange: onStatusChanged),
+      ],
+    );
+  }
+}*/

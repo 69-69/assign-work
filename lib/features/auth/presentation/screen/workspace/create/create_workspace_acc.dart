@@ -1,11 +1,13 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/features/auth/domain/repository/auth_repository.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_sign_in_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/workspace_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +19,7 @@ extension CreateWorkspacePopUp on BuildContext {
     isDismissible: false,
     isScrollControlled: true,
     backgroundColor: kTransparentColor,
+    constraints: BoxConstraints(maxWidth: screenWidth),
     builder: (_) => const WorkspaceScreen(),
   );
 }
@@ -28,34 +31,32 @@ class WorkspaceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) {
-        return WorkspaceSignInBloc(
+        return WorkspaceAuthBloc(
           authRepository: RepositoryProvider.of<AuthRepository>(context),
         );
       },
-      child: _buildAlertDialog(context),
-    );
-    // return _buildAlertDialog(context);
-  }
-
-  _buildAlertDialog(BuildContext context) {
-    return CustomDialog(
-      title: DialogTitle(
-        title: 'Setup New Workspace'.toUpperCaseAll,
-        subtitle: "Create a new Workspace for your new Client.",
+      child: CustomDialog(
+        title: DialogTitle(
+          title: 'Setup New Workspace'.toUpperCaseAll,
+          subtitle: "steve Create a new Workspace for your new Client.",
+        ),
+        body: _buildFormBody(context),
+        actions: [CreateWorkspaceButton(onPressed: (v) {})],
       ),
-      body: _buildFormBody(context),
-      actions: [SignUpButton(onPressed: (v) {})],
     );
   }
 
-  BlocListener<WorkspaceSignInBloc, WorkspaceSignInState> _buildFormBody(
+  BlocListener<WorkspaceAuthBloc, WorkspaceAuthState> _buildFormBody(
     BuildContext context,
   ) {
-    return BlocListener<WorkspaceSignInBloc, WorkspaceSignInState>(
-      listenWhen: (oldState, newState) => oldState.status != newState.status,
+    return BlocListener<WorkspaceAuthBloc, WorkspaceAuthState>(
+      listenWhen: (prev, next) =>
+          prev.creationStage != next.creationStage ||
+          prev.status != next.status,
       listener: (_, state) => _showSignUpAlert(state, context),
       child: Container(
-        width: context.screenWidth,
+        alignment: Alignment.center,
+        width: context.dynamicWidth(0.7),
         padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
         child: const AutofillGroup(child: CreateNewWorkspaceForm()),
       ),
@@ -63,10 +64,13 @@ class WorkspaceScreen extends StatelessWidget {
   }
 
   /// Shows the alert overlay if there is a failure state.
-  void _showSignUpAlert(WorkspaceSignInState state, BuildContext context) {
-    if ((state.email.isValid && state.password.isValid) &&
-        state.status.isFailure) {
-      const msg = 'Something went wrong! Kindly try again...';
+  void _showSignUpAlert(WorkspaceAuthState state, BuildContext context) {
+    /*(state.email.isValid && state.password.isValid) &&*/
+    prettyPrint('label-state', state.creationStage.name);
+
+    if (state.status.isFailure) {
+      final msg =
+          state.errorMessage ?? 'Something went wrong! Kindly try again...';
 
       // Ensure the overlay is displayed with the current context
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -91,22 +95,29 @@ class CreateNewWorkspaceForm extends StatelessWidget {
     return _buildColumn(context);
   }
 
-  Column _buildColumn(BuildContext context) {
+  _buildColumn(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         const WorkspaceCategory(),
         const SizedBox(height: 20),
-        const WorkspaceNameInput(),
+        AdaptiveLayout(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [const WorkspaceNameInput(), const ClientNameInput()],
+        ),
         const SizedBox(height: 20),
-        const NameInput(),
+        AddressInput(),
         const SizedBox(height: 20),
-        const MobileNumberInput(),
-        const SizedBox(height: 20),
-        const EmailInput(checkMobileNumber: true),
+        AdaptiveLayout(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const MobileNumberInput(),
+            const EmailInput(checkMobileNumber: true),
+          ],
+        ),
         const SizedBox(height: 20),
         const PasswordInput(label: 'Workspace password'),
         TemporaryPasscodeInput(),
-        const SizedBox(height: 20),
       ],
     );
   }

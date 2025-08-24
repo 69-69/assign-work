@@ -1,5 +1,5 @@
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
 /// Store Name & Location TextField [StoreNameAndLocationInput]
@@ -56,13 +56,13 @@ class CompanyNameAndEmailInput extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomTextField(
-          labelText: 'Company name',
+          label: 'Company name',
           controller: nameController,
           keyboardType: TextInputType.name,
           onChanged: onNameChanged,
         ),
         CustomTextField(
-          labelText: 'Company email',
+          label: 'Company email',
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
           onChanged: onEmailChanged,
@@ -124,7 +124,7 @@ class FaxAndAddressTextField extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomTextField(
-          labelText: 'Fax',
+          label: 'Fax',
           helperText: 'Optional',
           controller: faxController,
           onChanged: onFaxChanged,
@@ -132,7 +132,7 @@ class FaxAndAddressTextField extends StatelessWidget {
           validator: (s) => null,
         ),
         CustomTextField(
-          labelText: 'Address or location...',
+          label: 'Address or location...',
           helperText: 'Optional',
           controller: addressController,
           onChanged: onAddressChanged,
@@ -157,7 +157,7 @@ class RemarksTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Remarks...',
+      label: 'Remarks...',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
@@ -178,7 +178,7 @@ class StoreNameTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Store name',
+      label: 'Store name',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
@@ -196,7 +196,7 @@ class StoreLocationTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Store location',
+      label: 'Store location',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
@@ -214,7 +214,7 @@ class PhoneTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Phone number',
+      label: 'Phone number',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
@@ -234,7 +234,7 @@ class AltPhoneTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Alternative phone number',
+      label: 'Alternative phone number',
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,

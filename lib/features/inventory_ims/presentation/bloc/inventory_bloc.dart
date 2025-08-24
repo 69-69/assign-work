@@ -43,7 +43,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     _initialize();
 
     _inventoryRepository.dataStream.listen(
-      (cacheData) => add(_InventoryLoaded<T>(_toList(cacheData))),
+      (cacheData) => add(_InventoriesLoaded<T>(_toList(cacheData))),
     );
   }
 
@@ -61,8 +61,8 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     on<DeleteInventory<String>>(_onDeleteInventory);
     on<DeleteInventory<List<String>>>(_onMultiDeleteInventory);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_InventoryLoaded<T>>(_onInventoryLoaded);
-    on<_SingleInventoryLoaded<T>>(_onSingleInventoryLoaded);
+    on<_InventoriesLoaded<T>>(_onInventoryLoaded);
+    on<_InventoryLoaded<T>>(_onSingleInventoryLoaded);
     on<_InventoryLoadError>(_onInventoryLoadError);
   }
 
@@ -143,7 +143,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       if (localDataList.isNotEmpty) {
         final data = _toList(localDataList);
 
-        add(_InventoryLoaded<T>(data));
+        add(_InventoriesLoaded<T>(data));
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
@@ -164,7 +164,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
 
       if (localData != null) {
         final data = fromFirestore(localData.data, localData.id);
-        add(_SingleInventoryLoaded<T>(data));
+        add(_InventoryLoaded<T>(data));
       } else {
         emit(InventoryError<T>('Document not found'));
       }
@@ -327,14 +327,14 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   }
 
   void _onInventoryLoaded(
-    _InventoryLoaded<T> event,
+    _InventoriesLoaded<T> event,
     Emitter<InventoryState<T>> emit,
   ) {
     emit(InventoriesLoaded<T>(event.data));
   }
 
   void _onSingleInventoryLoaded(
-    _SingleInventoryLoaded<T> event,
+    _InventoryLoaded<T> event,
     Emitter<InventoryState<T>> emit,
   ) {
     emit(InventoryLoaded<T>(event.data));

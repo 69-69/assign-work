@@ -19,8 +19,7 @@ class HorizontalDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cl =
-        color ?? context.onPrimaryContainer.withAlpha((0.2 * 255).toInt());
+    final cl = color ?? context.onPrimaryContainer.toAlpha(0.2);
 
     return width != null ? _line(cl, context) : _divider(cl);
   }

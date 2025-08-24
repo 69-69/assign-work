@@ -27,7 +27,7 @@ class LeftColumnPane extends StatelessWidget {
   _buildLeftColumn(BuildContext context) {
     return Card(
       elevation: 50,
-      color: kLightColor.withAlpha((0.8 * 255).toInt()),
+      color: kLightColor.toAlpha(0.8),
       margin: context.isMobile || context.isTablet
           ? null
           : const EdgeInsets.symmetric(horizontal: 150),

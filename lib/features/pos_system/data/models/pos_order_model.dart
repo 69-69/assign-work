@@ -11,8 +11,8 @@ class POSOrder extends Equatable {
   final String storeNumber;
   final String orderNumber;
   final String customerId;
-  final String productId;
-  final String productName;
+  final String itemId;
+  final String itemName;
   final String barcode;
   final int quantity;
   final double unitPrice;
@@ -21,7 +21,7 @@ class POSOrder extends Equatable {
   final double taxPercent;
   final double taxAmount;
   final double totalAmount;
-  final String paymentMethod;
+  final String payMethod;
   final String status;
   final String createdBy;
   final DateTime createdAt;
@@ -32,8 +32,8 @@ class POSOrder extends Equatable {
     this.id = '', // Firestore will assign a unique ID (documentId)
     required this.storeNumber,
     required this.orderNumber,
-    required this.productId,
-    required this.productName,
+    required this.itemId,
+    required this.itemName,
     this.customerId = '',
     required this.quantity,
     required this.unitPrice,
@@ -43,7 +43,7 @@ class POSOrder extends Equatable {
     this.taxAmount = 0.0,
     this.barcode = '',
     required this.totalAmount,
-    required this.paymentMethod,
+    required this.payMethod,
     required this.status,
     this.createdBy = '',
     DateTime? createdAt,
@@ -57,8 +57,8 @@ class POSOrder extends Equatable {
       id: documentId,
       storeNumber: map['storeNumber'] ?? '',
       orderNumber: map['orderNumber'] ?? '',
-      productId: map['productId'] ?? '',
-      productName: map['productName'] ?? '',
+      itemId: map['itemId'] ?? '',
+      itemName: map['itemName'] ?? '',
       customerId: map['customerId'] ?? '',
       quantity: map['quantity'] ?? 0,
       unitPrice: map['unitPrice'] ?? 0.0,
@@ -68,7 +68,7 @@ class POSOrder extends Equatable {
       discountAmount: map['discountAmount'] ?? 0.0,
       taxAmount: map['taxAmount'] ?? 0.0,
       totalAmount: map['totalAmount'] ?? 0.0,
-      paymentMethod: map['paymentMethod'] ?? '',
+      payMethod: map['payMethod'] ?? '',
       status: map['status'] ?? '',
       createdBy: map['createdBy'],
       createdAt: toDateTimeFn(map['createdAt']),
@@ -82,8 +82,8 @@ class POSOrder extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'orderNumber': orderNumber,
-    'productId': productId,
-    'productName': productName,
+    'itemId': itemId,
+    'itemName': itemName,
     'customerId': customerId,
     'quantity': quantity,
     'unitPrice': unitPrice,
@@ -93,7 +93,7 @@ class POSOrder extends Equatable {
     'totalAmount': totalAmount,
     'discountAmount': discountAmount,
     'taxAmount': taxAmount,
-    'paymentMethod': paymentMethod,
+    'payMethod': payMethod,
     'status': status,
     'createdBy': createdBy,
     'createdAt': createdAt,
@@ -119,7 +119,7 @@ class POSOrder extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && productId.isEmpty;
+  bool get isEmpty => id.isEmpty && itemId.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -171,8 +171,8 @@ class POSOrder extends Equatable {
     String? id,
     String? storeNumber,
     String? orderNumber,
-    String? productId,
-    String? productName,
+    String? itemId,
+    String? itemName,
     String? customerId,
     String? status,
     int? quantity,
@@ -183,7 +183,7 @@ class POSOrder extends Equatable {
     double? discountAmount,
     double? taxAmount,
     double? totalAmount,
-    String? paymentMethod,
+    String? payMethod,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -193,8 +193,8 @@ class POSOrder extends Equatable {
       id: id ?? this.id,
       storeNumber: storeNumber ?? this.storeNumber,
       orderNumber: orderNumber ?? this.orderNumber,
-      productId: productId ?? this.productId,
-      productName: productName ?? this.productName,
+      itemId: itemId ?? this.itemId,
+      itemName: itemName ?? this.itemName,
       customerId: customerId ?? this.customerId,
       quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
@@ -202,7 +202,7 @@ class POSOrder extends Equatable {
       discountAmount: discountAmount ?? this.discountAmount,
       taxAmount: taxAmount ?? this.taxAmount,
       totalAmount: totalAmount ?? this.totalAmount,
-      paymentMethod: paymentMethod ?? this.paymentMethod,
+      payMethod: payMethod ?? this.payMethod,
       status: status ?? this.status,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
@@ -216,15 +216,15 @@ class POSOrder extends Equatable {
     id,
     orderNumber,
     customerId,
-    productId,
-    productName,
+    itemId,
+    itemName,
     quantity,
     unitPrice,
     barcode,
     discountPercent,
     taxPercent,
     totalAmount,
-    paymentMethod,
+    payMethod,
     status,
     createdBy,
     createdAt,
@@ -237,10 +237,10 @@ class POSOrder extends Equatable {
   List<String> itemAsList() => [
     id,
     storeNumber,
-    productId.toUpperCaseAll,
+    itemId.toUpperCaseAll,
     orderNumber,
     customerId,
-    productName.toTitleCase,
+    itemName.toTitleCase,
     status.toTitleCase,
     '$ghanaCedis${unitPrice.toCurrency}',
     '$quantity',
@@ -248,7 +248,7 @@ class POSOrder extends Equatable {
     '$discountPercent% = $ghanaCedis${discountAmount.toCurrency}',
     '$taxPercent% = $ghanaCedis${taxAmount.toCurrency}',
     '$ghanaCedis${totalAmount.toCurrency}',
-    paymentMethod.toTitleCase,
+    payMethod.toTitleCase,
     createdBy.toTitleCase,
     getCreatedAt,
     updatedBy.toTitleCase,
@@ -258,10 +258,10 @@ class POSOrder extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store Number',
-    'Product ID',
+    'Item ID',
     'Order Number',
     'Customer ID',
-    'Product Name',
+    'Item Name',
     'Status',
     'Unit Price',
     'Quantity',

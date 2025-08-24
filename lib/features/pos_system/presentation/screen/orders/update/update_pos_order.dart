@@ -8,9 +8,9 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/product_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_order_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
@@ -43,18 +43,18 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
 
   // Updates the product details in the Form by setting the unit price,
   // product ID, & name based on the provided Product instance.
-  set _setProductId(Product p) {
+  set _setItemId(Item p) {
     _unitPriceController.text = '${p.sellingPrice}';
-    _selectedProductId = p.id;
-    _selectedProductName = p.name;
+    _selectedItemId = p.id;
+    _selectedItemName = p.name;
   }
 
   bool _isEnabledTotalAmt = false;
   String _selectedCustomerId = '';
-  String _selectedProductId = '';
-  String _selectedProductName = '';
+  String _selectedItemId = '';
+  String _selectedItemName = '';
   String? _selectedOrderStatus;
-  String? _selectedPaymentMethod;
+  String? _selectedPayMethod;
   double _discountAmount = 0.0;
   double _taxAmount = 0.0;
 
@@ -112,12 +112,12 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
   POSOrder get _orderData => _order.copyWith(
     status: _selectedOrderStatus ?? '',
     barcode: _barcodeController.text,
-    productId: _selectedProductId,
-    productName: _selectedProductName,
+    itemId: _selectedItemId,
+    itemName: _selectedItemName,
     customerId: _selectedCustomerId,
     quantity: int.tryParse(_quantityController.text) ?? 0,
     unitPrice: _strToDouble(_unitPriceController.text),
-    paymentMethod: _selectedPaymentMethod ?? '',
+    payMethod: _selectedPayMethod ?? '',
     discountPercent: _strToDouble(_discountPercentController.text),
     taxPercent: _strToDouble(_taxPercentController.text),
     discountAmount: _discountAmount,
@@ -181,10 +181,10 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         Text('Update Order Status', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
         OrdersStatusDropdown(
-          serverValue: _order.status,
+          initialValue: _order.status,
           onChange: (s) => _updateStatus(s),
         ),
-        divLine,
+        HorizontalDivider(thickness: 8.0),
         _formBody(),
       ],
     );
@@ -205,7 +205,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: [
         const SizedBox(height: 20.0),
-        CustomerAndProductId(
+        CustomerAndItemId(
           onCustomerChanged: (id, name) async {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
             /// hence, generate new Customer-ID
@@ -218,8 +218,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
               setState(() => _selectedCustomerId = id);
             }
           },
-          onProductChanged: (product) =>
-              setState(() => _setProductId = product),
+          onItemChanged: (item) => setState(() => _setItemId = item),
         ),
         const SizedBox(height: 20.0),
         UnitPriceAndQuantityInput(
@@ -238,7 +237,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
           onSubTotalChange: (t) {
             if (_formKey.currentState!.validate()) setState(() {});
           },
-          serverStatus: _selectedOrderStatus,
+          initialStatus: _selectedOrderStatus,
           onStatusChange: (s) => setState(() => _selectedOrderStatus = s),
         ),
         const SizedBox(height: 20.0),
@@ -271,17 +270,17 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
           },
         ),
         const SizedBox(height: 20.0),
-        TotalAmountAndPaymentMethod(
+        TotalAmountAndPayMethod(
           enable: _isEnabledTotalAmt,
           onEdited: _toggleEditTotalAmt,
           totalAmtController: _totalAmtController,
-          serverValue: _selectedPaymentMethod,
+          initialPayMethod: _selectedPayMethod,
           onTotalAmtChanged: (t) {
             if (_formKey.currentState!.validate()) {
               setState(() {});
             }
           },
-          onPaymentChanged: (s) => setState(() => _selectedPaymentMethod = s),
+          onPaymentChanged: (s) => setState(() => _selectedPayMethod = s),
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(onPressed: _onSubmit),

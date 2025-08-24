@@ -7,7 +7,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/features/setup/data/models/employee_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/setup/presentation/screen/all_employees/staff_account/widget/form_inputs.dart';
+import 'package:assign_erp/features/setup/presentation/screen/all_employees/staff_account/widget/search_role.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -58,7 +58,7 @@ class AssignEmployeeRole extends StatelessWidget {
       width: context.screenWidth,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       child: AutofillGroup(
-        child: RoleDropdown(
+        child: SearchRole(
           onChanged: (id, role) {
             context.read<EmployeeBloc>().add(
               UpdateSetup<Employee>(

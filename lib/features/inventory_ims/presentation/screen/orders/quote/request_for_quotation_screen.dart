@@ -7,7 +7,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/request_price_quotation_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/add/add_request_for_quotation.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/index.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/list_quotations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +25,7 @@ class RequestForQuotationScreen extends StatelessWidget {
         title: requestPriceQuoteScreenTitle.toUpperCaseAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
-          'Request For Quotation',
+          'Request For Quotes',
           onPressed: () => context.openAddRequestForQuotation(),
         ),
       ),
@@ -33,17 +33,14 @@ class RequestForQuotationScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 2,
       openThisTab: 0,
       tabs: [
-        {
-          'label': 'Request For Quotation',
-          'icon': Icons.miscellaneous_services,
-        },
+        {'label': 'Request For Quote', 'icon': Icons.miscellaneous_services},
         {'label': 'Awarded RFQ', 'icon': Icons.card_giftcard},
       ],
-      children: [ListRequestForQuotation(), ListAwardedRequestForQuotation()],
+      children: [ListQuotations(), ListQuotations(isAward: true)],
     );
   }
 }

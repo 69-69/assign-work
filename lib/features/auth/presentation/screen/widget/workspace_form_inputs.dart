@@ -1,15 +1,19 @@
+import 'dart:async';
+
 import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_sign_in_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_creation_stages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
@@ -27,11 +31,11 @@ class WorkspaceRole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdown(
+    return StaticDropdown(
       key: key,
       items: workspaceRoleList,
-      labelText: workspaceRoleList.first,
-      serverValue: serverRole,
+      label: workspaceRoleList.first,
+      initialValue: serverRole,
       onValueChange: (String? v) => onRoleChanged(v),
     );
   }
@@ -45,21 +49,21 @@ class WorkspaceCategory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (previous, current) =>
           previous.workspaceCategory != current.workspaceCategory,
       builder: (_, state) => _buildBody(context, state),
     );
   }
 
-  CustomDropdown _buildBody(BuildContext context, WorkspaceSignInState state) {
-    return CustomDropdown(
-      items: worspaceCategories,
-      labelText: 'Workspace category',
-      serverValue: serverEntity,
+  StaticDropdown _buildBody(BuildContext context, WorkspaceAuthState state) {
+    return StaticDropdown(
+      items: workspaceCategories,
+      label: 'Workspace category',
+      initialValue: serverEntity,
       onValueChange: (String? v) {
         if (v != null) {
-          context.read<WorkspaceSignInBloc>().add(
+          context.read<WorkspaceAuthBloc>().add(
             WorkspaceCategoryChanged(v.trim()),
           );
         }
@@ -79,32 +83,32 @@ class WorkspaceNameInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (previous, current) =>
           (previous.workspaceCategory != current.workspaceCategory) ||
           previous.workspaceName != current.workspaceName,
       builder: (cxt, state) => state.workspaceCategory.isValid
           ? _workspaceNameFormField(cxt, state)
-          : const SizedBox.shrink(),
+          : _PendingPlaceholder(tooltip: 'business type'),
     );
   }
 
-  _workspaceNameFormField(BuildContext context, WorkspaceSignInState state) {
+  _workspaceNameFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_Workspace_name_Form_Input_textField'),
       keyboardType: TextInputType.text,
-      onChanged: (name) => context.read<WorkspaceSignInBloc>().add(
+      onChanged: (name) => context.read<WorkspaceAuthBloc>().add(
         WorkspaceNameChanged(name.trim()),
       ),
       inputDecoration: InputDecoration(
         isDense: true,
         contentPadding: const EdgeInsets.all(1.0),
-        hintText: "Enter workspace name",
-        label: const Text('Workspace name', semanticsLabel: 'Workspace name'),
+        hintText: "Enter business name",
+        label: const Text('Business name', semanticsLabel: 'Business name'),
         alignLabelWithHint: true,
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         errorText: state.workspaceName.displayError != null
-            ? 'Enter workspace name. Ex: Cash firms'
+            ? 'Enter business name. Ex: Cash firms'
             : null,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.business, size: 15),
@@ -113,28 +117,28 @@ class WorkspaceNameInput extends StatelessWidget {
   }
 }
 
-// Name
-class NameInput extends StatelessWidget {
-  const NameInput({super.key});
+// Client name
+class ClientNameInput extends StatelessWidget {
+  const ClientNameInput({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (previous, current) =>
           (previous.workspaceName != current.workspaceName) ||
           previous.clientName != current.clientName,
       builder: (cxt, state) => state.workspaceName.isValid
           ? _nameFormField(cxt, state)
-          : const SizedBox.shrink(),
+          : _PendingPlaceholder(tooltip: 'business name'),
     );
   }
 
-  _nameFormField(BuildContext context, WorkspaceSignInState state) {
+  _nameFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_client_name_Form_Input_textField'),
       keyboardType: TextInputType.name,
       autofillHints: const [AutofillHints.name],
-      onChanged: (clientName) => context.read<WorkspaceSignInBloc>().add(
+      onChanged: (clientName) => context.read<WorkspaceAuthBloc>().add(
         ClientNameChanged(clientName.trim()),
       ),
       inputDecoration: InputDecoration(
@@ -143,12 +147,57 @@ class NameInput extends StatelessWidget {
         hintText: "Enter client name",
         label: const Text('Client name', semanticsLabel: 'Client name'),
         alignLabelWithHint: true,
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         errorText: state.clientName.displayError != null
             ? 'Invalid Client name'
             : null,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.person, size: 15),
+      ),
+    );
+  }
+}
+
+// Business Address
+class AddressInput extends StatelessWidget {
+  const AddressInput({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
+      buildWhen: (prev, cur) =>
+          (prev.clientName != cur.clientName) || prev.address != cur.address,
+      builder: (context, state) {
+        return state.clientName.isValid
+            ? _addressFormField(context, state)
+            : _PendingPlaceholder(tooltip: 'client name');
+      },
+    );
+  }
+
+  _addressFormField(BuildContext context, WorkspaceAuthState state) {
+    return CustomTextField(
+      key: const Key('reg_address_textField'),
+      keyboardType: TextInputType.multiline,
+      autofillHints: const [AutofillHints.streetAddressLevel1],
+      maxLines: 3,
+      onChanged: (number) =>
+          context.read<WorkspaceAuthBloc>().add(AddressChanged(number.trim())),
+      inputDecoration: InputDecoration(
+        isDense: true,
+        contentPadding: const EdgeInsets.all(1.0),
+        hintText: "Enter business address",
+        label: const Text(
+          'Business address',
+          semanticsLabel: 'Business address',
+        ),
+        alignLabelWithHint: true,
+        fillColor: kGrayColor.toAlpha(0.1),
+        errorText: state.address.displayError != null
+            ? 'Invalid business address'
+            : null,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        prefixIcon: const Icon(Icons.location_city, size: 15),
       ),
     );
   }
@@ -160,24 +209,24 @@ class MobileNumberInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) =>
-          (prev.clientName != cur.clientName) ||
+          (prev.address != cur.address) ||
           prev.mobileNumber != cur.mobileNumber,
       builder: (context, state) {
-        return state.clientName.isValid
+        return state.address.isValid
             ? _mobileFormField(context, state)
-            : const SizedBox.shrink();
+            : _PendingPlaceholder(tooltip: 'business address');
       },
     );
   }
 
-  _mobileFormField(BuildContext context, WorkspaceSignInState state) {
+  _mobileFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_name_Form_Input_textField'),
       keyboardType: TextInputType.phone,
       autofillHints: const [AutofillHints.telephoneNumber],
-      onChanged: (number) => context.read<WorkspaceSignInBloc>().add(
+      onChanged: (number) => context.read<WorkspaceAuthBloc>().add(
         SignInMobileChanged(number.trim()),
       ),
       inputDecoration: InputDecoration(
@@ -186,7 +235,7 @@ class MobileNumberInput extends StatelessWidget {
         hintText: "Enter mobile number",
         label: const Text('Mobile number', semanticsLabel: 'Mobile number'),
         alignLabelWithHint: true,
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         errorText: state.mobileNumber.displayError != null
             ? 'Invalid Mobile number'
             : null,
@@ -205,7 +254,7 @@ class EmailInput extends StatelessWidget {
   const EmailInput({
     super.key,
     this.checkMobileNumber = false,
-    this.label = 'Workspace email',
+    this.label = 'Business email',
   });
 
   @override
@@ -213,29 +262,29 @@ class EmailInput extends StatelessWidget {
     return checkMobileNumber ? _buildCheck() : _buildNoCheck();
   }
 
-  BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState> _buildCheck() {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+  BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState> _buildCheck() {
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) =>
           (prev.mobileNumber != cur.mobileNumber) || prev.email != cur.email,
       builder: (context, state) => state.mobileNumber.isValid
           ? _emailFormField(context, state)
-          : const SizedBox.shrink(),
+          : _PendingPlaceholder(tooltip: 'mobile number'),
     );
   }
 
-  BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState> _buildNoCheck() {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+  BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState> _buildNoCheck() {
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) => prev.email != cur.email,
       builder: (context, state) => _emailFormField(context, state),
     );
   }
 
-  _emailFormField(BuildContext context, WorkspaceSignInState state) {
+  _emailFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('sign_inForm_emailInput_textField'),
       keyboardType: TextInputType.emailAddress,
       autofillHints: const [AutofillHints.email],
-      onChanged: (email) => context.read<WorkspaceSignInBloc>().add(
+      onChanged: (email) => context.read<WorkspaceAuthBloc>().add(
         SignInEmailChanged(email.trim()),
       ),
       inputDecoration: InputDecoration(
@@ -244,7 +293,7 @@ class EmailInput extends StatelessWidget {
         hintText: label,
         label: Text(label, semanticsLabel: label),
         alignLabelWithHint: true,
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         errorText: state.email.displayError != null ? 'Invalid email' : null,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.email, size: 15),
@@ -256,6 +305,7 @@ class EmailInput extends StatelessWidget {
 /// This PasswordInput is for either Employee or Workspace during Sign-In [PasswordInput]
 class PasswordInput extends StatefulWidget {
   final String label;
+  final bool hidePlaceholder;
 
   /// Check if FormTextField is valid before showing Password Input Field [checkPrevious]
   final bool checkPrevious;
@@ -263,6 +313,7 @@ class PasswordInput extends StatefulWidget {
   const PasswordInput({
     super.key,
     this.checkPrevious = true,
+    this.hidePlaceholder = false,
     this.label = 'Workspace password',
   });
 
@@ -282,25 +333,27 @@ class PasswordInputState extends State<PasswordInput> {
   }
 
   /// Check if email is valid before showing Password Input Field [_buildCheck]
-  BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState> _buildCheck() {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+  BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState> _buildCheck() {
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) =>
           (prev.email != cur.email) || (prev.password != cur.password),
       builder: (context, state) => state.email.isValid
           ? _passwordFormField(context, state)
-          : const SizedBox.shrink(),
+          : widget.hidePlaceholder
+          ? const SizedBox.shrink()
+          : _PendingPlaceholder(tooltip: 'email'),
     );
   }
 
   /// Don't check if email is valid, before showing Password Input Field [_buildNoCheck]
-  BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState> _buildNoCheck() {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+  BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState> _buildNoCheck() {
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) => prev.password != cur.password,
       builder: (context, state) => _passwordFormField(context, state),
     );
   }
 
-  _passwordFormField(BuildContext context, WorkspaceSignInState state) {
+  _passwordFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('auth_Form_passwordInput_textField'),
       maxLines: 1,
@@ -316,7 +369,7 @@ class PasswordInputState extends State<PasswordInput> {
       inputDecoration: InputDecoration(
         isDense: true,
         contentPadding: const EdgeInsets.all(1.0),
-        fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        fillColor: kGrayColor.toAlpha(0.1),
         hintText: widget.label,
         label: Text(widget.label, semanticsLabel: widget.label),
         floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -341,7 +394,7 @@ class PasswordInputState extends State<PasswordInput> {
   }
 
   void dispatchPasswordChangeEvent(String password) {
-    context.read<WorkspaceSignInBloc>().add(
+    context.read<WorkspaceAuthBloc>().add(
       SignInPasswordChanged(password.trim()),
     );
   }
@@ -387,20 +440,20 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (prev, cur) =>
           (prev.password != cur.password) ||
           (prev.temporaryPasscode != cur.temporaryPasscode),
       builder: (context, state) {
         return state.password.isValid
             ? _buildPasscodeField(context, state)
-            : const SizedBox.shrink();
+            : _PendingPlaceholder(tooltip: 'password');
       },
     );
   }
 
   /// Builds the CustomTextField widget for the passcode input
-  Widget _buildPasscodeField(BuildContext context, WorkspaceSignInState state) {
+  Widget _buildPasscodeField(BuildContext context, WorkspaceAuthState state) {
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
@@ -433,14 +486,14 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
   // Builds the input decoration for the passcode field (either temporal or regular)
   InputDecoration _buildInputDecoration(
     BuildContext context,
-    WorkspaceSignInState state,
+    WorkspaceAuthState state,
   ) {
     final label = 'Temporal Passcode';
 
     return InputDecoration(
       isDense: true,
       contentPadding: const EdgeInsets.all(1.0),
-      fillColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+      fillColor: kGrayColor.toAlpha(0.1),
       label: Text(label, semanticsLabel: label),
       helperText: helperText,
       floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -467,7 +520,7 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      color: kLightColor,
+      txtColor: kLightColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       onPressed: _generateAndDispatchPasscode,
@@ -487,13 +540,13 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
 
   // Dispatches the PasscodeChanged event to the SignInBloc with the updated passcode
   void _dispatchPasscodeChangeEvent(String passcode) {
-    context.read<WorkspaceSignInBloc>().add(
+    context.read<WorkspaceAuthBloc>().add(
       TemporaryPasscodeChanged(passcode.trim()),
     );
   }
 }
 
-// Workspace Button
+// Workspace SignIn Button
 class WorkspaceSignInButton extends StatelessWidget {
   const WorkspaceSignInButton({super.key, required this.onPressed});
 
@@ -501,15 +554,16 @@ class WorkspaceSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       builder: (context, state) {
         return _buildButton(
           context,
+          isDisabled: !state.password.isValid,
           inProgress: state.status.isInProgress,
           onPress: (state.email.isValid && state.password.isValid)
               ? () {
                   onPressed.call(true);
-                  context.read<WorkspaceSignInBloc>().add(SignInRequested());
+                  context.read<WorkspaceAuthBloc>().add(SignInRequested());
                 }
               : null,
         );
@@ -520,28 +574,40 @@ class WorkspaceSignInButton extends StatelessWidget {
   _buildButton(
     BuildContext context, {
     bool inProgress = false,
+    bool isDisabled = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
     label: inProgress ? "Please wait..." : "Sign In",
     onPressed: onPress,
+    isDisabled: isDisabled,
   );
 }
 
-class SignUpButton extends StatelessWidget {
-  const SignUpButton({super.key, required this.onPressed});
+// Create/Register Workspace Button
+class CreateWorkspaceButton extends StatelessWidget {
+  const CreateWorkspaceButton({super.key, required this.onPressed});
 
   final Function(bool) onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       builder: (context, state) {
+        final currentStage = state.creationStage;
+        // final stages = _allStages;
+        prettyPrint('steven', currentStage.name);
+
         return _buildButton(
           context,
+          isDisabled: !state.isValid,
           inProgress: state.status.isInProgress,
           onPress: state.isValid
               ? () async {
-                  await _workspaceAction(context);
+                  /*onPressed.call(true);
+                  context.read<WorkspaceAuthBloc>().add(
+                    CreateWorkspaceRequested(),
+                  );*/
+                  await _workspaceAction(context, currentStage);
                 }
               : null,
         );
@@ -549,37 +615,48 @@ class SignUpButton extends StatelessWidget {
     );
   }
 
-  _workspaceAction(BuildContext context) async {
+  _workspaceAction(
+    BuildContext context,
+    WorkspaceCreationStage currentStage,
+  ) async {
+    final setupCompleter = Completer<void>();
+
     await context.progressBarDialog(
-      child: const Text(
-        'Please wait...\nSetting-up New Workspace\n'
-        'You\'ll be Logged out after Setup is done!\n'
-        'Please check your email and click on the verification link to complete the process',
-        textAlign: TextAlign.center,
+      child: BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
+        buildWhen: (prev, next) => prev.creationStage == next.creationStage,
+        builder: (context, state) {
+          prettyPrint('🔄 Stage:', '${state.creationStage}');
+          return WorkspaceSetupProgress(onComplete: setupCompleter);
+        },
       ),
-      request: _setupWorkspace(context),
+      request: _registerWorkspace(context, setupCompleter),
       onSuccess: (_) => context.showAlertOverlay('Setup was successful'),
       onError: (error) =>
           context.showAlertOverlay('Setup failed', bgColor: kDangerColor),
     );
   }
 
-  Future<dynamic> _setupWorkspace(BuildContext context) =>
-      // Simulate delayed to complete Workspace SignUp/Setup
-      Future.delayed(kFProgressDelay, () async {
-        if (context.mounted) {
-          onPressed.call(true);
-          context.read<WorkspaceSignInBloc>().add(CreateRequested());
-        }
-      });
+  Future<void> _registerWorkspace(
+    BuildContext context,
+    Completer<void> setupCompleter,
+  ) async {
+    onPressed.call(true);
+    await setupCompleter.future;
+    if (context.mounted) {
+      onPressed.call(true);
+      context.read<WorkspaceAuthBloc>().add(CreateWorkspaceRequested());
+    }
+  }
 
   _buildButton(
     BuildContext context, {
     bool inProgress = false,
+    bool isDisabled = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
     label: inProgress ? "Please wait..." : "Create Workspace",
     onPressed: onPress,
+    isDisabled: isDisabled,
   );
 }
 
@@ -588,24 +665,24 @@ class UpdateWorkspacePasswordButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       builder: (context, state) {
         return _buildButton(
           context,
           inProgress: state.status.isInProgress,
           onPress: state.password.isValid
-              ? () async => await _setupWorkspace(context)
+              ? () async => await _updateWorkspacePassword(context)
               : null,
         );
       },
     );
   }
 
-  Future<dynamic> _setupWorkspace(BuildContext context) =>
+  Future<dynamic> _updateWorkspacePassword(BuildContext context) =>
       // Simulate delayed to complete Workspace Password Update
       Future.delayed(kRProgressDelay, () async {
         if (context.mounted) {
-          context.read<WorkspaceSignInBloc>().add(UpdatePasswordRequested());
+          context.read<WorkspaceAuthBloc>().add(UpdatePasswordRequested());
         }
       });
 
@@ -624,13 +701,13 @@ class ForgotWorkspacePasswordButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkspaceSignInBloc, WorkspaceSignInState>(
+    return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       builder: (context, state) {
         return _buildButton(
           context,
           inProgress: state.status.isInProgress,
           onPress: state.email.isValid
-              ? () => context.read<WorkspaceSignInBloc>().add(
+              ? () => context.read<WorkspaceAuthBloc>().add(
                   PasswordRecoveryRequested(),
                 )
               : null,
@@ -649,159 +726,155 @@ class ForgotWorkspacePasswordButton extends StatelessWidget {
   );
 }
 
-/*/// Expiry & Effective Date Picker [ExpiryAndEffectiveDateInput]
-class ExpiryAndEffectiveDateInput extends StatelessWidget {
-  const ExpiryAndEffectiveDateInput({
-    super.key,
-    this.labelExpiry,
-    this.labelManufacture,
-    this.onQuantityChanged,
-    required this.onExpiryChanged,
-    required this.onEffectiveChanged,
-    this.serverExpiryDate,
-    this.serverEffectiveDate,
-  });
-
-  final String? serverExpiryDate;
-  final String? serverEffectiveDate;
-  final String? labelExpiry;
-  final String? labelManufacture;
-  final ValueChanged? onQuantityChanged;
-  final Function(DateTime) onExpiryChanged;
-  final Function(DateTime) onEffectiveChanged;
+class _PendingPlaceholder extends StatelessWidget {
+  final double? height;
+  final String? tooltip;
+  const _PendingPlaceholder({this.height, this.tooltip});
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        DatePicker(
-          serverDate: serverEffectiveDate,
-          label: labelManufacture,
-          restorationId: 'Effective date',
-          selectedDate: onEffectiveChanged,
+    return Tooltip(
+      message: 'Complete ${tooltip ?? 'previous step'} before continuing',
+      child: SizedBox(
+        height: height ?? 50,
+        child: Opacity(
+          opacity: 0.4,
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: kGrayColor.toAlpha(0.5)),
+            ),
+            child: Center(
+              child: Text('Pending...', textAlign: TextAlign.center),
+            ),
+          ),
         ),
-        DatePicker(
-          serverDate: serverExpiryDate,
-          label: labelExpiry,
-          restorationId: 'Expiry date',
-          selectedDate: onExpiryChanged,
-        ),
-      ],
-    );
-  }
-}
-
-/// Subscription License & Number-of-Device TextField/Dropdown [LicenseAndTotalDevices]
-class LicenseAndTotalDevices extends StatelessWidget {
-  const LicenseAndTotalDevices({
-    super.key,
-    required this.totalDevicesController,
-    this.onTotalDevicesChanged,
-    required this.onSubscriptionChange,
-    this.serverSubscription,
-  });
-
-  final Function(String?, String?) onSubscriptionChange;
-  final String? serverSubscription;
-
-  final TextEditingController totalDevicesController;
-  final ValueChanged? onTotalDevicesChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CustomTextField(
-          labelText: 'Total Devices',
-          onChanged: onTotalDevicesChanged,
-          controller: totalDevicesController,
-          keyboardType: TextInputType.number,
-        ),
-        CustomDropdownSearch<Subscription>(
-          labelText: serverSubscription ?? 'Search Subscription...',
-          asyncItems: (String filter, loadProps) async =>
-              await GetSubscriptions.load(),
-          filterFn: (sub, filter) {
-            var f = filter.isEmpty ? (serverSubscription ?? '') : filter;
-            return sub.filterByAny(f);
-          },
-          itemAsString: (sub) => sub.itemAsString,
-          onChanged: (sub) => onSubscriptionChange(sub?.id, sub?.name),
-          validator: (sub) => sub == null ? 'Subscription is required' : null,
-        ),
-      ],
-    );
-  }
-}
-
-/// Subscription Fee & Hosting Type Dropdown [SubscribeFeeAndHostingType]
-class SubscribeFeeAndHostingType extends StatelessWidget {
-  const SubscribeFeeAndHostingType({
-    super.key,
-    required this.subscribeFeeController,
-    this.onSubscribeFeeChanged,
-    required this.onHostingChanged,
-    this.serverHosting,
-  });
-
-  final Function(String?) onHostingChanged;
-  final String? serverHosting;
-
-  final TextEditingController subscribeFeeController;
-  final ValueChanged? onSubscribeFeeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SubscriptionFee(
-          onSubscribeFeeChanged: onSubscribeFeeChanged,
-          subscribeFeeController: subscribeFeeController,
-        ),
-        CustomDropdown(
-          key: key,
-          items: hostingTypeList,
-          labelText: 'hosting type',
-          serverValue: serverHosting,
-          onValueChange: (String? v) => onHostingChanged(v),
-        ),
-      ],
-    );
-  }
-}
-
-/// Subscription Fee TextField [SubscriptionFee]
-class SubscriptionFee extends StatelessWidget {
-  const SubscriptionFee({
-    super.key,
-    required this.onSubscribeFeeChanged,
-    required this.subscribeFeeController,
-  });
-
-  final TextEditingController subscribeFeeController;
-  final ValueChanged? onSubscribeFeeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      labelText: 'Subscription Fee',
-      onChanged: onSubscribeFeeChanged,
-      controller: subscribeFeeController,
-      keyboardType: TextInputType.number,
-      inputDecoration: InputDecoration(
-        hintText: 'Subscription Fee',
-        label: const Text(
-          'Subscription Fee',
-          semanticsLabel: 'Subscription Fee',
-        ),
-        alignLabelWithHint: true,
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        prefixIcon: const Icon(Icons.payments, size: 15),
       ),
     );
   }
-}*/
+}
+
+// Workspace Setup Progress
+class WorkspaceSetupProgress extends StatefulWidget {
+  final Completer<void> onComplete;
+
+  const WorkspaceSetupProgress({super.key, required this.onComplete});
+
+  @override
+  State<WorkspaceSetupProgress> createState() => _WorkspaceSetupProgressState();
+}
+
+class _WorkspaceSetupProgressState extends State<WorkspaceSetupProgress> {
+  int _currentStageIndex = 0;
+  late Timer _timer;
+
+  List<WorkspaceCreationStage> get allStages => Workflow.allStages;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(kDProgressDelay, (timer) {
+      if (_currentStageIndex < allStages.length - 1) {
+        setState(() => _currentStageIndex++);
+      } else {
+        _timer.cancel();
+        if (!widget.onComplete.isCompleted) {
+          widget.onComplete.complete(); // ✅ notify parent
+          // You can trigger logout or navigation here if needed
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    if (!widget.onComplete.isCompleted) {
+      widget.onComplete.complete();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _buildInfoText(context),
+        const SizedBox(height: 16),
+        ..._buildStagesList(),
+      ],
+    );
+  }
+
+  Widget _buildInfoText(BuildContext context) {
+    return Text(
+      'Please wait...\n\n'
+      'Setting up new Workspace...\n'
+      'You\'ll be logged out after setup is complete.\n'
+      'Check your email and click the verification link to finish the process.',
+      textAlign: TextAlign.center,
+      style: context.textTheme.bodyMedium?.copyWith(height: 1.5),
+    );
+  }
+
+  List<Widget> _buildStagesList() {
+    return allStages.asMap().entries.map((entry) {
+      int index = entry.key;
+      WorkspaceCreationStage stage = entry.value;
+
+      return _StageText(
+        key: Key(stage.name),
+        stage: stage,
+        isActive: index == _currentStageIndex,
+        isCompleted: index < _currentStageIndex,
+      );
+    }).toList();
+  }
+}
+
+class _StageText extends StatelessWidget {
+  final WorkspaceCreationStage stage;
+  final bool isActive;
+  final bool isCompleted;
+
+  const _StageText({
+    super.key,
+    required this.stage,
+    required this.isActive,
+    required this.isCompleted,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color stageColor = isCompleted
+        ? kSuccessColor
+        : (isActive ? kDangerColor : kGrayColor);
+
+    return ListTile(
+      dense: true,
+      titleAlignment: ListTileTitleAlignment.center,
+      visualDensity: VisualDensity.compact,
+      contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+      minVerticalPadding: 0,
+      horizontalTitleGap: 3.0,
+      leading: isCompleted
+          ? CircleAvatar(
+              backgroundColor: stageColor,
+              radius: 9,
+              child: Icon(Icons.check, color: kLightColor, size: 14),
+            )
+          : null,
+      title: AnimatedDefaultTextStyle(
+        duration: fAnimateDuration,
+        style: context.textTheme.bodyMedium!.copyWith(
+          color: stageColor,
+          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+        ),
+        child: Text(stage.stageMessage),
+      ),
+    );
+  }
+}

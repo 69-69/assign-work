@@ -13,9 +13,7 @@ class RefreshTenants<T> extends TenantEvent<T> {
   const RefreshTenants();
 }
 
-class LoadSubscriptions<T> extends TenantEvent<T> {
-  const LoadSubscriptions();
-}
+class LoadSubscriptions<T> extends TenantEvent<T> {}
 
 class AddSubscription<T> extends TenantEvent<T> {
   final T data;

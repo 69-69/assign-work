@@ -6,24 +6,24 @@ import 'package:flutter/material.dart';
 
 /// Search Stores [SearchStores]
 class SearchStores extends StatelessWidget {
-  final String? serverValue;
+  final String? initialValue;
   final Function(String, String) onChanged;
 
-  const SearchStores({super.key, this.serverValue, required this.onChanged});
+  const SearchStores({super.key, this.initialValue, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return CustomDropdownSearch<CompanyStores>(
-      labelText: (serverValue ?? 'Assign Store locations...').toTitleCase,
+    return AsyncSearchDropdown<CompanyStores>(
+      labelText: (initialValue ?? 'Assign Store locations...').toTitleCase,
       asyncItems: (String filter, loadProps) async =>
           await GetStores.byAnyTerm(filter),
       filterFn: (store, filter) {
-        // var f = filter.isEmpty ? (serverValue ?? '') : filter;
-        return store.filterByAny(filter);
+        var term = filter.isEmpty ? (initialValue ?? '') : filter;
+        return store.filterByAny(term);
       },
       itemAsString: (store) => store.itemAsString,
       onChanged: (store) => onChanged(store!.storeNumber, store.name),
-      validator: (store) => store == null ? 'Assign Store location' : null,
+      validator: (store) => store == null ? 'Required Store location' : null,
     );
   }
 }

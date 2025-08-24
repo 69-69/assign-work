@@ -6,9 +6,9 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/file_doc_manager.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -109,11 +109,15 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   late List<bool> _selectedRowsStatus;
   bool _allVisibleRowIds = false;
   // Local variable to store the sorted rows
-  List<List<String>> _sortedRows = [];
+  // List<List<String>> _sortedRows = [];
 
   // Track the index of the row with visible ID
   int? _visibleRowIdIndex;
+  String _searchQuery = '';
+  // state to track current sort column
+  String? _currentSortColumn;
 
+  final TextEditingController _searchController = TextEditingController();
   final ScrollController _horScrollController = ScrollController();
   final ScrollController _verScrollController = ScrollController();
 
@@ -132,9 +136,6 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   void _allToggleHideID() =>
       setState(() => _allVisibleRowIds = !_allVisibleRowIds);
 
-  String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
-
   int get totalRows => widget.rows.length + (widget.childrenRow?.length ?? 0);
 
   @override
@@ -143,7 +144,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     _initializeSelectedRows();
     _searchController.addListener(_onSearchChanged);
     // Initialize _sortedRows with the initial rows from widget
-    _sortedRows = [...widget.rows];
+    // _sortedRows = [...widget.rows];
   }
 
   void _initializeSelectedRows() =>
@@ -157,7 +158,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       }
 
       // Notify if a callback is provided
-      if (widget.onAllChecked != null) {
+      if (widget.onAllChecked != null &&
+          _selectedRowsStatus.isNotNullNorEmpty) {
         widget.onAllChecked!(
           _allSelectedStatus,
           _selectedRowsStatus,
@@ -172,28 +174,12 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     setState(() => _searchQuery = _searchController.text);
   }
 
-  /// Search Func. for rows [_searchFunc]
-  List<List<String>> _searchRowsFunc() {
-    return widget.rows
-        .where(
-          (row) => row.any(
-            (cell) => cell.toLowercaseAll.contains(_searchQuery.toLowercaseAll),
-          ),
-        )
-        .toList();
-  }
-
-  /// Search Func. for ChildRows [_searchChildRowsFunc]
-  List<List<String>> _searchChildRowsFunc() {
-    return widget.childrenRow
-            ?.where(
-              (row) => row.any(
-                (cell) =>
-                    cell.toLowercaseAll.contains(_searchQuery.toLowercaseAll),
-              ),
-            )
-            .toList() ??
-        [];
+  /// Search Func. for ChildRows [_filteredChildRows]
+  List<List<String>> get _filteredChildRows {
+    return DataTableHelper.filterOnly(
+      rows: widget.childrenRow ?? [],
+      query: _searchQuery,
+    );
   }
 
   /// Get all checked or selected rows by _buildParentCheckbox()
@@ -249,6 +235,15 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     }
   }
 
+  List<List<String>> get _finalFilteredAndSortedRows {
+    return DataTableHelper.filterAndSort(
+      rows: widget.rows,
+      query: _searchQuery,
+      headers: widget.headers,
+      sortBy: _currentSortColumn,
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -262,51 +257,63 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     // Ensure _selectedRows list is correctly sized
     _updateSelectedRowsForNewRowCount();
 
-    // Get filtered rows based on search query
-    final filteredRows = _searchRowsFunc();
-    final filteredChildRows = _searchChildRowsFunc();
+    // Get the filtered & sorted rows
+    final filteredAndSortedRows = _finalFilteredAndSortedRows;
 
     return CustomScrollBar(
       controller: _verScrollController,
       child: Wrap(
         alignment: widget.anyWidgetAlignment,
         children: [
+          // Any custom widget above table (e.g., export buttons)
           _AnyWidget(
             headers: widget.headers,
             anyWidget: widget.anyWidget,
             selectedRows: _getSelectedRows,
           ),
+
+          // Search TextField
           _SearchTextField(
             controller: _searchController,
             onPressed: () {
               _searchController.clear();
             },
           ),
+
+          // Sort By Dropdown Button
+          _SortByDropdown(
+            headers: widget.headers,
+            initialSelection: _currentSortColumn,
+            onSortChanged: (column) {
+              setState(() {
+                _currentSortColumn = column;
+              });
+            },
+          ),
+          /*_SortByDropdown2(
+            headers: widget.headers,
+            filteredRows: filteredRows,
+            filteredChildRows: filteredChildRows,
+            initialSelection: 'Name', // Default sorting criterion
+            onSortedRowsChanged: (sortedRows) {
+              setState(() {
+                _sortedRows = sortedRows;
+              });
+            },
+          ),*/
+
+          // Horizontal Scroll for DataTable
           CustomScrollBar(
             controller: _horScrollController,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(bottom: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Sort By Dropdown Button
-                _SortByDropdown(
-                  headers: widget.headers,
-                  filteredRows: filteredRows,
-                  filteredChildRows: filteredChildRows,
-                  initialSelection: 'Name', // Default sorting criterion
-                  onSortedRowsChanged: (sortedRows) {
-                    setState(() {
-                      _sortedRows = sortedRows;
-                    });
-                  },
-                ),
-                // The table body using the sorted rows
-                Expanded(
-                  child: _buildBody(context, _sortedRows, filteredChildRows),
-                ),
-              ],
+            child: _buildBody(
+              context,
+              filteredAndSortedRows,
+              _filteredChildRows,
             ),
+
+            // _buildBody(context, _sortedRows, filteredChildRows),
           ),
         ],
       ),
@@ -335,9 +342,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
             context,
             rows: filteredChildRows,
             startIndex: filteredRows.length,
-            color: WidgetStatePropertyAll(
-              kDangerColor.withAlpha((0.1 * 255).toInt()),
-            ),
+            color: WidgetStatePropertyAll(kDangerColor.toAlpha(0.1)),
           ),
       ],
     );
@@ -352,10 +357,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   List<DataColumn> _buildDataColumns(BuildContext context) {
     final columns = [
       // Toggle All CheckBoxes
-      DataColumn(
-        tooltip: 'Select multiple orders',
-        label: _buildParentCheckbox(),
-      ),
+      DataColumn(tooltip: 'Select all', label: _buildParentCheckbox()),
 
       // Toggle All Hide Row-IDs Icon
       if (widget.showIDToggle) ...{
@@ -542,7 +544,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         value: _selectedRowsStatus[index],
         side: const BorderSide(width: 1.0),
         onChanged: (bool? selected) {
-          setState(() {
+          /*setState(() {
             if (selected == true) {
               // Uncheck all except the currently selected
               for (int i = 0; i < _selectedRowsStatus.length; i++) {
@@ -552,15 +554,80 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               // Allow unchecking the currently selected box
               _selectedRowsStatus[index] = false;
             }
-          });
+          });*/
           // Notify if a callback is provided
           if (widget.onChecked != null) {
             widget.onChecked!(selected, row);
           }
-          // setState(() => _selectedRowsStatus[index] = selected ?? false);
+          setState(() => _selectedRowsStatus[index] = selected ?? false);
         },
       ),
     );
+  }
+}
+
+/// [_DataTableHelper] for filtering and sorting
+class DataTableHelper {
+  static List<List<String>> filterAndSort({
+    required List<List<String>> rows,
+    required String query,
+    required List<String> headers,
+    String? sortBy,
+  }) {
+    final filtered = _filterRows(rows, query);
+
+    if (sortBy == null) return filtered;
+
+    final columnIndex = headers.indexOf(sortBy);
+    if (columnIndex == -1) return filtered;
+
+    filtered.sort((a, b) {
+      final valueA = a[columnIndex];
+      final valueB = b[columnIndex];
+
+      if (_isNumeric(valueA) && _isNumeric(valueB)) {
+        return double.parse(valueA).compareTo(double.parse(valueB));
+      } else if (_isValidDate(valueA) && _isValidDate(valueB)) {
+        return _parseDate(valueA).compareTo(_parseDate(valueB));
+      } else {
+        return valueA.compareTo(valueB);
+      }
+    });
+
+    return filtered;
+  }
+
+  static List<List<String>> filterOnly({
+    required List<List<String>> rows,
+    required String query,
+  }) {
+    return _filterRows(rows, query);
+  }
+
+  static List<List<String>> _filterRows(List<List<String>> rows, String query) {
+    return rows
+        .where(
+          (row) => row.any(
+            (cell) => cell.toLowercaseAll.contains(query.toLowercaseAll),
+          ),
+        )
+        .toList();
+  }
+
+  static bool _isNumeric(String value) => double.tryParse(value) != null;
+
+  static bool _isValidDate(String value) {
+    try {
+      _parseDate(value);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static DateTime _parseDate(String value) {
+    final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
+    return dateFormat.parse(value);
   }
 }
 
@@ -610,17 +677,13 @@ class _SearchTextField extends StatelessWidget {
 
 class _SortByDropdown extends StatelessWidget {
   final List<String> headers;
-  final List<List<String>> filteredRows;
-  final List<List<String>> filteredChildRows;
   final String? initialSelection;
-  final ValueChanged<List<List<String>>> onSortedRowsChanged;
+  final ValueChanged<String> onSortChanged;
 
   const _SortByDropdown({
     required this.headers,
-    required this.filteredRows,
-    required this.filteredChildRows,
     this.initialSelection,
-    required this.onSortedRowsChanged,
+    required this.onSortChanged,
   });
 
   @override
@@ -630,14 +693,14 @@ class _SortByDropdown extends StatelessWidget {
       initialSelection: initialSelection,
       onSelected: (value) {
         if (value != null) {
-          _applySorting(value);
+          onSortChanged(value);
         }
       },
       dropdownMenuEntries: headers.map((header) {
         return DropdownMenuEntry<String>(value: header, label: header);
       }).toList(),
       trailingIcon: const Icon(Icons.sort),
-      textStyle: const TextStyle(fontSize: 13),
+      textStyle: TextStyle(overflow: TextOverflow.ellipsis),
       enableFilter: true,
       menuStyle: const MenuStyle(
         visualDensity: VisualDensity.compact,
@@ -648,72 +711,16 @@ class _SortByDropdown extends StatelessWidget {
           ),
         ),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
         labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
-        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       ),
       width: 150,
     );
-  }
-
-  void _applySorting(String criterion) {
-    // Combine rows before sorting
-    final rows = [...filteredRows, ...filteredChildRows];
-
-    // Identify the column index based on the selected sorting criterion
-    int columnIndex = headers.indexOf(criterion);
-
-    if (columnIndex == -1) return; // If criterion not found, don't sort
-
-    // Sort rows based on the selected header column
-    rows.sort((a, b) {
-      final valueA = a[columnIndex];
-      final valueB = b[columnIndex];
-
-      // Handle case where values are numeric
-      if (valueA.isNumeric && valueB.isNumeric) {
-        return double.parse(valueA).compareTo(double.parse(valueB));
-      }
-      // Handle case where values are DateTime strings
-      else if (_isValidDate(valueA) && _isValidDate(valueB)) {
-        final dateA = _parseDate(valueA);
-        final dateB = _parseDate(valueB);
-        return dateA.compareTo(dateB);
-      }
-      // Default string comparison
-      else {
-        return valueA.compareTo(valueB);
-      }
-    });
-
-    // Notify the parent widget that the rows have been sorted
-    onSortedRowsChanged(rows);
-  }
-
-  // Helper function to check if the value is a valid date string
-  bool _isValidDate(String value) {
-    try {
-      _parseDate(value);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Helper function to parse the date using DateFormat
-  DateTime _parseDate(String value) {
-    try {
-      // Try to parse the non-standard date format
-      final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
-      return dateFormat.parse(value);
-    } catch (e) {
-      // If parsing fails, throw an error
-      throw FormatException("Invalid date format");
-    }
   }
 }
 
@@ -805,15 +812,12 @@ class _ExportButton extends StatelessWidget {
 
     return selectedRows.isEmpty
         ? const SizedBox.shrink()
-        : context.elevatedIconBtn(
+        : context.outlinedIconBtn(
             Icon(Icons.file_download, color: kPrimaryAccentColor),
-            style: ElevatedButton.styleFrom(
-              shape: const RoundedRectangleBorder(
-                side: BorderSide(color: kPrimaryAccentColor),
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-              ),
-            ),
+            label: 'Export',
+            borderColor: kPrimaryAccentColor,
             tooltip: 'Export Data to Excel or PDF',
+            txtColor: kPrimaryAccentColor,
             onPressed: () async {
               final isExcel = await _buildPreference(context);
               prettyPrint('isExcel', isExcel);
@@ -831,8 +835,6 @@ class _ExportButton extends StatelessWidget {
                 );
               }
             },
-            label: 'Export',
-            color: kPrimaryAccentColor,
           );
   }
 
@@ -858,24 +860,14 @@ class _OptButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildEditBtn(context);
-  }
+    final text = label ?? 'Other';
 
-  ElevatedButton _buildEditBtn(BuildContext context) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        shape: const RoundedRectangleBorder(
-          side: BorderSide(color: kWarningColor),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
+    return context.outlinedIconBtn(
+      Icon(icon ?? Icons.print, color: kWarningColor),
+      borderColor: kWarningColor,
       onPressed: onTap,
-      icon: Icon(icon ?? Icons.print, color: kWarningColor),
-      label: Text(
-        label ?? 'Other',
-        style: const TextStyle(color: kWarningColor),
-        // textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
+      tooltip: text,
+      label: Text(text, style: const TextStyle(color: kWarningColor)),
     );
   }
 }
@@ -893,21 +885,15 @@ class _EditButton extends StatelessWidget {
     return _buildEditBtn(context);
   }
 
-  ElevatedButton _buildEditBtn(BuildContext context) {
-    return ElevatedButton.icon(
-      icon: Icon(icon ?? Icons.edit, color: kPrimaryAccentColor),
-      style: ElevatedButton.styleFrom(
-        shape: const RoundedRectangleBorder(
-          side: BorderSide(color: kPrimaryAccentColor),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
+  _buildEditBtn(BuildContext context) {
+    final text = label ?? 'Edit';
+
+    return context.outlinedIconBtn(
+      Icon(icon ?? Icons.edit, color: kPrimaryAccentColor),
+      borderColor: kPrimaryAccentColor,
       onPressed: onTap,
-      label: Text(
-        label ?? 'Edit',
-        style: const TextStyle(color: kPrimaryAccentColor),
-        // textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
+      tooltip: text,
+      label: Text(text, style: const TextStyle(color: kPrimaryAccentColor)),
     );
   }
 }
@@ -925,628 +911,126 @@ class _DeleteButton extends StatelessWidget {
     return _buildDeleteBtn(context);
   }
 
-  ElevatedButton _buildDeleteBtn(BuildContext context) {
-    return ElevatedButton.icon(
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
-      icon: Icon(icon ?? Icons.delete, color: kLightColor),
+  _buildDeleteBtn(BuildContext context) {
+    final text = label ?? 'Delete';
+
+    return context.elevatedIconBtn(
+      Icon(icon ?? Icons.delete, color: kLightColor),
+      bgColor: context.colorScheme.error,
+      tooltip: text,
       onPressed: onTap,
-      label: Text(
-        label ?? 'Delete',
-        style: const TextStyle(color: kLightColor),
-        // textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
+      label: Text(text, style: const TextStyle(color: kLightColor)),
     );
   }
 }
 
-/// Raw Table
-/// Raw DataTable
-/* Generic DATATABLE
-class DynamicDataTable<T> extends StatefulWidget {
-  final bool skip;
-  final int skipPos;
-  final bool toggleHideID;
-  final Widget? anyWidget;
+/*class _SortByDropdown2 extends StatelessWidget {
   final List<String> headers;
-  final List<T> rows;
-  final List<T>? childRows;
-  final Function(T)? onCellTap;
-  final Function(T)? onEditTap;
-  final Function(T)? onDeleteTap;
-  final List<String> Function(T) getRowCells;
+  final List<List<String>> filteredRows;
+  final List<List<String>> filteredChildRows;
+  final String? initialSelection;
+  final ValueChanged<List<List<String>>> onSortedRowsChanged;
 
-  const DynamicDataTable({
-    super.key,
+  const _SortByDropdown2({
     required this.headers,
-    required this.rows,
-    required this.getRowCells,
-    this.childRows,
-    this.onCellTap,
-    this.onEditTap,
-    this.onDeleteTap,
-    this.skip = false,
-    this.skipPos = 1,
-    this.toggleHideID = false,
-    this.anyWidget,
-  });
-
-  @override
-  State<DynamicDataTable> createState() => _DynamicDataTableState<T>();
-}
-
-class _DynamicDataTableState<T> extends State<DynamicDataTable<T>> {
-  bool _allSelected = false;
-  late List<bool> _selectedRows;
-  bool _allVisibleRowIds = false;
-  int? _visibleRowIdIndex;
-
-  void _toggleHideID(int index) {
-    setState(() {
-      if (_visibleRowIdIndex == index) {
-        _visibleRowIdIndex = null;
-      } else {
-        _visibleRowIdIndex = index;
-      }
-    });
-  }
-
-  void _allToggleHideID() => setState(() => _allVisibleRowIds = !_allVisibleRowIds);
-
-  String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
-
-  int get totalRows => widget.rows.length + (widget.childRows?.length ?? 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeSelectedRows();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  void _initializeSelectedRows() => _selectedRows = List<bool>.filled(totalRows, false);
-
-  void _toggleAllSelection(bool? value) {
-    setState(() {
-      _allSelected = value ?? false;
-      for (int i = 0; i < _selectedRows.length; i++) {
-        _selectedRows[i] = _allSelected;
-      }
-    });
-  }
-
-  void _onSearchChanged() {
-    setState(() => _searchQuery = _searchController.text);
-  }
-
-  List<T> _searchRowsFunc() {
-    return widget.rows
-        .where((row) => widget.getRowCells(row).any(
-          (cell) => cell.toLowerCase().contains(_searchQuery.toLowerCase()),
-    ))
-        .toList();
-  }
-
-  List<T> _searchChildRowsFunc() {
-    return widget.childRows
-        ?.where((row) => widget.getRowCells(row).any(
-          (cell) => cell.toLowerCase().contains(_searchQuery.toLowerCase()),
-    ))
-        .toList() ??
-        [];
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_selectedRows.length != totalRows) {
-      _initializeSelectedRows();
-    }
-
-    final filteredRows = _searchRowsFunc();
-    final filteredChildRows = _searchChildRowsFunc();
-
-    return Container(
-      padding: EdgeInsets.only(
-        top: 20.0,
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          widget.anyWidget ?? const SizedBox.shrink(),
-          _SearchTextField(controller: _searchController),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  border: const TableBorder(
-                    verticalInside: BorderSide(width: 0.1),
-                  ),
-                  headingRowColor: MaterialStateProperty.all(Colors.grey[200]),
-                  columns: _buildDataColumns(context),
-                  rows: [
-                    ..._buildDataRows(context, rows: filteredRows),
-                    if (widget.childRows != null)
-                      ..._buildDataRows(
-                        context,
-                        rows: filteredChildRows,
-                        startIndex: filteredRows.length,
-                        color: MaterialStateProperty.all(Colors.red[50]),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Iterable<String> _excludeTheFirstValue(List<String> list) =>
-      widget.skip ? list.skip(widget.skipPos) : list;
-
-  List<DataColumn> _buildDataColumns(BuildContext context) {
-    final columns = [
-      DataColumn(
-        tooltip: 'Check to focus',
-        label: Checkbox(
-          value: _allSelected,
-          side: const BorderSide(width: 2.0),
-          onChanged: _toggleAllSelection,
-        ),
-      ),
-      if (widget.toggleHideID)
-        DataColumn(
-          tooltip: 'Show ${widget.headers.first}',
-          label: _makeVisibleAllRowIDs(context),
-        ),
-      ..._excludeTheFirstValue(widget.headers)
-          .map((header) => _buildDataColumn(header)),
-      _buildDataColumn('Edit'),
-      _buildDataColumn('Delete'),
-    ];
-    return columns;
-  }
-
-  TextButton _makeVisibleAllRowIDs(BuildContext context) {
-    return TextButton.icon(
-      iconAlignment: IconAlignment.end,
-      style: ButtonStyle(
-        padding: WidgetStateProperty.all(EdgeInsets.zero),
-      ),
-      icon: Icon(
-        _allVisibleRowIds ? Icons.visibility : Icons.visibility_off,
-        color: _allVisibleRowIds ? Colors.blueGrey : Colors.grey,
-      ),
-      onPressed: () => _allToggleHideID(),
-      label: Text(
-        widget.headers.first.toUpperCase(),
-      ),
-    );
-  }
-
-  DataColumn _buildDataColumn(String title) => DataColumn(
-    tooltip: title,
-    label: Text(
-      title.toUpperCase(),
-    ),
-  );
-
-  List<DataRow> _buildDataRows(
-      BuildContext context, {
-        int startIndex = 0,
-        required List<T> rows,
-        WidgetStateProperty<Color?>? color,
-      }) {
-    return rows.asMap().entries.map((entry) {
-      final index = startIndex + entry.key;
-      final row = entry.value;
-      final cells = widget.getRowCells(row);
-
-      if (index >= _selectedRows.length) {
-        return const DataRow(cells: []);
-      }
-
-      return DataRow(
-        selected: _selectedRows[index],
-        onSelectChanged: (bool? selected) {
-          setState(() => _selectedRows[index] = selected ?? false);
-        },
-        cells: [
-          _buildCheckBox(index),
-          if (widget.toggleHideID)
-            _buildToggleHideID(context, cells.first, index),
-          ..._excludeTheFirstValue(cells).map(
-                (cell) {
-              return DataCell(
-                SelectableText(cell),
-                showEditIcon: false,
-                onTap: () {
-                  if (widget.onCellTap != null) {
-                    widget.onCellTap!(row);
-                  }
-                },
-              );
-            },
-          ),
-          if (widget.onEditTap != null)
-            DataCell(
-              _EditButton(onTap: () {
-                widget.onEditTap!(row);
-              }),
-            ),
-          if (widget.onDeleteTap != null)
-            DataCell(
-              _DeleteButton(onTap: () {
-                widget.onDeleteTap!(row);
-              }),
-            ),
-        ],
-        color: color,
-      );
-    }).toList();
-  }
-
-  DataCell _buildCheckBox(int index) {
-    return DataCell(
-      Checkbox(
-        value: _selectedRows[index],
-        side: const BorderSide(width: 1.0),
-        onChanged: (bool? selected) {
-          setState(() => _selectedRows[index] = selected ?? false);
-        },
-      ),
-    );
-  }
-
-  DataCell _buildToggleHideID(BuildContext context, String id, int index) {
-    bool isToggle = (_visibleRowIdIndex == index || _allVisibleRowIds);
-
-    return DataCell(
-      TextButton.icon(
-        iconAlignment: IconAlignment.end,
-        style:  ButtonStyle(
-          padding: WidgetStateProperty.all(EdgeInsets.zero),
-        ),
-        icon: Icon(
-          isToggle ? Icons.visibility : Icons.visibility_off,
-          color: isToggle ? Colors.blueGrey : Colors.grey,
-        ),
-        onPressed: () => _toggleHideID(index),
-        label: isToggle
-            ? SelectableText(id)
-            : Text(
-          '***',
-        ),
-      ),
-    );
-  }
-}
-
-*/
-
-/* USAGE
-* Widget _buildCard(List<Sale> sales, BuildContext context) {
-    return context.columnBuilder(
-      itemCount: sales.length,
-      itemBuilder: (context, index) {
-        final sale = sales[index];
-        return DynamicTable(
-          rowIndex: index,
-          headers: _dataTableHeader,
-          rows: [
-            [
-              (sale.productId),
-              (sale.orderNumber),
-              '${sale.quantity}',
-              'GH ${sale.totalAmount}',
-              (sale.createdAt.toStandardDT),
-            ],
-          ],
-        );
-      },
-    );
-  }*/
-/*class DynamicTable extends StatelessWidget {
-  final int rowIndex;
-  final List<String> headers;
-  final List<List<String>> rows;
-  final Function(String)? data;
-
-  const DynamicTable({
-    super.key,
-    required this.rows,
-    required this.headers,
-    required this.rowIndex,
-    this.data,
+    required this.filteredRows,
+    required this.filteredChildRows,
+    this.initialSelection,
+    required this.onSortedRowsChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Table(
-      border: TableBorder.all(),
-      columnWidths: const <int, TableColumnWidth>{
-        0: FlexColumnWidth(),
-        1: FlexColumnWidth(),
+    return DropdownMenu<String>(
+      hintText: 'Sort By...',
+      initialSelection: initialSelection,
+      onSelected: (value) {
+        if (value != null) {
+          _applySorting(value);
+        }
       },
-      defaultVerticalAlignment: TableCellVerticalAlignment.intrinsicHeight,
-      children: [
-        if (rowIndex == 0) ...{_buildTableHeader()},
-        ..._buildTableRows(context),
-      ],
-    );
-  }
-
-  /// Table Header [_buildTableHeader]
-  TableRow _buildTableHeader() {
-    return TableRow(
-      children: headers.map((header) {
-        return Container(
-          padding: const EdgeInsets.all(8.0),
-          margin: EdgeInsets.zero,
-          color: Colors.grey[300],
-          child: Text(
-            header,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        );
+      dropdownMenuEntries: headers.map((header) {
+        return DropdownMenuEntry<String>(value: header, label: header);
       }).toList(),
-    );
-  }
-
-  /// Table Body [_buildTableRows]
-  List<TableRow> _buildTableRows(BuildContext context) {
-    return rows.map((row) {
-      return TableRow(
-        children: row.map((cell) {
-          return TableRowInkWell(
-            onTap: () {
-              debugPrint('I am dynamic table');
-            },
-            child: Container(
-              color: Colors.red,
-              padding: const EdgeInsets.all(8.0),
-              child: context.copyPasteText(str: cell),
-            ),
-          );
-        }).toList(),
-      );
-    }).toList();
-  }
-}*/
-
-/*
-class DynamicDataTable2 extends StatelessWidget {
-
-  final List<String> headers;
-  final List<List<String>> rows;
-  final List<List<String>>? childRows;
-  final Function(String, List<String>)? onCellTap;
-
-  const DynamicDataTable2({
-    super.key,
-    required this.headers,
-    required this.rows,
-    this.childRows,
-    this.onCellTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-            showCheckboxColumn: false,
-            headingRowColor: const WidgetStatePropertyAll(kGrayBlueColor),
-            columns: _buildDataColumns(context),
-            rows: [
-              ..._buildDataRows(context, rows),
-              ..._buildDataRows(
-                context,
-                childRows!,
-                color:
-                    WidgetStatePropertyAll(context.colorScheme.errorContainer),
-              ),
-            ].toList()),
+      trailingIcon: const Icon(Icons.sort),
+      textStyle: const TextStyle(fontSize: 13),
+      enableFilter: true,
+      menuStyle: const MenuStyle(
+        visualDensity: VisualDensity.compact,
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+            side: BorderSide.none,
+          ),
+        ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        isDense: true,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        filled: true,
+        fillColor: kLightBlueColor.toAlpha(0.5),
+        labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      ),
+      width: 150,
     );
   }
 
-  /// Builds the header columns for the DataTable
-  List<DataColumn> _buildDataColumns(BuildContext context) =>
-      headers.map((header) {
-        final title = header.toUppercaseAllLetter;
-        return DataColumn(
-          tooltip: title,
-          label: Text(
-            title,
-            style: context.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: kLightColor,
-            ),
-            textScalar: TextScaler.linear(context.textScaleFactor),
-          ),
-        );
-      }).toList();
+  void _applySorting(String criterion) {
+    // Combine rows before sorting
+    final rows = [...filteredRows, ...filteredChildRows];
 
-  /// Builds the rows for the DataTable
-  List<DataRow> _buildDataRows(
-    BuildContext context,
-    List<List<String>> rows, {
-    WidgetStateProperty<Color?>? color,
-  }) {
-    return rows.map((row) {
-      List<DataCell> cells = row.map((cell) {
-        return DataCell(
-          SelectionArea(
-            child: Text(
-              cell,
-              textScaler: TextScaler.linear(context.textScaleFactor),
-            ),
-          ),
-          showEditIcon: true,
-          placeholder: false,
-          onTap: () {
-            if (onCellTap != null) {
-              onCellTap!(cell, row);
-            }
-          },
-        );
-      }).toList();
+    // Identify the column index based on the selected sorting criterion
+    int columnIndex = headers.indexOf(criterion);
 
-      // Ensure the row has the same number of cells as there are headers
-      while (cells.length < headers.length) {
-        cells.add(const DataCell(SizedBox.shrink()));
+    if (columnIndex == -1) return; // If criterion not found, don't sort
+
+    // Sort rows based on the selected header column
+    rows.sort((a, b) {
+      final valueA = a[columnIndex];
+      final valueB = b[columnIndex];
+
+      // Handle case where values are numeric
+      if (valueA.isNumeric && valueB.isNumeric) {
+        return double.parse(valueA).compareTo(double.parse(valueB));
       }
-
-      return DataRow(cells: cells, color: color);
-    }).toList();
-  }
-}*/
-
-/*class DynamicTable2 extends StatelessWidget {
-  final List<String> headers;
-  final List<List<String>> rows;
-
-  const DynamicTable2({
-    super.key,
-    required this.headers,
-    required this.rows,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Table(
-      border: TableBorder.all(color: context.primaryColor),
-      columnWidths: const {
-        0: FlexColumnWidth(1),
-        1: FlexColumnWidth(1),
-      },
-      children: [
-        if (headers.getFirstIndex == 0) ...{_buildHeaderRow()},
-        ..._buildDataRows(),
-      ],
-    );
-  }
-
-  TableRow _buildHeaderRow() {
-    return TableRow(
-      children: headers
-          .map((header) => Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  header,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ))
-          .toList(),
-    );
-  }
-
-  List<TableRow> _buildDataRows() {
-    return rows.map((row) {
-      return TableRow(
-        children: row.map((cell) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              cell,
-              textAlign: TextAlign.center,
-            ),
-          );
-        }).toList(),
-      );
-    }).toList();
-  }
-}
-
-class DataTableWithSearchInput extends StatefulWidget {
-  const DataTableWithSearchInput({super.key});
-
-  @override
-  State<DataTableWithSearchInput> createState() =>
-      _DataTableWithSearchInputState();
-}
-
-class _DataTableWithSearchInputState extends State<DataTableWithSearchInput> {
-  TextEditingController filterController = TextEditingController();
-  final List<Map<String, String>> _allData = [
-    {"Column1": "Row1-Column1", "Column2": "Row1-Column2"},
-    {"Column1": "Row2-Column1", "Column2": "Row2-Column2"},
-    {"Column1": "Row3-Column1", "Column2": "Row3-Column2"},
-  ];
-  late List<Map<String, String>> _filteredData;
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredData = _allData;
-    filterController.addListener(() {
-      setState(() {
-        _filteredData = _allData
-            .where((row) => row.values.any((element) => element
-                .toLowerCase()
-                .contains(filterController.text.toLowerCase())))
-            .toList();
-      });
+      // Handle case where values are DateTime strings
+      else if (_isValidDate(valueA) && _isValidDate(valueB)) {
+        final dateA = _parseDate(valueA);
+        final dateB = _parseDate(valueB);
+        return dateA.compareTo(dateB);
+      }
+      // Default string comparison
+      else {
+        return valueA.compareTo(valueB);
+      }
     });
+
+    // Notify the parent widget that the rows have been sorted
+    onSortedRowsChanged(rows);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: filterController,
-            decoration: const InputDecoration(
-              labelText: 'Filter',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Column 1')),
-                DataColumn(label: Text('Column 2')),
-              ],
-              rows: _filteredData
-                  .map(
-                    (row) => DataRow(cells: [
-                      DataCell(Text(row['Column1']!)),
-                      DataCell(Text(row['Column2']!)),
-                    ]),
-                  )
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
+  // Helper function to check if the value is a valid date string
+  bool _isValidDate(String value) {
+    try {
+      _parseDate(value);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
-  @override
-  void dispose() {
-    filterController.dispose();
-    super.dispose();
+  // Helper function to parse the date using DateFormat
+  DateTime _parseDate(String value) {
+    try {
+      // Try to parse the non-standard date format
+      final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
+      return dateFormat.parse(value);
+    } catch (e) {
+      // If parsing fails, throw an error
+      throw FormatException("Invalid date format");
+    }
   }
 }*/

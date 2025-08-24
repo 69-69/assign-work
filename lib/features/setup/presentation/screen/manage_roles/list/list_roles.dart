@@ -72,7 +72,7 @@ class _ListRolesState extends State<ListRoles> {
           label: 'Create Role',
           onPressed: () async => await context.openCreateNewRole(),
           bgColor: kDangerColor,
-          color: kLightColor,
+          txtColor: kLightColor,
         ),
         if (_isChecked == true) ...{
           context.elevatedButton(
@@ -87,7 +87,7 @@ class _ListRolesState extends State<ListRoles> {
               );
             },
             bgColor: kGrayBlueColor,
-            color: kLightColor,
+            txtColor: kLightColor,
           ),
         },
       ],
@@ -127,7 +127,7 @@ class _ListRolesState extends State<ListRoles> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific role
-        context.read<RoleBloc>().add(DeleteSetup(documentId: role.id));
+        context.read<RoleBloc>().add(DeleteSetup<String>(documentId: role.id));
         setState(() => roles.remove(role));
       }
     }

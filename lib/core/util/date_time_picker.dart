@@ -14,18 +14,22 @@ class DatePicker extends StatefulWidget {
   const DatePicker({
     super.key,
     this.label,
-    this.serverDate,
+    this.initialDate,
     this.restorationId,
     required this.selectedDate,
     this.validator,
     this.helperText,
     this.isButton = false,
+    this.inLabel = true,
   });
 
   final String? label;
   final bool isButton;
+
+  /// [inLabel] If TRUE `helperText` is applied to the label, else to the input field.
+  final bool inLabel;
   final String? helperText;
-  final String? serverDate;
+  final String? initialDate;
   final String? restorationId;
   final Function(DateTime) selectedDate;
   final String? Function(String?)? validator;
@@ -37,7 +41,7 @@ class DatePicker extends StatefulWidget {
 /// RestorationProperty objects can be used because of RestorationMixin.
 class _DatePickerState extends State<DatePicker> with RestorationMixin {
   late final _textController = TextEditingController(
-    text: widget.serverDate ?? '',
+    text: widget.initialDate ?? '',
   );
 
   // In this example, the restoration ID for the mixin is passed in through
@@ -126,7 +130,7 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
             bottomRight: Radius.circular(10),
           ),
         ),
-        backgroundColor: kGrayColor.withAlpha((0.1 * 255).toInt()),
+        backgroundColor: kGrayColor.toAlpha(0.1),
       ),
     );
   }
@@ -143,12 +147,15 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
   }
 
   InputDecoration get inputDecoration {
-    final helpText = widget.helperText != null ? '(${widget.helperText})' : '';
+    String? helpText;
+    if (widget.helperText != null) {
+      helpText = widget.inLabel ? '(${widget.helperText})' : widget.helperText;
+    }
 
     return InputDecoration(
-      labelText: widget.label ?? 'Date Picker $helpText',
+      labelText: widget.label ?? 'Date Picker ${helpText ?? ''}',
       hintText: '01/26/${_nowToday.year}',
-      // helperText: widget.helperText,
+      helperText: helpText,
       suffixIcon: IconButton(
         tooltip: 'Click to show Calendar',
         icon: const Icon(Icons.date_range),

@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/widgets/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
 /// Phone & ltPhone TextField [PhoneAndAltPhoneInput]
@@ -69,13 +69,13 @@ class CustomerNameAndBirthDayInput extends StatelessWidget {
     required this.nameController,
     required this.onDateChanged,
     this.onNameChanged,
-    this.serverDate,
+    this.initialDate,
   });
 
   final TextEditingController nameController;
   final Function(DateTime) onDateChanged;
   final ValueChanged? onNameChanged;
-  final String? serverDate;
+  final String? initialDate;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +86,7 @@ class CustomerNameAndBirthDayInput extends StatelessWidget {
         DatePicker(
           label: 'Birth day',
           helperText: 'Optional',
-          serverDate: serverDate,
+          initialDate: initialDate,
           restorationId: 'Birth day',
           selectedDate: onDateChanged,
         ),
@@ -141,7 +141,7 @@ class AddressTextField extends StatelessWidget {
     return CustomTextField(
       controller: addressController,
       onChanged: onAddressChanged,
-      labelText: 'Address / Location...',
+      label: 'Address / Location...',
       helperText: 'Optional',
       keyboardType: TextInputType.multiline,
       maxLines: 4,
@@ -188,7 +188,7 @@ class EmailTextField extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.emailAddress,
-      labelText: 'Email address',
+      label: 'Email address',
       helperText: 'Optional',
       validator: (s) => null,
     );
@@ -205,7 +205,7 @@ class CompanyNameTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Company name',
+      label: 'Company name',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
@@ -225,7 +225,7 @@ class NameTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      labelText: 'Full name',
+      label: 'Full name',
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
@@ -255,7 +255,7 @@ class CustomerIdTextField extends StatelessWidget {
       children: <Widget>[
         CustomTextField(
           enable: enable,
-          labelText: 'Customer ID',
+          label: 'Customer ID',
           controller: controller,
           onChanged: onChanged,
           keyboardType: TextInputType.text,

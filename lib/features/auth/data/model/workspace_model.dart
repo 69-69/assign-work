@@ -15,6 +15,7 @@ class Workspace extends Equatable {
   /// [name] Name of the workspace, e.g., "My Workspace"
   final String name;
   final String clientName;
+  final String address;
   final String mobileNumber;
   final double subscriptionFee;
   final HostingType hostingType;
@@ -47,6 +48,7 @@ class Workspace extends Equatable {
     this.username = '',
     this.hostingType = HostingType.onPremise,
     required this.clientName,
+    required this.address,
     required this.name,
     required this.mobileNumber,
     required this.role,
@@ -76,6 +78,7 @@ class Workspace extends Equatable {
     return Workspace(
       id: (map['id']) ?? id ?? '',
       agentId: map['agentId'] ?? '',
+      address: map['address'] ?? '',
       email: map['email'] ?? '',
       subscriptionId: map['subscriptionId'] ?? '',
       subscriptionFee: fee,
@@ -83,7 +86,7 @@ class Workspace extends Equatable {
       hostingType: getHostingByString(
         map['hostingType'] ?? HostingType.onPremise.label,
       ),
-      role: getRoleByString(map['role'] ?? WorkspaceRole.subscriber.label),
+      role: getRoleByString(map['role'] ?? WorkspaceRole.tenant.label),
       name: map['name'] ?? '',
       category: map['category'] ?? '',
       clientName: map['clientName'] ?? '',
@@ -98,7 +101,10 @@ class Workspace extends Equatable {
   }
 
   static WorkspaceRole getRoleByString(String role) =>
-      WorkspaceRole.values.firstWhere((e) => roleAsString(e) == role);
+      WorkspaceRole.values.firstWhere(
+        (e) => roleAsString(e) == role,
+        orElse: () => WorkspaceRole.unknown,
+      );
 
   static String roleAsString(WorkspaceRole e) => e.toString().split('.').last;
 
@@ -112,6 +118,7 @@ class Workspace extends Equatable {
     'role': roleAsString(role),
     'email': email,
     'name': name,
+    'address': address,
     'category': category,
     'subscriptionFee': subscriptionFee,
     'clientName': clientName,
@@ -159,6 +166,9 @@ class Workspace extends Equatable {
   /// subscriptionId Expired [isExpired]
   bool get isExpired => !unExpired || _today.isAfter(expiresOn.toDateTime);
 
+  /// Unknown/Fake workspaces [isUnknown]
+  bool get isUnknown => role == WorkspaceRole.unknown;
+
   /// Whether the current user's device is already authorized [isDeviceAuthorized]
   bool isDeviceAuthorized(String userDeviceId) =>
       authorizedDeviceIds.contains(userDeviceId);
@@ -180,12 +190,14 @@ class Workspace extends Equatable {
   static Workspace? filterById(List<Workspace> workspaces, String id) =>
       workspaces.firstWhereOrNull((w) => w.id == id);
 
+  /// Filter for UnAuthorized/Unknown/Fake Workspaces [filterUnknown]
+  static List<Workspace> filterUnknown(List<Workspace> workspaces) =>
+      workspaces.where((w) => w.role == WorkspaceRole.unknown).toList();
+
   static List<Workspace> filterStatus(
     List<Workspace> workspaces, {
     bool expired = false,
-  }) => workspaces
-      .where((work) => expired ? work.isExpired : work.unExpired)
-      .toList();
+  }) => workspaces.where((w) => expired ? w.isExpired : w.unExpired).toList();
 
   /// Can Access Agent Dashboard [canAccessAgentDashboard]
   bool canAccessAgentDashboard(Workspace work) =>
@@ -201,12 +213,12 @@ class Workspace extends Equatable {
   bool canAccessDeveloperDashboard(Workspace work) =>
       work.role == WorkspaceRole.developer;
 
-  /// Can Access Paid Subscribers/Tenants Dashboard [canAccessSubscriberDashboard]
-  bool canAccessSubscriberDashboard(Workspace work) =>
-      work.role == WorkspaceRole.subscriber;
+  /// Can Access Paid Subscribers/Tenants Dashboard [canAccessTenantDashboard]
+  bool canAccessTenantDashboard(Workspace work) =>
+      work.role == WorkspaceRole.tenant;
 
   bool canEditContent(Workspace work) =>
-      work.role == WorkspaceRole.subscriber ||
+      work.role == WorkspaceRole.tenant ||
       work.role == WorkspaceRole.developer ||
       work.role == WorkspaceRole.agentFranchise;
 
@@ -217,6 +229,7 @@ class Workspace extends Equatable {
     String? category,
     double? subscriptionFee,
     String? name,
+    String? address,
     String? clientName,
     String? mobileNumber,
     WorkspaceRole? role,
@@ -237,6 +250,7 @@ class Workspace extends Equatable {
       category: category ?? this.category,
       subscriptionFee: subscriptionFee ?? this.subscriptionFee,
       name: name ?? this.name,
+      address: address ?? this.address,
       clientName: clientName ?? this.clientName,
       mobileNumber: mobileNumber ?? this.mobileNumber,
       role: role ?? this.role,
@@ -261,6 +275,8 @@ class Workspace extends Equatable {
     hostingType,
     category,
     name,
+    address,
+    clientName,
     mobileNumber,
     subscriptionId,
     subscriptionFee,
@@ -273,7 +289,7 @@ class Workspace extends Equatable {
     createdAt,
   ];
 
-  /// ToList for PRODUCTS [itemAsList]
+  /// ToList [itemAsList]
   List<String> itemAsList() => [
     id,
     role.name.toTitleCase,
@@ -296,11 +312,11 @@ class Workspace extends Equatable {
     'Business',
     'Workspace',
     'Client',
-    'Mobile number',
+    'Mobile no.',
     'Max-Devices',
     'Hosting type',
     'Sub. Fee',
-    'sub. key',
+    'Sub. Key',
     'Created At',
     'Effective Date',
     'Expiry Date',

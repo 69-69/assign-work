@@ -12,12 +12,12 @@ class POSSale extends Equatable {
   final String receiptNumber;
   final String customerId;
   final String orderNumber;
-  final String productId;
+  final String itemId;
   final double unitPrice;
   final int quantity;
   final double totalAmount;
   final String status;
-  final String paymentMethod;
+  final String payMethod;
   final double discountPercent;
   final double taxPercent;
   final double revenue;
@@ -33,12 +33,12 @@ class POSSale extends Equatable {
     required this.orderNumber,
     required this.receiptNumber,
     this.customerId = '',
-    required this.productId,
+    required this.itemId,
     required this.unitPrice,
     required this.quantity,
     required this.totalAmount,
     required this.status,
-    required this.paymentMethod,
+    required this.payMethod,
     this.discountPercent = 0.0,
     this.taxPercent = 0.0,
     this.revenue = 0.0,
@@ -60,12 +60,12 @@ class POSSale extends Equatable {
       receiptNumber:
           map['receiptNumber'] ?? '${map['orderNumber']}'.convertOrderNumberTo,
       customerId: map['customerId'] ?? '',
-      productId: map['productId'] ?? '',
+      itemId: map['itemId'] ?? '',
       unitPrice: map['unitPrice'] ?? 0.0,
       quantity: map['quantity'] ?? 0,
       totalAmount: map['totalAmount'] ?? 0.0,
       status: map['status'] ?? '',
-      paymentMethod: map['paymentMethod'] ?? '',
+      payMethod: map['payMethod'] ?? '',
       discountPercent: map['discountPercent'] ?? 0.0,
       taxPercent: map['taxPercent'] ?? 0.0,
       revenue: map['revenue'] ?? rev,
@@ -84,12 +84,12 @@ class POSSale extends Equatable {
     'orderNumber': orderNumber,
     'receiptNumber': receiptNumber,
     'customerId': customerId,
-    'productId': productId,
+    'itemId': itemId,
     'unitPrice': unitPrice,
     'quantity': quantity,
     'totalAmount': totalAmount,
     'status': status,
-    'paymentMethod': paymentMethod,
+    'payMethod': payMethod,
     'taxPercent': taxPercent,
     'discountPercent': discountPercent,
     'revenue': revenue,
@@ -118,7 +118,7 @@ class POSSale extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && productId.isEmpty;
+  bool get isEmpty => id.isEmpty && itemId.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -180,9 +180,9 @@ class POSSale extends Equatable {
       storeNumber,
       receiptNumber,
       orderNumber,
-      productId,
+      itemId,
       customerId,
-      paymentMethod,
+      payMethod,
       status,
       status,
       createdBy,
@@ -201,7 +201,7 @@ class POSSale extends Equatable {
     String? id,
     String? storeNumber,
     String? orderNumber,
-    String? productId,
+    String? itemId,
     String? customerId,
     String? receiptNumber,
     int? quantity,
@@ -212,7 +212,7 @@ class POSSale extends Equatable {
     double? revenue,
     double? profit,
     String? status,
-    String? paymentMethod,
+    String? payMethod,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -222,7 +222,7 @@ class POSSale extends Equatable {
       id: id ?? this.id,
       storeNumber: storeNumber ?? this.storeNumber,
       orderNumber: orderNumber ?? this.orderNumber,
-      productId: productId ?? this.productId,
+      itemId: itemId ?? this.itemId,
       customerId: customerId ?? this.customerId,
       receiptNumber: receiptNumber ?? this.receiptNumber,
       quantity: quantity ?? this.quantity,
@@ -233,7 +233,7 @@ class POSSale extends Equatable {
       revenue: revenue ?? this.revenue,
       profit: profit ?? this.profit,
       status: status ?? this.status,
-      paymentMethod: paymentMethod ?? this.paymentMethod,
+      payMethod: payMethod ?? this.payMethod,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -248,12 +248,12 @@ class POSSale extends Equatable {
     orderNumber,
     receiptNumber,
     customerId,
-    productId,
+    itemId,
     unitPrice,
     quantity,
     totalAmount,
     status,
-    paymentMethod,
+    payMethod,
     taxPercent,
     discountPercent,
     revenue,
@@ -268,7 +268,7 @@ class POSSale extends Equatable {
   List<String> itemAsList() => [
     id,
     storeNumber,
-    productId.toUpperCaseAll,
+    itemId.toUpperCaseAll,
     orderNumber,
     receiptNumber,
     customerId,
@@ -279,7 +279,7 @@ class POSSale extends Equatable {
     '$discountPercent% = $ghanaCedis${discountAmount.toCurrency}',
     '$taxPercent% = $ghanaCedis${taxAmount.toCurrency}',
     '$ghanaCedis${totalAmount.toCurrency}',
-    paymentMethod.toTitleCase,
+    payMethod.toTitleCase,
     '$ghanaCedis${getRevenue.toCurrency}',
     '$ghanaCedis${profit.toCurrency}',
     createdBy.toTitleCase,

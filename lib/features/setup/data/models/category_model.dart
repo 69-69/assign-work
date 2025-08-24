@@ -136,7 +136,7 @@ class Category extends Equatable {
 
   static List<String> get dataHeader => const [
     'ID',
-    'Name',
+    'Category',
     'Created By',
     'Created At',
     'Updated By',

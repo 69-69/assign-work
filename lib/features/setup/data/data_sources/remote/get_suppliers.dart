@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/setup/data/models/supplier_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/product_config/suppliers_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
@@ -6,6 +7,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class GetSuppliers {
   // static  final supplierBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
 
+  static Future<SetupsLoaded<Supplier>> _dataLoadedState(
+    SupplierBloc bloc,
+  ) async {
+    return await bloc.stream.firstWhere(
+          (state) => state is SetupsLoaded<Supplier>,
+        )
+        as SetupsLoaded<Supplier>;
+  }
+
   static Future<List<Supplier>> load() async {
     final supplierBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
 
@@ -13,13 +23,9 @@ class GetSuppliers {
     supplierBloc.add(GetSetups<Supplier>());
 
     // Ensure to wait for the data to be loaded
-    final state =
-        await supplierBloc.stream.firstWhere(
-              (state) => state is SetupsLoaded<Supplier>,
-            )
-            as SetupsLoaded<Supplier>;
+    final state = await _dataLoadedState(supplierBloc);
 
-    return state.data.isEmpty ? [Supplier.notFound] : state.data;
+    return state.data;
   }
 
   /// Get by either name, phone, contactPersonName [byAnyTerm]
@@ -38,35 +44,31 @@ class GetSuppliers {
     );
 
     // Ensure to wait for the data to be loaded
-    final state =
-        await supplierBloc.stream.firstWhere(
-              (state) => state is SetupsLoaded<Supplier>,
-            )
-            as SetupsLoaded<Supplier>;
+    final state = await _dataLoadedState(supplierBloc);
 
-    return state.data.isEmpty ? [Supplier.notFound] : state.data;
+    return state.data;
   }
 
   /// Get by supplierId [bySupplierId]
-  static Future<Supplier> bySupplierId(supplierId) async {
+  static Future<Supplier> bySupplierId(String supplierId) async {
     final supplierBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
-    // Load all data initially to pass to the search delegate
+
     supplierBloc.add(GetSetupById<Supplier>(documentId: supplierId));
 
-    // Ensure to wait for the data to be loaded
-    final state = await supplierBloc.stream.firstWhere(
-      (state) => state is SetupsLoaded<Supplier>,
-      orElse: () => Supplier
-          .notFound, // Handle case where stream may not emit the expected state
-    );
+    try {
+      final state = await supplierBloc.stream.firstWhere(
+        (state) => state is SetupsLoaded<Supplier>,
+        orElse: () => Supplier.notFound,
+      );
 
-    if (state is SetupsLoaded<Supplier>) {
-      // debugPrint('steve ${state.data}');
-      return state.data.isEmpty ? Supplier.notFound : state.data.first;
-    } else {
-      // Handle case where state is null or not of expected type
-      // For example, return Supplier.notFound or throw an exception
-      return Supplier.notFound;
+      if (state is SetupsLoaded<Supplier>) {
+        final data = state.data;
+        return data.isNotEmpty ? data.first : Supplier.notFound;
+      }
+    } catch (e) {
+      prettyPrint('Error fetching supplier', '$e');
     }
+
+    return Supplier.notFound;
   }
 }

@@ -49,9 +49,7 @@ extension Neumorphism on Widget {
     bool addBorder = true,
   }) {
     final bColor = (bgColor ?? Colors.blue);
-    final cardBgColor = fadeBg
-        ? bColor.withAlpha((opacity * 255).toInt())
-        : bColor;
+    final cardBgColor = fadeBg ? bColor.toAlpha(opacity) : bColor;
     final bRadius = borderRadius ?? kBorderRadius;
     return AnimatedContainer(
       width: width,
@@ -63,12 +61,12 @@ extension Neumorphism on Widget {
         borderRadius: BorderRadius.circular(bRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withAlpha((0.05 * 255).toInt()),
+            color: Colors.white.toAlpha(0.05),
             blurRadius: blurRadius,
             offset: Offset(-6, -6),
           ),
           BoxShadow(
-            color: Colors.black.withAlpha((0.2 * 255).toInt()),
+            color: Colors.black.toAlpha(0.2),
             blurRadius: blurRadius2,
             offset: Offset(6, 6),
           ),
@@ -81,13 +79,10 @@ extension Neumorphism on Widget {
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha((0.08 * 255).toInt()),
+              color: Colors.white.toAlpha(0.08),
               borderRadius: BorderRadius.circular(bRadius),
               border: addBorder
-                  ? Border.all(
-                      color: Colors.white.withAlpha((0.2 * 255).toInt()),
-                      width: 1.5,
-                    )
+                  ? Border.all(color: Colors.white.toAlpha(0.2), width: 1.5)
                   : null,
             ),
             child: this,

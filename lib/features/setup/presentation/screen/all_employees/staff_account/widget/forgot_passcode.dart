@@ -54,23 +54,19 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildAlertDialog(context),
-    );
-  }
-
-  _buildAlertDialog(BuildContext context) {
-    return CustomDialog(
-      title: DialogTitle(
-        title: 'Reset Passcode',
-        subtitle: "This is a One-time Passcode",
-      ),
-      body: _buildFormBody(context),
-      actions: [
-        context.confirmableActionButton(
-          label: 'Copy & Use Passcode',
-          onPressed: _onSubmit,
+      child: CustomDialog(
+        title: DialogTitle(
+          title: 'Reset Passcode',
+          subtitle: "This is a One-time Passcode",
         ),
-      ],
+        body: _buildFormBody(context),
+        actions: [
+          context.confirmableActionButton(
+            label: 'Copy & Use Passcode',
+            onPressed: _onSubmit,
+          ),
+        ],
+      ),
     );
   }
 
@@ -100,14 +96,14 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
                 if (_formKey.currentState!.validate()) setState(() {});
               },
             ),
+
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               title: Row(
                 children: [
                   Expanded(child: Text("Auto-Sign out after passcode reset")),
                   InkWell(
-                    onTap: () async =>
-                        await _showAutoSignOutInfoDialog(context),
+                    onTap: () async => await _showInfoDialog(context),
                     child: Icon(Icons.info_outline, size: 18),
                   ),
                 ],
@@ -167,7 +163,7 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
     }
   }
 
-  Future<void> _showAutoSignOutInfoDialog(BuildContext context) async {
+  Future<void> _showInfoDialog(BuildContext context) async {
     await context.confirmDone(
       Text(
         "If enabled, you will be signed out immediately after the passcode is reset. "

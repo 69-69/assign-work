@@ -47,19 +47,19 @@ enum SetupPermission {
   // license
   viewLicense,
 
-  // product suppliers
-  manageProductSupplier,
-  createProductSupplier,
-  viewProductSupplier,
-  updateProductSupplier,
-  deleteProductSupplier,
+  // item suppliers
+  manageItemSupplier,
+  createItemSupplier,
+  viewItemSupplier,
+  updateItemSupplier,
+  deleteItemSupplier,
 
-  // product categories
-  manageProductCategory,
-  createProductCategory,
-  viewProductCategory,
-  updateProductCategory,
-  deleteProductCategory,
+  // item categories
+  manageItemCategory,
+  createItemCategory,
+  viewItemCategory,
+  updateItemCategory,
+  deleteItemCategory,
 
   // print settings
   updatePrintSetting,
@@ -258,71 +258,69 @@ final List<AccessControl> _backupPermissions = [
   ),
 ];
 
-final List<AccessControl> _productSupplierPermissions = [
+final List<AccessControl> _itemSupplierPermissions = [
   AccessControl(
-    module: "product supplier",
-    title: "Manage product suppliers",
-    description: "Allow users to create, edit, and delete product suppliers.",
-    access: SetupPermission.manageProductSupplier,
+    module: "item supplier",
+    title: "Manage item suppliers",
+    description: "Allow users to create, edit, and delete item suppliers.",
+    access: SetupPermission.manageItemSupplier,
   ),
   AccessControl(
-    module: "product supplier",
-    title: "Create new product supplier",
-    description: "Allow users to create new product suppliers.",
-    access: SetupPermission.createProductSupplier,
+    module: "item supplier",
+    title: "Create new item supplier",
+    description: "Allow users to create new item suppliers.",
+    access: SetupPermission.createItemSupplier,
   ),
   AccessControl(
-    module: "product supplier",
-    title: "View product suppliers",
-    description: "Allow access to a list of all product suppliers.",
-    access: SetupPermission.viewProductSupplier,
+    module: "item supplier",
+    title: "View item suppliers",
+    description: "Allow access to a list of all item suppliers.",
+    access: SetupPermission.viewItemSupplier,
   ),
   AccessControl(
-    module: "product supplier",
-    title: "Edit product suppliers",
-    description:
-        "Allow users to modify details of an existing product supplier.",
-    access: SetupPermission.updateProductSupplier,
+    module: "item supplier",
+    title: "Edit item suppliers",
+    description: "Allow users to modify details of an existing item supplier.",
+    access: SetupPermission.updateItemSupplier,
   ),
   AccessControl(
-    module: "product supplier",
-    title: "Delete product suppliers",
-    description: "Allow users to permanently remove a product supplier record.",
-    access: SetupPermission.deleteProductSupplier,
+    module: "item supplier",
+    title: "Delete item suppliers",
+    description: "Allow users to permanently remove a item supplier record.",
+    access: SetupPermission.deleteItemSupplier,
   ),
 ];
 
-final List<AccessControl> _productCategoryPermissions = [
+final List<AccessControl> _itemCategoryPermissions = [
   AccessControl(
-    module: "product category",
-    title: "Manage product categories",
-    description: "Allow users to create, edit, and delete product categories.",
-    access: SetupPermission.manageProductCategory,
+    module: "item category",
+    title: "Manage item categories",
+    description: "Allow users to create, edit, and delete item categories.",
+    access: SetupPermission.manageItemCategory,
   ),
   AccessControl(
-    module: "product category",
-    title: "Create new product category",
-    description: "Allow users to create new product categories.",
-    access: SetupPermission.createProductCategory,
+    module: "item category",
+    title: "Create new item category",
+    description: "Allow users to create new item categories.",
+    access: SetupPermission.createItemCategory,
   ),
   AccessControl(
-    module: "product category",
-    title: "View product categories",
-    description: "Allow access to a list of all product categories.",
-    access: SetupPermission.viewProductCategory,
+    module: "item category",
+    title: "View item categories",
+    description: "Allow access to a list of all item categories.",
+    access: SetupPermission.viewItemCategory,
   ),
   AccessControl(
-    module: "product category",
-    title: "Edit product categories",
-    description:
-        "Allow users to modify details of an existing product category.",
-    access: SetupPermission.updateProductCategory,
+    module: "item category",
+    title: "Edit item categories",
+    description: "Allow users to modify details of an existing item category.",
+    access: SetupPermission.updateItemCategory,
   ),
   AccessControl(
-    module: "product category",
-    title: "Delete product categories",
-    description: "Allow users to permanently remove a product category record.",
-    access: SetupPermission.deleteProductCategory,
+    module: "item category",
+    title: "Delete item categories",
+    description: "Allow users to permanently remove a item category record.",
+    access: SetupPermission.deleteItemCategory,
   ),
 ];
 
@@ -365,14 +363,14 @@ final List<AccessControl> setupPermissions = [
   ..._rolePermissions,
   ..._assignPermissions,
   ..._backupPermissions,
-  ..._productSupplierPermissions,
-  ..._productCategoryPermissions,
+  ..._itemSupplierPermissions,
+  ..._itemCategoryPermissions,
   ..._printSettingPermissions,
   ..._licensePermissions,
   ..._secretPermissions,
 ];
 
-Set<Permission> _defaultStoreOwnerPermissions = setupPermissions
+Set<Permission> _defaultBusinessOwnerPermissions = setupPermissions
     .map(
       (permission) => Permission(
         module: permission.module,
@@ -381,10 +379,12 @@ Set<Permission> _defaultStoreOwnerPermissions = setupPermissions
     )
     .toSet();
 
-/// [defaultStoreOwnerPermissions] This is the default permissions for the store owner
+/// [businessOwnerDefaultPermissions] This is the Business owner's default permissions
 /// during first-time workspace setup(Workspace Creation)
-Map<String, dynamic> get defaultStoreOwnerPermissions => Role(
-  name: 'store owner',
-  permissions: _defaultStoreOwnerPermissions,
-  createdBy: 'system default',
-).toMap();
+Map<String, dynamic> businessOwnerDefaultPermissions({required String id}) =>
+    Role(
+      id: id,
+      name: 'business owner',
+      permissions: _defaultBusinessOwnerPermissions,
+      createdBy: 'system',
+    ).toMap();

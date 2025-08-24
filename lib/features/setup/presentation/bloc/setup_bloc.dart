@@ -45,7 +45,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     _initialize();
 
     _setupRepository.dataStream.listen(
-      (cacheData) => add(_SetupLoaded<T>(_toList(cacheData))),
+      (cacheData) => add(_SetupsLoaded<T>(_toList(cacheData))),
     );
   }
 
@@ -61,10 +61,11 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     on<AddSetup<List<T>>>(_onAddMultiSetup);
     on<UpdateSetup>(_onUpdateSetup);
     on<OverrideSetup>(_onOverrideSetup);
-    on<DeleteSetup>(_onDeleteSetup);
+    on<DeleteSetup<String>>(_onDeleteSetup);
+    on<DeleteSetup<List<String>>>(_onMultiDeleteSetup);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
+    on<_SetupsLoaded<T>>(_onSetupsLoaded);
     on<_SetupLoaded<T>>(_onSetupLoaded);
-    on<_SingleSetupLoaded<T>>(_onSingleSetupLoaded);
     on<_SetupLoadError>(_onSetupLoadError);
   }
 
@@ -140,7 +141,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       if (localDataList.isNotEmpty) {
         final data = _toList(localDataList);
 
-        add(_SetupLoaded<T>(data));
+        add(_SetupsLoaded<T>(data));
         // emit(SetupsLoaded<T>(data));
       }
     } catch (e) {
@@ -161,7 +162,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
 
       if (localData != null) {
         final data = fromFirestore(localData.data, localData.id);
-        add(_SingleSetupLoaded<T>(data));
+        add(_SetupLoaded<T>(data));
       } else {
         emit(SetupError<T>('Document not found'));
       }
@@ -299,7 +300,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   }
 
   Future<void> _onDeleteSetup(
-    DeleteSetup event,
+    DeleteSetup<String> event,
     Emitter<SetupState<T>> emit,
   ) async {
     try {
@@ -316,18 +317,35 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
+  Future<void> _onMultiDeleteSetup(
+    DeleteSetup<List<String>> event,
+    Emitter<SetupState<T>> emit,
+  ) async {
+    try {
+      for (var id in event.documentId) {
+        // Delete data from Firestore and update local storage
+        await _setupRepository.deleteData(id);
+      }
+
+      // Trigger LoadDataEvent to reload the data
+      add(GetSetups<T>());
+
+      // Update State: Notify that data deleted
+      emit(SetupDeleted<T>(message: 'data deleted successfully'));
+    } catch (e) {
+      emit(SetupError<T>(e.toString()));
+    }
+  }
+
   void _onShortUIDLoaded(_ShortIDLoaded<T> event, Emitter<SetupState<T>> emit) {
     emit(SetupLoaded<T>(event.shortID));
   }
 
-  void _onSetupLoaded(_SetupLoaded<T> event, Emitter<SetupState<T>> emit) {
+  void _onSetupsLoaded(_SetupsLoaded<T> event, Emitter<SetupState<T>> emit) {
     emit(SetupsLoaded<T>(event.data));
   }
 
-  void _onSingleSetupLoaded(
-    _SingleSetupLoaded<T> event,
-    Emitter<SetupState<T>> emit,
-  ) {
+  void _onSetupLoaded(_SetupLoaded<T> event, Emitter<SetupState<T>> emit) {
     emit(SetupLoaded<T>(event.data));
   }
 

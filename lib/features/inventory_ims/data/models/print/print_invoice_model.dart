@@ -162,7 +162,7 @@ class PrintInvoice {
   /// Computer Generate Notice [_computerGenerated]
   pw.Center _computerGenerated() => pw.Center(
     child: pw.Text(
-      'This is Computer Generated $_title',
+      'Electronic version - $_title',
       textAlign: pw.TextAlign.center,
     ),
   );

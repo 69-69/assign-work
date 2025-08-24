@@ -9,15 +9,15 @@ class Orders extends Equatable {
   final String id; // Firestore will assign a unique ID (documentId)
   final String storeNumber;
   final String orderNumber;
-  final String productId;
+  final String itemId;
   final String customerId;
   final int quantity;
   final String status;
   final String barcode;
   final String orderType;
-  final String productName;
+  final String itemName;
   final double unitPrice;
-  final String paymentTerms;
+  final String paymentMethod;
   final String paymentStatus;
   final String orderSource;
   final double deliveryAmount;
@@ -42,16 +42,16 @@ class Orders extends Equatable {
     this.id = '',
     this.orderNumber = '',
     required this.storeNumber,
-    required this.productId,
+    required this.itemId,
     required this.customerId,
     required this.status,
     required this.barcode,
     required this.quantity,
     required this.orderType,
-    required this.productName,
+    required this.itemName,
     required this.unitPrice,
     this.deliveryAmount = 0.0,
-    required this.paymentTerms,
+    required this.paymentMethod,
     required this.paymentStatus,
     this.discountPercent = 0.0,
     this.taxPercent = 0.0,
@@ -80,15 +80,15 @@ class Orders extends Equatable {
       id: documentId,
       storeNumber: data['storeNumber'] ?? '',
       orderNumber: data['orderNumber'] ?? '',
-      productId: data['productId'] ?? '',
+      itemId: data['itemId'] ?? '',
       customerId: data['customerId'] ?? '',
       status: data['status'] ?? '',
       barcode: data['barcode'] ?? '',
       orderType: data['orderType'] ?? '',
-      productName: data['productName'] ?? '',
+      itemName: data['itemName'] ?? '',
       quantity: data['quantity'] ?? 0,
       unitPrice: data['unitPrice'] ?? 0.0,
-      paymentTerms: data['paymentTerms'] ?? '',
+      paymentMethod: data['paymentMethod'] ?? '',
       paymentStatus: data['paymentStatus'] ?? '',
       deliveryAmount: data['deliveryAmount'] ?? 0.0,
       taxPercent: data['taxPercent'] ?? 0.0,
@@ -115,15 +115,15 @@ class Orders extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'orderNumber': orderNumber,
-    'productId': productId,
+    'itemId': itemId,
     'customerId': customerId,
     'status': status,
-    'productName': productName,
+    'itemName': itemName,
     'barcode': barcode,
     'orderType': orderType,
     'quantity': quantity,
     'unitPrice': unitPrice,
-    'paymentTerms': paymentTerms,
+    'paymentMethod': paymentMethod,
     'paymentStatus': paymentStatus,
     'deliveryAmount': deliveryAmount,
     'taxPercent': taxPercent,
@@ -166,7 +166,7 @@ class Orders extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && productId.isEmpty;
+  bool get isEmpty => id.isEmpty && itemId.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -219,8 +219,8 @@ class Orders extends Equatable {
   bool filterByAny(String filter) =>
       storeNumber.contains(filter) ||
       orderNumber.contains(filter) ||
-      productId.contains(filter) ||
-      productName.contains(filter) ||
+      itemId.contains(filter) ||
+      itemName.contains(filter) ||
       status.contains(filter) ||
       customerId.contains(filter) ||
       validityDate.contains(filter) ||
@@ -240,22 +240,22 @@ class Orders extends Equatable {
 
   @override
   String toString() =>
-      '$orderNumber - $productName @ ${isToday ? 'Today' : 'Past'}';
+      '$orderNumber - $itemName @ ${isToday ? 'Today' : 'Past'}';
 
   /// copyWith method
   Orders copyWith({
     String? id,
     String? storeNumber,
     String? orderNumber,
-    String? productId,
+    String? itemId,
     String? customerId,
     String? status,
     int? quantity,
     String? barcode,
     String? orderType,
-    String? productName,
+    String? itemName,
     double? unitPrice,
-    String? paymentTerms,
+    String? paymentMethod,
     String? paymentStatus,
     double? deliveryAmount,
     double? taxPercent,
@@ -279,15 +279,15 @@ class Orders extends Equatable {
       id: id ?? this.id,
       storeNumber: storeNumber ?? this.storeNumber,
       orderNumber: orderNumber ?? this.orderNumber,
-      productId: productId ?? this.productId,
+      itemId: itemId ?? this.itemId,
       customerId: customerId ?? this.customerId,
       status: status ?? this.status,
       orderType: orderType ?? this.orderType,
       quantity: quantity ?? this.quantity,
       barcode: barcode ?? this.barcode,
-      productName: productName ?? this.productName,
+      itemName: itemName ?? this.itemName,
       unitPrice: unitPrice ?? this.unitPrice,
-      paymentTerms: paymentTerms ?? this.paymentTerms,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       deliveryAmount: deliveryAmount ?? this.deliveryAmount,
       discountPercent: discountPercent ?? this.discountPercent,
@@ -314,16 +314,16 @@ class Orders extends Equatable {
     id,
     storeNumber,
     orderNumber,
-    productId,
+    itemId,
     customerId,
     status,
     orderSource,
-    productName,
+    itemName,
     orderType,
     barcode,
     quantity,
     unitPrice,
-    paymentTerms,
+    paymentMethod,
     paymentStatus,
     deliveryAmount,
     taxPercent,
@@ -352,7 +352,7 @@ class Orders extends Equatable {
       customerId,
       status.toTitleCase,
       orderSource.toTitleCase,
-      productName.toTitleCase,
+      itemName.toTitleCase,
       orderType.toTitleCase,
       '$quantity',
       '$ghanaCedis$unitPrice',
@@ -364,7 +364,7 @@ class Orders extends Equatable {
       '$ghanaCedis${totalAmount.toCurrency}',
       '$ghanaCedis${amountPaid.toCurrency}',
       '$ghanaCedis${getOutStandingBalance.toCurrency}',
-      paymentTerms.toTitleCase,
+      paymentMethod.toTitleCase,
       paymentStatus.toTitleCase,
       validityDate,
       getShippingDate,
@@ -390,7 +390,7 @@ class Orders extends Equatable {
     'Customer ID',
     'Status',
     'Order Source',
-    'Product Name',
+    'Item Name',
     'Type',
     'Quantity',
     'Unit Price',
