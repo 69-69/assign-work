@@ -260,7 +260,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         // Clear _taxCodes, if the selected tax method is different
-        if (TaxMethodToApply.headerTax.label == selectedKey) {
+        if (TaxMethodToApply.headerTax.label != selectedKey) {
           _taxCodes.addAll([]);
         }
         _taxMethodToApply = getTaxMethodByString(selectedKey);
