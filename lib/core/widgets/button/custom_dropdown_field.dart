@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -9,30 +11,37 @@ import 'package:flutter/material.dart';
 /// Use this for selecting from a static list of options.
 /// Provides optional helper text, validation, and icon support.
 ///
-/// Set [isMenu] to true to use the newer DropdownMenu with search.
-class StaticDropdown extends StatelessWidget {
+/// Set [isMenu] to true to use DropdownMenu instead of DropdownButtonFormField.
+/// Set [inLabel] to false to hide the helper text in the TextField label.
+class StaticDropdown<T> extends StatelessWidget {
   final bool isMenu;
-  final Widget? icon;
-  final List<String> items;
-  final String? initialValue;
-  final String label;
-  final String? helperText;
-  final InputDecoration? inputDecoration;
-  final String? Function(String?)? validator;
-  final void Function(String?) onValueChange;
-
-  /// [inLabel] If TRUE `helperText` is applied to the label, else to the input field.
   final bool inLabel;
+  final String label;
+  final Widget? icon;
+  final List<T> items;
+  final String? helperText;
+  final MenuStyle? menuStyle;
+  final String? initialValue;
+  final InputDecoration? buttonDecoration;
+  final void Function(String?) onChanged;
+  final String Function(T item) getValue;
+  final String? Function(String?)? validator;
+  final InputDecorationTheme? menuDecoration;
+  final String Function(T item) getDisplayText;
 
   const StaticDropdown({
     super.key,
-    required this.items,
+    required this.getDisplayText,
+    required this.onChanged,
+    required this.getValue,
+    this.buttonDecoration,
+    this.menuDecoration,
     required this.label,
-    required this.onValueChange,
-    this.inputDecoration,
+    required this.items,
     this.initialValue,
     this.helperText,
     this.validator,
+    this.menuStyle,
     this.icon,
     this.isMenu = false,
     this.inLabel = true,
@@ -40,100 +49,118 @@ class StaticDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isMenu ? _buildDropdownMenu() : _buildDropdownButton(context);
+    return isMenu ? _buildDropdownMenu() : _buildDropdownButton();
   }
 
-  DropdownButtonFormField<String> _buildDropdownButton(BuildContext context) {
-    String? helpText;
-    if (helperText != null) {
-      helpText = inLabel ? '($helperText)' : helperText;
+  /*String? get _defaultValue2 {
+    final itemValues = items.map(getValue).toList();
+    if (initialValue.isNotNullNorEmpty &&
+        itemValues.contains(initialValue?.toLowercaseAll)) {
+      return initialValue?.toLowercaseAll;
+    }
+    return itemValues.isNotEmpty ? itemValues.first : null;
+  }*/
+
+  String? get _defaultValue {
+    final valueSet = items.map(getValue).toSet();
+
+    if (initialValue.isNotNullNorEmpty && valueSet.contains(initialValue)) {
+      return initialValue;
     }
 
-    final defaultVal =
-        (!initialValue.isNullOrEmpty && items.contains(initialValue))
-        ? initialValue
-        : items.first;
+    return valueSet.isNotEmpty ? valueSet.first : null;
+  }
 
+  String? get _labelWithHelper {
+    if (helperText == null) return label;
+    return inLabel ? '$label ($helperText)' : label;
+  }
+
+  /// DropdownButtonFormField [_buildDropdownButton]
+  DropdownButtonFormField<String> _buildDropdownButton() {
     return DropdownButtonFormField<String>(
       isExpanded: true,
       isDense: true,
-      // padding: EdgeInsets.zero,
       icon: icon,
+      value: _defaultValue,
+      onChanged: onChanged,
       decoration:
-          inputDecoration ??
+          buttonDecoration ??
           InputDecoration(
             isDense: true,
-            labelText: '${label.toTitleCase} ${helpText ?? ''}',
-            helperText: helpText,
+            labelText: _labelWithHelper?.toSentenceCase,
+            helperText: inLabel ? null : helperText,
             labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
           ),
-      items: items.map<DropdownMenuItem<String>>((e) {
-        return DropdownMenuItem(
-          value: e,
+      items: items.map((item) {
+        final value = getValue(item);
+        final display = getDisplayText(item);
+
+        return DropdownMenuItem<String>(
+          value: value,
           child: Text(
-            e.toTitleCase,
-            softWrap: true,
+            display.toTitleCase,
             overflow: TextOverflow.fade,
+            softWrap: true,
             style: const TextStyle(fontWeight: FontWeight.normal),
           ),
         );
       }).toList(),
-      onChanged: (value) => onValueChange.call(value),
-      value: defaultVal,
       validator:
           validator ??
-          (String? val) {
-            String v = val ?? ''.toLowercaseAll;
-            String label = items.first.toLowercaseAll;
-
-            if (v.isEmpty || v.contains(label)) {
-              return 'Please enter $label';
+          (val) {
+            final normalized = val?.toLowercaseAll.trim();
+            if (normalized.isNullOrEmpty || normalized!.contains('select')) {
+              return 'Select $label';
             }
             return null;
           },
     );
   }
 
+  /// DropdownMenu [_buildDropdownMenu]
   DropdownMenu<String> _buildDropdownMenu() {
-    final defaultVal =
-        (!initialValue.isNullOrEmpty && items.contains(initialValue))
-        ? initialValue
-        : items.first;
-    final helpText = helperText != null ? '($helperText)' : '';
+    final entries = items
+        .map(
+          (item) => DropdownMenuEntry(
+            value: getValue(item),
+            label: getDisplayText(item).toTitleCase,
+            style: ButtonStyle(),
+          ),
+        )
+        .toList();
 
     return DropdownMenu<String>(
       trailingIcon: icon,
-      hintText: '$label $helpText',
-      initialSelection: defaultVal,
-
-      textStyle: const TextStyle(fontWeight: FontWeight.normal),
-      dropdownMenuEntries: items
-          .map((item) => DropdownMenuEntry(value: item, label: item))
-          .toList(),
-      //enableFilter: true,
       requestFocusOnTap: true,
-      enableSearch: true,
-      searchCallback: (List<DropdownMenuEntry<String>> entries, String query) {
-        if (query.isEmpty || query.contains(items.first)) {
-          return null;
-        }
-        final int index = entries.indexWhere(
-          (DropdownMenuEntry<String> entry) => entry.label == query,
+      hintText: _labelWithHelper?.toSentenceCase,
+      initialSelection: _defaultValue,
+      dropdownMenuEntries: entries,
+      textStyle: const TextStyle(fontWeight: FontWeight.normal),
+      expandedInsets: const EdgeInsets.symmetric(horizontal: 0.0),
+      searchCallback: (entries, query) {
+        final index = entries.indexWhere(
+          (entry) =>
+              _valueContains(entry.value, query) ||
+              _valueContains(entry.label, query),
         );
-
-        return index != -1 ? index : null;
+        return index >= 0 ? index : null;
       },
-      onSelected: (value) => onValueChange(value),
-      width: null,
-      inputDecorationTheme: const InputDecorationTheme(
+      onSelected: onChanged,
+      menuStyle: menuStyle,
+      inputDecorationTheme: menuDecoration?.copyWith(
         isDense: true,
         labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
       ),
     );
   }
+
+  bool _valueContains(String value, String query) =>
+      value.toLowercaseAll.contains(query.toLowercaseAll);
 }
 
 /// Form text field [AsyncSearchDropdown]
+/// MultiSelect / SingleSelect DropdownButtonFormField
 /// A searchable dropdown widget that supports asynchronous loading of items.
 ///
 /// Use this when you need to fetch dropdown items from a remote source
@@ -141,66 +168,112 @@ class StaticDropdown extends StatelessWidget {
 ///
 /// Provides search, custom filter logic, validation, and no-data callbacks.
 class AsyncSearchDropdown<T> extends StatelessWidget {
+  final bool isMultiSelect;
   final String labelText;
+  final T? selectedItem;
+  final List<T>? selectedItems;
   final String? helperText;
   final IconData? trailingIcon;
-  final void Function(T?)? onChanged;
+  final Function(T?)? onChanged;
+  final Function(List<T>)? onMultiChanged;
   final Function(T)? itemAsString;
   final String? Function(T?)? validator;
+  final String? Function(List<T>?)? validatorMulti;
   final Function(T, String) filterFn;
   final void Function()? onNoDataFound;
   final Future<List<T>> Function(String, LoadProps?)? asyncItems;
 
   const AsyncSearchDropdown({
     super.key,
+    this.isMultiSelect = false,
     required this.labelText,
     required this.filterFn,
     this.helperText,
     this.itemAsString,
     this.asyncItems,
     this.onChanged,
+    this.onMultiChanged,
     this.validator,
+    this.validatorMulti,
     this.trailingIcon,
     this.onNoDataFound,
+    this.selectedItem,
+    this.selectedItems,
   });
 
   @override
   Widget build(BuildContext context) {
-    return _buildDropdownSearch();
+    return isMultiSelect ? _buildMultiSelectDropdown() : _buildSingleDropdown();
   }
 
-  _buildDropdownSearch() {
+  // Single-select dropdown
+  _buildSingleDropdown() {
     final helpText = helperText != null ? '($helperText)' : '';
 
     return DropdownSearch<T>(
+      selectedItem: selectedItem,
       autoValidateMode: AutovalidateMode.onUserInteraction,
       popupProps: const PopupProps.menu(showSearchBox: true),
       filterFn: (obj, filter) => filterFn(obj, filter),
       // for filtering by user string
       compareFn: (obj1, obj2) => obj1 == obj2,
       // for selection comparison
-      items: (String filter, LoadProps? loadProps) async {
-        final results = await asyncItems!(filter, loadProps);
-        if (results.isEmpty) {
-          onNoDataFound?.call();
-        }
-        return results;
-      },
-
+      items: _onFind,
       // FutureOr<List<T>> Function(String, LoadProps?)? items
       // Future<List<T>> Function(String)? items,
       itemAsString: (T obj) => itemAsString!(obj),
       onChanged: (T? obj) => onChanged!(obj),
-      suffixProps: DropdownSuffixProps(
-        dropdownButtonProps: DropdownButtonProps(
-          iconOpened: Icon(trailingIcon ?? Icons.arrow_drop_up, size: 24.0),
-          iconClosed: Icon(trailingIcon ?? Icons.arrow_drop_down, size: 24.0),
-        ),
-      ),
-      decoratorProps: DropDownDecoratorProps(
-        decoration: InputDecoration(labelText: '$labelText $helpText'),
-      ),
+      suffixProps: _dropdownSuffixProps,
+      decoratorProps: _dropDownDecoratorProps(helpText),
       validator: validator ?? (T? obj) => obj == null ? labelText : null,
+    );
+  }
+
+  // Multi-select dropdown
+  _buildMultiSelectDropdown() {
+    final helpText = helperText != null ? '($helperText)' : '';
+
+    return DropdownSearch<T>.multiSelection(
+      selectedItems: selectedItems ?? [],
+      autoValidateMode: AutovalidateMode.onUserInteraction,
+      popupProps: const PopupPropsMultiSelection.menu(showSearchBox: true),
+      filterFn: (obj, filter) => filterFn(obj, filter),
+      // for filtering by user string
+      compareFn: (obj1, obj2) => obj1 == obj2,
+      // for selection comparison
+      items: _onFind,
+      // FutureOr<List<T>> Function(String, LoadProps?)? items
+      // Future<List<T>> Function(String)? items,
+      itemAsString: (T obj) => itemAsString!(obj),
+      onChanged: (List<T> obj) => onMultiChanged!(obj),
+      suffixProps: _dropdownSuffixProps,
+      decoratorProps: _dropDownDecoratorProps(helpText),
+      validator:
+          validatorMulti ?? (List<T>? obj) => obj == null ? labelText : null,
+    );
+  }
+
+  FutureOr<List<T>> _onFind(String filter, LoadProps? loadProps) async {
+    final results = await asyncItems!(filter, loadProps);
+    if (results.isEmpty) {
+      onNoDataFound?.call();
+    }
+    return results;
+  }
+
+  DropDownDecoratorProps _dropDownDecoratorProps(String helpText) {
+    return DropDownDecoratorProps(
+      decoration: InputDecoration(labelText: '$labelText $helpText'),
+    );
+  }
+
+  DropdownSuffixProps get _dropdownSuffixProps {
+    return DropdownSuffixProps(
+      dropdownButtonProps: DropdownButtonProps(
+        tooltip: labelText,
+        iconOpened: Icon(trailingIcon ?? Icons.arrow_drop_up),
+        iconClosed: Icon(trailingIcon ?? Icons.arrow_drop_down),
+      ),
     );
   }
 }

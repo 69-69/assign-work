@@ -59,7 +59,7 @@ class PrintPDFColors {
         name: (setup.companyName ?? '').toTitleCase,
         email: setup.companyEmail ?? '',
         phone: setup.companyPhone ?? '',
-        address: (setup.companyAddress ?? '').toTitleCase,
+        address: (setup.companyAddress ?? '').toSentenceCase,
       );
       isDenseLayout = setup.layout == 'dense';
       // footerColorStr = setup.headerColor;

@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -48,16 +48,18 @@ class GuideCategoryDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> categoryList = [
-      'guide category',
+      'Select guide category',
       ...userGuideCategories,
     ];
 
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: categoryList,
-      label: 'guide category',
+      label: 'Select guide category',
       initialValue: serverCategory,
-      onValueChange: (String? v) => onCategoryChange(v),
+      getValue: (category) => category,
+      getDisplayText: (category) => category,
+      onChanged: (String? v) => onCategoryChange(v),
     );
   }
 }

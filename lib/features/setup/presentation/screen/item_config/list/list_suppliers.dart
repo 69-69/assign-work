@@ -52,14 +52,14 @@ class _ListSuppliersState extends State<ListSuppliers> {
 
   Widget _buildCard(BuildContext c, List<Supplier> suppliers) {
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 2,
       headers: Supplier.dataHeader,
       anyWidgetAlignment: WrapAlignment.spaceBetween,
       anyWidget: _buildAnyWidget(suppliers),
       rows: suppliers.map((d) => d.toListL()).toList(),
-      onEditTap: (row) async => _onEditTap(suppliers, row),
-      onDeleteTap: (row) async => _onDeleteTap(suppliers, row),
+      onEditTap: (row) async => _onEditTap(suppliers, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),
     );
   }
 
@@ -86,22 +86,20 @@ class _ListSuppliersState extends State<ListSuppliers> {
     );
   }
 
-  Future<void> _onEditTap(List<Supplier> suppliers, List<String> row) async {
-    final supplier = Supplier.findCategoriesById(suppliers, row.first).first;
+  Future<void> _onEditTap(List<Supplier> suppliers, String id) async {
+    final supplier = Supplier.findCategoriesById(suppliers, id).first;
     await context.openUpdateSupplier(supplier: supplier);
   }
 
-  Future<void> _onDeleteTap(List<Supplier> suppliers, List<String> row) async {
-    {
-      final supplier = Supplier.findCategoriesById(suppliers, row.first).first;
+  Future<void> _onDeleteTap(List<Supplier> suppliers, String id) async {
+    final supplier = Supplier.findCategoriesById(suppliers, id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Delete specific Supplier
-        context.read<SupplierBloc>().add(
-          DeleteSetup<String>(documentId: supplier.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Delete specific Supplier
+      context.read<SupplierBloc>().add(
+        DeleteSetup<String>(documentId: supplier.id),
+      );
     }
   }
 }

@@ -57,18 +57,16 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
 
   Widget _buildCard(List<CompanyStores> stores) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 0,
       headers: CompanyStores.dataTableHeader,
       anyWidget: _buildAnyWidget(stores),
       rows: stores.map((d) => d.itemAsList()).toList(),
-      onEditTap: (row) async => _onEditTap(stores, row[1]),
-      onDeleteTap: (row) async => _onDeleteTap(stores, row[1]),
+      onEditTap: (row) async => _onEditTap(stores, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
       optButtonIcon: Icons.store,
       optButtonLabel: 'Switch Store',
       onOptButtonTap: (row) async {
-        final store = _findStoresById(stores, row[1]);
+        final store = _findStoresById(stores, row.first);
         await context.onSwitchStore(
           store.storeNumber,
           location: store.location,

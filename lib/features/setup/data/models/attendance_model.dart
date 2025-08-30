@@ -97,8 +97,8 @@ class Attendance {
   String get getCreatedAt => createdAt.toStandardDT;
 
   List<String> itemAsList() => [
-    userId,
     id,
+    userId,
     type.toTitleCase,
     name.toTitleCase,
     ip ?? '',
@@ -109,8 +109,8 @@ class Attendance {
   ];
 
   static List<String> get dataTableHeader => const [
-    'Employee id',
     'ID',
+    'Employee id',
     'Type',
     'Name',
     'IP',

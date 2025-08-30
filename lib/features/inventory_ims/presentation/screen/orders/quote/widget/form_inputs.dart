@@ -1,10 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/features/setup/presentation/screen/company/widget/search_departments.dart';
 import 'package:assign_erp/features/setup/presentation/screen/item_config/widget/search_suppliers.dart';
 import 'package:flutter/material.dart';
 
@@ -62,19 +63,15 @@ class SuppliersAndRFQStatusDropdown extends StatelessWidget {
 class ValidityAndPayTermsDropdown extends StatelessWidget {
   const ValidityAndPayTermsDropdown({
     super.key,
-    this.onNetPriceChanged,
-    required this.onPayTermsChanged,
     this.initialPayTerms,
-    this.netPriceController,
+    required this.onPayTermsChanged,
     this.initialValidity,
     this.labelValidity,
     required this.onValidityChanged,
   });
 
   final String? initialPayTerms;
-  final ValueChanged? onNetPriceChanged;
   final void Function(dynamic) onPayTermsChanged;
-  final TextEditingController? netPriceController;
   final String? initialValidity;
   final String? labelValidity;
   final Function(DateTime) onValidityChanged;
@@ -92,10 +89,6 @@ class ValidityAndPayTermsDropdown extends StatelessWidget {
           selectedDate: onValidityChanged,
           helperText: 'How long the quote remains valid',
         ),
-        /*NetPriceTextField(
-          controller: netPriceController,
-          onChanged: onNetPriceChanged,
-        ),*/
         PayTermsDropdown(
           initialValue: initialPayTerms,
           onChange: onPayTermsChanged,
@@ -164,12 +157,15 @@ class CurrencyDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<Map<String, String>>(
       key: key,
       items: currencyType,
       label: 'Select currency',
       initialValue: initialCurrency,
-      onValueChange: (String? v) => onCurrencyChanged(v),
+      getValue: (currency) => currency['code'] ?? '',
+      getDisplayText: (currency) =>
+          '${currency['code']} (${currency['symbol']})',
+      onChanged: (String? v) => onCurrencyChanged(v),
     );
   }
 }
@@ -342,7 +338,7 @@ class TitleAndDepartments extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged? onChanged;
   final String? initialDepartment;
-  final void Function(dynamic s) onDepartmentChange;
+  final void Function(String, String, String) onDepartmentChange;
 
   const TitleAndDepartments({
     super.key,
@@ -367,15 +363,21 @@ class TitleAndDepartments extends StatelessWidget {
           keyboardType: TextInputType.none,
           validator: (s) => null,
         ),
-        StaticDropdown(
+        SearchDepartments(
+          initialValue: initialDepartment,
+          onChanged: (id, code, name) => onDepartmentChange(id, code, name),
+        ),
+        /*StaticDropdown<String>(
           key: key,
           items: departmentsList,
           label: 'internal departments',
           inLabel: false,
           helperText: 'e.g., HR, IT, Accounting',
           initialValue: initialDepartment,
-          onValueChange: (String? v) => onDepartmentChange(v),
-        ),
+          getValue: (department) => department,
+          getDisplayText: (department) => department,
+          onChanged: (String? v) => onDepartmentChange(v),
+        ),*/
       ],
     );
   }
@@ -512,12 +514,14 @@ class RFQStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
-      items: requestForQuoteStatus,
-      label: 'quote status',
+      label: 'Quote status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChange(v),
+      items: requestForQuoteStatus,
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChange(v),
     );
   }
 }
@@ -535,12 +539,14 @@ class PayTermsDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<Map<String, String>>(
       key: key,
       items: paymentTerms,
-      label: 'payment terms',
+      label: 'Payment terms',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChange(v),
+      getValue: (term) => term['id'] ?? '',
+      getDisplayText: (term) => term['term'] ?? '',
+      onChanged: (String? v) => onChange(v),
     );
   }
 }

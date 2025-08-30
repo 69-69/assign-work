@@ -5,6 +5,7 @@ import 'package:assign_erp/features/setup/data/models/role_model.dart';
 /// PERMISSION BASED ACCESS-CONTROL
 enum SetupPermission {
   manageSetup,
+  manageTaxes,
   // Company Info
   manageCompany,
   createCompanyInfo,
@@ -74,6 +75,15 @@ final List<AccessControl> _setupPermissions = [
     description:
         "Grants users the ability to create, modify, and remove workspace setup configurations",
     access: SetupPermission.manageSetup,
+  ),
+];
+
+final List<AccessControl> _taxesPermissions = [
+  AccessControl(
+    module: "taxes",
+    title: "Manage taxes",
+    description: "Allow users to create, edit, and delete taxes.",
+    access: SetupPermission.manageTaxes,
   ),
 ];
 
@@ -357,6 +367,7 @@ final setupDisplayName = 'setup';
 /// Low-level = control button-level permissions (Create, Edit, Delete)
 final List<AccessControl> setupPermissions = [
   ..._setupPermissions,
+  ..._taxesPermissions,
   ..._companyInfoPermissions,
   ..._storeLocationPermissions,
   ..._employeePermissions,

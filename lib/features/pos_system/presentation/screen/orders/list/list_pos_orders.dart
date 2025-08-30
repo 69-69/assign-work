@@ -61,13 +61,13 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
     final pastOrders = POSOrder.filterOrdersByDate(orders, isSameDay: false);
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
       anyWidget: _buildAnyWidget(orders),
       headers: POSOrder.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
-      onChecked: (bool? isChecked, row) => _onChecked(orders, row, isChecked),
+      onChecked: (bool? isChecked, row) =>
+          _onChecked(orders, isChecked, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -80,14 +80,15 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
             }
             if (checkedRows.isNotEmpty) {
               for (int i = 0; i < checkedRows.length; i++) {
-                _onChecked(orders, checkedRows[i], isChecked);
+                final id = checkedRows[i].first;
+                _onChecked(orders, isChecked, id);
               }
             }
           },
       optButtonLabel: 'Receipt',
-      onOptButtonTap: (row) async => await _onInvoiceTap(orders, row),
-      onEditTap: (row) async => await _onEditTap(orders, row),
-      onDeleteTap: (row) async => await _onDeleteTap(orders, row),
+      onOptButtonTap: (row) async => await _onInvoiceTap(orders, row.first),
+      onEditTap: (row) async => await _onEditTap(orders, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(orders, row.first),
     );
   }
 
@@ -140,13 +141,9 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
   }
 
   // Handle onChecked orders
-  void _onChecked(
-    List<POSOrder> orders,
-    List<String> row,
-    bool? isChecked,
-  ) async {
+  void _onChecked(List<POSOrder> orders, bool? isChecked, String id) async {
     setState(() {
-      final order = orders.firstWhere((order) => order.id == row.first);
+      final order = orders.firstWhere((order) => order.id == id);
 
       if (isChecked != null && isChecked) {
         // A temporary list, tempOrdersForInvoice, is created which includes
@@ -169,10 +166,10 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
     });
   }
 
-  _onInvoiceTap(List<POSOrder> orders, List<String> row) async {
+  _onInvoiceTap(List<POSOrder> orders, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
-      request: _printout(orders, row),
+      request: _printout(orders, id),
       onSuccess: (_) =>
           context.showAlertOverlay('Printout successfully created'),
       onError: (error) => context.showAlertOverlay(
@@ -182,13 +179,10 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
     );
   }
 
-  Future<dynamic> _printout(List<POSOrder> orders, List<String> row) =>
+  Future<dynamic> _printout(List<POSOrder> orders, String id) =>
       Future.delayed(kRProgressDelay, () async {
         // Simulate loading supplier and company info
-        final getOrders = POSOrder.findOrdersById(
-          orders,
-          orderId: row.first,
-        ).toList();
+        final getOrders = POSOrder.findOrdersById(orders, orderId: id).toList();
         if (mounted && getOrders.isNotEmpty) {
           PrintPOSSalesReceipt(
             orders: getOrders,
@@ -198,15 +192,15 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
         }
       });
 
-  Future<void> _onEditTap(List<POSOrder> orders, List<String> row) async {
-    final order = POSOrder.findOrdersById(orders, orderId: row.first).first;
+  Future<void> _onEditTap(List<POSOrder> orders, String id) async {
+    final order = POSOrder.findOrdersById(orders, orderId: id).first;
 
     await context.openUpdatePOSOrder(order: order);
   }
 
-  Future<void> _onDeleteTap(List<POSOrder> orders, List<String> row) async {
+  Future<void> _onDeleteTap(List<POSOrder> orders, String id) async {
     {
-      final order = POSOrder.findOrdersById(orders, orderId: row.first).first;
+      final order = POSOrder.findOrdersById(orders, orderId: id).first;
 
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {

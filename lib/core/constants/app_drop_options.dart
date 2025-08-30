@@ -23,6 +23,49 @@ const workspaceCategories = [
 
 /// [paymentTerms] When the payment is due and if any discounts apply
 const paymentTerms = [
+  {'id': 'select', 'term': 'Select Payment terms'},
+  {
+    'id': 'net_15',
+    'term': 'Net 15 – Full payment due within 15 days of invoice',
+  },
+  {
+    'id': 'net_30',
+    'term': 'Net 30 – Full payment due within 30 days of invoice',
+  },
+  {
+    'id': 'net_45',
+    'term': 'Net 45 – Full payment due within 45 days of invoice',
+  },
+  {
+    'id': 'net_60',
+    'term': 'Net 60 – Full payment due within 60 days of invoice',
+  },
+  {
+    'id': 'net_10_2_30',
+    'term':
+        '2/10 Net 30 – 2% discount if paid within 10 days; full due in 30 days',
+  },
+  {
+    'id': 'advance_delivery',
+    'term':
+        '50% Advance, 50% on Delivery – Partial upfront payment, remainder on delivery',
+  },
+  {'id': 'cod', 'term': 'Cash on Delivery (COD) – Full payment upon delivery'},
+  {
+    'id': 'due_on_receipt',
+    'term': 'Due on Receipt – Full payment due immediately upon invoicing',
+  },
+  {
+    'id': 'cash_in_advance',
+    'term': 'Cash in Advance (CIA) – Full payment before delivery',
+  },
+  {
+    'id': 'milestone',
+    'term': 'Milestone Payments – Based on project phases or deliverables',
+  },
+  {'id': 'other', 'term': 'Other – Specify in Notes'},
+];
+/*const paymentTerms2 = [
   'Select Payment terms',
   'Net 15 – Full payment due within 15 days of invoice',
   'Net 30 – Full payment due within 30 days of invoice',
@@ -35,7 +78,11 @@ const paymentTerms = [
   'Cash in Advance (CIA) – Full payment before delivery',
   'Milestone Payments – Based on project phases or deliverables',
   'Other – Specify in Notes',
-];
+];*/
+
+/// Get Specific Payment term by pay id [getPayTerm]
+String? getPayTerm(String id) =>
+    paymentTerms.firstWhere((p) => p['id'] == id)['term'];
 
 /// [paymentMethod] How the payment is made (the financial instrument or channel)
 const paymentMethod = [
@@ -53,18 +100,22 @@ const paymentMethod = [
 ];
 
 const currencyType = [
-  'Select currency',
-  'GHC',
-  'USD',
-  'EUR',
-  'GBP',
-  'CAD',
-  'AUD',
-  'CHF',
-  'JPY',
-  'NZD',
-  'SGD',
+  {'code': 'Select currency', 'symbol': '-'},
+  {'code': 'GHC', 'symbol': '₵'},
+  {'code': 'USD', 'symbol': '\$'},
+  {'code': 'EUR', 'symbol': '€'},
+  {'code': 'GBP', 'symbol': '£'},
+  {'code': 'CAD', 'symbol': 'C\$'},
+  {'code': 'AUD', 'symbol': 'A\$'},
+  {'code': 'CHF', 'symbol': 'CHF'},
+  {'code': 'JPY', 'symbol': '¥'},
+  {'code': 'NZD', 'symbol': 'NZ\$'},
+  {'code': 'SGD', 'symbol': 'S\$'},
 ];
+
+/// Get Specific Currency Symbol (Sign) by Code [getCurrencySign]
+String? getCurrencySign(String code) =>
+    currencyType.firstWhere((c) => c['code'] == code)['symbol'];
 
 const paymentStatus = [
   'Select Payment status',
@@ -142,7 +193,12 @@ const requestForQuoteStatus = ['Select Quote status', ..._rFqPrStatus];
 const requisitionStatus = ['Select Requisition status', ..._rFqPrStatus];
 
 /// Orders Sources
-const orderSources = ['order source', 'website', 'in store', 'mobile app'];
+const orderSources = [
+  'Select order source',
+  'website',
+  'in store',
+  'mobile app',
+];
 
 /// Orders (SO) Statuses
 const orderStatus = [

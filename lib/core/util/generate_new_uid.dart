@@ -117,4 +117,13 @@ extension GenerateUID on String {
 
     return candidate;
   }
+
+  /// [generateTaxCode] Generates a unique tax code based on the provided name and rate.
+  String generateTaxCode(dynamic rate) {
+    // Trim, lowercase, and replace spaces with underscores
+    final name = trim().toLowercaseAll.replaceAll(RegExp(r'\s+'), '_');
+    // Replace any non-alphanumeric characters with underscores
+    final newRate = rate.toString().replaceAll('.', '-');
+    return '${name}_$newRate';
+  }
 }

@@ -398,8 +398,8 @@ class Item extends Equatable {
   /// ToList for PRODUCTS [itemAsList]
   List<String> itemAsList({int? start, int? end}) {
     var list = [
-      supplierId,
       id,
+      supplierId,
       storeNumber,
       sku,
       batchId,
@@ -428,8 +428,8 @@ class Item extends Equatable {
   }
 
   static List<String> get dataTableHeader => const [
+    'ID',
     'Supplier ID',
-    'id',
     'Store Number',
     'SKU',
     'Batch ID',

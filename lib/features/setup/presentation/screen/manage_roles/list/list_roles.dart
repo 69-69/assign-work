@@ -47,9 +47,8 @@ class _ListRolesState extends State<ListRoles> {
 
   _buildCard(BuildContext c, List<Role> roles) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 1,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Role.dataTableHeader,
       anyWidget: _buildAnyWidget(),
       anyWidgetAlignment: WrapAlignment.end,

@@ -128,7 +128,7 @@ class DataRepository extends FirestoreRepository {
       if (cachedData != null && cachedData.data.containsKey(field)) {
         dynamic fieldValue = cachedData.data[field];
         if (fieldValue.toString().toLowercaseAll.contains(
-          query.toLowerCase(),
+          query.toLowercaseAll,
         )) {
           dataList.add(cachedData);
         }

@@ -318,7 +318,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   }
 
   Future<void> _onMultiDeleteSetup(
-    DeleteSetup<List<String>> event,
+    DeleteSetup event,
     Emitter<SetupState<T>> emit,
   ) async {
     try {

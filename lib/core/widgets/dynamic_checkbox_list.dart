@@ -1,6 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 
@@ -8,13 +10,13 @@ import 'package:flutter/material.dart';
 class DynamicCheckboxList extends StatefulWidget {
   final String? title;
   final bool showButton;
-  final List<CheckboxGroupConfig> fieldsConfig;
-  final List<Map<String, String>>? initialData;
-  final Function(List<Map<String, String>>) onChanged;
+  final List<Map<String, dynamic>>? initialData;
+  final List<CheckboxGroupConfig> checkboxesConfig;
+  final Function(List<Map<String, dynamic>>) onChanged;
 
   const DynamicCheckboxList({
     super.key,
-    required this.fieldsConfig,
+    required this.checkboxesConfig,
     required this.onChanged,
     this.initialData,
     this.title,
@@ -28,6 +30,8 @@ class DynamicCheckboxList extends StatefulWidget {
 class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
   final List<Map<String, bool>> _checkboxGroups = [];
 
+  List<CheckboxGroupConfig> get _configs => widget.checkboxesConfig;
+
   @override
   void initState() {
     super.initState();
@@ -35,15 +39,15 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
   }
 
   void _initializeGroups() {
-    if (widget.initialData != null && widget.initialData!.isNotEmpty) {
-      for (final map in widget.initialData!) {
+    if (widget.initialData.isNotNullNorEmpty) {
+      for (final groupData in widget.initialData!) {
         _checkboxGroups.add({
-          for (var config in widget.fieldsConfig)
-            config.key: (map[config.key] == 'true'),
+          for (final config in _configs)
+            config.key: (groupData[config.key] == 'true'),
         });
       }
     } else {
-      _addCheckboxGroup(); // Add at least one group
+      _addCheckboxGroup();
     }
     _notifyParent();
   }
@@ -57,18 +61,18 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
   }
 
   Widget _buildHeader() {
-    final title = widget.title;
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (title != null) ...[
-          Expanded(child: Text(title, style: context.textTheme.titleMedium)),
-        ],
-        if (!widget.showButton) ...[
+        if (widget.title != null)
+          Expanded(
+            child: Text(widget.title!, style: context.textTheme.titleMedium),
+          ),
+        if (widget.showButton) ...[
           context.iconButton(
             Icons.add,
             isCard: true,
-            tooltip: 'Add group',
+            tooltip: 'Add more checkbox group',
             onPressed: _addCheckboxGroup,
             iconColor: kPrimaryAccentColor,
             borderColor: kPrimaryAccentColor,
@@ -77,82 +81,73 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
             context.iconButton(
               Icons.remove,
               isCard: true,
-              tooltip: 'Remove group',
+              tooltip: 'Remove last checkbox group',
+              onPressed: _removeCheckboxGroup,
               iconColor: kDangerColor,
               bgColor: kLightColor,
               borderColor: kDangerColor,
-              onPressed: _removeCheckboxGroup,
             ),
         ],
       ],
     );
   }
 
-  Iterable<Widget> _buildCheckboxGroups() {
+  List<Widget> _buildCheckboxGroups() {
     return _checkboxGroups.asMap().entries.expand((entry) {
-      // final index = entry.key;
       final group = entry.value;
 
-      // Create list of Checkbox for this group
-      final fields = widget.fieldsConfig.map((config) {
-        return _buildCheckboxList(group, config);
+      final checkboxes = _configs.map((config) {
+        return _buildCheckbox(group, config);
       }).toList();
 
-      // Logic to group fields into rows
-      if (fields.length <= 1) {
-        return fields; // Single field per row
-      } else {
-        return _groupByTwo(fields);
-      }
+      return checkboxes.length <= 1 ? checkboxes : _groupIntoRows(checkboxes);
     }).toList();
   }
 
-  CheckboxListTile _buildCheckboxList(
+  CheckboxListTile _buildCheckbox(
     Map<String, bool> group,
     CheckboxGroupConfig config,
   ) {
-    return CheckboxListTile(
+    return CheckboxListTile.adaptive(
       dense: true,
-      contentPadding: EdgeInsets.zero,
-      value: group[config.key] ?? false,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+      value: group[config.key] ?? config.selected ?? false,
       title: Row(
         children: [
-          Expanded(child: Text(config.label)),
+          Expanded(
+            child: Text(
+              config.label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
           InkWell(
             onTap: () =>
-                _showInfoDialog(context, config.modalTitle, config.description),
-            child: const Icon(Icons.info_outline, size: 18),
+                _showInfoDialog(context, config.label, config.description),
+            child: Tooltip(
+              message: config.tooltip ?? 'Info',
+              child: const Icon(Icons.info_outline, size: 18),
+            ),
           ),
         ],
       ),
       onChanged: (value) {
-        setState(() => group[config.key] = value ?? false);
+        setState(() {
+          group[config.key] = value ?? false;
+        });
         _notifyParent();
       },
     );
   }
 
-  // Group CheckBoxes in rows of 2
-  List<Widget> _groupByTwo(List<CheckboxListTile> fields) {
+  List<Widget> _groupIntoRows(List<Widget> fields) {
     final rows = <Widget>[];
-    final total = fields.length;
 
-    for (var i = 0; i < total; i += 2) {
-      final isLast = i == total - 1;
-      final isOdd = total % 2 != 0;
+    for (var i = 0; i < fields.length; i += 2) {
+      final isLast = i == fields.length - 1;
+      final children = isLast ? [fields[i]] : [fields[i], fields[i + 1]];
 
-      rows.add(
-        AdaptiveLayout(
-          children: [
-            if (isLast && isOdd) ...[
-              fields[i], // Make last field full-width
-            ] else ...[
-              fields[i],
-              if (i + 1 < total) fields[i + 1],
-            ],
-          ],
-        ),
-      );
+      rows.add(AdaptiveLayout(children: children));
+      if (!isLast) rows.add(HorizontalDivider(space: 0.1));
     }
 
     return rows;
@@ -161,72 +156,60 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
   void _addCheckboxGroup() {
     setState(() {
       _checkboxGroups.add({
-        for (var config in widget.fieldsConfig) config.key: false,
+        for (var config in _configs) config.key: config.selected ?? false,
       });
     });
     _notifyParent();
   }
 
   void _removeCheckboxGroup() {
-    setState(() => _checkboxGroups.removeLast());
+    setState(() {
+      if (_checkboxGroups.isNotEmpty) {
+        _checkboxGroups.removeLast();
+      }
+    });
     _notifyParent();
   }
 
   void _notifyParent() {
-    final data = _checkboxGroups.map((group) {
-      return {
-        for (var entry in group.entries) entry.key: entry.value.toString(),
-      };
-    }).toList();
+    final List<Map<String, dynamic>> output = [];
 
-    widget.onChanged(data);
+    for (var group in _checkboxGroups) {
+      for (var config in _configs) {
+        output.add({
+          'key': config.key,
+          'selected': group[config.key] ?? false,
+          'data': config.data ?? '',
+        });
+      }
+    }
+
+    widget.onChanged(output);
   }
 
   Future<void> _showInfoDialog(
-    BuildContext cxt,
+    BuildContext context,
     String title,
-    String desc,
+    String description,
   ) async {
-    await cxt.confirmDone(Text(desc), title: title);
+    await context.confirmDone(Text(description), title: title);
   }
 }
 
-class CheckboxGroupConfig {
+class CheckboxGroupConfig<T> {
   final String key;
   final String label;
-  final String modalTitle;
+  final T? data;
+  final String? tooltip;
   final String description;
+  final bool? selected;
 
   CheckboxGroupConfig({
     required this.key,
     required this.label,
-    required this.modalTitle,
+    this.data,
+    this.tooltip,
+    this.selected,
     required this.description,
   });
-}
-
-class CheckboxGroup {
-  final Map<String, TextEditingController> controllers;
-
-  CheckboxGroup(
-    List<CheckboxGroupConfig> fieldsConfig, {
-    Map<String, String>? initialValues,
-  }) : controllers = {
-         for (var config in fieldsConfig)
-           config.key: TextEditingController(
-             text: initialValues?[config.key] ?? '',
-           ),
-       };
-
-  void dispose() {
-    for (final controller in controllers.values) {
-      controller.dispose();
-    }
-  }
-
-  Map<String, String> getData() {
-    return {
-      for (final entry in controllers.entries) entry.key: entry.value.text,
-    };
-  }
 }

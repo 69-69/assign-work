@@ -30,6 +30,7 @@ const cacheDataBoxes = [
   backupFileNamesCache,
   appErrorLogsCache,
   agentClientsDBCollection,
+  taxesDBCollectionPath,
 ];
 
 /// This is the Cache-Data for all CRUD operation [cacheDBAdaptor]

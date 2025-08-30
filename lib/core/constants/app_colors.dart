@@ -39,6 +39,7 @@ extension DefaultColors on BuildContext {
   Color get errorColor => colorScheme.error;
   Color get primaryColorLight => ofTheme.primaryColorLight;
   Color get secondaryColor => colorScheme.secondary;
+  Color get onSecondaryColor => colorScheme.onSecondary;
   Color get secondaryContainerColor => colorScheme.secondaryContainer;
   Color get onSecondaryContainer => colorScheme.onSecondaryContainer;
   Color get onPrimaryColor => colorScheme.onPrimary;

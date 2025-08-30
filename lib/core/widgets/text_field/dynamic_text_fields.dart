@@ -1,17 +1,23 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
+
+enum FieldWidgetType {
+  textField,
+  custom, // Custom widget
+}
 
 class DynamicTextFields extends StatefulWidget {
   final String? title;
   final Color? textColor;
   final bool showButton;
-  final List<FieldConfig> fieldsConfig;
-  final List<Map<String, String>>? initialData;
-  final Function(List<Map<String, String>>) onChanged;
+  final List<FieldGroupConfig> fieldsConfig;
+  final List<Map<String, dynamic>>? initialData;
+  final Function(List<Map<String, dynamic>>) onChanged;
 
   /// Callback to get the total count of fields-group
   final Function(int total)? onCount;
@@ -21,9 +27,9 @@ class DynamicTextFields extends StatefulWidget {
     this.showButton = false,
     required this.fieldsConfig,
     required this.onChanged,
-    this.onCount,
     this.initialData,
     this.textColor,
+    this.onCount,
     this.title,
   });
 
@@ -37,9 +43,14 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   @override
   void initState() {
     super.initState();
+    _initializeGroups();
+  }
+
+  void _initializeGroups() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.initialData != null && widget.initialData!.isNotEmpty) {
-        for (final map in widget.initialData!) {
+      final initialData = widget.initialData;
+      if (initialData.isNotNullNorEmpty) {
+        for (final map in initialData!) {
           _fieldGroups.add(FieldGroup(widget.fieldsConfig, initialValues: map));
         }
       } else {
@@ -64,29 +75,55 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       final group = entry.value;
 
       // Create list of TextFields for this group
-      final fields = widget.fieldsConfig.map((config) {
-        return _buildTextField(group, config, index);
-      }).toList();
+      final fields = widget.fieldsConfig
+          .map(
+            (config) => config.hideField
+                ? const SizedBox.shrink()
+                : _buildFieldWidget(group, config, index),
+          )
+          .toList();
 
-      // Logic to group fields into rows
-      if (fields.length <= 1) {
-        return fields; // Single field per row
-      } else {
-        return _groupByTwo(fields);
-      }
+      // Return a single field if there's only one, otherwise group fields into pairs
+      return fields.length <= 1 ? fields : _groupByTwo(fields);
     });
+  }
+
+  Widget _buildFieldWidget(
+    FieldGroup group,
+    FieldGroupConfig config,
+    int index,
+  ) {
+    final type = switch (config.widgetType) {
+      FieldWidgetType.textField => _buildTextField(group, config, index),
+      FieldWidgetType.custom => _buildCustomWidget(config, group),
+    };
+    return type;
+  }
+
+  Widget _buildCustomWidget(FieldGroupConfig config, FieldGroup group) {
+    if (config.customBuilder != null) {
+      return config.customBuilder!(
+        initialData: group.otherValues[config.key],
+        onChanged: (value) {
+          group.otherValues[config.key] = value;
+          _notifyParent();
+        },
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   CustomTextField _buildTextField(
     FieldGroup group,
-    FieldConfig config,
+    FieldGroupConfig config,
     int index,
   ) {
     final key = config.key;
     final inputType = config.type;
+    final validator = config.validator;
     final helperText = config.helperText;
     final maxLines = config.maxLines ?? 1;
-    final labelText = key.separateWord.toTitleCase;
+    final labelText = config.label.toTitleCase;
 
     final inputDecoration =
         config.inputDecoration ??
@@ -108,6 +145,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       maxLines: maxLines,
       helperText: helperText,
       inputDecoration: inputDecoration,
+      validator: validator,
     );
   }
 
@@ -116,7 +154,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       color: kGrayColor.toAlpha(0.2),
       elevation: 0,
       child: Tooltip(
-        message: '$labelText $index',
+        message: '$index: $labelText',
         child: Text(
           '$index',
           textAlign: TextAlign.center,
@@ -127,7 +165,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   }
 
   // Group fields in rows of 2
-  List<Widget> _groupByTwo(List<CustomTextField> fields) {
+  List<Widget> _groupByTwo(List<Widget> fields) {
     final rows = <Widget>[];
     final total = fields.length;
 
@@ -147,6 +185,11 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           ],
         ),
       );
+
+      // Only add horizontal divider to the last, If new group is added
+      if (i == total - 2 && _fieldGroups.length > 1) {
+        rows.add(const HorizontalDivider());
+      }
     }
 
     return rows;
@@ -169,11 +212,11 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           ),
           const SizedBox(height: 10),
         ],
-        if (!widget.showButton) ...[
+        if (widget.showButton) ...[
           context.iconButton(
             Icons.add,
             isCard: true,
-            tooltip: 'Add more fields',
+            tooltip: 'Add more field group',
             onPressed: _addTextField,
             iconColor: kPrimaryAccentColor,
             borderColor: kPrimaryAccentColor,
@@ -182,7 +225,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
             context.iconButton(
               Icons.remove,
               isCard: true,
-              tooltip: 'Remove last field',
+              tooltip: 'Remove last field group',
               iconColor: kDangerColor,
               bgColor: kLightColor,
               borderColor: kDangerColor,
@@ -215,7 +258,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   }
 
   // Collect all data in a list of maps (one map per set of fields)
-  List<Map<String, String>> getAllData() =>
+  List<Map<String, dynamic>> getAllData() =>
       _fieldGroups.map((group) => group.getData()).toList();
 
   @override
@@ -227,34 +270,58 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   }
 }
 
-class FieldConfig {
+class FieldGroupConfig {
   final String key;
-  final TextInputType type;
+  final String label;
   final int? maxLines;
+  final bool hideField;
   final String? helperText;
+  final TextInputType type;
+  final String? Function(String?)? validator;
   final InputDecoration? inputDecoration;
+  final FieldWidgetType widgetType;
 
-  FieldConfig({
+  /// Optional custom widget builder
+  final Widget Function({
+    required dynamic initialData,
+    required void Function(dynamic value) onChanged,
+  })?
+  customBuilder;
+
+  FieldGroupConfig({
     required this.key,
     required this.type,
+    required this.label,
     this.maxLines,
+    this.validator,
     this.helperText,
     this.inputDecoration,
+    this.hideField = false,
+    this.customBuilder,
+    this.widgetType = FieldWidgetType.textField,
   });
 }
 
 class FieldGroup {
   final Map<String, TextEditingController> controllers;
+  final Map<String, dynamic> otherValues = {};
 
   FieldGroup(
-    List<FieldConfig> fieldsConfig, {
-    Map<String, String>? initialValues,
+    List<FieldGroupConfig> fieldsConfig, {
+    Map<String, dynamic>? initialValues,
   }) : controllers = {
          for (var config in fieldsConfig)
-           config.key: TextEditingController(
-             text: initialValues?[config.key] ?? '',
-           ),
-       };
+           if (config.widgetType == FieldWidgetType.textField)
+             config.key: TextEditingController(
+               text: initialValues?[config.key]?.toString() ?? '',
+             ),
+       } {
+    for (var config in fieldsConfig) {
+      if (config.widgetType != FieldWidgetType.textField) {
+        otherValues[config.key] = initialValues?[config.key];
+      }
+    }
+  }
 
   void dispose() {
     for (final controller in controllers.values) {
@@ -262,10 +329,13 @@ class FieldGroup {
     }
   }
 
-  Map<String, String> getData() {
-    return {
+  Map<String, dynamic> getData() {
+    final data = <String, dynamic>{};
+    data.addAll({
       for (final entry in controllers.entries) entry.key: entry.value.text,
-    };
+    });
+    data.addAll(otherValues);
+    return data;
   }
 }
 

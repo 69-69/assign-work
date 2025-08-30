@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -59,65 +58,87 @@ extension ScaffoldSnackBar on BuildContext {
     });
   }
 
+  /// Show alert overlay with optional progress indicator
   void showAlertOverlay(
     String message, {
     Color? bgColor,
     String? label,
     bool isTop = false,
     VoidCallback? onPressed,
-    int? duration,
+    int duration = 4,
+    bool showProgress = true,
   }) {
     OverlayEntry? overlayEntry;
     final overlay = Overlay.of(this);
 
-    // Remove the OverlayEntry.
-    void removeHighlightOverlay() {
+    void removeOverlay() {
       overlayEntry?.remove();
       overlayEntry?.dispose();
       overlayEntry = null;
     }
 
-    // Remove the existing OverlayEntry.
-    removeHighlightOverlay();
-
     assert(overlayEntry == null);
+
+    final animationController = AnimationController(
+      vsync: Navigator.of(this),
+      duration: Duration(seconds: duration),
+    )..forward();
 
     atTop(Widget child) =>
         Positioned(top: 80.0, left: 20.0, right: 20.0, child: child);
-
     atBottom(Widget child) =>
         Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
 
     buildBody(BuildContext context) => Material(
-      color: kTransparentColor,
+      color: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
           color: bgColor ?? Colors.green,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
-        padding: const EdgeInsets.all(6.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: context.copyPasteText(
-                child: Text(
-                  message,
-                  style: const TextStyle(color: Colors.white),
-                  textAlign: TextAlign.center,
+            Row(
+              children: [
+                Expanded(
+                  child: context.copyPasteText(
+                    child: Text(
+                      message,
+                      style: const TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-              ),
+                if (label != null) ...{
+                  TextButton(
+                    onPressed: onPressed ?? removeOverlay,
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.black26,
+                    ),
+                    child: Text(
+                      label,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                },
+                _animatedCloseButton(animationController, removeOverlay),
+              ],
             ),
-            if (label != null)
-              TextButton(
-                onPressed: onPressed ?? removeHighlightOverlay,
-                style: TextButton.styleFrom(backgroundColor: Colors.black12),
-                child: Text(label, style: const TextStyle(color: Colors.white)),
-              ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: removeHighlightOverlay,
-            ),
+            /*if (showProgress)
+              AnimatedBuilder(
+                animation: animationController,
+                builder: (context, _) {
+                  return LinearProgressIndicator(
+                    value: animationController.value,
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.white,
+                    ),
+                  );
+                },
+              ),*/
           ],
         ),
       ),
@@ -130,10 +151,40 @@ extension ScaffoldSnackBar on BuildContext {
 
     overlay.insert(overlayEntry!);
 
-    // Remove the overlay after a delay
-    Future.delayed(
-      Duration(seconds: duration ?? 4),
-      () => overlayEntry?.remove(),
+    // Remove after the duration
+    Future.delayed(Duration(seconds: duration), removeOverlay);
+  }
+
+  Stack _animatedCloseButton(
+    AnimationController animationController,
+    void Function() onPressed,
+  ) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          height: 32,
+          width: 32,
+          child: AnimatedBuilder(
+            animation: animationController,
+            builder: (context, _) {
+              return CircularProgressIndicator(
+                value: animationController.value,
+                strokeWidth: 3,
+                backgroundColor: Colors.white24,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              );
+            },
+          ),
+        ),
+        IconButton(
+          tooltip: 'Close',
+          icon: const Icon(Icons.close, color: Colors.white),
+          style: IconButton.styleFrom(backgroundColor: Colors.black26),
+          onPressed: onPressed,
+          iconSize: 20,
+        ),
+      ],
     );
   }
 
@@ -215,3 +266,83 @@ class _ShowToastState extends State<ShowToast> {
         : const SizedBox.shrink();
   }
 }
+
+/*
+
+  void showAlertOverlay2(
+    String message, {
+    Color? bgColor,
+    String? label,
+    bool isTop = false,
+    VoidCallback? onPressed,
+    int? duration,
+  }) {
+    OverlayEntry? overlayEntry;
+    final overlay = Overlay.of(this);
+
+    // Remove the OverlayEntry.
+    void removeHighlightOverlay() {
+      overlayEntry?.remove();
+      overlayEntry?.dispose();
+      overlayEntry = null;
+    }
+
+    // Remove the existing OverlayEntry.
+    removeHighlightOverlay();
+
+    assert(overlayEntry == null);
+
+    atTop(Widget child) =>
+        Positioned(top: 80.0, left: 20.0, right: 20.0, child: child);
+
+    atBottom(Widget child) =>
+        Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
+
+    buildBody(BuildContext context) => Material(
+      color: kTransparentColor,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor ?? Colors.green,
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+        ),
+        padding: const EdgeInsets.all(6.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: context.copyPasteText(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            if (label != null)
+              TextButton(
+                onPressed: onPressed ?? removeHighlightOverlay,
+                style: TextButton.styleFrom(backgroundColor: Colors.black12),
+                child: Text(label, style: const TextStyle(color: Colors.white)),
+              ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: removeHighlightOverlay,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    overlayEntry = OverlayEntry(
+      builder: (context) =>
+          isTop ? atTop(buildBody(context)) : atBottom(buildBody(context)),
+    );
+
+    overlay.insert(overlayEntry!);
+
+    // Remove the overlay after a delay
+    Future.delayed(
+      Duration(seconds: duration ?? 4),
+      () => overlayEntry?.remove(),
+    );
+  }*/

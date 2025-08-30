@@ -99,12 +99,14 @@ class SubscriptionAndTotalDevicesDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        StaticDropdown(
+        StaticDropdown<String>(
           key: key,
-          items: List.generate(20, (i) => '$i'),
           label: 'total devices',
           initialValue: initialTotalDevices,
-          onValueChange: (String? v) => onTotalDevicesChanged(v),
+          items: List.generate(20, (i) => '$i'),
+          getValue: (total) => total,
+          getDisplayText: (total) => total,
+          onChanged: (String? v) => onTotalDevicesChanged(v),
         ),
         SearchSubscription(
           initialValue: initialSub,

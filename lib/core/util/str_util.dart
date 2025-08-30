@@ -13,13 +13,33 @@ extension SanitizeMap on Map? {
   bool get isNullEmpty => this == null || this!.isEmpty;
 }
 
-bool isNullOrEmpty2(Object? value) {
+extension ToCurrencyFormat on double {
+  get toCurrency => '$this'.isNullOrEmpty ? this : toStringAsFixed(2);
+}
+
+/// get the first/last index of a list GetIndexPosition
+extension GetIndexPosition on List {
+  int get getFirstIndex => isEmpty ? -1 : 0;
+
+  int get getLastIndex => isNotEmpty ? length - 1 : 0;
+}
+
+/// Copy/Paste text or string to/from Clipboard
+extension CopyTextToClipboard on BuildContext {
+  SelectionArea copyPasteText({String? str, Widget? child}) =>
+      SelectionArea(child: child ?? Text(str ?? ''));
+
+  toClipboard(String text) async =>
+      await Clipboard.setData(ClipboardData(text: text));
+}
+
+/*bool isNullOrEmpty2(Object? value) {
   if (value == null) return true;
   if (value is String && value.isEmpty) return true;
   if (value is Iterable && value.isEmpty) return true;
   if (value is Map && value.isEmpty) return true;
   return false;
-}
+}*/
 
 extension UniversalIsNullOrEmpty on Object? {
   bool get isNullOrEmpty {
@@ -124,24 +144,13 @@ extension SanitizeExtensions on String? {
 
     return this!.replaceAllMapped(regex, _replaceMatch);
   }
-}
 
-extension ToCurrencyFormat on double {
-  get toCurrency => '$this'.isNullOrEmpty ? this : toStringAsFixed(2);
-}
-
-/// get the first/last index of a list GetIndexPosition
-extension GetIndexPosition on List {
-  int get getFirstIndex => isEmpty ? -1 : 0;
-
-  int get getLastIndex => isNotEmpty ? length - 1 : 0;
-}
-
-extension CaseSenitive on String {
-  // USAGE: '10'.generateUID => Where 10 is the length of UID
-  // Generates a random UID of specified type and length (from string)
+  /// USAGE: '10'.generateUID => Where 10 is the length of UID
+  /// Generates a random UID of specified type and length (from string)
   String generateUID({UIDType type = UIDType.alphanumeric}) {
-    final int? len = int.tryParse(this);
+    if (isNullOrEmpty) return '';
+
+    final int? len = int.tryParse(this!);
     if (len == null || len <= 0) {
       throw FormatException(
         'String must be a positive integer to generate UID.',
@@ -157,77 +166,140 @@ extension CaseSenitive on String {
     return List.generate(len, (_) => chars[rand.nextInt(chars.length)]).join();
   }
 
+  /// TRANSFORM LETTERS TO DIFFERENT CASES ///
+
+  /// Helper method to check for null or empty strings
+  String get _checkNullOrEmpty => isNullOrEmpty ? '' : this!;
+
   /// Create username from email address
   String get emailToUsername {
-    final baseUsername = split(
-      '@',
-    )[0].replaceAll(RegExp(r'[^a-zA-Z0-9]'), ''); // Removes non-alphanumeric
+    final checkedString = _checkNullOrEmpty;
+
+    // If the checkedString is empty, return a default or empty value
+    if (checkedString.isEmpty) return '';
+
+    final baseUsername = checkedString
+        .split('@')[0]
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), ''); // Removes non-alphanumeric
     final randomSuffix = '5'.generateUID(type: UIDType.numeric);
     return '${baseUsername}_$randomSuffix';
   }
 
   /// Convert lowerCamelCase to two separate words
-  /// Ex: 'dataType' to 'Data Type' [separateWord]
   String get separateWord {
-    if (isNullOrEmpty) return this;
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, no need to process further
+    if (checkedString.isEmpty) return '';
 
     var regex = RegExp(r'([a-z])([A-Z])');
-    if (!regex.hasMatch(this)) return this;
+    if (!regex.hasMatch(checkedString)) return checkedString;
 
-    return replaceAllMapped(
+    return checkedString.replaceAllMapped(
       regex,
       (match) => '${match.group(1)} ${match.group(2)}',
     );
   }
 
-  /// This will put the first letter in UpperCase, will print 'Name'
-  /// print(TextTools.toUppercaseFirstLetter(text: 'name'));
-  /// This will put the first letter in UpperCase, will print 'What Is Your Name'
-  /// print(TextTools.toUppercaseFirstLetter(text: 'what is your name'));
-  String get toUpperCaseFirst =>
-      !isNullOrEmpty ? replaceFirst(this[0], this[0].toUpperCaseAll) : this;
+  /// This will put the first letter in UpperCase
+  String get toUpperCaseFirst {
+    final checkedString = _checkNullOrEmpty;
 
-  /// [toTitleCase] This will put the first letter in UpperCase, will print 'What Is Your Name'
-  /// print(TextTools.toUppercaseFirstLetterEach('what is your name'));
-  String get toTitleCase => !isNullOrEmpty
-      ? split(' ')
-            .map(
-              (word) => word.isNullOrEmpty
-                  ? word
-                  : word[0].toUpperCaseAll + word.substring(1),
-            ) // Handles empty words
-            .join(' ')
-      : this;
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
 
-  /// This will put the letter in position 1 in UpperCase, will print 'nAme'
-  /// print(TextTools.toUppercaseAnyLetter(text: 'name', position: 1));
-  String toUppercaseAnyLetter({required int position}) =>
-      replaceFirst(this[position], this[position].toUpperCaseAll);
+    return checkedString.replaceFirst(
+      checkedString[0],
+      checkedString[0].toUpperCaseAll,
+    );
+  }
 
-  /// This will put the all letters in LowerCase, will print 'name'
-  /// print(TextTools.toLowercaseFirstLetter(text: 'NAME'));
-  String get toLowercaseAll => toLowerCase();
+  /// Converts the string to sentence case (first letter capitalized, rest lowercase)
+  String get toSentenceCase {
+    final checkedString = _checkNullOrEmpty;
 
-  /// Convert All letters to UpperCase
-  String get toUpperCaseAll => toUpperCase();
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
 
-  /// This will put the first letter in LowerCase, will print 'nAME'
-  /// print(TextTools.toLowercaseFirstLetter(text: 'NAME'));
-  String get toLowerCaseFirst => replaceFirst(this[0], this[0].toLowercaseAll);
+    return checkedString[0].toUpperCaseAll +
+        checkedString.substring(1).toLowercaseAll;
+  }
 
-  /// This will put the letter in position 1 in LowerCase, will print 'NaME'
-  /// print(TextTools.toLowercaseAnyLetter(text: 'NAME'));
-  String toLowercaseAnyLetter({required int position}) =>
-      replaceFirst(this[position], this[position].toLowercaseAll);
-}
+  /// Capitalizes the first letter of each word in the string (title case)
+  String get toTitleCase {
+    final checkedString = _checkNullOrEmpty;
 
-/// Copy/Paste text or string to/from Clipboard
-extension CopyTextToClipboard on BuildContext {
-  SelectionArea copyPasteText({String? str, Widget? child}) =>
-      SelectionArea(child: child ?? Text(str ?? ''));
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
 
-  toClipboard(String text) async =>
-      await Clipboard.setData(ClipboardData(text: text));
+    return checkedString
+        .split(' ')
+        .map(
+          (word) => word.isNullOrEmpty
+              ? word
+              : word[0].toUpperCaseAll + word.substring(1),
+        )
+        .join(' ');
+  }
+
+  /// Converts all letters to lowercase
+  String get toLowercaseAll {
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
+
+    return checkedString.toLowerCase();
+  }
+
+  /// Converts all letters to uppercase
+  String get toUpperCaseAll {
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
+
+    return checkedString.toUpperCase();
+  }
+
+  /// This will put the first letter in LowerCase
+  String get toLowerCaseFirst {
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
+
+    return checkedString.replaceFirst(
+      checkedString[0],
+      checkedString[0].toLowercaseAll,
+    );
+  }
+
+  /// This will put the letter in position 1 in UpperCase
+  String toUppercaseAnyLetter({required int position}) {
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
+
+    return checkedString.replaceFirst(
+      checkedString[position],
+      checkedString[position].toUpperCaseAll,
+    );
+  }
+
+  /// This will put the letter in position 1 in LowerCase
+  String toLowercaseAnyLetter({required int position}) {
+    final checkedString = _checkNullOrEmpty;
+
+    // If the string is empty, return it as is
+    if (checkedString.isEmpty) return '';
+
+    return checkedString.replaceFirst(
+      checkedString[position],
+      checkedString[position].toLowercaseAll,
+    );
+  }
 }
 
 /* USAGE:

@@ -60,12 +60,13 @@ class _ListExpiredState extends State<ListExpired> {
     final expiredItems = Item.findExpiredItem(items);
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Item.dataTableHeader,
       anyWidget: _buildAnyWidget(expiredItems),
       rows: expiredItems.map((p) => p.itemAsList()).toList(),
-      onChecked: (bool? isChecked, row) => _onChecked(items, row, isChecked),
+      onChecked: (bool? isChecked, row) =>
+          _onChecked(items, isChecked, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -78,12 +79,13 @@ class _ListExpiredState extends State<ListExpired> {
             }
             if (checkedRows.isNotEmpty) {
               for (int i = 0; i < checkedRows.length; i++) {
-                _onChecked(items, checkedRows[i], isChecked);
+                final id = checkedRows[i].first;
+                _onChecked(items, isChecked, id);
               }
             }
           },
-      onEditTap: (row) async => await _onEditTap(items, row),
-      onDeleteTap: (row) async => await _onDeleteTap(row),
+      onEditTap: (row) async => await _onEditTap(items, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(row.first),
     );
   }
 
@@ -114,13 +116,9 @@ class _ListExpiredState extends State<ListExpired> {
   }
 
   // Handle onChecked Deliveries
-  void _onChecked(
-    List<Item> products,
-    List<String> row,
-    bool? isChecked,
-  ) async {
+  void _onChecked(List<Item> products, bool? isChecked, String id) async {
     setState(() {
-      final product = products.firstWhere((p) => p.id == row.first);
+      final product = products.firstWhere((p) => p.id == id);
 
       if (isChecked != null && isChecked) {
         _groupMultiDelete.add(product);
@@ -130,22 +128,16 @@ class _ListExpiredState extends State<ListExpired> {
     });
   }
 
-  Future<void> _onEditTap(List<Item> items, List<String> row) async {
-    final item = Item.findItemById(items, row.first).first;
+  Future<void> _onEditTap(List<Item> items, String id) async {
+    final item = Item.findItemById(items, id).first;
     await context.openItemProduct(item: item);
   }
 
-  Future<void> _onDeleteTap(List<String> row) async {
-    {
-      final itemId = row.first;
-
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Remove product from stock
-        context.read<ItemBloc>().add(
-          DeleteInventory<String>(documentId: itemId),
-        );
-      }
+  Future<void> _onDeleteTap(String id) async {
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Remove product from stock
+      context.read<ItemBloc>().add(DeleteInventory<String>(documentId: id));
     }
   }
 }

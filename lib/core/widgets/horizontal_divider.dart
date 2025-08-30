@@ -8,6 +8,7 @@ class HorizontalDivider extends StatelessWidget {
     this.width,
     this.thickness = 1,
     this.color,
+    this.space,
   });
 
   /// [thickness] Width of the line in double [default: 1]
@@ -16,6 +17,7 @@ class HorizontalDivider extends StatelessWidget {
   /// [width] Width of the line in double [default: 1.0]
   final double? width;
   final Color? color;
+  final double? space;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,8 @@ class HorizontalDivider extends StatelessWidget {
     return width != null ? _line(cl, context) : _divider(cl);
   }
 
-  _divider(Color color) => Divider(color: color, thickness: thickness);
+  _divider(Color color) =>
+      Divider(color: color, thickness: thickness, height: space);
 
   _line(Color color, BuildContext context) => Container(
     color: color,

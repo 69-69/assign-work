@@ -87,22 +87,3 @@ const kIProgressDelay = Duration(seconds: 20);
 const kTProgressDelay = Duration(seconds: 10);
 const kAnimateDuration = Duration(milliseconds: 300);
 const fAnimateDuration = Duration(milliseconds: 500);
-
-//RegExp
-RegExp onlyNumbersRegExp = RegExp(r'^-?[0-9]+$');
-
-RegExp nameRegExp = RegExp(
-  r"^([a-zA-Z]{2,}\s[a-zA-Z]{1,}'?-?[a-zA-Z]{2,}\s?([a-zA-Z]{1,})?)",
-);
-
-RegExp emailRegExp = RegExp(
-  r'^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$',
-);
-
-RegExp passwordRegExp = RegExp(
-  r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$!%*#@?&])[A-Za-z\d$!%*#@?&]{8,}$",
-);
-
-RegExp passcodeRegExp = RegExp(
-  r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$!%*#@?&-])[A-Za-z\d$!%*#@?&-]{8,}$',
-);

@@ -46,10 +46,19 @@ extension SetupTiles on dynamic {
             'Create, edit, assign roles with specific permissions to control access within your team.',
       },
       {
+        'label': 'Tax - Rates',
+        'icon': Icons.calculate,
+        'action': RouteNames.manageTaxes,
+        'param': {'openTab': '3'},
+        'access': _getValue(SetupPermission.manageTaxes),
+        'description':
+            'Manage tax rates (VAT or sales tax). Apply them to items, services, and invoices as needed.',
+      },
+      {
         'label': 'Product - config',
         'icon': Icons.category,
         'action': RouteNames.productConfig,
-        'param': {'openTab': '3'},
+        'param': {'openTab': '4'},
         'access': _getValue(SetupPermission.manageItemCategory),
         'description':
             "add suppliers & product categories to fit the company's specific needs",
@@ -58,7 +67,7 @@ extension SetupTiles on dynamic {
         'label': 'back - up',
         'icon': Icons.backup,
         'action': RouteNames.backup,
-        'param': {'openTab': '4'},
+        'param': {'openTab': '5'},
         'access': _getValue(SetupPermission.manageBackup),
         'description':
             'back up local and offline data to a cloud to access from anywhere',
@@ -67,7 +76,7 @@ extension SetupTiles on dynamic {
         'label': 'license - renewal',
         'icon': Icons.local_police,
         'action': RouteNames.licenseRenewal,
-        'param': {'openTab': '5'},
+        'param': {'openTab': '6'},
         'access': _getValue(SetupPermission.viewLicense),
         'description':
             'renew and activate software licenses, and view the history of previous licenses',

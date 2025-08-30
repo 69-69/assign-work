@@ -63,9 +63,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
     final filters = _filterExpiry(workspaces);
 
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 0,
       headers: Workspace.dataTableHeader,
       anyWidget: _buildAnyWidget(filters.unExpired),
       rows: filters.unExpired.map((w) => w.itemAsList()).toList(),
@@ -74,7 +72,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
       optButtonLabel: 'Client Chat',
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
-        pathParameters: {'clientWorkspaceId': row[1]},
+        pathParameters: {'clientWorkspaceId': row.first},
       ),
     );
   }

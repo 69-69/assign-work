@@ -64,23 +64,22 @@ class _ListProductsState extends State<ListProducts> {
     );
 
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Item.dataTableHeader,
       anyWidget: _buildAnyWidget(products),
       rows: inStockProducts.map((p) => p.itemAsList()).toList(),
       childrenRow: outOfStockProducts.map((p) => p.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
-          _onChecked(products, row[1], isChecked),
+          _onChecked(products, row.first, isChecked),
       onAllChecked:
           (
             bool isChecked,
             List<bool> isAllChecked,
             List<List<String>> checkedRows,
           ) => _isCheckedAll(products, isChecked, isAllChecked, checkedRows),
-      onEditTap: (row) async => await _onEditTap(products, row[1]),
-      onDeleteTap: (row) async => await _onDeleteTap(row[1]),
+      onEditTap: (row) async => await _onEditTap(products, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(row.first),
     );
   }
 

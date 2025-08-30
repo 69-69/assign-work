@@ -101,8 +101,6 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
   }
 
   Column _buildBody(BuildContext context) {
-    final initial =
-        _serverStore?.toMap().map((k, v) => MapEntry(k, v.toString())) ?? {};
     final canAddStore = context.canAddMoreStores;
 
     return Column(
@@ -114,8 +112,8 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
               title: _serverStore?.name ?? 'Stores (Branches)',
               showButton: canAddStore || _serverStore != null,
               fieldsConfig: _fieldsConfig,
-              initialData: [initial],
-              onChanged: (List<Map<String, String>> data) {
+              initialData: [?_serverStore?.toMap()],
+              onChanged: (List<Map<String, dynamic>> data) {
                 if (_isValid) setState(() {});
 
                 // Create a new line item
@@ -135,26 +133,30 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
     );
   }
 
-  List<FieldConfig> get _fieldsConfig {
+  List<FieldGroupConfig> get _fieldsConfig {
     return [
-      FieldConfig(
+      FieldGroupConfig(
         key: 'name',
+        label: 'Store Name',
         type: TextInputType.text,
         helperText: 'Store name',
       ),
-      FieldConfig(
+      FieldGroupConfig(
         key: 'phone',
+        label: 'Phone Number',
         type: TextInputType.number,
         helperText: 'Store\'s Phone number',
       ),
-      FieldConfig(
+      FieldGroupConfig(
         key: 'location',
+        label: 'Location',
         maxLines: 3,
         type: TextInputType.text,
         helperText: 'Address or Location of Store (Branch)',
       ),
-      FieldConfig(
+      FieldGroupConfig(
         key: 'notes',
+        label: 'Additional Notes',
         maxLines: 3,
         type: TextInputType.text,
         helperText: 'Short description of Store (Branch)',

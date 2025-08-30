@@ -67,7 +67,7 @@ class AssignStoreLocation extends StatelessWidget {
               ),
             );
 
-            context.showCustomSnackBar(
+            context.showAlertOverlay(
               'Store Location assigned to $_employeeName successfully',
             );
           },

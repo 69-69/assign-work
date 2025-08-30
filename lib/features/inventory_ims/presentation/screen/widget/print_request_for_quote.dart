@@ -41,7 +41,8 @@ class PrintRequestForQuotation {
         quantity: item.quantity,
         discountPercent: item.discountPercent,
         validityDate: quote.getDeliveryDate,
-        taxPercent: quote.taxPercent,
+        taxPercent: 120,
+        // taxPercent: quote.taxCodes,
         paymentTerms: 'Not Specified',
       );
     }).toList();

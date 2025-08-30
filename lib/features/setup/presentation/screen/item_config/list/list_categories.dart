@@ -55,13 +55,12 @@ class _ListCategoriesState extends State<ListCategories> {
 
   Widget _buildCard(BuildContext c, List<Category> categories) {
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
       headers: Category.dataHeader,
       anyWidget: _buildAnyWidget(categories),
       rows: categories.map((d) => d.toListL()).toList(),
-      onEditTap: (row) async => _onEditTap(categories, row),
-      onDeleteTap: (row) async => _onDeleteTap(categories, row),
+      onEditTap: (row) async => _onEditTap(categories, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(categories, row.first),
     );
   }
 
@@ -89,22 +88,20 @@ class _ListCategoriesState extends State<ListCategories> {
     );
   }
 
-  Future<void> _onEditTap(List<Category> categories, List<String> row) async {
-    final category = Category.findCategoriesById(categories, row.first).first;
+  Future<void> _onEditTap(List<Category> categories, String id) async {
+    final category = Category.findCategoriesById(categories, id).first;
     await context.openUpdateCategory(category: category);
   }
 
-  Future<void> _onDeleteTap(List<Category> categories, List<String> row) async {
-    {
-      final category = Category.findCategoriesById(categories, row.first).first;
+  Future<void> _onDeleteTap(List<Category> categories, String id) async {
+    final category = Category.findCategoriesById(categories, id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Delete specific category
-        context.read<CategoryBloc>().add(
-          DeleteSetup<String>(documentId: category.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Delete specific category
+      context.read<CategoryBloc>().add(
+        DeleteSetup<String>(documentId: category.id),
+      );
     }
   }
 }

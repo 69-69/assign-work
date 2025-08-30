@@ -68,13 +68,14 @@ class _ListPOByDateState extends State<ListPOByDate> {
     );
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 3,
       anyWidget: _buildAnyWidget(orders),
       headers: PurchaseOrder.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
-      onChecked: (bool? isChecked, row) => _onChecked(orders, row, isChecked),
+      onChecked: (bool? isChecked, row) =>
+          _onChecked(orders, isChecked, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -87,9 +88,9 @@ class _ListPOByDateState extends State<ListPOByDate> {
             }
           },
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onPrintPOTap(orders, row),
-      onEditTap: (row) async => await _onEditTap(orders, row),
-      onDeleteTap: (row) async => await _onDeleteTap(orders, row),
+      onOptButtonTap: (row) async => await _onPrintPOTap(orders, row.first),
+      onEditTap: (row) async => await _onEditTap(orders, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(orders, row.first),
     );
   }
 
@@ -146,11 +147,11 @@ class _ListPOByDateState extends State<ListPOByDate> {
   // Handle onChecked orders
   void _onChecked(
     List<PurchaseOrder> orders,
-    List<String> row,
     bool? isChecked,
+    String id,
   ) async {
     setState(() {
-      final order = orders.firstWhere((order) => order.id == row.first);
+      final order = orders.firstWhere((order) => order.id == id);
 
       if (isChecked != null && isChecked) {
         // A temporary list, tempOrdersForInvoice, is created which includes
@@ -174,10 +175,10 @@ class _ListPOByDateState extends State<ListPOByDate> {
     });
   }
 
-  _onPrintPOTap(List<PurchaseOrder> orders, List<String> row) async {
+  _onPrintPOTap(List<PurchaseOrder> orders, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
-      request: _printout(orders, row),
+      request: _printout(orders, id),
       onSuccess: (_) =>
           context.showAlertOverlay('Printout successfully created'),
       onError: (error) =>
@@ -185,38 +186,30 @@ class _ListPOByDateState extends State<ListPOByDate> {
     );
   }
 
-  Future<dynamic> _printout(List<PurchaseOrder> po, List<String> row) =>
+  Future<dynamic> _printout(List<PurchaseOrder> po, String id) =>
       Future.delayed(kRProgressDelay, () async {
         // Simulate loading supplier and company info
-        final orders = PurchaseOrder.findPurchaseOrderById(
-          po,
-          row.first,
-        ).toList();
+        final orders = PurchaseOrder.findPurchaseOrderById(po, id).toList();
         final sup = await GetSuppliers.bySupplierId(orders.first.supplierId);
         if (orders.isNotEmpty && sup.isNotEmpty) {
           PrintPurchaseOrder(orders: orders, supplier: sup).onPrintPO();
         }
       });
 
-  Future<void> _onEditTap(List<PurchaseOrder> orders, List<String> row) async {
-    final po = PurchaseOrder.findPurchaseOrderById(orders, row.first).first;
+  Future<void> _onEditTap(List<PurchaseOrder> orders, String id) async {
+    final po = PurchaseOrder.findPurchaseOrderById(orders, id).first;
     await context.openUpdatePurchaseOrder(po: po);
   }
 
-  Future<void> _onDeleteTap(
-    List<PurchaseOrder> orders,
-    List<String> row,
-  ) async {
-    {
-      final po = PurchaseOrder.findPurchaseOrderById(orders, row.first).first;
+  Future<void> _onDeleteTap(List<PurchaseOrder> orders, String id) async {
+    final po = PurchaseOrder.findPurchaseOrderById(orders, id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Remove order from Orders-DB
-        context.read<PurchaseOrderBloc>().add(
-          DeleteInventory<String>(documentId: po.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Remove order from Orders-DB
+      context.read<PurchaseOrderBloc>().add(
+        DeleteInventory<String>(documentId: po.id),
+      );
     }
   }
 }

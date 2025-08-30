@@ -118,7 +118,7 @@ class _AsyncProgressBarDialogState extends State<AsyncProgressBarDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var loadSize = widget.size ?? context.screenWidth * 0.1;
+    var loadSize = widget.size ?? context.screenWidth * 0.03;
     return widget.isDialog
         ? Dialog(
             backgroundColor: kTransparentColor,
@@ -203,7 +203,7 @@ class _AsyncProgressBarDialogState extends State<AsyncProgressBarDialog> {
       value: value,
       semanticsLabel: 'loading',
       backgroundColor: const Color(0xFFC5D3F8),
-      valueColor: const AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
+      // valueColor: const AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
     );
   }
 }

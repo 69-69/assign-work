@@ -23,16 +23,35 @@ class SearchSuppliers extends StatefulWidget {
 }
 
 class _SearchSuppliersState extends State<SearchSuppliers> {
-  String? _label;
+  String? _initialValue;
+  Supplier? _supplier;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialValue = widget.initialValue;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSuppliers());
+  }
+
+  Future _loadSuppliers({String? filter}) async {
+    final initial = widget.initialValue ?? '';
+    final filterBy = filter.isNullOrEmpty ? initial : filter;
+    final suppliers = await GetSuppliers.byAnyTerm(filterBy);
+    if (initial.isNotNullNorEmpty && suppliers.isNotNullNorEmpty) {
+      setState(() => _supplier = suppliers.first);
+    }
+    return suppliers;
+  }
 
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<Supplier>(
-      labelText:
-          (_label ?? widget.initialValue ?? 'Select Supplier...').toTitleCase,
-      asyncItems: (String filter, loadProps) async =>
-          await GetSuppliers.byAnyTerm(filter),
-      filterFn: (supplier, filter) => _handleFilter(filter, supplier, context),
+      selectedItem: _supplier,
+      labelText: 'Select Supplier...',
+      asyncItems: (String filter, _) async =>
+          await _loadSuppliers(filter: filter),
+      filterFn: (supplier, filter) =>
+          _filterSupplier(filter, supplier, context),
       itemAsString: (supplier) => supplier.itemAsString,
       onChanged: (supplier) => widget.onChanged(supplier!.id, supplier.name),
       validator: (supplier) => supplier == null ? 'Supplier is required' : null,
@@ -44,66 +63,24 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
     );
   }
 
-  bool _handleFilter(String filter, Supplier supplier, BuildContext context) {
-    final term = filter.isEmpty ? (widget.initialValue ?? '') : filter;
-    final isFound = supplier.filterByAny(term);
-    if (!isFound && filter.isNotEmpty) _handleNoDataFound(context);
-    setState(() => _label = supplier.name);
-    return isFound;
+  bool _filterSupplier(String filter, Supplier supplier, BuildContext context) {
+    final term = filter.isEmpty ? (_initialValue ?? '') : filter;
+    final matches = supplier.filterByAny(term);
+    if (!matches && filter.isNotEmpty) _handleNoDataFound(context);
+    return matches;
   }
 
-  Future<void> _handleNoDataFound(BuildContext cxt) async {
-    final isNewSupplier = await cxt.confirmAction<bool>(
+  Future<void> _handleNoDataFound(BuildContext context) async {
+    final isNewSupplier = await context.confirmAction<bool>(
       const Text('Do you want to create a new supplier manually?'),
       title: 'Supplier not found',
     );
 
-    if (cxt.mounted && isNewSupplier) {
-      cxt.goNamed(RouteNames.productConfig, pathParameters: {'openTab': '3'});
+    if (context.mounted && isNewSupplier) {
+      context.goNamed(
+        RouteNames.productConfig,
+        pathParameters: {'openTab': '3'},
+      );
     }
   }
 }
-
-/*class SearchSuppliers extends StatelessWidget {
-  final String? initialValue;
-  final Function(String, String) onChanged;
-
-  const SearchSuppliers({
-    super.key,
-    this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomDropdownSearch<Supplier>(
-      labelText: (initialValue ?? 'Search Suppliers...').toTitleCase,
-      asyncItems: (String filter, loadProps) async =>
-          await GetSuppliers.byAnyTerm(filter),
-      filterFn: (supplier, filter) {
-        var f = filter.isEmpty ? (initialValue ?? '') : filter;
-        return supplier.filterByAny(f);
-      },
-      itemAsString: (supplier) => supplier.itemAsString,
-      onChanged: (supplier) async {
-        prettyPrint('supplier', supplier?.id);
-        if (supplier == null || supplier.isEmpty) {
-          await _buildOptionToCreateNew(context);
-          return;
-        }
-        onChanged(supplier.id, supplier.name);
-      },
-      validator: (supplier) => supplier == null ? 'Supplier is required' : null,
-    );
-  }
-
-  _buildOptionToCreateNew(BuildContext context) async {
-    final isNewSupplier = await context.confirmAction<bool>(
-      Text('Do you want to create a new supplier?'),
-      title: 'Create New Supplier',
-    );
-    if (context.mounted && isNewSupplier) {
-      context.goNamed(RouteNames.productSuppliers);
-    }
-  }
-}*/

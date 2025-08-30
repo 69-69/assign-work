@@ -1,5 +1,5 @@
+import 'package:assign_erp/core/constants/app_validators.dart';
 import 'package:formz/formz.dart';
-import 'package:assign_erp/core/constants/app_constant.dart';
 
 enum EmailValidationError { invalid }
 
@@ -13,7 +13,8 @@ class Email extends FormzInput<String, EmailValidationError> {
         ? null
         : EmailValidationError.invalid;
   }
-/*@override
+
+  /*@override
   UsernameValidationError? validator(String value) {
     if (value.isEmpty) return UsernameValidationError.empty;
     return null;

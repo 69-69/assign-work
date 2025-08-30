@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -47,12 +47,15 @@ class POStatusCurrencyDropdown extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         POStatusDropdown(initialValue: initialStatus, onChange: onStatusChange),
-        StaticDropdown(
+        StaticDropdown<Map<String, String>>(
           key: key,
           items: currencyType,
-          label: 'currency',
+          label: 'Select currency',
           initialValue: initialCurrency,
-          onValueChange: (String? v) => onCurrencyChange(v),
+          getValue: (currency) => currency['code'] ?? '',
+          getDisplayText: (currency) =>
+              '${currency['code']} (${currency['symbol']})',
+          onChanged: (String? v) => onCurrencyChange(v),
         ),
       ],
     );
@@ -79,13 +82,15 @@ class PayTermsAndMethodDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        StaticDropdown(
+        StaticDropdown<Map<String, String>>(
           key: key,
           items: paymentTerms,
           label: 'payment terms',
           initialValue: initialPayTerms,
-          onValueChange: (String? v) => onPayTermsChange(v),
-          inputDecoration: const InputDecoration(
+          getValue: (term) => term['id'] ?? '',
+          getDisplayText: (term) => term['term'] ?? '',
+          onChanged: (String? v) => onPayTermsChange(v),
+          buttonDecoration: const InputDecoration(
             helperText:
                 'Specifies the agreed-upon terms from RFQ negotiations.',
           ),
@@ -95,8 +100,10 @@ class PayTermsAndMethodDropdown extends StatelessWidget {
           items: paymentMethod,
           label: 'payment method',
           initialValue: initialPayMethod,
-          onValueChange: (String? v) => onPayMethodChange(v),
-          inputDecoration: const InputDecoration(
+          getValue: (method) => method,
+          getDisplayText: (method) => method,
+          onChanged: (String? v) => onPayMethodChange(v),
+          buttonDecoration: const InputDecoration(
             helperText: 'Indicates how the supplier will be paid.',
           ),
         ),
@@ -457,12 +464,14 @@ class POStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
-      items: purchaseOrderStatus,
       label: 'order status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChange(v),
+      items: purchaseOrderStatus,
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChange(v),
     );
   }
 }

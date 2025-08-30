@@ -159,8 +159,8 @@ class CompanyStores extends Equatable {
 
   /// ToList for StoreLocation [toListL]
   List<String> itemAsList() => [
-    storeNumber,
     id,
+    storeNumber,
     name.toTitleCase,
     phone,
     location.toTitleCase,
@@ -172,8 +172,8 @@ class CompanyStores extends Equatable {
   ];
 
   static List<String> get dataTableHeader => const [
-    'Store Number',
     'ID',
+    'Store Number',
     'Name',
     'Phone',
     'Address / Location',

@@ -90,15 +90,6 @@ class Department extends Equatable {
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
-  /// Current / Today's Products/Stocks
-  bool get isToday {
-    var dt = createdAt.toDateTime;
-
-    return dt.year == _today.year &&
-        dt.month == _today.month &&
-        dt.day == _today.day;
-  }
-
   String get itemAsString => name.toTitleCase;
 
   /// Filter Search
@@ -152,8 +143,8 @@ class Department extends Equatable {
 
   /// ToList for StoreLocation [toListL]
   List<String> toListL() => [
-    code,
     id,
+    code,
     name.toTitleCase,
     lead.toTitleCase,
     createdBy.toTitleCase,
@@ -163,8 +154,8 @@ class Department extends Equatable {
   ];
 
   static List<String> get dataHeader => const [
-    'Code',
     'ID',
+    'Code',
     'Department',
     'Lead (Manager)',
     'Created By',

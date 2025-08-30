@@ -75,6 +75,27 @@ class _CustomTabState extends State<CustomTab>
 
   void _listenToTabChanges() {
     _tabController.addListener(() {
+      // Wait for the transition to complete (for swipes)
+      if (_tabController.indexIsChanging) return;
+
+      final index = _tabController.index;
+
+      // This handles tab swipe (not just tap)
+      if (!loadedTabs.contains(index)) {
+        setState(() {
+          loadedTabs.clear(); // Optional: clear previous tab's state
+          loadedTabs.add(index);
+        });
+      }
+
+      if (widget.onTapChanged != null) {
+        widget.onTapChanged!(index);
+      }
+    });
+  }
+
+  /*void _listenToTabChanges2() {
+    _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         return; // Wait until change is complete
       }
@@ -82,7 +103,7 @@ class _CustomTabState extends State<CustomTab>
         widget.onTapChanged!(_tabController.index);
       }
     });
-  }
+  }*/
 
   void _toggleNavigationRail() {
     setState(() {
@@ -224,15 +245,31 @@ class _CustomTabState extends State<CustomTab>
     );
   }
 
-  Align _loaderPlaceholder(int index) {
-    return Align(
+  _loaderPlaceholder(int index) {
+    return Container(
       key: ValueKey<int>(index),
       alignment: Alignment.center,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(padding: const EdgeInsets.all(5.0), child: context.loader),
-          Expanded(child: Text('${widget.tabs[index]['label']} is loading...')),
+          Expanded(
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              runAlignment: WrapAlignment.center,
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                context.loader,
+                Text(
+                  textAlign: TextAlign.center,
+                  'Loading ${widget.tabs[index]['label'].toString().toTitleCase}...',
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

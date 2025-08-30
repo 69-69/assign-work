@@ -72,22 +72,22 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     final unKnownWorkspaces = data.unKnown.map((w) => w.itemAsList()).toList();
 
     return DynamicDataTable(
-      skip: true,
-      skipPos: 1,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Workspace.dataTableHeader,
       anyWidget: _buildAnyWidget(data.unExpired),
       rows: data.unExpired.map((w) => w.itemAsList()).toList(),
       childrenRow: [...unKnownWorkspaces, ...expiredWorkspaces],
       onEditTap: (row) async => await _onEditTap(workspaces, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(row[0], row[1]),
+      onDeleteTap: (row) async =>
+          await _onDeleteTap(row.first, workspaceRole: row[1]),
       onChecked: (bool? isChecked, List<String> row) =>
           _onChecked(workspaces, row.first, isChecked),
       optButtonIcon: Icons.support_agent,
       optButtonLabel: 'Tenant Chat',
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
-        pathParameters: {'clientWorkspaceId': row[1]},
+        pathParameters: {'clientWorkspaceId': row.first},
       ),
     );
   }
@@ -154,19 +154,22 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     });
   }
 
-  Future<void> _onDeleteTap(String workspaceId, String workspaceRole) async {
-    {
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        AllTenantsBloc allTenantsBloc = context.read<AllTenantsBloc>();
-        // Delete Tenant Associated Data
-        await allTenantsBloc.deleteTenantData(
-          workspaceId,
-          workspaceRole.toLowerCaseFirst,
-        );
-        // Delete Tenant Workspace
-        allTenantsBloc.add(DeleteTenant<String>(documentId: workspaceId));
-      }
+  Future<void> _onDeleteTap(
+    String workspaceId, {
+    String workspaceRole = '',
+  }) async {
+    if (workspaceRole.isEmpty) return;
+
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      AllTenantsBloc allTenantsBloc = context.read<AllTenantsBloc>();
+      // Delete Tenant Associated Data
+      await allTenantsBloc.deleteTenantData(
+        workspaceId,
+        workspaceRole.toLowerCaseFirst,
+      );
+      // Delete Tenant Workspace
+      allTenantsBloc.add(DeleteTenant<String>(documentId: workspaceId));
     }
   }
 }

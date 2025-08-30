@@ -102,6 +102,9 @@ const departmentsDBCollectionPath = 'departments_db';
 /// Firebase collection for company store locations/branches (Multi-Locations Feature)
 const storeLocationsDBCollectionPath = 'store_locations_db';
 
+/// Firebase collection for company tax rates
+const taxesDBCollectionPath = 'taxes_db';
+
 /// Firebase collection for general company information setup: logo, name, address, etc.
 const companyInfoDBCollectionPath = 'company_info_db';
 

@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -107,11 +107,7 @@ class OrderNumberDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SearchOrders(
-      isDropdown: true,
-      initialValue: initialValue,
-      onChanged: onChanged,
-    );
+    return SearchOrders(initialValue: initialValue, onChanged: onChanged);
   }
 }
 
@@ -168,12 +164,14 @@ class DeliveryTypeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: deliveryTypes,
       label: 'delivery type',
       initialValue: initialType,
-      onValueChange: (String? v) => onValueChange(v),
+      getValue: (type) => type,
+      getDisplayText: (type) => type,
+      onChanged: (String? v) => onValueChange(v),
     );
   }
 }
@@ -191,12 +189,14 @@ class DeliveryStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: deliveryStatus,
       label: 'delivery status',
       initialValue: initialStatus,
-      onValueChange: (String? v) => onChange(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChange(v),
     );
   }
 }

@@ -26,10 +26,28 @@ class SearchCustomer extends StatefulWidget {
 }
 
 class _SearchCustomerState extends State<SearchCustomer> {
+  String? _initialValue;
   bool _isNotFound = false;
+  Customer? _customer;
 
   void _toggleManualEntry([bool value = true]) {
     if (mounted) setState(() => _isNotFound = value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initialValue = widget.initialValue;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCustomers());
+  }
+
+  Future _loadCustomers({String? filter}) async {
+    final initial = widget.initialValue ?? '';
+    final customers = await GetAllCustomers.byAnyTerm(filter ?? initial);
+    if (initial.isNotNullNorEmpty && customers.isNotNullNorEmpty) {
+      setState(() => _customer = customers.first);
+    }
+    return customers;
   }
 
   get _isPOS => widget.isPOS;
@@ -43,14 +61,15 @@ class _SearchCustomerState extends State<SearchCustomer> {
 
   AsyncSearchDropdown<Customer> _buildDropdown(BuildContext context) {
     return AsyncSearchDropdown<Customer>(
-      labelText: (widget.initialValue ?? 'Select Customer...').toTitleCase,
+      selectedItem: _customer,
+      labelText: 'Select Customer...',
       asyncItems: (String filter, loadProps) async =>
-          await GetAllCustomers.byAnyTerm(filter),
-      filterFn: (customer, filter) => _handleFilter(filter, customer),
+          await _loadCustomers(filter: filter),
+      filterFn: (customer, filter) => _filterCustomer(filter, customer),
       itemAsString: (customer) => customer.itemAsString,
       onChanged: (customer) =>
           widget.onChanged(customer!.customerId, customer.name),
-      validator: (customer) => customer == null ? 'Add customer' : null,
+      validator: (customer) => customer == null ? 'Select customer' : null,
       onNoDataFound: () {
         if (_isPOS) {
           WidgetsBinding.instance.addPostFrameCallback(
@@ -61,11 +80,11 @@ class _SearchCustomerState extends State<SearchCustomer> {
     );
   }
 
-  bool _handleFilter(String filter, Customer customer) {
-    final term = filter.isEmpty ? (widget.initialValue ?? '') : filter;
-    final isFound = customer.filterByAny(term);
-    if ((!isFound && filter.isNotEmpty) && _isPOS) _toggleManualEntry();
-    return isFound;
+  bool _filterCustomer(String filter, Customer customer) {
+    final term = filter.isEmpty ? (_initialValue ?? '') : filter;
+    final matches = customer.filterByAny(term);
+    if ((!matches && filter.isNotEmpty) && _isPOS) _toggleManualEntry();
+    return matches;
   }
 
   Widget _buildManualEntryField(BuildContext context) {

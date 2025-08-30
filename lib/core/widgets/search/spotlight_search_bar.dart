@@ -199,8 +199,8 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     final query = _controller.text;
     if (query.isEmpty) return Text(text, style: style);
 
-    final lowerText = text.toLowerCase();
-    final lowerQuery = query.toLowerCase();
+    final lowerText = text.toLowercaseAll;
+    final lowerQuery = query.toLowercaseAll;
 
     final spans = <TextSpan>[];
     int start = 0;
@@ -217,7 +217,7 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
       if (index > start) {
         spans.add(
           TextSpan(
-            text: text.toTitleCase.substring(start, index),
+            text: text.toSentenceCase.substring(start, index),
             style: style,
           ),
         );

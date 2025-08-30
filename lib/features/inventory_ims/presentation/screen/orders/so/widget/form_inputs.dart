@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
@@ -157,12 +157,14 @@ class ValidityAndOrderSource extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        StaticDropdown(
+        StaticDropdown<String>(
           key: key,
           items: orderSources,
           label: 'order source',
           initialValue: initialOrder,
-          onValueChange: (String? v) => onSourceChanged(v),
+          getValue: (source) => source,
+          getDisplayText: (source) => source,
+          onChanged: (String? v) => onSourceChanged(v),
         ),
         DatePicker(
           initialDate: initialValidity,
@@ -590,12 +592,14 @@ class PaymentStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: paymentStatus,
       label: 'payment status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChanged(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChanged(v),
     );
   }
 }
@@ -613,12 +617,14 @@ class PaymentMethodDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: paymentMethod,
       label: 'payment method',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChanged(v),
+      getValue: (method) => method,
+      getDisplayText: (method) => method,
+      onChanged: (String? v) => onChanged(v),
     );
   }
 }
@@ -636,12 +642,14 @@ class OrdersStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: orderStatus,
       label: 'order status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChange(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChange(v),
     );
   }
 }
@@ -659,12 +667,14 @@ class OrdersTypesDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: orderTypes,
       label: 'order type',
       initialValue: initialValue,
-      onValueChange: (String? v) => onValueChange(v),
+      getValue: (type) => type,
+      getDisplayText: (type) => type,
+      onChanged: (String? v) => onValueChange(v),
     );
   }
 }

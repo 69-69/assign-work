@@ -90,7 +90,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         isUnknownPermission(access) ||
         cxt.isLicensed(access) ||
         cxt.hasPermission(access);
-    return true;
+    return can;
   }
 
   @override
@@ -309,7 +309,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
       footer: context.isMobile
           ? null
           : Text(
-              (tile.description ?? '').toTitleCase,
+              (tile.description ?? '').toSentenceCase,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: kLightColor),

@@ -75,7 +75,7 @@ class EntitlementTabViewState extends State<EntitlementTabView>
       tabs: _tabs
           .map(
             (t) => Tooltip(
-              message: '${t['tooltip']}'.toTitleCase,
+              message: '${t['tooltip']}'.toSentenceCase,
               child: Tab(text: t['label'].toString(), icon: Icon(t['icon'])),
             ),
           )
@@ -106,7 +106,7 @@ class EntitlementTabViewState extends State<EntitlementTabView>
                 (t) => NavigationRailDestination(
                   icon: Icon(t['icon']),
                   label: Tooltip(
-                    message: '${t['tooltip']}'.toTitleCase,
+                    message: '${t['tooltip']}'.toSentenceCase,
                     child: Text(t['label'] ?? 'Unnamed'),
                   ),
                 ),

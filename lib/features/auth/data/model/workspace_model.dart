@@ -96,17 +96,12 @@ class Workspace extends Equatable {
       effectiveFrom: toDateTimeFn(map['effectiveFrom']),
       updatedBy: map['updatedBy'] ?? '',
       expiresOn: toDateTimeFn(map['expiresOn'] ?? ''),
-      createdAt: toDateTimeFn(map['createdAt'] ?? ''),
+      createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
     );
   }
 
-  static WorkspaceRole getRoleByString(String role) =>
-      WorkspaceRole.values.firstWhere(
-        (e) => roleAsString(e) == role,
-        orElse: () => WorkspaceRole.unknown,
-      );
-
-  static String roleAsString(WorkspaceRole e) => e.toString().split('.').last;
+  // (e) => roleAsString(e) == role,
+  // static String roleAsString(WorkspaceRole e) => e.toString().split('.').last;
 
   // map template
   Map<String, dynamic> _mapTemp() => {
@@ -115,7 +110,8 @@ class Workspace extends Equatable {
     'hostingType': hostingType.label,
     'username': email.emailToUsername,
     // Convert enum to string
-    'role': roleAsString(role),
+    // roleAsString(role),
+    'role': role.label,
     'email': email,
     'name': name,
     'address': address,

@@ -27,26 +27,27 @@ After workspace authentication, sign in as a specific **Employee** using your **
 # ⚙️ Onboarding Flow Structure (Three-Tier)
 
 1. **Initial Setup**  
-   New Agents begin by signing in using the provided `Onboarding` or `Initial-Setup` Workspace Email and Password.
+   New Agents begin by signing in using the provided `Onboarding` Workspace Email and Password.
 
 2. **Create a New Workspace (Agent)**  
-   After signing in, Agents can create their new Workspace by clicking the **"Setup New Workspace"** button.
-   While the Workspace is being created, an Agent has the option to auto-generate **Temporary Employee Passcode**.
-   This is used after the **Workspace Successful SignIn** to sign in to the **Employee portal** using the **Employee Email + Temporary Passcode**.
+   After signing in, Agents can create their new Workspace by clicking the **`Setup New Workspace`** button.
+   While the Workspace is being created, an Agent has the option to auto-generate **`Temporary Employee Passcode`**.
+   This is used after the **`Workspace Successful SignIn`** to sign in to the **`Employee portal`** using the **`Employee Email + Temporary Passcode`**.
 
 ---
 
 # 👨‍💼 Creating a Subscriber (Tenant/Client) Workspace
 
-1. The Agent signs in to their own Workspace.
-2. Navigate to the **Agent** section and click **"Setup New Workspace"**.
+1. The Agent signs in to their **own Workspace**.
+2. Navigate to the **`Agent`** section and click **`Setup New Workspace`**.
 3. Fill in the required details and click **"Create Workspace"**.
-4. An Agent has the option to auto-generate **Temporary Employee Passcode** is sent to the Subscriber's email.  
-5. The Subscriber uses this, along with their Employee Email and Passcode, to sign in after completing the Workspace Sign-In process.
-6. Upon their first login through the Employee Sign-In Portal, they will be prompted to create a new personal passcode.
+4. An Agent has the option to auto-generate **Temporary Employee Passcode** for the **Subscriber/Client**.  
+5. The Subscriber uses this, along with their **Employee Email and Passcode**, to sign in after completing the Workspace Sign-In process.
+6. Upon their **first login** through the Employee Sign-In Portal, they will be **prompted to create** a **new personal passcode**.
 
 > **Note:**  
 > Clients can reset their Workspace Password anytime using the **"Forgot Password"** option on the Workspace Sign-In screen.
+> OR - use the **"Change Workspace Password"** at the ADMIN level
 
 ---
 
@@ -61,7 +62,7 @@ After workspace authentication, sign in as a specific **Employee** using your **
 
 ## 🔐 Resetting Workspace Password
 
-1. On the Workspace Sign-In screen, click **"Forgot Password"**.
+1. On the Workspace Sign-In screen, click **"Forgot Password"**. - OR - click **"Change Workspace Password"** at the ADMIN level.
 2. Follow the instructions sent to the registered **Workspace email** to reset the password.
 
 ## 🔐 Resetting Employee Passcode
@@ -69,7 +70,7 @@ After workspace authentication, sign in as a specific **Employee** using your **
 In addition to the **First login Prompt**, Employees can reset their Passcode manually:
 
 1. Log in to the Organization's Workspace, then into Employee's account.
-2. Go to the **Setup** section → **Staff Accounts** tab.
+2. Go to the **Setup** section → **Employee Accounts** tab.
 3. Click **"Reset Passcode"** next to the desired user.
 4. Auto-Generate a **Temporary Passcode** (Valid for 7 days)
 5. The user will be logged out and must sign in again using the **new Temporary Passcode**.

@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -52,14 +51,13 @@ class _ListDepartmentsState extends State<ListDepartments> {
 
   Widget _buildCard(BuildContext c, List<Department> departments) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Department.dataHeader,
       anyWidget: _buildAnyWidget(departments),
       rows: departments.map((d) => d.toListL()).toList(),
-      onEditTap: (row) async => _onEditTap(departments, row[1]),
-      onDeleteTap: (row) async => _onDeleteTap(departments, row[1]),
+      onEditTap: (row) async => await _onEditTap(departments, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(departments, row.first),
     );
   }
 
@@ -91,23 +89,20 @@ class _ListDepartmentsState extends State<ListDepartments> {
   Future<void> _onEditTap(List<Department> departments, String id) async {
     final depart = Department.findById(departments, id);
     if (depart == null) return;
-    prettyPrint('departments', depart.toMap());
 
     await context.openAddDepartment(serverDepartment: depart);
   }
 
   Future<void> _onDeleteTap(List<Department> departments, String id) async {
-    {
-      final depart = Department.findById(departments, id);
-      if (depart == null) return;
+    final depart = Department.findById(departments, id);
+    if (depart == null) return;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Delete specific Department
-        context.read<DepartmentBloc>().add(
-          DeleteSetup<String>(documentId: depart.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Delete specific Department
+      context.read<DepartmentBloc>().add(
+        DeleteSetup<String>(documentId: depart.id),
+      );
     }
   }
 }

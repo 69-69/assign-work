@@ -27,9 +27,28 @@ class SearchItems extends StatefulWidget {
 
 class _SearchItemsState extends State<SearchItems> {
   bool _isNotFound = false;
+  String? _initialValue;
+  Item? _item;
 
   void _toggleManualEntry([bool value = true]) {
     if (mounted) setState(() => _isNotFound = value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initialValue = widget.initialValue;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadItems());
+  }
+
+  Future _loadItems({String? filter}) async {
+    final initial = widget.initialValue ?? '';
+    final filterBy = filter.isNullOrEmpty ? initial : filter;
+    final items = await GetItems.byAnyTerm(filterBy);
+    if (initial.isNotNullNorEmpty && items.isNotNullNorEmpty) {
+      setState(() => _item = items.first);
+    }
+    return items;
   }
 
   @override
@@ -42,10 +61,11 @@ class _SearchItemsState extends State<SearchItems> {
   }
 
   Widget _buildDropdown(BuildContext context) => AsyncSearchDropdown<Item>(
-    labelText: widget.initialValue ?? 'Select Item...',
+    selectedItem: _item,
+    labelText: 'Select Item...',
     asyncItems: (String filter, loadProps) async =>
-        await GetItems.byAnyTerm(filter),
-    filterFn: (item, filter) => _handleFilter(filter, item),
+        await _loadItems(filter: filter),
+    filterFn: (item, filter) => _filterItem(filter, item),
     itemAsString: (Item item) => item.toString().toTitleCase,
     onChanged: (item) => widget.onChanged?.call(item),
     validator: (item) => item == null ? 'Select item' : null,
@@ -56,11 +76,11 @@ class _SearchItemsState extends State<SearchItems> {
     },
   );
 
-  bool _handleFilter(String filter, Item item) {
-    final term = filter.isEmpty ? (widget.initialValue ?? '') : filter;
-    final isFound = item.filterByAny(term);
-    if (!isFound && filter.isNotEmpty) _toggleManualEntry();
-    return isFound;
+  bool _filterItem(String filter, Item item) {
+    final term = filter.isEmpty ? (_initialValue ?? '') : filter;
+    final matches = item.filterByAny(term);
+    if (!matches && filter.isNotEmpty) _toggleManualEntry();
+    return matches;
   }
 
   Widget _buildManualEntryField(BuildContext context) {

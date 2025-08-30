@@ -64,13 +64,14 @@ class _ListPOSSalesState extends State<ListPOSSales> {
     );
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 2,
       headers: POSSale.dataTableHeader,
       anyWidget: _buildAnyWidget(sales),
       rows: todaySales.map((s) => s.itemAsList()).toList(),
       childrenRow: pastSales.map((s) => s.itemAsList()).toList(),
-      onChecked: (bool? isChecked, row) => _onChecked(sales, row, isChecked),
+      onChecked: (bool? isChecked, row) =>
+          _onChecked(sales, isChecked, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -83,14 +84,15 @@ class _ListPOSSalesState extends State<ListPOSSales> {
             }
             if (checkedRows.isNotEmpty) {
               for (int i = 0; i < checkedRows.length; i++) {
-                _onChecked(sales, checkedRows[i], isChecked);
+                final id = checkedRows[i].first;
+                _onChecked(sales, isChecked, id);
               }
             }
           },
       optButtonLabel: 'Report',
-      onOptButtonTap: (row) async => await _onReportTap(sales, row),
-      onEditTap: (row) => _onEditTap(sales, row),
-      onDeleteTap: (row) => _onDeleteTap(sales, row),
+      onOptButtonTap: (row) async => await _onReportTap(sales, row.first),
+      onEditTap: (row) => _onEditTap(sales, row.first),
+      onDeleteTap: (row) => _onDeleteTap(sales, row.first),
     );
   }
 
@@ -148,13 +150,9 @@ class _ListPOSSalesState extends State<ListPOSSales> {
   }
 
   // Handle onChecked orders
-  void _onChecked(
-    List<POSSale> sales,
-    List<String> row,
-    bool? isChecked,
-  ) async {
+  void _onChecked(List<POSSale> sales, bool? isChecked, String id) async {
     setState(() {
-      final sale = sales.firstWhere((order) => order.id == row.first);
+      final sale = sales.firstWhere((order) => order.id == id);
 
       if (isChecked != null && isChecked) {
         // A temporary list, tempOrdersForInvoice, is created which includes
@@ -176,10 +174,10 @@ class _ListPOSSalesState extends State<ListPOSSales> {
     });
   }
 
-  _onReportTap(List<POSSale> orders, List<String> row) async {
+  _onReportTap(List<POSSale> orders, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
-      request: _printout(orders, row),
+      request: _printout(orders, id),
       onSuccess: (_) => context.showAlertOverlay('Report successfully created'),
       onError: (error) => context.showAlertOverlay(
         'Report printout failed',
@@ -188,13 +186,10 @@ class _ListPOSSalesState extends State<ListPOSSales> {
     );
   }
 
-  Future<dynamic> _printout(List<POSSale> sales, List<String> row) =>
+  Future<dynamic> _printout(List<POSSale> sales, String id) =>
       Future.delayed(kRProgressDelay, () async {
         // Simulate loading supplier and company info
-        final getSales = POSSale.findSaleById(
-          sales,
-          saleId: row.first,
-        ).toList();
+        final getSales = POSSale.findSaleById(sales, saleId: id).toList();
 
         if (mounted && getSales.isNotEmpty) {
           PrintPOSSalesReport(
@@ -204,23 +199,21 @@ class _ListPOSSalesState extends State<ListPOSSales> {
         }
       });
 
-  Future<void> _onEditTap(List<POSSale> sales, List<String> row) async {
+  Future<void> _onEditTap(List<POSSale> sales, String id) async {
     {
-      final sale = POSSale.findSaleById(sales, saleId: row.first).first;
+      final sale = POSSale.findSaleById(sales, saleId: id).first;
 
       return context.openUpdatePOSSale(sale: sale);
     }
   }
 
-  Future<void> _onDeleteTap(List<POSSale> sales, List<String> row) async {
-    {
-      final sale = POSSale.findSaleById(sales, saleId: row.first).first;
+  Future<void> _onDeleteTap(List<POSSale> sales, String id) async {
+    final sale = POSSale.findSaleById(sales, saleId: id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Remove sale from Sales-list
-        context.read<POSSaleBloc>().add(DeletePOS<String>(documentId: sale.id));
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Remove sale from Sales-list
+      context.read<POSSaleBloc>().add(DeletePOS<String>(documentId: sale.id));
     }
   }
 

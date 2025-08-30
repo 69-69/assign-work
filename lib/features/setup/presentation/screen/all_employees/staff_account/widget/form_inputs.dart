@@ -258,21 +258,23 @@ class StoreLocationsDropdown extends StatelessWidget {
 class AccountStatusDropdown extends StatelessWidget {
   const AccountStatusDropdown({
     super.key,
-    this.serverStatus,
+    this.initialValue,
     required this.onStatusChanged,
   });
 
   final Function(String?) onStatusChanged;
-  final String? serverStatus;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
+      initialValue: initialValue,
       items: employeeAccountStatusList,
       label: employeeAccountStatusList.first,
-      initialValue: serverStatus,
-      onValueChange: (String? v) => onStatusChanged(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onStatusChanged(v),
     );
   }
 }

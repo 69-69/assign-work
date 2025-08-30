@@ -19,7 +19,7 @@ class FormGroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 1.0,
-      color: bgColor ?? kLightColor, // context.scaffoldBgColor
+      color: bgColor ?? context.onSecondaryColor, // context.scaffoldBgColor
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(10),

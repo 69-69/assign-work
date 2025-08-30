@@ -49,10 +49,12 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
 
   StaticDropdown _getLocalBackupFilenames(BuildContext context) {
     final items = BackupFilenameCache().getFilenames();
-    return StaticDropdown(
+    return StaticDropdown<String>(
       items: items,
       label: 'List of Local Backup Files',
-      onValueChange: (String? v) => setState(() {
+      getValue: (file) => file,
+      getDisplayText: (file) => file,
+      onChanged: (String? v) => setState(() {
         _selectedFilename = v?.toLowercaseAll;
       }),
     );

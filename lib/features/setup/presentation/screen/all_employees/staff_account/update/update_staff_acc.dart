@@ -116,7 +116,7 @@ class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
           title: 'Account Status',
           children: [
             AccountStatusDropdown(
-              serverStatus: _selectedStatus ?? _employee.status,
+              initialValue: _selectedStatus ?? _employee.status,
               onStatusChanged: (v) =>
                   v.isNullOrEmpty ? null : _updateAccountStatus(v!),
             ),

@@ -53,6 +53,12 @@ extension WorkspaceRoleExtension on WorkspaceRole {
   }
 }
 
+/// Get WorkspaceRole by String [getRoleByString]
+WorkspaceRole getRoleByString(String role) => WorkspaceRole.values.firstWhere(
+  (e) => e.label == role,
+  orElse: () => WorkspaceRole.unknown,
+);
+
 /// Enum values to a list of strings [workspaceRoleList]
 final workspaceRoleList = [
   'workspace role',

@@ -1,7 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
-import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -53,11 +52,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   String? _selectedRFQStatus;
   DateTime? _selectedDeadlineDate;
   DateTime? _selectedDeliveryDate;
-  DateTime? _selectedValidityDate;
-  final _notesController = TextEditingController();
   final _titleController = TextEditingController();
+  final _notesController = TextEditingController();
   final _addressController = TextEditingController();
-  final _netPriceController = TextEditingController();
 
   // Add a list to manage line items
   final List<RFQLineItem> _lineItems = [];
@@ -70,13 +67,14 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
 
   @override
   void dispose() {
-    _notesController.dispose();
     super.dispose();
   }
 
   void _generateRFQNumber() async {
     await 'rfq'.getShortUID(
-      onChanged: (s) => setState(() => _newRFQNumber = s),
+      onChanged: (s) {
+        if (mounted) setState(() => _newRFQNumber = s);
+      },
     );
   }
 
@@ -87,14 +85,11 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     supplierId: _selectedSupplierId,
     currency: _currency,
     title: _titleController.text,
+    notes: _notesController.text,
     deliveryAddress: _addressController.text,
     lineItems: List.from(_lineItems),
     deadline: _selectedDeadlineDate,
     deliveryDate: _selectedDeliveryDate,
-    validityDate: _selectedValidityDate != null
-        ? '${_selectedValidityDate!.toDays} days'
-        : '',
-    notes: _notesController.text,
     storeNumber: context.employee!.storeNumber,
     createdBy: context.employee!.fullName,
   );
@@ -110,17 +105,23 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   }
 
   void _resetForm() {
-    _formKey.currentState?.reset(); // reset validators
-    _notesController.clear();
-    _generateRFQNumber(); // get a new RFQ number
+    if (mounted) {
+      _formKey.currentState?.reset(); // reset validators
+      _titleController.clear();
+      _addressController.clear();
+      _notesController.clear();
+      _generateRFQNumber(); // get a new RFQ number
 
-    setState(() {
-      _selectedSupplierId = '';
-      _selectedRFQStatus = null;
-      _selectedDeadlineDate = null;
-      _selectedDeliveryDate = null;
-      _lineItems.clear();
-    });
+      setState(() {
+        _currency = '';
+        _department = '';
+        _selectedSupplierId = '';
+        _selectedRFQStatus = null;
+        _selectedDeadlineDate = null;
+        _selectedDeliveryDate = null;
+        _lineItems.clear();
+      });
+    }
   }
 
   @override
@@ -143,9 +144,11 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
             TitleAndDepartments(
               controller: _titleController,
               onChanged: (t) => setState(() {}),
-              onDepartmentChange: (s) => setState(() => _department = s),
+              onDepartmentChange: (id, code, name) =>
+                  setState(() => _department = name),
             ),
             SuppliersAndRFQStatusDropdown(
+              initialSupplier: _selectedSupplierId,
               onSupplierChanged: (id, name) =>
                   setState(() => _selectedSupplierId = id),
               onStatusChanged: (s) => setState(() => _selectedRFQStatus = s),
@@ -156,17 +159,22 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              title: 'Products / Services List',
+              showButton: true,
+              title: 'Products / Services',
               fieldsConfig: [
-                FieldConfig(key: 'itemName', type: TextInputType.text),
-                FieldConfig(key: 'quantity', type: TextInputType.number),
-                FieldConfig(key: 'unitPrice', type: TextInputType.number),
-                FieldConfig(
-                  key: 'discount',
-                  type: TextInputType.numberWithOptions(decimal: true),
+                FieldGroupConfig(
+                  key: 'itemName',
+                  label: 'Item Name',
+                  type: TextInputType.text,
+                ),
+                FieldGroupConfig(
+                  key: 'quantity',
+                  label: 'Quantity',
+                  type: TextInputType.number,
                 ),
               ],
-              onChanged: (List<Map<String, String>> data) {
+              initialData: [{}],
+              onChanged: (List<Map<String, dynamic>> data) {
                 if (_formKey.currentState!.validate()) setState(() {});
                 prettyPrint('Data', data);
 

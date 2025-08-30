@@ -52,14 +52,14 @@ class _ListCustomersState extends State<ListCustomers> {
     );
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Customer.dataTableHeader,
       anyWidget: _buildAnyWidget(customers),
       rows: todayCustomers.map((o) => o.itemAsList()).toList(),
       childrenRow: pastCustomers.map((o) => o.itemAsList()).toList(),
-      onEditTap: (row) async => await _onEditTap(context, customers, row),
-      onDeleteTap: (row) async => await _onDeleteTap(customers, row),
+      onEditTap: (row) async => await _onEditTap(context, customers, row.first),
+      onDeleteTap: (row) async => await _onDeleteTap(customers, row.first),
     );
   }
 
@@ -78,15 +78,15 @@ class _ListCustomersState extends State<ListCustomers> {
   Future<void> _onEditTap(
     BuildContext context,
     List<Customer> customers,
-    List<String> row,
+    String id,
   ) async {
-    final customer = Customer.findCustomerById(customers, row.first).first;
+    final customer = Customer.findCustomerById(customers, id).first;
 
     await context.openUpdateCustomer(customer: customer);
   }
 
-  Future<void> _onDeleteTap(List<Customer> customers, List<String> row) async {
-    final customer = Customer.findCustomerById(customers, row.first).first;
+  Future<void> _onDeleteTap(List<Customer> customers, String id) async {
+    final customer = Customer.findCustomerById(customers, id).first;
 
     final isConfirmed = await context.confirmUserActionDialog();
 

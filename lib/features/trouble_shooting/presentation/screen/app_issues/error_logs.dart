@@ -36,8 +36,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
 
   Widget _buildCard(BuildContext context) {
     return DynamicDataTable(
-      skip: false,
-      showIDToggle: true,
+      maskAtIndex: 0,
       anyWidget: _anyWidget(),
       headers: ErrorLog.dataTableHeader,
       rows: _logs.map((l) => l.toListL()).toList(),

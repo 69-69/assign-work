@@ -57,16 +57,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   _buildCard(BuildContext cxt, List<Attendance> attendances) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 2,
+      maskAtIndex: 1,
       headers: Attendance.dataTableHeader,
       anyWidget: _anyWidget(cxt),
       rows: attendances.map((d) => d.itemAsList()).toList(),
       editLabel: 'View Areas',
       editIcon: Icons.explore_outlined,
-      onEditTap: (row) async => _onViewTap(cxt, attendances, row[1]),
-      onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row[1]),
+      onEditTap: (row) async => _onViewTap(cxt, attendances, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -76,7 +75,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             setState(() {
               _selectedIds.clear();
               if (isChecked) {
-                _selectedIds.addAll(checkedRows.map((e) => e[1]));
+                _selectedIds.addAll(checkedRows.map((e) => e.first));
               }
             });
           },
@@ -102,8 +101,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 cxt.read<AttendanceBloc>().add(
                   DeleteSetup<List<String>>(documentId: _selectedIds),
                 );
-                _selectedIds.clear();
-                setState(() {});
+                // _selectedIds.clear();
+                // setState(() {});
               }
             },
             label: const Text(

@@ -78,7 +78,8 @@ extension ConvertDateTime on dynamic {
   Timestamp? get fromDate => this != null ? Timestamp.fromDate(this) : null;
 
   /// Convert Timestamp to DateTime [toDate]
-  DateTime? get toDate => this != null ? (this as Timestamp).toDate() : null;
+  DateTime? get fromTimestamp =>
+      this != null ? (this as Timestamp).toDate() : null;
 
   String get chatDatetime {
     final diff = _today.difference(this);
@@ -114,6 +115,12 @@ extension TotalDaysFromDate on DateTime? {
 
     return daysDifference;
   }
+}
+
+extension DateFromTotalDays on int {
+  /// Converts number of days from today into a DateTime
+  /// Positive = future date, Negative = past date [toDate]
+  DateTime get toDate => DateTime.now().add(Duration(days: this));
 }
 
 DateTime toDateTimeFn(dateTime) {

@@ -205,8 +205,8 @@ class Employee extends Equatable {
 
   /// ToList for Employee [itemAsList]
   List<String> itemAsList() => [
-    employeeId,
     id,
+    employeeId,
     status.toTitleCase,
     departmentCode,
     role.toTitleCase,
@@ -220,8 +220,8 @@ class Employee extends Equatable {
   ];
 
   static List<String> get dataTableHeader => const [
-    'Employee ID',
     'ID',
+    'Employee ID',
     'Status',
     'Dept. Code',
     'Role',

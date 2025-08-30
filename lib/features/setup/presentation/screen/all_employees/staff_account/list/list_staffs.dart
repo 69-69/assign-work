@@ -47,21 +47,20 @@ class _ListStaffsState extends State<ListStaffs> {
 
   _buildCard(BuildContext c, List<Employee> employees) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 2,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: Employee.dataTableHeader,
       anyWidget: _buildAnyWidget(),
       anyWidgetAlignment: WrapAlignment.end,
       rows: employees.map((d) => d.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
-          _onChecked(employees, row[1], isChecked),
-      onEditTap: (row) async => _onEditTap(employees, row[1]),
-      onDeleteTap: (row) async => _onDeleteTap(employees, row[1]),
+          _onChecked(employees, row.first, isChecked),
+      onEditTap: (row) async => _onEditTap(employees, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(employees, row.first),
       optButtonIcon: Icons.lock,
       optButtonLabel: 'Reset Passcode',
       onOptButtonTap: (row) async {
-        Employee employee = _findEmployee(row[1], employees);
+        Employee employee = _findEmployee(row.first, employees);
         await context.openForgotPasscode(employee: employee);
       },
     );

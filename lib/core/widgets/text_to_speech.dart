@@ -203,12 +203,14 @@ class TextToSpeechState extends State<TextToSpeech> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
-      child: StaticDropdown(
+      child: StaticDropdown<String>(
         icon: const Icon(Icons.support_agent, color: kDangerColor),
         items: voiceNames,
         label: 'Voice Type',
         initialValue: selectedVoiceName,
-        onValueChange: (String? value) {
+        getValue: (type) => type,
+        getDisplayText: (type) => type,
+        onChanged: (String? value) {
           if (value != null) {
             final selectedVoice = _voices.firstWhere(
               (voice) => voice.name == value,

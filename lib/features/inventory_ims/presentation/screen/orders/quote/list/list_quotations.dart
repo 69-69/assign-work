@@ -89,8 +89,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     final data = _quotes(quotes);
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
       anyWidget: _buildAnyWidget(quotes),
       headers: RequestForQuotation.dataTableHeader,
       rows: data.rows,

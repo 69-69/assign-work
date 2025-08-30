@@ -4,6 +4,7 @@ export 'screen/company/company_screen.dart';
 export 'screen/item_config/item_config_screen.dart';
 export 'screen/license_renewal/license_renewal.dart';
 export 'screen/manage_roles/manage_roles_screen.dart';
+export 'screen/manage_taxes/manage_tax_screen.dart';
 export 'screen/setup_screen.dart';
 export 'screen/switch_store_locations/switch_store_locations_screen.dart';
 export 'setup_app.dart';

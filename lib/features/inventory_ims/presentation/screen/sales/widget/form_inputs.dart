@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -435,12 +435,14 @@ class PaymentStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: paymentStatus,
       label: 'payment status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChanged(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChanged(v),
     );
   }
 }
@@ -458,12 +460,14 @@ class SalesStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: saleStatus,
       label: 'sale status',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChanged(v),
+      getValue: (status) => status,
+      getDisplayText: (status) => status,
+      onChanged: (String? v) => onChanged(v),
     );
   }
 }
@@ -481,12 +485,14 @@ class PaymentMethodDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
       items: paymentMethod,
       label: 'payment method',
       initialValue: initialValue,
-      onValueChange: (String? v) => onChanged(v),
+      getValue: (method) => method,
+      getDisplayText: (method) => method,
+      onChanged: (String? v) => onChanged(v),
     );
   }
 }

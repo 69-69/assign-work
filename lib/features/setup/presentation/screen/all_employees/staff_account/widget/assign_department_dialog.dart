@@ -69,7 +69,7 @@ class AssignEmployeeDepartment extends StatelessWidget {
               ),
             );
 
-            context.showCustomSnackBar(
+            context.showAlertOverlay(
               'Department assigned to $_employeeName successfully',
             );
           },

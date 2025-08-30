@@ -50,9 +50,8 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
 
   Widget _buildCard(BuildContext context, List<Subscription> subscriptions) {
     return DynamicDataTable(
-      skip: true,
-      skipPos: 1,
-      showIDToggle: true,
+      omitAtIndex: 0,
+      maskAtIndex: 1,
       anyWidget: _buildAnyWidget(context),
       anyWidgetAlignment: WrapAlignment.end,
       headers: Subscription.dataTableHeader,
@@ -60,7 +59,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
       onEditTap: (row) async => await _onEditTap(subscriptions, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(row.first),
       onChecked: (bool? isChecked, List<String> row) =>
-          _onChecked(subscriptions, row.first, isChecked),
+          _onChecked(subscriptions, isChecked, row.first),
     );
   }
 
@@ -100,8 +99,8 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
   // Handle onChecked orders
   void _onChecked(
     List<Subscription> subscriptions,
-    String id,
     bool? isChecked,
+    String id,
   ) async {
     final subscription = _filterSub(id: id, subscriptions);
 

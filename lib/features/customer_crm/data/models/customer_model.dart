@@ -219,6 +219,7 @@ class Customer extends Equatable {
 
   /// ToList for Customers [itemAsList]
   List<String> itemAsList() => [
+    id,
     customerId,
     storeNumber,
     name.toTitleCase,
@@ -234,6 +235,7 @@ class Customer extends Equatable {
   ];
 
   static List<String> get dataTableHeader => const [
+    'ID',
     'Customer ID',
     'Store Number',
     'Name',

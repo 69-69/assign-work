@@ -5,6 +5,7 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/file_doc_manager.dart';
@@ -13,25 +14,27 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DynamicDataTable extends StatefulWidget {
-  /// Hide the first value of each row [skip]
-  /// If set to `true`, the first column in each row (e.g., the ID or any value)
-  /// will be hidden but only toggled when the `showIDToggle` is set to `true`.
-  final bool skip;
-
-  /// [skipPos] The position to skip or exclude from each row in the `rows` data.
+  /// [omitAtIndex] The index of the column to exclude or hide from the DataTable.
   ///
-  /// This value determines the index of the column to be excluded from the DataTable.
-  /// For example, if `skip` is set to `true` and `skipPos` is `1`, the second column
-  /// in each row (index 1) will be skipped (not displayed) in the DataTable view.
+  /// This value specifies the position of the column to be excluded from the UI,
+  /// while still retaining the data in the underlying business logic. For instance,
+  /// if `omitAtIndex` is set to `1`, the second column (index 1) in each row will be
+  /// hidden from the table, but the data will remain accessible for any operations or
+  /// further processing.
+  final int? omitAtIndex;
+
+  /// [maskAtIndex] The index of the column to mask sensitive data in the DataTable.
   ///
-  /// By default, `skipPos` is set to `1`, meaning the second column will be excluded.
-  final int skipPos;
+  /// This value specifies the position of the column to apply masking (e.g., showing
+  /// asterisks or hiding sensitive values). When set, the data in that column will be
+  /// masked or obfuscated in the table view, while still being available in the underlying
+  /// data model for business logic.
+  ///
+  /// For example, if `maskAtIndex` is set to `2`, the third column (index 2) will display
+  /// a masked version of its data in the table (e.g., "***" instead of a sensitive value).
+  final int? maskAtIndex;
 
-  /// Show or Hide Sensitive ID [showIDToggle]
-  /// Use [showIDToggle], [skip] must be set to TURE
-  final bool showIDToggle;
-
-  /// Add Widget to DataTable Top [anyWidget]
+  /// Add any Widget to DataTable Top [anyWidget]
   final Widget? anyWidget;
 
   /// Any Widget Alignment [anyWidgetAlignment]
@@ -81,9 +84,8 @@ class DynamicDataTable extends StatefulWidget {
     required this.headers,
     required this.rows,
     this.childrenRow,
-    this.skip = false,
-    this.skipPos = 1,
-    this.showIDToggle = false,
+    this.omitAtIndex,
+    this.maskAtIndex,
     this.anyWidget,
     this.editIcon,
     this.deleteIcon,
@@ -117,12 +119,15 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   // state to track current sort column
   String? _currentSortColumn;
 
+  int get totalRows => widget.rows.length + (widget.childrenRow?.length ?? 0);
+  int? get _skipAtIndex => widget.omitAtIndex;
+
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _horScrollController = ScrollController();
   final ScrollController _verScrollController = ScrollController();
 
   // Toggle Specific Row Id
-  void _toggleHideID(int index) {
+  void _toggleMask(int index) {
     setState(() {
       if (_visibleRowIdIndex == index) {
         _visibleRowIdIndex = null; // Hide if the same row is tapped again
@@ -133,10 +138,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 
   // Toggle All Row IDs
-  void _allToggleHideID() =>
+  void _toggleMaskAll() =>
       setState(() => _allVisibleRowIds = !_allVisibleRowIds);
-
-  int get totalRows => widget.rows.length + (widget.childrenRow?.length ?? 0);
 
   @override
   void initState() {
@@ -259,8 +262,9 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
     // Get the filtered & sorted rows
     final filteredAndSortedRows = _finalFilteredAndSortedRows;
+    return _buildBody(filteredAndSortedRows, _filteredChildRows);
 
-    return CustomScrollBar(
+    /*return CustomScrollBar(
       controller: _verScrollController,
       child: Wrap(
         alignment: widget.anyWidgetAlignment,
@@ -290,24 +294,13 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               });
             },
           ),
-          /*_SortByDropdown2(
-            headers: widget.headers,
-            filteredRows: filteredRows,
-            filteredChildRows: filteredChildRows,
-            initialSelection: 'Name', // Default sorting criterion
-            onSortedRowsChanged: (sortedRows) {
-              setState(() {
-                _sortedRows = sortedRows;
-              });
-            },
-          ),*/
 
           // Horizontal Scroll for DataTable
           CustomScrollBar(
             controller: _horScrollController,
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(bottom: 20.0),
-            child: _buildBody(
+            child: _buildDatatable(
               context,
               filteredAndSortedRows,
               _filteredChildRows,
@@ -317,58 +310,159 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           ),
         ],
       ),
-    );
+    );*/
   }
 
   _buildBody(
+    List<List<String>> filteredRows,
+    List<List<String>> filteredChildRows,
+  ) {
+    return SizedBox(
+      height: context.screenHeight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 20.0),
+          _headerWidgets(),
+
+          // Horizontal Scroll for DataTable
+          Expanded(
+            child: SizedBox(
+              width: context.screenWidth,
+              child: CustomScrollBar(
+                // Vertical Scroll for DataTable
+                controller: _verScrollController,
+                padding: EdgeInsets.only(
+                  top: 5.0,
+                  bottom: context.bottomInsetPadding,
+                ),
+                child: CustomScrollBar(
+                  // Horizontal Scroll for DataTable
+                  controller: _horScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: _buildDatatable(
+                    context,
+                    filteredRows,
+                    _filteredChildRows,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Wrap _headerWidgets() {
+    return Wrap(
+      alignment: widget.anyWidgetAlignment,
+      children: [
+        // Any custom widget above table (e.g., export buttons)
+        _AnyWidget(
+          headers: widget.headers,
+          anyWidget: widget.anyWidget,
+          selectedRows: _getSelectedRows,
+        ),
+
+        // Search TextField
+        _SearchTextField(
+          controller: _searchController,
+          onPressed: () => _searchController.clear(),
+        ),
+
+        // Sort By Dropdown Button
+        _SortByDropdown(
+          headers: widget.headers,
+          initialSelection: _currentSortColumn,
+          onSortChanged: (column) {
+            setState(() => _currentSortColumn = column);
+          },
+        ),
+      ],
+    );
+  }
+
+  _buildDatatable(
     BuildContext context,
     List<List<String>> filteredRows,
     List<List<String>> filteredChildRows,
   ) {
     const textStyle = TextStyle(overflow: TextOverflow.ellipsis);
 
-    return DataTable(
-      // columnSpacing: context.screenWidth / widget.headers.length,
-      showCheckboxColumn: false,
-      border: const TableBorder(verticalInside: BorderSide(width: 0.1)),
-      headingTextStyle: textStyle,
-      dataTextStyle: textStyle,
-      headingRowColor: const WidgetStatePropertyAll(kGrayBlueColor),
-      columns: _buildDataColumns(context),
-      rows: [
-        ..._buildDataRows(context, rows: filteredRows),
-        if (widget.childrenRow != null)
-          ..._buildDataRows(
-            context,
-            rows: filteredChildRows,
-            startIndex: filteredRows.length,
-            color: WidgetStatePropertyAll(kDangerColor.toAlpha(0.1)),
-          ),
-      ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: context.screenWidth),
+      child: IntrinsicWidth(
+        // Optional: lets DataTable grow naturally
+        child: DataTable(
+          // columnSpacing: context.screenWidth / widget.headers.length,
+          showCheckboxColumn: false,
+          border: const TableBorder(verticalInside: BorderSide(width: 0.1)),
+          headingTextStyle: textStyle,
+          dataTextStyle: textStyle,
+          headingRowColor: const WidgetStatePropertyAll(kGrayBlueColor),
+          columns: _buildColumns(context),
+          rows: [
+            ..._buildRows(context, rows: filteredRows),
+            if (widget.childrenRow != null)
+              ..._buildRows(
+                context,
+                rows: filteredChildRows,
+                startIndex: filteredRows.length,
+                color: WidgetStatePropertyAll(kDangerColor.toAlpha(0.1)),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  /// Skip / Exclude / Hide the first value of each row in the `List<List<String>>`
-  /// In this case: hiding the ID value from the UI
-  Iterable<String> _excludeTheFirstValue(List<String> list) =>
-      widget.skip ? list.skip(widget.skipPos) : list;
+  /// Excludes/Hides a value at a specific position from the UI but keeps it in the data layer or code.
+  /*Iterable<String> _excludeTheFirstValue2(List<String> list) =>
+      widget.skip ? list.skip(widget.skipAtIndex) : list;
+
+     Iterable<String> _excludeAtIndex(List<String> list) =>
+      _skipAtIndex.isNotNullNorEmpty
+      ? List.generate(
+          list.length,
+          (i) => i,
+        ).where((i) => i != _skipAtIndex).map((i) => list[i])
+      : list;*/
+
+  Iterable<String> _excludeAtIndex(List<String> list) {
+    final indicesToExclude = <int>{
+      if (_maskAtIndex != null) _maskAtIndex!,
+      if (_skipAtIndex != null) _skipAtIndex!,
+    };
+
+    return list
+        .asMap()
+        .entries
+        .where((entry) => !indicesToExclude.contains(entry.key))
+        .map((entry) => entry.value);
+  }
 
   /// Build DataTable Header [_buildDataColumn]
-  List<DataColumn> _buildDataColumns(BuildContext context) {
+  List<DataColumn> _buildColumns(BuildContext context) {
     final columns = [
       // Toggle All CheckBoxes
       DataColumn(tooltip: 'Select all', label: _buildParentCheckbox()),
 
-      // Toggle All Hide Row-IDs Icon
-      if (widget.showIDToggle) ...{
+      // Toggle Multiple (mask/unmask) secrets in a  (e.g., IDs, any sensitive data)
+      if (_maskAtIndex.isNotNullNorEmpty) ...{
         DataColumn(
-          tooltip: 'Show ${widget.headers.first}',
-          label: _makeVisibleAllRowIDs(context),
+          tooltip: 'Show ${widget.headers[_maskAtIndex!]}',
+          label: _ToggleMaskAllButton(
+            headerValue: widget.headers[_maskAtIndex!],
+            isToggle: _allVisibleRowIds,
+            onPressed: () => _toggleMaskAll(),
+          ),
         ),
       },
 
-      // Skip the first header: ...widget.headers.skip(1)
-      ..._excludeTheFirstValue(
+      // Skip the first header
+      ..._excludeAtIndex(
         widget.headers,
       ).map((header) => _buildDataColumn(header)),
 
@@ -387,31 +481,14 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     return columns;
   }
 
+  int? get _maskAtIndex => widget.maskAtIndex;
+
   /// Parent checkbox (Multiple check)
   Checkbox _buildParentCheckbox() {
     return Checkbox(
       value: _allSelectedStatus,
       side: const BorderSide(width: 3.0, color: kLightColor),
       onChanged: _toggleAllSelection,
-    );
-  }
-
-  TextButton _makeVisibleAllRowIDs(BuildContext context) {
-    return TextButton.icon(
-      iconAlignment: IconAlignment.end,
-      style: const ButtonStyle(
-        padding: WidgetStatePropertyAll(EdgeInsets.zero),
-      ),
-      icon: Icon(
-        _allVisibleRowIds ? Icons.visibility : Icons.visibility_off,
-        color: _allVisibleRowIds ? kLightColor : kLightBlueColor,
-      ),
-      onPressed: () => _allToggleHideID(),
-      label: Text(
-        widget.headers.first.toUpperCaseAll,
-        style: context.textTheme.titleMedium?.copyWith(color: kLightColor),
-        // textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
     );
   }
 
@@ -424,8 +501,21 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     ),
   );
 
-  /// Build DataTable Body [_buildDataRows]
-  List<DataRow> _buildDataRows(
+  /// Build DataRow [_buildDataRow]
+  DataRow _buildDataRow({
+    bool selected = false,
+    required List<DataCell> cells,
+    void Function(bool?)? onSelectChanged,
+    WidgetStateProperty<Color?>? color,
+  }) => DataRow(
+    cells: cells,
+    color: color,
+    selected: selected,
+    onSelectChanged: onSelectChanged,
+  );
+
+  /// Build DataTable Body [_buildRows]
+  List<DataRow> _buildRows(
     BuildContext context, {
     int startIndex = 0,
     required List<List<String>> rows,
@@ -437,37 +527,31 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
       // Return an empty DataRow if index is out of bounds
       if (index >= _selectedRowsStatus.length) {
-        return const DataRow(cells: []);
+        return _buildDataRow(cells: []);
       }
 
-      return DataRow(
+      return _buildDataRow(
         selected: _selectedRowsStatus[index],
         onSelectChanged: (bool? selected) {
-          setState(() {
-            _selectedRowsStatus[index] = selected ?? false;
-
-            // Update _allSelected based on the selection state
-            // _allSelected = _selectedRows.every((isSelected) => isSelected);
-          });
+          setState(() => _selectedRowsStatus[index] = selected ?? false);
         },
         cells: [
           // Individual Checkboxes
           _buildEachCheckBox(index, row),
 
-          // toggleHideID
-          if (widget.showIDToggle) ...{
+          // Toggle Single (mask/unmask) secret (e.g., ID, any sensitive data)
+          if (_maskAtIndex.isNotNullNorEmpty) ...{
             DataCell(
-              _ToggleSecretButton(
-                id: row.first,
-                index: index,
+              _ToggleMaskButton(
+                rowValue: row[_maskAtIndex!],
                 isToggle: (_visibleRowIdIndex == index || _allVisibleRowIds),
-                onPressed: () => _toggleHideID(index),
+                onPressed: () => _toggleMask(index),
               ),
             ),
           },
 
           // Data to display: Skip the first value in each row: ...row.skip(1)
-          ..._excludeTheFirstValue(row).map((cell) {
+          ..._excludeAtIndex(row).map((cell) {
             return DataCell(
               showEditIcon: false,
               cell.isNullOrEmpty
@@ -486,9 +570,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               _OptButton(
                 icon: widget.optButtonIcon,
                 label: widget.optButtonLabel,
-                onTap: () {
-                  widget.onOptButtonTap!(row);
-                },
+                onTap: () => widget.onOptButtonTap!(row),
               ),
             ),
           },
@@ -498,9 +580,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               _EditButton(
                 icon: widget.editIcon,
                 label: widget.editLabel,
-                onTap: () {
-                  widget.onEditTap!(row);
-                },
+                onTap: () => widget.onEditTap!(row),
               ),
             ),
           },
@@ -510,9 +590,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               _DeleteButton(
                 icon: widget.deleteIcon,
                 label: widget.deleteLabel,
-                onTap: () {
-                  widget.onDeleteTap!(row);
-                },
+                onTap: () => widget.onDeleteTap!(row),
               ),
             ),
           },
@@ -544,6 +622,38 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         value: _selectedRowsStatus[index],
         side: const BorderSide(width: 1.0),
         onChanged: (bool? selected) {
+          // Update the selection status of the individual checkbox
+          setState(() => _selectedRowsStatus[index] = selected ?? false);
+
+          // Count how many checkboxes are selected
+          int selectedCount = _selectedRowsStatus
+              .where((status) => status)
+              .length;
+
+          // If two or more checkboxes are selected, call the `onAllChecked` callback
+          if (selectedCount >= 2 && widget.onAllChecked != null) {
+            widget.onAllChecked!(
+              true, // or pass the actual "Select All" status if needed
+              _selectedRowsStatus,
+              _getSelectedRows(),
+            );
+          }
+
+          // Notify the individual checkbox selection change if the callback is provided
+          if (widget.onChecked != null) {
+            widget.onChecked!(selected, row);
+          }
+        },
+      ),
+    );
+  }
+
+  /*DataCell _buildEachCheckBox2(int index, List<String> row) {
+    return DataCell(
+      Checkbox(
+        value: _selectedRowsStatus[index],
+        side: const BorderSide(width: 1.0),
+        onChanged: (bool? selected) {
           /*setState(() {
             if (selected == true) {
               // Uncheck all except the currently selected
@@ -563,7 +673,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         },
       ),
     );
-  }
+  }*/
 }
 
 /// [_DataTableHelper] for filtering and sorting
@@ -642,7 +752,7 @@ class _SearchTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: context.screenWidth,
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
       child: CustomTextField(
         controller: controller,
         keyboardType: TextInputType.text,
@@ -688,38 +798,28 @@ class _SortByDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownMenu<String>(
-      hintText: 'Sort By...',
-      initialSelection: initialSelection,
-      onSelected: (value) {
-        if (value != null) {
-          onSortChanged(value);
-        }
-      },
-      dropdownMenuEntries: headers.map((header) {
-        return DropdownMenuEntry<String>(value: header, label: header);
-      }).toList(),
-      trailingIcon: const Icon(Icons.sort),
-      textStyle: TextStyle(overflow: TextOverflow.ellipsis),
-      enableFilter: true,
-      menuStyle: const MenuStyle(
-        visualDensity: VisualDensity.compact,
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide.none,
-          ),
+    return SizedBox(
+      width: 150,
+      child: StaticDropdown<String>(
+        isMenu: true,
+        label: 'Sort By...',
+        icon: const Icon(Icons.sort),
+        initialValue: initialSelection,
+        items: ['Sort By...', ...headers],
+        getValue: (header) => header,
+        getDisplayText: (header) => header,
+        onChanged: (value) {
+          if (value != null) {
+            onSortChanged(value);
+          }
+        },
+        menuDecoration: InputDecorationTheme(
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        isDense: true,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
-        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      ),
-      width: 150,
     );
   }
 }
@@ -764,18 +864,17 @@ class _AnyWidget extends StatelessWidget {
   }
 }
 
-/// [_ToggleSecretButton] For security, secrets (e.g.: ID, ref) are hidden, unless toggled
-class _ToggleSecretButton extends StatelessWidget {
+/// Toggle a Single masked (e.g.: ID, ref) in a row [_ToggleMaskButton]
+/// For security, secrets (e.g.: ID, ref) are masked/obscured, unless toggled
+class _ToggleMaskButton extends StatelessWidget {
   final bool isToggle;
-  final int index;
-  final String id;
+  final String rowValue;
   final void Function()? onPressed;
 
-  const _ToggleSecretButton({
+  const _ToggleMaskButton({
     required this.onPressed,
     required this.isToggle,
-    required this.id,
-    required this.index,
+    required this.rowValue,
   });
 
   @override
@@ -790,7 +889,46 @@ class _ToggleSecretButton extends StatelessWidget {
         color: isToggle ? kGrayBlueColor : kGrayColor,
       ),
       onPressed: onPressed,
-      label: isToggle ? context.copyPasteText(str: id) : const Text('***'),
+      label: isToggle
+          ? context.copyPasteText(str: rowValue)
+          : const Text('***', overflow: TextOverflow.ellipsis),
+    );
+  }
+}
+
+/// Toggle All masked (e.g.: ID, ref) in a row [_ToggleMaskButton]
+/// For security, secrets (e.g.: ID, ref) are masked/obscured, unless toggled
+class _ToggleMaskAllButton extends StatelessWidget {
+  final bool isToggle;
+  final String headerValue;
+  final void Function()? onPressed;
+
+  const _ToggleMaskAllButton({
+    required this.onPressed,
+    required this.isToggle,
+    required this.headerValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      iconAlignment: IconAlignment.end,
+      style: const ButtonStyle(
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
+      ),
+      icon: Icon(
+        isToggle ? Icons.visibility : Icons.visibility_off,
+        color: isToggle ? kLightColor : kLightBlueColor,
+      ),
+      onPressed: onPressed,
+      label: Text(
+        headerValue.toUpperCaseAll,
+        style: context.textTheme.titleMedium?.copyWith(
+          color: kLightColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+        // textScaler: TextScaler.linear(context.textScaleFactor),
+      ),
     );
   }
 }
@@ -867,7 +1005,13 @@ class _OptButton extends StatelessWidget {
       borderColor: kWarningColor,
       onPressed: onTap,
       tooltip: text,
-      label: Text(text, style: const TextStyle(color: kWarningColor)),
+      label: Text(
+        text,
+        style: const TextStyle(
+          color: kWarningColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 }
@@ -893,7 +1037,13 @@ class _EditButton extends StatelessWidget {
       borderColor: kPrimaryAccentColor,
       onPressed: onTap,
       tooltip: text,
-      label: Text(text, style: const TextStyle(color: kPrimaryAccentColor)),
+      label: Text(
+        text,
+        style: const TextStyle(
+          color: kPrimaryAccentColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 }
@@ -919,118 +1069,13 @@ class _DeleteButton extends StatelessWidget {
       bgColor: context.colorScheme.error,
       tooltip: text,
       onPressed: onTap,
-      label: Text(text, style: const TextStyle(color: kLightColor)),
+      label: Text(
+        text,
+        style: const TextStyle(
+          color: kLightColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
     );
   }
 }
-
-/*class _SortByDropdown2 extends StatelessWidget {
-  final List<String> headers;
-  final List<List<String>> filteredRows;
-  final List<List<String>> filteredChildRows;
-  final String? initialSelection;
-  final ValueChanged<List<List<String>>> onSortedRowsChanged;
-
-  const _SortByDropdown2({
-    required this.headers,
-    required this.filteredRows,
-    required this.filteredChildRows,
-    this.initialSelection,
-    required this.onSortedRowsChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownMenu<String>(
-      hintText: 'Sort By...',
-      initialSelection: initialSelection,
-      onSelected: (value) {
-        if (value != null) {
-          _applySorting(value);
-        }
-      },
-      dropdownMenuEntries: headers.map((header) {
-        return DropdownMenuEntry<String>(value: header, label: header);
-      }).toList(),
-      trailingIcon: const Icon(Icons.sort),
-      textStyle: const TextStyle(fontSize: 13),
-      enableFilter: true,
-      menuStyle: const MenuStyle(
-        visualDensity: VisualDensity.compact,
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide.none,
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        isDense: true,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        filled: true,
-        fillColor: kLightBlueColor.toAlpha(0.5),
-        labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
-        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      ),
-      width: 150,
-    );
-  }
-
-  void _applySorting(String criterion) {
-    // Combine rows before sorting
-    final rows = [...filteredRows, ...filteredChildRows];
-
-    // Identify the column index based on the selected sorting criterion
-    int columnIndex = headers.indexOf(criterion);
-
-    if (columnIndex == -1) return; // If criterion not found, don't sort
-
-    // Sort rows based on the selected header column
-    rows.sort((a, b) {
-      final valueA = a[columnIndex];
-      final valueB = b[columnIndex];
-
-      // Handle case where values are numeric
-      if (valueA.isNumeric && valueB.isNumeric) {
-        return double.parse(valueA).compareTo(double.parse(valueB));
-      }
-      // Handle case where values are DateTime strings
-      else if (_isValidDate(valueA) && _isValidDate(valueB)) {
-        final dateA = _parseDate(valueA);
-        final dateB = _parseDate(valueB);
-        return dateA.compareTo(dateB);
-      }
-      // Default string comparison
-      else {
-        return valueA.compareTo(valueB);
-      }
-    });
-
-    // Notify the parent widget that the rows have been sorted
-    onSortedRowsChanged(rows);
-  }
-
-  // Helper function to check if the value is a valid date string
-  bool _isValidDate(String value) {
-    try {
-      _parseDate(value);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Helper function to parse the date using DateFormat
-  DateTime _parseDate(String value) {
-    try {
-      // Try to parse the non-standard date format
-      final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
-      return dateFormat.parse(value);
-    } catch (e) {
-      // If parsing fails, throw an error
-      throw FormatException("Invalid date format");
-    }
-  }
-}*/

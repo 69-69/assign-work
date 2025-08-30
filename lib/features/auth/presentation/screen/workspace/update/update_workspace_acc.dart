@@ -6,6 +6,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
+import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/screen/widget/workspace_form_inputs.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/all_tenants/all_tenants_bloc.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/tenant_bloc.dart';
@@ -59,7 +60,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
   /// Update Workspace Role [_updateWorkspaceRole]
   void _updateWorkspaceRole(String role) {
-    final obj = Workspace.getRoleByString(role);
+    final obj = getRoleByString(role);
 
     _workspace.copyWith(role: obj);
 
@@ -113,7 +114,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        WorkspaceRole(
+        WorkspaceRoleDropdown(
           key: const Key('edit-workspace-role'),
           serverRole: _workspace.role.name,
           onRoleChanged: (v) =>

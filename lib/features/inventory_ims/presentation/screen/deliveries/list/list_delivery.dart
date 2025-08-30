@@ -66,14 +66,13 @@ class _ListDeliveriesState extends State<ListDeliveries> {
     final deliveredDeliveries = Delivery.filterDeliveriesByDate(deliveries);
 
     return DynamicDataTable(
-      skip: true,
-      showIDToggle: true,
+      omitAtIndex: 0,
       headers: Delivery.dataHeader,
       anyWidget: _buildAnyWidget(deliveries),
       rows: pendingDeliveries.map((d) => d.itemAsList()).toList(),
       childrenRow: deliveredDeliveries.map((d) => d.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
-          _onChecked(deliveries, row, isChecked),
+          _onChecked(deliveries, isChecked, row.first),
       onAllChecked:
           (
             bool isChecked,
@@ -86,14 +85,15 @@ class _ListDeliveriesState extends State<ListDeliveries> {
             }
             if (checkedRows.isNotEmpty) {
               for (int i = 0; i < checkedRows.length; i++) {
-                _onChecked(deliveries, checkedRows[i], isChecked);
+                final id = checkedRows[i].first;
+                _onChecked(deliveries, isChecked, id);
               }
             }
           },
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onInvoiceTap(deliveries, row),
-      onEditTap: (row) async => _onEditTap(deliveries, row),
-      onDeleteTap: (row) async => _onDeleteTap(deliveries, row),
+      onOptButtonTap: (row) async => await _onInvoiceTap(deliveries, row.first),
+      onEditTap: (row) async => _onEditTap(deliveries, row.first),
+      onDeleteTap: (row) async => _onDeleteTap(deliveries, row.first),
     );
   }
 
@@ -124,13 +124,9 @@ class _ListDeliveriesState extends State<ListDeliveries> {
   }
 
   // Handle onChecked Deliveries
-  void _onChecked(
-    List<Delivery> deliveries,
-    List<String> row,
-    bool? isChecked,
-  ) async {
+  void _onChecked(List<Delivery> deliveries, bool? isChecked, String id) async {
     setState(() {
-      final delivery = deliveries.firstWhere((d) => d.id == row.first);
+      final delivery = deliveries.firstWhere((d) => d.id == id);
 
       if (isChecked != null && isChecked) {
         _groupMultiDelete.add(delivery);
@@ -140,10 +136,10 @@ class _ListDeliveriesState extends State<ListDeliveries> {
     });
   }
 
-  _onInvoiceTap(List<Delivery> deliveries, List<String> row) async {
+  _onInvoiceTap(List<Delivery> deliveries, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
-      request: _printout(deliveries, row),
+      request: _printout(deliveries, id),
       onSuccess: (_) =>
           context.showAlertOverlay('Printout successfully created'),
       onError: (error) => context.showAlertOverlay(
@@ -153,10 +149,10 @@ class _ListDeliveriesState extends State<ListDeliveries> {
     );
   }
 
-  Future<dynamic> _printout(List<Delivery> deliveries, List<String> row) =>
+  Future<dynamic> _printout(List<Delivery> deliveries, String id) =>
       Future.delayed(kRProgressDelay, () async {
         // Simulate loading supplier and company info
-        final delivery = Delivery.findDeliveryById(deliveries, row.first).first;
+        final delivery = Delivery.findDeliveryById(deliveries, id).first;
 
         // get Orders from Orders-Database
         final orders = await GetOrders.getWithSameId(delivery.orderNumber);
@@ -170,22 +166,20 @@ class _ListDeliveriesState extends State<ListDeliveries> {
         }
       });
 
-  Future<void> _onEditTap(List<Delivery> deliveries, List<String> row) async {
-    final delivery = Delivery.findDeliveryById(deliveries, row.first).first;
+  Future<void> _onEditTap(List<Delivery> deliveries, String id) async {
+    final delivery = Delivery.findDeliveryById(deliveries, id).first;
     await context.openUpdateDelivery(delivery: delivery);
   }
 
-  Future<void> _onDeleteTap(List<Delivery> deliveries, List<String> row) async {
-    {
-      final delivery = Delivery.findDeliveryById(deliveries, row.first).first;
+  Future<void> _onDeleteTap(List<Delivery> deliveries, String id) async {
+    final delivery = Delivery.findDeliveryById(deliveries, id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Delete specific delivery
-        context.read<DeliveryBloc>().add(
-          DeleteInventory<String>(documentId: delivery.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Delete specific delivery
+      context.read<DeliveryBloc>().add(
+        DeleteInventory<String>(documentId: delivery.id),
+      );
     }
   }
 }

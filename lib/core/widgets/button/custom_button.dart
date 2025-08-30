@@ -51,7 +51,10 @@ extension Custombutton on BuildContext {
               message: tooltip ?? labelText,
               child: Text(
                 labelText,
-                style: const TextStyle(color: kLightColor),
+                style: const TextStyle(
+                  color: kLightColor,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 semanticsLabel: label,
               ),
             ),
@@ -86,6 +89,7 @@ extension Custombutton on BuildContext {
                 label,
                 style: TextStyle(color: txtColor),
                 semanticsLabel: label,
+                overflow: TextOverflow.ellipsis,
               )
             : label,
       ),
@@ -115,7 +119,7 @@ extension Custombutton on BuildContext {
         message: tooltip ?? label,
         child: Text(
           label,
-          style: TextStyle(color: txtColor),
+          style: TextStyle(color: txtColor, overflow: TextOverflow.ellipsis),
           semanticsLabel: label,
         ),
       ),

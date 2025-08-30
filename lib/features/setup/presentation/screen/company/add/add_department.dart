@@ -5,6 +5,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/setup/data/models/department_model.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/company/department_bloc.dart';
 import 'package:assign_erp/features/setup/presentation/bloc/setup_bloc.dart';
@@ -32,25 +33,22 @@ class _AddDepartmentForm extends StatefulWidget {
 }
 
 class _AddDepartmentFormState extends State<_AddDepartmentForm> {
-  bool isInProgress = false;
   final _formKey = GlobalKey<FormState>();
   final List<Department> _departmentList = [];
+
   Department? get _serverDepartment => widget.serverDepartment;
   bool get _isValid => _formKey.currentState?.validate() ?? false;
-
-  void _isInProgress() {
-    setState(() => isInProgress = !isInProgress);
-  }
+  String get _employeeName => context.employee!.fullName;
 
   void _onSubmit() {
     if (_isValid && _departmentList.isNotEmpty) {
-      _isInProgress();
       final bloc = context.read<DepartmentBloc>();
 
       if (_serverDepartment != null) {
         final updated = _departmentList.first.copyWith(
           id: _serverDepartment!.id,
           code: _serverDepartment!.code,
+          updatedBy: _employeeName,
         );
 
         bloc.add(
@@ -64,21 +62,25 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
       _formKey.currentState!.reset();
 
       context.showAlertOverlay('Department(s) successfully created');
-      _isInProgress();
       Navigator.pop(context);
     }
   }
 
   List<Department> _prepareNewDepartment() {
-    // append department code to each department
+    // Append department code to each department
     final newDeparts = _departmentList
-        .map((e) => e.copyWith(code: e.name.generateUniqueCode()))
+        .map(
+          (e) => e.copyWith(
+            code: e.name.generateUniqueCode(),
+            createdBy: _employeeName,
+          ),
+        )
         .toList();
     return newDeparts;
   }
 
   // load existing departments
-  void _loadExisting() {
+  void _loadExistingDeparts() {
     if (_serverDepartment != null) {
       _departmentList.clear();
       _departmentList.add(_serverDepartment!);
@@ -88,21 +90,15 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   @override
   void initState() {
     super.initState();
-    _loadExisting();
+    _loadExistingDeparts();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AbsorbPointer(
-      absorbing: isInProgress,
-      child: Opacity(
-        opacity: isInProgress ? 0.5 : 1.0,
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: _buildBody(context),
-        ),
-      ),
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: _buildBody(context),
     );
   }
 
@@ -113,16 +109,14 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              title: _serverDepartment?.name ?? 'Organization\'s Departments',
               showButton: _serverDepartment != null,
+              title: _serverDepartment?.name ?? 'Organization\'s Departments',
               fieldsConfig: _fieldsConfig,
-              initialData: [
-                _serverDepartment?.toMap().map(
-                      (key, value) => MapEntry(key, value.toString()),
-                    ) ??
-                    {},
-              ],
-              onChanged: (List<Map<String, String>> data) {
+              initialData: [?_serverDepartment?.toMap()],
+              /*initialData: [
+              _serverDepartment?.toMap().map((k, v) => MapEntry(k, v.toString())) ?? {};
+              ],*/
+              onChanged: (List<Map<String, dynamic>> data) {
                 if (_isValid) setState(() {});
 
                 // Create a new line item
@@ -142,20 +136,23 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     );
   }
 
-  List<FieldConfig> get _fieldsConfig {
+  List<FieldGroupConfig> get _fieldsConfig {
     return [
-      FieldConfig(
+      FieldGroupConfig(
         key: 'name',
+        label: 'Department Name',
         type: TextInputType.text,
         helperText: 'Department name',
       ),
-      FieldConfig(
+      FieldGroupConfig(
         key: 'lead',
+        label: 'Department Lead',
         type: TextInputType.text,
         helperText: 'Department Lead name',
       ),
-      FieldConfig(
+      FieldGroupConfig(
         key: 'description',
+        label: 'Description',
         type: TextInputType.multiline,
         maxLines: 3,
         helperText: 'Short description of the department\'s role',

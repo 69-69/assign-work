@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -18,9 +18,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
-/// Workspace Account Role Dropdown [WorkspaceRole]
-class WorkspaceRole extends StatelessWidget {
-  const WorkspaceRole({
+/// Workspace Account Role Dropdown [WorkspaceRoleDropdown]
+class WorkspaceRoleDropdown extends StatelessWidget {
+  const WorkspaceRoleDropdown({
     super.key,
     required this.onRoleChanged,
     this.serverRole,
@@ -31,12 +31,14 @@ class WorkspaceRole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown(
+    return StaticDropdown<String>(
       key: key,
+      initialValue: serverRole,
       items: workspaceRoleList,
       label: workspaceRoleList.first,
-      initialValue: serverRole,
-      onValueChange: (String? v) => onRoleChanged(v),
+      getValue: (role) => role,
+      getDisplayText: (role) => role,
+      onChanged: (String? v) => onRoleChanged(v),
     );
   }
 }
@@ -57,18 +59,20 @@ class WorkspaceCategory extends StatelessWidget {
   }
 
   StaticDropdown _buildBody(BuildContext context, WorkspaceAuthState state) {
-    return StaticDropdown(
-      items: workspaceCategories,
-      label: 'Workspace category',
+    return StaticDropdown<String>(
       initialValue: serverEntity,
-      onValueChange: (String? v) {
+      label: 'Workspace category',
+      items: workspaceCategories,
+      getValue: (type) => type,
+      getDisplayText: (type) => type,
+      onChanged: (String? v) {
         if (v != null) {
           context.read<WorkspaceAuthBloc>().add(
             WorkspaceCategoryChanged(v.trim()),
           );
         }
       },
-      inputDecoration: InputDecoration(
+      buttonDecoration: InputDecoration(
         errorText: state.workspaceName.displayError != null
             ? 'Choose workspace category'
             : null,
@@ -254,7 +258,7 @@ class EmailInput extends StatelessWidget {
   const EmailInput({
     super.key,
     this.checkMobileNumber = false,
-    this.label = 'Business email',
+    this.label = 'Workspace email',
   });
 
   @override
@@ -727,16 +731,15 @@ class ForgotWorkspacePasswordButton extends StatelessWidget {
 }
 
 class _PendingPlaceholder extends StatelessWidget {
-  final double? height;
   final String? tooltip;
-  const _PendingPlaceholder({this.height, this.tooltip});
+  const _PendingPlaceholder({this.tooltip});
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
       message: 'Complete ${tooltip ?? 'previous step'} before continuing',
       child: SizedBox(
-        height: height ?? 50,
+        height: 50,
         child: Opacity(
           opacity: 0.4,
           child: Card(

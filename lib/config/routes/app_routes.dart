@@ -153,6 +153,7 @@ GoRoute _setupRoute() {
     RouteNames.companyInfo,
     RouteNames.allEmployees,
     RouteNames.manageRoles,
+    RouteNames.manageTaxes,
     RouteNames.productConfig,
     RouteNames.backup,
     RouteNames.licenseRenewal,

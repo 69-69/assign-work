@@ -97,7 +97,7 @@ abstract class RouteNames {
   static const productConfig = 'product_config_screen';
   static const backup = 'backup_screen';
   static const licenseRenewal = 'license_renewal_screen';
-  // static const manageUserAccount = 'manage_user_account_screen';
+  static const manageTaxes = 'manage_taxes_screen';
 
   /// ───────────────────────── 🔄 Switch/Change Store/Shop Locations ─────────────────────────
   static const switchStoresAccount = 'switch_store_locations_screen';

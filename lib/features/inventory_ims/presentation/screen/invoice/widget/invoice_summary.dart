@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_enum.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
@@ -171,11 +171,13 @@ class _InvoiceTypeAndValidityDropdown extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: StaticDropdown(
+            child: StaticDropdown<String>(
               key: key,
               items: invoiceType,
               label: 'invoice type',
-              onValueChange: (String? v) => onInvoiceChange(v),
+              getValue: (type) => type,
+              getDisplayText: (type) => type,
+              onChanged: (String? v) => onInvoiceChange(v),
             ),
           ),
           const SizedBox(width: 20.0),

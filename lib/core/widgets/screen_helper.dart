@@ -353,6 +353,7 @@ class _RefreshButtonState extends State<RefreshButton>
         // alert user
         context.showAlertOverlay(
           bgColor: kPrimaryAccentColor,
+          duration: 3,
           '${widget.tooltip.replaceAll('Refresh', 'Refreshing')}...',
         );
         // delay & run callback function(refresh data)
@@ -360,7 +361,9 @@ class _RefreshButtonState extends State<RefreshButton>
         controller.stop();
         controller.reset();
         if (context.mounted) {
-          context.showAlertOverlay('${widget.tooltip} Successful...');
+          context.showAlertOverlay(
+            '${widget.tooltip.replaceAll('Refresh', '')} Successful Refreshed...',
+          );
         }
       },
     );

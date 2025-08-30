@@ -46,7 +46,7 @@ class AssignEmployeeRole extends StatelessWidget {
     return CustomDialog(
       title: DialogTitle(
         title: 'Assign Role',
-        subtitle: 'Assign a role to $_employeeName',
+        subtitle: 'Assign role to $_employeeName',
       ),
       body: _buildBody(context),
       actions: [],
@@ -67,7 +67,7 @@ class AssignEmployeeRole extends StatelessWidget {
               ),
             );
 
-            context.showCustomSnackBar(
+            context.showAlertOverlay(
               'Role assigned to $_employeeName successfully',
             );
           },
