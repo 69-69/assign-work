@@ -129,10 +129,10 @@ class Customer extends Equatable {
   );
 
   String get itemAsString => name.contains(autoID)
-      ? name.toUpperCaseAll
+      ? name.toUpperAll
       : isEmpty
       ? 'No Data'
-      : '$name - $customerId'.toTitleCase;
+      : '$name - $customerId'.toTitle;
 
   /// [findCustomerById]
   static Iterable<Customer> findCustomerById(
@@ -222,15 +222,15 @@ class Customer extends Equatable {
     id,
     customerId,
     storeNumber,
-    name.toTitleCase,
+    name.toTitle,
     phone,
     altPhone,
     email,
     getBirthDay,
-    address.toTitleCase,
-    companyName.toTitleCase,
-    createdBy.toTitleCase,
-    updatedBy.toTitleCase,
+    address.toTitle,
+    companyName.toTitle,
+    createdBy.toTitle,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

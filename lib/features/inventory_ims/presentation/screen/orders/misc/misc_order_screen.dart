@@ -18,7 +18,7 @@ class MiscOrderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<MiscOrderBloc, InventoryState<MiscOrder>>(
       builder: (context, state) => CustomScaffold(
-        title: miscOrderScreenTitle.toUpperCaseAll,
+        title: miscOrderScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'Create Misc Order',

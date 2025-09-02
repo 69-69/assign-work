@@ -154,10 +154,10 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
       margin: const EdgeInsets.only(right: 20),
       alignment: Alignment.centerRight,
       child: context.elevatedIconBtn(
-        Icon(Icons.analytics_outlined, color: kLightColor),
+        Icon(Icons.analytics_outlined, color: kWhiteColor),
         label: Text(
           'Show Metrics',
-          style: context.textTheme.bodyMedium?.copyWith(color: kLightColor),
+          style: context.textTheme.bodyMedium?.copyWith(color: kWhiteColor),
         ),
         onPressed: _toggleMetricsVisibility,
         style: ElevatedButton.styleFrom(
@@ -294,25 +294,25 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
     return (canAccess
             ? (tile.description ?? '')
             : "You don't have permission to use this feature")
-        .toTitleCase;
+        .toTitle;
   }
 
   GridTile _buildGridTile(DashboardTile tile, BuildContext context, viewCard) {
     return GridTile(
       header: Text(
-        tile.label.toUpperCaseAll,
+        tile.label.toUpperAll,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: kLightColor),
+        style: const TextStyle(color: kWhiteColor),
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
       footer: context.isMobile
           ? null
           : Text(
-              (tile.description ?? '').toSentenceCase,
+              (tile.description ?? '').toSentence,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: kLightColor),
+              style: const TextStyle(color: kWhiteColor),
             ),
       child: viewCard,
     );
@@ -376,7 +376,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
       dense: true,
       contentPadding: EdgeInsets.zero,
       title: Text(
-        title.toUpperCaseAll,
+        title.toUpperAll,
         textAlign: TextAlign.center,
         style: context.textTheme.titleMedium?.copyWith(
           color: kLightBlueColor,
@@ -392,7 +392,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
       subtitle: subTitle.isEmpty
           ? null
           : Text(
-              subTitle.toUpperCaseAll,
+              subTitle.toUpperAll,
               textAlign: TextAlign.center,
               textScaler: TextScaler.linear(context.textScaleFactor),
             ),
@@ -413,9 +413,9 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         if (!context.isMobile) ...[
           const SizedBox(width: 10),
           Text(
-            tile.label.toUpperCaseAll,
+            tile.label.toUpperAll,
             textAlign: TextAlign.center,
-            style: context.textTheme.titleMedium?.copyWith(color: kLightColor),
+            style: context.textTheme.titleMedium?.copyWith(color: kWhiteColor),
             textScaler: TextScaler.linear(context.textScaleFactor),
           ),
         ],

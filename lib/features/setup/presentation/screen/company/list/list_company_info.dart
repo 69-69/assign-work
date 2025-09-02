@@ -78,7 +78,7 @@ class _InfoCard extends StatelessWidget {
               _buildLogo(context),
               const SizedBox(height: 20),
               Text(
-                info.name.toTitleCase,
+                info.name.toTitle,
                 textAlign: TextAlign.start,
                 overflow: TextOverflow.ellipsis,
                 style: context.textTheme.displaySmall?.copyWith(
@@ -112,7 +112,7 @@ class _InfoCard extends StatelessWidget {
 
     return Card(
       elevation: 5,
-      color: kLightColor,
+      color: kWhiteColor,
       margin: const EdgeInsets.only(top: 18.0),
       child: Padding(
         padding: const EdgeInsets.all(5.0),
@@ -162,7 +162,7 @@ class _InfoCard extends StatelessWidget {
           style: context.textTheme.titleLarge?.copyWith(color: kTextColor),
           children: [
             TextSpan(
-              text: text.toTitleCase,
+              text: text.toTitle,
               style: context.textTheme.titleLarge?.copyWith(
                 color: kDarkTextColor,
               ),

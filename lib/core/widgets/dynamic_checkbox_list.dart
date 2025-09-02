@@ -84,7 +84,7 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
               tooltip: 'Remove last checkbox group',
               onPressed: _removeCheckboxGroup,
               iconColor: kDangerColor,
-              bgColor: kLightColor,
+              bgColor: kWhiteColor,
               borderColor: kDangerColor,
             ),
         ],

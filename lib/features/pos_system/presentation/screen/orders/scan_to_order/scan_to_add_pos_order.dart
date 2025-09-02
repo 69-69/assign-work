@@ -137,7 +137,7 @@ class ScanToAddOrder extends StatelessWidget {
   DialogHeader _buildHeader(BuildContext context) {
     return DialogHeader(
       title: Text(
-        'Scan Product'.toTitleCase,
+        'Scan Product'.toTitle,
         semanticsLabel: 'Scan Product',
         style: context.textTheme.titleLarge?.copyWith(color: kGrayColor),
       ),
@@ -152,7 +152,7 @@ class ScanToAddOrder extends StatelessWidget {
           backgroundColor: kSuccessColor,
           padding: const EdgeInsets.symmetric(horizontal: 10),
         ),
-        child: const Text('Scan Next', style: TextStyle(color: kLightColor)),
+        child: const Text('Scan Next', style: TextStyle(color: kWhiteColor)),
       ),
       onPress: () => Navigator.pop(context),
     );
@@ -349,7 +349,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
       minTileHeight: 48,
       title: Text(
         softWrap: true,
-        order.itemName.toTitleCase,
+        order.itemName.toTitle,
         style: context.textTheme.titleMedium,
       ),
       subtitle: Text(
@@ -377,7 +377,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
       minTileHeight: 48,
       title: Text(
         softWrap: true,
-        order.itemName.toTitleCase,
+        order.itemName.toTitle,
         style: context.textTheme.titleMedium,
       ),
       subtitle: Text(
@@ -406,7 +406,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
         _removeOrderAt(index);
 
         context.showAlertOverlay(
-          '${order.itemName.toUpperCaseAll} removed from list',
+          '${order.itemName.toUpperAll} removed from list',
           label: 'Undo',
           onPressed: () => _addOrderAt(index, order),
         );
@@ -453,11 +453,11 @@ class _ScannedItemsState extends State<_ScannedItems> {
       children: [
         Expanded(
           child: context.elevatedIconBtn(
-            const Icon(Icons.swap_horiz, color: kLightColor),
+            const Icon(Icons.swap_horiz, color: kWhiteColor),
             onPressed: () {},
             label: Text(
               'Swipe to ${_continueToCheckout ? 'Checkout' : 'Continue'}',
-              style: const TextStyle(color: kLightColor),
+              style: const TextStyle(color: kWhiteColor),
             ),
             style: ButtonStyle(
               padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),

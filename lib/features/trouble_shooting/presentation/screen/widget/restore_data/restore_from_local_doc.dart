@@ -55,7 +55,7 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
       getValue: (file) => file,
       getDisplayText: (file) => file,
       onChanged: (String? v) => setState(() {
-        _selectedFilename = v?.toLowercaseAll;
+        _selectedFilename = v?.toLowerAll;
       }),
     );
   }

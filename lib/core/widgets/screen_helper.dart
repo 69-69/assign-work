@@ -22,12 +22,12 @@ extension ScreenHelper on BuildContext {
       heroTag: Key(tooltip ?? label),
       isExtended: label.isNotEmpty,
       backgroundColor: bgColor ?? colorScheme.error,
-      tooltip: (tooltip ?? label).toTitleCase,
+      tooltip: (tooltip ?? label).toTitle,
       shape: shape,
       label: label.isEmpty
           ? const SizedBox.shrink()
-          : Text(label.toTitleCase, style: const TextStyle(color: kLightColor)),
-      icon: Icon(icon ?? Icons.add, color: kLightColor),
+          : Text(label.toTitle, style: const TextStyle(color: kWhiteColor)),
+      icon: Icon(icon ?? Icons.add, color: kWhiteColor),
       onPressed: onPressed,
     );
   }
@@ -54,7 +54,7 @@ extension ScreenHelper on BuildContext {
         color: kDangerColor,
         padding: padding ?? const EdgeInsets.all(14),
         shape: const CircleBorder(),
-        child: Icon(icon, color: kLightColor, size: size),
+        child: Icon(icon, color: kWhiteColor, size: size),
       ),
     );
   }
@@ -211,7 +211,7 @@ extension ScreenHelper on BuildContext {
     bool isTotal = true,
     VoidCallback? onPressed,
   }) {
-    final total = isTotal ? 'Total $count'.toUpperCaseAll : count;
+    final total = isTotal ? 'Total $count'.toUpperAll : count;
 
     return FilledButton.icon(
       icon: RefreshButton(
@@ -229,7 +229,7 @@ extension ScreenHelper on BuildContext {
       ),
       label: Text(
         total,
-        style: ofTheme.textTheme.titleSmall?.copyWith(color: kLightColor),
+        style: ofTheme.textTheme.titleSmall?.copyWith(color: kWhiteColor),
       ),
     );
   }
@@ -276,20 +276,20 @@ extension ScreenHelper on BuildContext {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(desc.toTitleCase),
+                Text(desc.toTitle),
                 Text(
-                  label.toTitleCase,
+                  label.toTitle,
                   style: const TextStyle(color: kGrayBlueColor),
                 ),
               ],
             ),
             elevatedIconBtn(
-              Icon(icon, color: kLightColor),
+              Icon(icon, color: kWhiteColor),
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(backgroundColor: borderColor),
               label: Text(
-                (buttonLabel ?? label).toUpperCaseAll,
-                style: const TextStyle(color: kLightColor),
+                (buttonLabel ?? label).toUpperAll,
+                style: const TextStyle(color: kWhiteColor),
               ),
             ),
           ],
@@ -393,7 +393,7 @@ class AnimatedSync extends AnimatedWidget {
     return Transform.rotate(
       angle: animation.value,
       child: IconButton(
-        color: txtColor ?? kLightColor,
+        color: txtColor ?? kWhiteColor,
         tooltip: tooltip,
         style: IconButton.styleFrom(
           elevation: 30,
@@ -401,7 +401,7 @@ class AnimatedSync extends AnimatedWidget {
           padding: EdgeInsets.zero,
           backgroundColor: bgColor ?? kDangerColor,
         ),
-        icon: Icon(Icons.sync, color: kLightColor, semanticLabel: tooltip),
+        icon: Icon(Icons.sync, color: kWhiteColor, semanticLabel: tooltip),
         onPressed: () => callback(),
       ),
     );
@@ -442,7 +442,7 @@ class GenericCard extends StatelessWidget {
         ListTile(
           dense: true,
           title: Text(
-            title.toTitleCase,
+            title.toTitle,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             style: textStyle?.copyWith(fontSize: 15, color: kTextColor),
@@ -488,7 +488,7 @@ class GenericCard extends StatelessWidget {
           style: textStyle?.copyWith(fontSize: 14, color: kTextColor),
           children: [
             TextSpan(
-              text: text.toTitleCase,
+              text: text.toTitle,
               style: textStyle?.copyWith(fontSize: 14, color: kDarkTextColor),
             ),
           ],

@@ -355,7 +355,7 @@ class PrintPO {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              _poTitle.toUpperCaseAll,
+              _poTitle.toUpperAll,
               style: pw.TextStyle(color: hColor, fontSize: 14),
             ),
             pw.SizedBox(height: 3.0),
@@ -544,7 +544,7 @@ class PrintPO {
       ),
       headers: List<String>.generate(
         tableHeaders.length,
-        (col) => tableHeaders[col].toTitleCase,
+        (col) => tableHeaders[col].toTitle,
       ),
       data: List<List<String>>.generate(
         items.length,

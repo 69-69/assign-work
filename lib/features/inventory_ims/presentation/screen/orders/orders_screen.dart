@@ -13,7 +13,7 @@ class OrdersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScaffold(
       isGradientBg: true,
-      title: allOrderScreenTitle.toUpperCaseAll,
+      title: allOrderScreenTitle.toUpperAll,
       body: DashboardTileCard(tiles: ordersTiles),
     );
   }

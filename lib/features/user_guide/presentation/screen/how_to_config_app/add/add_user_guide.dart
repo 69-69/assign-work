@@ -68,7 +68,7 @@ class _AddGuideFormState extends State<_AddGuideForm> {
 
       _formKey.currentState!.reset();
       context.showAlertOverlay(
-        '${_titleController.text.toTitleCase} successfully created',
+        '${_titleController.text.toTitle} successfully created',
       );
 
       Navigator.of(context).pop();
@@ -82,7 +82,7 @@ class _AddGuideFormState extends State<_AddGuideForm> {
       _userGuides.add(_guideData);
 
       context.showAlertOverlay(
-        '${_titleController.text.toTitleCase} added to batch',
+        '${_titleController.text.toTitle} added to batch',
       );
       _clearFields();
     }
@@ -132,7 +132,7 @@ class _AddGuideFormState extends State<_AddGuideForm> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      o.title.toTitleCase,
+                      o.title.toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

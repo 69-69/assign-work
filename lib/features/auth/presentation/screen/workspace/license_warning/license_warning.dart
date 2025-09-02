@@ -23,15 +23,15 @@ class LicenseWarning extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
-        title: 'Upgrade your Plan'.toUpperCaseAll,
+        title: 'Upgrade your Plan'.toUpperAll,
         subtitle: "Oops, Expired or Device Limit Reached!",
-        txtColor: kLightColor,
+        txtColor: kWhiteColor,
         fontSize: 18,
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
       icon: Padding(
         padding: const EdgeInsets.all(10),
-        child: const Icon(Icons.warning_amber_outlined, color: kLightColor),
+        child: const Icon(Icons.warning_amber_outlined, color: kWhiteColor),
       ),
 
       bgColor: Colors.red[900],
@@ -52,7 +52,7 @@ class LicenseWarning extends StatelessWidget {
         "Either Software is unlicensed or you've reached the limit of devices for your current plan. To continue using your account, please remove a device or upgrade your subscription to support more devices. If you need help, our 24/7 support team is here for you.\n\nThank You!",
         textAlign: TextAlign.center,
         style: context.textTheme.bodyLarge?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           fontSize: 13,
           fontWeight: FontWeight.normal,
         ),

@@ -81,7 +81,7 @@ class Category extends Equatable {
         dt.day == _today.day;
   }
 
-  String get itemAsString => name.toTitleCase;
+  String get itemAsString => name.toTitle;
 
   static get notFound => Category(name: 'No Data', createdBy: 'No Data');
 
@@ -127,10 +127,10 @@ class Category extends Equatable {
   /// ToList for StoreLocation [toListL]
   List<String> toListL() => [
     id,
-    name.toTitleCase,
-    createdBy.toTitleCase,
+    name.toTitle,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

@@ -99,7 +99,7 @@ class _CardContent extends StatelessWidget {
   }
 
   Widget _buildTitle(BuildContext context) => Text(
-    guide.title.toTitleCase,
+    guide.title.toTitle,
     style: _titleStyle.copyWith(fontWeight: FontWeight.bold),
     textScaler: TextScaler.linear(context.textScaleFactor),
   );
@@ -122,8 +122,8 @@ class _CardContent extends StatelessWidget {
 
   Widget _buildTextButton() => TextButton.icon(
     onPressed: () async => await _launchUrl(),
-    label: Text('Watch Video', style: _titleStyle.copyWith(color: kLightColor)),
-    icon: const Icon(Icons.link_outlined, color: kLightColor),
+    label: Text('Watch Video', style: _titleStyle.copyWith(color: kWhiteColor)),
+    icon: const Icon(Icons.link_outlined, color: kWhiteColor),
   );
 
   Widget _buildActionButton(

@@ -24,7 +24,7 @@ class CustomerScreen extends StatelessWidget {
           CustomerAccountBloc(firestore: FirebaseFirestore.instance)
             ..add(GetCustomers<Customer>()),
       child: CustomScaffold(
-        title: customersScreenTitle.toUpperCaseAll,
+        title: customersScreenTitle.toUpperAll,
         body: _buildBody(),
         actions: const [],
         floatingActionButton: context.buildFloatingBtn(

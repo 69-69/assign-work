@@ -229,8 +229,8 @@ class _TaxOptionsPanel extends StatelessWidget {
     final configs = results.map((tax) {
       return CheckboxGroupConfig<Map<String, dynamic>>(
         key: tax.code,
-        label: '${tax.name.toUpperCaseAll}: ${tax.rate}%',
-        description: tax.notes.toSentenceCase,
+        label: '${tax.name.toUpperAll}: ${tax.rate}%',
+        description: tax.notes.toSentence,
         selected: initialValues?.contains(tax.code),
         data: tax.toMap(),
       );
@@ -279,7 +279,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
         ? (_initialValues?.join(' ') ?? '')
         : filter;
 
-    final taxes = await GetTaxes.load();
+    final taxes = await GetTaxes.getAllTaxes(forceRefresh: true);
 
     if (filterBy.toString().isNotNullNorEmpty && taxes.isNotNullNorEmpty) {
       final filteredTaxes = taxes
@@ -304,7 +304,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
         asyncItems: (String filter, loadProps) async =>
             await _loadTaxes(filter: filter),
         filterFn: (tax, filter) => _filterTax(filter, tax, context),
-        itemAsString: (Tax tax) => tax.itemAsString.toTitleCase,
+        itemAsString: (Tax tax) => tax.itemAsString.toTitle,
         onMultiChanged: (List<Tax> taxes) => widget.onMultiChanged?.call(taxes),
         validatorMulti: (taxes) => taxes.isNullOrEmpty ? 'Select Tax' : null,
         onNoDataFound: () {

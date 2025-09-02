@@ -56,7 +56,7 @@ class _LicenseRenewalState extends State<LicenseRenewal> {
         padding: const EdgeInsets.only(top: 28.0),
         child: GenericCard(
           headTitle: 'Subscription License',
-          title: '[ ${context.getSubscriptionName.toUpperCaseAll} ]',
+          title: '[ ${context.getSubscriptionName.toUpperAll} ]',
           subTitle: 'License Agent Contact',
           extra: [
             {'title': '-', 'value': '${myAgent!.clientName} :-'},

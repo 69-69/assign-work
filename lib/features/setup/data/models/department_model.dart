@@ -90,7 +90,7 @@ class Department extends Equatable {
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
-  String get itemAsString => name.toTitleCase;
+  String get itemAsString => name.toTitle;
 
   /// Filter Search
   bool filterByAny(String filter) =>
@@ -145,11 +145,11 @@ class Department extends Equatable {
   List<String> toListL() => [
     id,
     code,
-    name.toTitleCase,
-    lead.toTitleCase,
-    createdBy.toTitleCase,
+    name.toTitle,
+    lead.toTitle,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

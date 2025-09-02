@@ -73,7 +73,7 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
       _formKey.currentState!.reset();
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} role successfully updated',
+        '${_nameController.text.toTitle} role successfully updated',
       );
       Navigator.pop(context);
     }

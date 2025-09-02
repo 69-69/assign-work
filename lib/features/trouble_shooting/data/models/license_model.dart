@@ -30,7 +30,7 @@ class License extends Equatable {
       identical(this, other) ||
       other is License &&
           runtimeType == other.runtimeType &&
-          module.toLowercaseAll == other.module.toLowercaseAll &&
+          module.toLowerAll == other.module.toLowerAll &&
           license == other.license;
 
   /// Used by Sets and Maps for uniqueness.

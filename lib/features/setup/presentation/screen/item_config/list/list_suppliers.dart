@@ -76,11 +76,11 @@ class _ListSuppliersState extends State<ListSuppliers> {
               context.read<SupplierBloc>().add(RefreshSetups<Supplier>()),
         ),
         context.elevatedIconBtn(
-          Icon(Icons.add, color: kLightColor),
+          Icon(Icons.add, color: kWhiteColor),
           label: 'Add Suppliers',
           onPressed: () => context.openAddSuppliers(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
       ],
     );

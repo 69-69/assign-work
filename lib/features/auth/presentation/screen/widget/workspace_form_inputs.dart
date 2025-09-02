@@ -524,7 +524,7 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      txtColor: kLightColor,
+      txtColor: kWhiteColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       onPressed: _generateAndDispatchPasscode,
@@ -867,7 +867,7 @@ class _StageText extends StatelessWidget {
           ? CircleAvatar(
               backgroundColor: stageColor,
               radius: 9,
-              child: Icon(Icons.check, color: kLightColor, size: 14),
+              child: Icon(Icons.check, color: kWhiteColor, size: 14),
             )
           : null,
       title: AnimatedDefaultTextStyle(

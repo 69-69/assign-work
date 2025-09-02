@@ -272,7 +272,7 @@ class _ChatDetailPaneState extends State<ChatDetailPane> {
             ),
             child: Text(
               msg.message,
-              style: const TextStyle(color: kLightColor),
+              style: const TextStyle(color: kWhiteColor),
             ),
           ),
           Text(msg.createdAt!.chatDatetime),

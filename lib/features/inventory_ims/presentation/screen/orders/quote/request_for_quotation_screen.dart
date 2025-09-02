@@ -17,12 +17,12 @@ class RequestForQuotationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<RequestForQuotationBloc>(
+    return BlocProvider<RequestForQuoteBloc>(
       create: (context) =>
-          RequestForQuotationBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetInventories<RequestForQuotation>()),
+          RequestForQuoteBloc(firestore: FirebaseFirestore.instance)
+            ..add(GetInventories<RequestForQuote>()),
       child: CustomScaffold(
-        title: requestPriceQuoteScreenTitle.toUpperCaseAll,
+        title: requestPriceQuoteScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'Request For Quotes',

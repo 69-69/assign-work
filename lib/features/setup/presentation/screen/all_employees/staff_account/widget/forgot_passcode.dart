@@ -80,7 +80,7 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
         title: Padding(
           padding: EdgeInsets.only(bottom: 30),
           child: Text(
-            "Resets ${_employee.fullName.toTitleCase}'s account passcode to a temporary one. "
+            "Resets ${_employee.fullName.toTitle}'s account passcode to a temporary one. "
             "After signing in with this passcode, they will be required to create a new, secure passcode",
             // 'Use this at Employee Sign-In. After signing in with this passcode, you’ll be prompted to create your preferred passcode.',
             textAlign: TextAlign.center,

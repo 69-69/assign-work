@@ -144,16 +144,16 @@ class Subscription extends Equatable {
   static Subscription? findById(List<Subscription> subscriptions, String id) =>
       subscriptions.firstWhereOrNull((r) => r.id == id);
 
-  String get itemAsString => name.toTitleCase;
+  String get itemAsString => name.toTitle;
 
   /// Filter
   bool filterByAny(String filter) {
-    final f = filter.toLowercaseAll;
+    final f = filter.toLowerAll;
 
     return id.contains(f) ||
-        name.toLowercaseAll.contains(f) ||
+        name.toLowerAll.contains(f) ||
         licenses.any(
-          (p) => p.license.toLowercaseAll == f || p.module.toLowercaseAll == f,
+          (p) => p.license.toLowerAll == f || p.module.toLowerAll == f,
         );
   }
 
@@ -175,10 +175,10 @@ class Subscription extends Equatable {
   List<String> itemAsList() => [
     id,
     '$fee',
-    name.toTitleCase,
+    name.toTitle,
     getCreatedAt,
-    createdBy.toTitleCase,
-    updatedBy.toTitleCase,
+    createdBy.toTitle,
+    updatedBy.toTitle,
     getUpdatedAt,
     getEffectiveFrom,
     getExpiresOn,

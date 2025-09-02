@@ -58,6 +58,9 @@ class DynamicDataTable extends StatefulWidget {
   /// Delete button label [deleteLabel]
   final String? deleteLabel;
 
+  /// View details Link label [viewDetailsLabel]
+  final String? viewDetailsLabel;
+
   /// DataTable header [headers]
   final List<String> headers;
 
@@ -76,8 +79,15 @@ class DynamicDataTable extends StatefulWidget {
 
   /// If All CheckBoxes are selected Action [onAllChecked]
   final Function(bool, List<bool>, List<List<String>>)? onAllChecked;
+
+  /// Edit button onClick Action [onEditTap]
   final Function(List<String>)? onEditTap;
+
+  /// Delete button onClick Action [onDeleteTap]
   final Function(List<String>)? onDeleteTap;
+
+  /// View details via Link onClick Action [onViewDetailsTap]
+  final Function(List<String>)? onViewDetailsTap;
 
   const DynamicDataTable({
     super.key,
@@ -92,10 +102,12 @@ class DynamicDataTable extends StatefulWidget {
     this.optButtonIcon,
     this.editLabel,
     this.deleteLabel,
+    this.viewDetailsLabel,
     this.optButtonLabel,
     this.onCellTap,
     this.onEditTap,
     this.onDeleteTap,
+    this.onViewDetailsTap,
     this.onOptButtonTap,
     this.onChecked,
     this.onAllChecked,
@@ -179,7 +191,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
   /// Search Func. for ChildRows [_filteredChildRows]
   List<List<String>> get _filteredChildRows {
-    return DataTableHelper.filterOnly(
+    return _DataTableHelper.filterOnly(
       rows: widget.childrenRow ?? [],
       query: _searchQuery,
     );
@@ -239,7 +251,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 
   List<List<String>> get _finalFilteredAndSortedRows {
-    return DataTableHelper.filterAndSort(
+    return _DataTableHelper.filterAndSort(
       rows: widget.rows,
       query: _searchQuery,
       headers: widget.headers,
@@ -449,6 +461,9 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       // Toggle All CheckBoxes
       DataColumn(tooltip: 'Select all', label: _buildParentCheckbox()),
 
+      if (widget.onViewDetailsTap != null) ...{
+        _buildDataColumn(widget.viewDetailsLabel ?? 'Details'),
+      },
       // Toggle Multiple (mask/unmask) secrets in a  (e.g., IDs, any sensitive data)
       if (_maskAtIndex.isNotNullNorEmpty) ...{
         DataColumn(
@@ -487,7 +502,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   Checkbox _buildParentCheckbox() {
     return Checkbox(
       value: _allSelectedStatus,
-      side: const BorderSide(width: 3.0, color: kLightColor),
+      side: const BorderSide(width: 3.0, color: kWhiteColor),
       onChanged: _toggleAllSelection,
     );
   }
@@ -496,8 +511,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   DataColumn _buildDataColumn(String title) => DataColumn(
     tooltip: title,
     label: Text(
-      title.toUpperCaseAll,
-      style: context.textTheme.titleMedium?.copyWith(color: kLightColor),
+      title.toUpperAll,
+      style: context.textTheme.titleMedium?.copyWith(color: kWhiteColor),
     ),
   );
 
@@ -538,6 +553,16 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         cells: [
           // Individual Checkboxes
           _buildEachCheckBox(index, row),
+
+          /// View Details Link
+          if (widget.onViewDetailsTap != null) ...{
+            DataCell(
+              _ViewDetails(
+                label: widget.viewDetailsLabel,
+                onTap: () => widget.onViewDetailsTap!(row),
+              ),
+            ),
+          },
 
           // Toggle Single (mask/unmask) secret (e.g., ID, any sensitive data)
           if (_maskAtIndex.isNotNullNorEmpty) ...{
@@ -677,7 +702,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 }
 
 /// [_DataTableHelper] for filtering and sorting
-class DataTableHelper {
+class _DataTableHelper {
   static List<List<String>> filterAndSort({
     required List<List<String>> rows,
     required String query,
@@ -717,9 +742,8 @@ class DataTableHelper {
   static List<List<String>> _filterRows(List<List<String>> rows, String query) {
     return rows
         .where(
-          (row) => row.any(
-            (cell) => cell.toLowercaseAll.contains(query.toLowercaseAll),
-          ),
+          (row) =>
+              row.any((cell) => cell.toLowerAll.contains(query.toLowerAll)),
         )
         .toList();
   }
@@ -738,6 +762,39 @@ class DataTableHelper {
   static DateTime _parseDate(String value) {
     final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
     return dateFormat.parse(value);
+  }
+}
+
+class _ViewDetails extends StatelessWidget {
+  final String? label;
+  final VoidCallback onTap;
+
+  const _ViewDetails({required this.onTap, this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildDeleteBtn(context);
+  }
+
+  _buildDeleteBtn(BuildContext context) {
+    final text = label ?? 'View details >';
+
+    return ColoredBox(
+      color: kDangerColor,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.0),
+        child: InkWell(
+          onTap: onTap,
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: kWhiteColor,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -918,13 +975,13 @@ class _ToggleMaskAllButton extends StatelessWidget {
       ),
       icon: Icon(
         isToggle ? Icons.visibility : Icons.visibility_off,
-        color: isToggle ? kLightColor : kLightBlueColor,
+        color: isToggle ? kWhiteColor : kLightBlueColor,
       ),
       onPressed: onPressed,
       label: Text(
-        headerValue.toUpperCaseAll,
+        headerValue.toUpperAll,
         style: context.textTheme.titleMedium?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
         ),
         // textScaler: TextScaler.linear(context.textScaleFactor),
@@ -1065,14 +1122,14 @@ class _DeleteButton extends StatelessWidget {
     final text = label ?? 'Delete';
 
     return context.elevatedIconBtn(
-      Icon(icon ?? Icons.delete, color: kLightColor),
+      Icon(icon ?? Icons.delete, color: kWhiteColor),
       bgColor: context.colorScheme.error,
       tooltip: text,
       onPressed: onTap,
       label: Text(
         text,
         style: const TextStyle(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
         ),
       ),

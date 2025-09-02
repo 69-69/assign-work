@@ -82,7 +82,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
       _suppliers.add(_supplierData);
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} added to batch',
+        '${_nameController.text.toTitle} added to batch',
       );
       _clearFields();
     }
@@ -132,7 +132,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      o.name.toTitleCase,
+                      o.name.toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

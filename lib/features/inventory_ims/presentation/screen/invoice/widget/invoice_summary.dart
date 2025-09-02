@@ -80,9 +80,9 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
         ),
         ExpansionTile(
           dense: true,
-          title: Text(widget.title.toTitleCase, style: fTheme.titleLarge),
+          title: Text(widget.title.toTitle, style: fTheme.titleLarge),
           subtitle: Text(
-            'see summary: $_getInvoiceID'.toTitleCase,
+            'see summary: $_getInvoiceID'.toTitle,
             style: fTheme.labelMedium?.copyWith(color: kDangerColor),
           ),
           childrenPadding: const EdgeInsets.only(bottom: 20.0),
@@ -108,7 +108,7 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
     return ListTile(
       dense: true,
       title: Text(
-        '${widget.data['orderType'] ?? '0000'}'.toTitleCase,
+        '${widget.data['orderType'] ?? '0000'}'.toTitle,
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge,
       ),
@@ -129,11 +129,11 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
               (data.key.contains('discountAmount')
                   ? '- '
                   : (data.key.contains('totalAmount') ? ghanaCedis : '')) +
-              '${data.value}'.toTitleCase;
+              '${data.value}'.toTitle;
 
           return DataRow(
             cells: [
-              _buildDataCell(data.key.separateWord.toTitleCase),
+              _buildDataCell(data.key.separateWord.toTitle),
               _buildDataCell(val),
             ],
           );
@@ -145,10 +145,7 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
 
   DataColumn _buildDataColumn(String title) => DataColumn(
     tooltip: title,
-    label: Text(
-      title.toUpperCaseAll,
-      style: const TextStyle(color: kLightColor),
-    ),
+    label: Text(title.toUpperAll, style: const TextStyle(color: kWhiteColor)),
   );
 }
 

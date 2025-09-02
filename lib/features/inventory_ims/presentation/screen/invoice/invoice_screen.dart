@@ -27,7 +27,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: 'Print ${title.toTitleCase}',
+      title: 'Print ${title.toTitle}',
       body: CustomScrollBar(
         controller: _scrollController,
         padding: const EdgeInsets.only(bottom: 20.0),

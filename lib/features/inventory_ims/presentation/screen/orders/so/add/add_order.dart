@@ -257,7 +257,7 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
                     padding: EdgeInsets.zero,
                     label: Text(
                       '${o.itemName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
-                          .toTitleCase,
+                          .toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

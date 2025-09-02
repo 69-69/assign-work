@@ -113,7 +113,7 @@ class _AddItemFormState extends State<_AddItemForm> {
       _items.add(_itemData);
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} added to batch',
+        '${_nameController.text.toTitle} added to batch',
       );
       _clearFields();
     }
@@ -165,7 +165,7 @@ class _AddItemFormState extends State<_AddItemForm> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      '${o.name} - $ghanaCedis${o.sellingPrice}'.toTitleCase,
+                      '${o.name} - $ghanaCedis${o.sellingPrice}'.toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

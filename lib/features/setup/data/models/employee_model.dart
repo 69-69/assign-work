@@ -207,15 +207,15 @@ class Employee extends Equatable {
   List<String> itemAsList() => [
     id,
     employeeId,
-    status.toTitleCase,
+    status.toTitle,
     departmentCode,
-    role.toTitleCase,
-    storeNumber.toTitleCase,
-    fullName.toTitleCase,
+    role.toTitle,
+    storeNumber.toTitle,
+    fullName.toTitle,
     mobileNumber,
     getCreatedAt,
-    createdBy.toTitleCase,
-    updatedBy.toTitleCase,
+    createdBy.toTitle,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

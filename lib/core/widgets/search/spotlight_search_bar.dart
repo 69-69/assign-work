@@ -49,9 +49,9 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     setState(() {
       filteredTiles = widget.tiles.where((tile) {
         // Filter tiles by matching the query with either label or description
-        final label = tile.label.toLowercaseAll;
-        final desc = (tile.description ?? '').toLowercaseAll;
-        final searchQuery = query.toLowercaseAll;
+        final label = tile.label.toLowerAll;
+        final desc = (tile.description ?? '').toLowerAll;
+        final searchQuery = query.toLowerAll;
         return label.contains(searchQuery) || desc.contains(searchQuery);
       }).toList();
     });
@@ -186,7 +186,15 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
                 );
                 return;
               }
-              cxt.goNamed(tile.action);
+              if (tile.param.entries.isEmpty) {
+                cxt.goNamed(tile.action);
+              } else {
+                cxt.goNamed(
+                  tile.action,
+                  extra: tile.param,
+                  pathParameters: tile.param,
+                );
+              }
               _triggerSearchBar();
             },
           ),
@@ -199,8 +207,8 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     final query = _controller.text;
     if (query.isEmpty) return Text(text, style: style);
 
-    final lowerText = text.toLowercaseAll;
-    final lowerQuery = query.toLowercaseAll;
+    final lowerText = text.toLowerAll;
+    final lowerQuery = query.toLowerAll;
 
     final spans = <TextSpan>[];
     int start = 0;
@@ -208,24 +216,19 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     while (true) {
       final index = lowerText.indexOf(lowerQuery, start);
       if (index == -1) {
-        spans.add(
-          TextSpan(text: text.toTitleCase.substring(start), style: style),
-        );
+        spans.add(TextSpan(text: text.toTitle.substring(start), style: style));
         break;
       }
 
       if (index > start) {
         spans.add(
-          TextSpan(
-            text: text.toSentenceCase.substring(start, index),
-            style: style,
-          ),
+          TextSpan(text: text.toSentence.substring(start, index), style: style),
         );
       }
 
       spans.add(
         TextSpan(
-          text: text.toTitleCase.substring(index, index + query.length),
+          text: text.toTitle.substring(index, index + query.length),
           style: style?.copyWith(
             fontWeight: FontWeight.bold,
             color: kPrimaryAccentColor, // Highlight color

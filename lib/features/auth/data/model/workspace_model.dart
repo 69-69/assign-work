@@ -288,13 +288,13 @@ class Workspace extends Equatable {
   /// ToList [itemAsList]
   List<String> itemAsList() => [
     id,
-    role.name.toTitleCase,
-    category.toTitleCase,
-    name.toTitleCase,
-    clientName.toTitleCase,
+    role.name.toTitle,
+    category.toTitle,
+    name.toTitle,
+    clientName.toTitle,
     mobileNumber,
     '$maxAllowedDevices',
-    hostingType.name.toUpperCaseAll,
+    hostingType.name.toUpperAll,
     '$subscriptionFee',
     subscriptionId,
     getCreatedAt,

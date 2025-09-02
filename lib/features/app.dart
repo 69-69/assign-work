@@ -5,6 +5,7 @@ import 'package:assign_erp/features/access_control/domain/repository/access_cont
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/setup/data/models/company_info_model.dart';
+import 'package:assign_erp/features/setup/data/models/tax_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -42,14 +43,15 @@ class App extends StatelessWidget {
       _bloc<EmployeeSignInBloc>(
         () => EmployeeSignInBloc(authRepository: _authRepo),
       ),
-      _bloc<CompanyBloc>(
-        () =>
-            CompanyBloc(firestore: _fireStore)
-              ..add(GetSetups<Company>()) /* Get Setup data on app startup */,
-      ),
       _bloc<RoleBloc>(() => RoleBloc(firestore: _fireStore)),
+      _bloc<CompanyBloc>(
+        () => CompanyBloc(firestore: _fireStore)..add(GetSetups<Company>()),
+        /* Get Setup data on app startup */
+      ),
       _bloc<CompanyStoresBloc>(() => CompanyStoresBloc(firestore: _fireStore)),
-      _bloc<TaxBloc>(() => TaxBloc(firestore: _fireStore)),
+      _bloc<TaxBloc>(
+        () => TaxBloc(firestore: _fireStore)..add(GetSetups<Tax>()),
+      ),
       _bloc<CategoryBloc>(() => CategoryBloc(firestore: _fireStore)),
       _bloc<SupplierBloc>(() => SupplierBloc(firestore: _fireStore)),
       _bloc<EmployeeBloc>(() => EmployeeBloc(firestore: _fireStore)),
@@ -59,8 +61,8 @@ class App extends StatelessWidget {
       _bloc<MiscOrderBloc>(() => MiscOrderBloc(firestore: _fireStore)),
       _bloc<DeliveryBloc>(() => DeliveryBloc(firestore: _fireStore)),
       _bloc<SaleBloc>(() => SaleBloc(firestore: _fireStore)),
-      _bloc<RequestForQuotationBloc>(
-        () => RequestForQuotationBloc(firestore: _fireStore),
+      _bloc<RequestForQuoteBloc>(
+        () => RequestForQuoteBloc(firestore: _fireStore),
       ),
       _bloc<CustomerAccountBloc>(
         () => CustomerAccountBloc(firestore: _fireStore),

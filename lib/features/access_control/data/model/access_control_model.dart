@@ -37,6 +37,6 @@ class AccessControl extends Equatable {
     title,
     description,
     accessName, // ensure enum comparison
-    module.toLowercaseAll, // normalize casing for module
+    module.toLowerAll, // normalize casing for module
   ];
 }

@@ -92,7 +92,7 @@ class _CustomScrollBarState extends State<CustomScrollBar> {
                 backgroundColor: kDangerColor,
                 onPressed: _scrollToTop,
                 tooltip: toolTip,
-                child: Icon(icon, color: kLightColor),
+                child: Icon(icon, color: kWhiteColor),
               ),
             ),
         ],

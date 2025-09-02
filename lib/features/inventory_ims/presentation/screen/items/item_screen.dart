@@ -34,7 +34,7 @@ class _ProductScreenState extends State<ProductScreen> {
     return BlocProvider<ItemBloc>(
       create: _initializeProductBloc,
       child: CustomScaffold(
-        title: stocksScreenTitle.toUpperCaseAll,
+        title: stocksScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'Create Stock',

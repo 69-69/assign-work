@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> {
             contentPadding: EdgeInsets.zero,
             titleAlignment: ListTileTitleAlignment.center,
             title: Text(
-              appName.split('.').first.toUpperCaseAll,
+              appName.split('.').first.toUpperAll,
               textAlign: TextAlign.center,
               style: context.textTheme.titleLarge?.copyWith(
                 color: kPrimaryColor,

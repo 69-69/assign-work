@@ -18,7 +18,7 @@ class SaleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SaleBloc, InventoryState<Sale>>(
       builder: (context, state) => CustomScaffold(
-        title: salesScreenTitle.toUpperCaseAll,
+        title: salesScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'add sales',

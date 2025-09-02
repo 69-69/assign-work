@@ -22,7 +22,7 @@ class PurchaseOrderScreen extends StatelessWidget {
           PurchaseOrderBloc(firestore: FirebaseFirestore.instance)
             ..add(GetInventories<PurchaseOrder>()),
       child: CustomScaffold(
-        title: purchaseOrderScreenTitle.toUpperCaseAll,
+        title: purchaseOrderScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'Create PO',

@@ -73,5 +73,5 @@ class PrintPOSSalesReceipt {
     return await salesReceipt.buildPdf(format);
   }
 
-  String _toCap(String i) => i.toTitleCase;
+  String _toCap(String i) => i.toTitle;
 }

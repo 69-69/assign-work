@@ -72,7 +72,7 @@ class SearchPosProducts extends StatelessWidget {
         direction: Axis.vertical,
         children: [
           Text(
-            product.name.toTitleCase,
+            product.name.toTitle,
             textAlign: TextAlign.start,
             style: context.textTheme.titleLarge,
           ),
@@ -91,7 +91,7 @@ class SearchPosProducts extends StatelessWidget {
                   ),
                 ),
                 TextSpan(
-                  text: product.category.toTitleCase,
+                  text: product.category.toTitle,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: kTextColor,
                   ),

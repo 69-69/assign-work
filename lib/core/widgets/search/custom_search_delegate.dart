@@ -105,9 +105,8 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
         ? []
         : allData
               .where(
-                (item) => (item.toString().toLowercaseAll).contains(
-                  query.toLowercaseAll,
-                ),
+                (item) =>
+                    (item.toString().toLowerAll).contains(query.toLowerAll),
               )
               .toList();
 
@@ -140,7 +139,7 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
             isSuggest ? Icons.history : Icons.search,
             color: kGrayColor,
           ),
-          title: Text(toStr.toTitleCase),
+          title: Text(toStr.toTitle),
           onTap: () {
             // Set result
             _onSelected = result;

@@ -123,7 +123,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     final validator = config.validator;
     final helperText = config.helperText;
     final maxLines = config.maxLines ?? 1;
-    final labelText = config.label.toTitleCase;
+    final labelText = config.label.toTitle;
 
     final inputDecoration =
         config.inputDecoration ??
@@ -204,7 +204,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         if (title != null) ...[
           Expanded(
             child: Text(
-              title.toTitleCase,
+              title.toTitle,
               style: context.textTheme.titleMedium?.copyWith(
                 color: widget.textColor ?? kPrimaryColor.toAlpha(0.8),
               ),
@@ -227,7 +227,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
               isCard: true,
               tooltip: 'Remove last field group',
               iconColor: kDangerColor,
-              bgColor: kLightColor,
+              bgColor: kWhiteColor,
               borderColor: kDangerColor,
               onPressed: _removeTextField,
             ),

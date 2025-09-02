@@ -21,7 +21,7 @@ extension UpdatePOSSaleForm on BuildContext {
     isExpand: false,
     child: FormBottomSheet(
       title: 'Edit Sale',
-      subtitle: 'ID: ${sale.id}'.toUpperCaseAll,
+      subtitle: 'ID: ${sale.id}'.toUpperAll,
       body: _UpdateSaleForm(sale: sale),
     ),
   );
@@ -199,10 +199,7 @@ class _UpdateSaleFormState extends State<_UpdateSaleForm> {
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge,
       ),
-      subtitle: Text(
-        'ID ${_sale.id}'.toUpperCaseAll,
-        textAlign: TextAlign.center,
-      ),
+      subtitle: Text('ID ${_sale.id}'.toUpperAll, textAlign: TextAlign.center),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: <Widget>[
         const SizedBox(height: 20.0),

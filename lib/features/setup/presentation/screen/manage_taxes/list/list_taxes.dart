@@ -63,11 +63,11 @@ class _ListTaxesState extends State<ListTaxes> {
           },
         ),
         context.elevatedIconBtn(
-          Icon(Icons.calculate, color: kLightColor),
+          Icon(Icons.calculate, color: kWhiteColor),
           label: 'Add Taxes',
           onPressed: () => context.openAddTax(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
       ],
     );

@@ -37,7 +37,7 @@ class WorkspaceScreen extends StatelessWidget {
       },
       child: CustomDialog(
         title: DialogTitle(
-          title: 'Setup New Workspace'.toUpperCaseAll,
+          title: 'Setup New Workspace'.toUpperAll,
           subtitle: "steve Create a new Workspace for your new Client.",
         ),
         body: _buildFormBody(context),

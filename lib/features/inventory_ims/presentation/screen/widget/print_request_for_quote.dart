@@ -10,7 +10,7 @@ import 'package:printing/printing.dart';
 
 /// Print Request For Quotation [PrintRFQ]
 class PrintRequestForQuotation {
-  final RequestForQuotation quote;
+  final RequestForQuote quote;
   final Supplier supplier;
 
   PrintRequestForQuotation({required this.quote, required this.supplier});
@@ -71,5 +71,5 @@ class PrintRequestForQuotation {
     return await rfq.buildPdf(format);
   }
 
-  String _toCap(String i) => i.toTitleCase;
+  String _toCap(String i) => i.toTitle;
 }

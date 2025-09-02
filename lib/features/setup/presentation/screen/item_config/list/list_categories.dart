@@ -82,7 +82,7 @@ class _ListCategoriesState extends State<ListCategories> {
           'Add Categories',
           onPressed: () => context.openAddCategory(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
       ],
     );

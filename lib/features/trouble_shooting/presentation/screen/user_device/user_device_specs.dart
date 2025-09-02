@@ -107,7 +107,7 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: Text(
-              '* ${(entry.key.separateWord).toTitleCase}: ${entry.value}',
+              '* ${(entry.key.separateWord).toTitle}: ${entry.value}',
               textAlign: TextAlign.start,
               style: context.textTheme.bodyLarge,
             ),

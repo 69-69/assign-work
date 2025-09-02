@@ -60,9 +60,9 @@ class PrintInvoice {
   String? get _validity =>
       products.map<String?>((p) => p.validityDate).reduce((a, b) => a ?? b);
 
-  String get _title => title.toTitleCase;
+  String get _title => title.toTitle;
 
-  bool _isTrue(String s) => _title.toLowercaseAll.contains(s.toLowerCase());
+  bool _isTrue(String s) => _title.toLowerAll.contains(s.toLowerCase());
 
   late final PrintPDFColors _pdfColors;
   late final IssuerCompany _company;
@@ -287,7 +287,7 @@ class PrintInvoice {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              title.toUpperCaseAll,
+              title.toUpperAll,
               style: pw.TextStyle(color: hColor, fontSize: 14),
             ),
             pw.SizedBox(height: 3.0),
@@ -352,7 +352,7 @@ class PrintInvoice {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              title.toUpperCaseAll,
+              title.toUpperAll,
               style: pw.TextStyle(color: _pdfColors.headerColor, fontSize: 14),
             ),
             pw.SizedBox(height: 3.0),
@@ -639,7 +639,7 @@ class PrintInvoice {
       ),
       headers: List<String>.generate(
         tableHeaders.length,
-        (col) => tableHeaders[col].toTitleCase,
+        (col) => tableHeaders[col].toTitle,
       ),
       data: List<List<String>>.generate(
         products.length,

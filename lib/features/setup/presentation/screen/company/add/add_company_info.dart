@@ -73,7 +73,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
 
       if (mounted) {
         context.showAlertOverlay(
-          '${_nameController.text.toTitleCase} successfully created',
+          '${_nameController.text.toTitle} successfully created',
         );
         Navigator.pop(context);
       }

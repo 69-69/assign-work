@@ -44,7 +44,7 @@ extension GenerateUID on String {
     final newId = await _checkReturn();
 
     if (newId.isNotEmpty) {
-      final prefix = isNotEmpty ? substring(0, 3).toUpperCaseAll : '';
+      final prefix = isNotEmpty ? substring(0, 3).toUpperAll : '';
       final formattedId = '$prefix-$newId';
 
       if (onChanged != null) {
@@ -121,7 +121,7 @@ extension GenerateUID on String {
   /// [generateTaxCode] Generates a unique tax code based on the provided name and rate.
   String generateTaxCode(dynamic rate) {
     // Trim, lowercase, and replace spaces with underscores
-    final name = trim().toLowercaseAll.replaceAll(RegExp(r'\s+'), '_');
+    final name = trim().toLowerAll.replaceAll(RegExp(r'\s+'), '_');
     // Replace any non-alphanumeric characters with underscores
     final newRate = rate.toString().replaceAll('.', '-');
     return '${name}_$newRate';

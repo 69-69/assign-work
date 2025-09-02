@@ -18,7 +18,7 @@ class ProPurchaseOrderScreen extends StatelessWidget {
           ProPurchaseOrderBloc(firestore: FirebaseFirestore.instance)
             ..add(GetProcurements<PurchaseOrder>()),
       child: CustomScaffold(
-        title: purchaseOrderScreenTitle.toUpperCaseAll,
+        title: purchaseOrderScreenTitle.toUpperAll,
         body: Center(child: Text('Procurement Purchase Order')),
       ),
     );

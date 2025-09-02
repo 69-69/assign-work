@@ -98,14 +98,14 @@ class CompanyStores extends Equatable {
         dt.day == _today.day;
   }
 
-  String get itemAsString => '$name - $storeNumber'.toTitleCase;
+  String get itemAsString => '$name - $storeNumber'.toTitle;
 
   /// Filter Search
   bool filterByAny(String filter) {
-    final f = filter.toLowercaseAll;
+    final f = filter.toLowerAll;
 
-    return name.toLowercaseAll.contains(f) ||
-        location.toLowercaseAll.contains(f) ||
+    return name.toLowerAll.contains(f) ||
+        location.toLowerAll.contains(f) ||
         storeNumber.contains(f) ||
         phone.contains(f);
   }
@@ -161,13 +161,13 @@ class CompanyStores extends Equatable {
   List<String> itemAsList() => [
     id,
     storeNumber,
-    name.toTitleCase,
+    name.toTitle,
     phone,
-    location.toTitleCase,
-    (notes ?? 'none').toTitleCase,
-    createdBy.toTitleCase,
+    location.toTitle,
+    (notes ?? 'none').toTitle,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

@@ -181,7 +181,7 @@ class _ClientChatDashboardState extends State<ClientChatDashboard> {
         ),
         child: Text(
           message.message,
-          style: const TextStyle(color: kLightColor),
+          style: const TextStyle(color: kWhiteColor),
         ),
       ),
     );

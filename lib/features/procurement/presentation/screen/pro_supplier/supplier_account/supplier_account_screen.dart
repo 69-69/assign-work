@@ -16,9 +16,9 @@ class SupplierAccountScreen extends StatelessWidget {
     return BlocProvider<ProRequestForQuoteBloc>(
       create: (context) =>
           ProRequestForQuoteBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetProcurements<RequestForQuotation>()),
+            ..add(GetProcurements<RequestForQuote>()),
       child: CustomScaffold(
-        title: supplierAccountScreenTitle.toUpperCaseAll,
+        title: supplierAccountScreenTitle.toUpperAll,
         body: Center(child: Text('Supplier Account Screen')),
       ),
     );

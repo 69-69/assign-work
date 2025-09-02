@@ -119,7 +119,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
               );
             },
             bgColor: kGrayBlueColor,
-            txtColor: kLightColor,
+            txtColor: kWhiteColor,
           ),
         },
       ],
@@ -166,7 +166,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
       // Delete Tenant Associated Data
       await allTenantsBloc.deleteTenantData(
         workspaceId,
-        workspaceRole.toLowerCaseFirst,
+        workspaceRole.toLowerFirst,
       );
       // Delete Tenant Workspace
       allTenantsBloc.add(DeleteTenant<String>(documentId: workspaceId));

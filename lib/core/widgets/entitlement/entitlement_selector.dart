@@ -46,7 +46,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
   final TextEditingController _searchController = TextEditingController();
 
   String get _displayName =>
-      '${widget.displayName.toTitleCase} ${widget.entitlementType}';
+      '${widget.displayName.toTitle} ${widget.entitlementType}';
   String get _subTitle => widget.entitlementType.isEmpty ? 'license' : 'role';
 
   get _keywords => widget.restrictedAccess;
@@ -95,10 +95,10 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
       if (query.trim().isEmpty) {
         _filteredEntitlements = List.from(_entitlements);
       } else {
-        final q = query.toLowercaseAll;
+        final q = query.toLowerAll;
         _filteredEntitlements = _entitlements.where((item) {
-          return item.title.toLowercaseAll.contains(q) ||
-              item.description.toLowercaseAll.contains(q);
+          return item.title.toLowerAll.contains(q) ||
+              item.description.toLowerAll.contains(q);
         }).toList();
       }
     });
@@ -224,10 +224,10 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
       caseSensitive: false,
     );
 
-    if (regExp.hasMatch(accessName.toLowercaseAll)) {
+    if (regExp.hasMatch(accessName.toLowerAll)) {
       final confirm = await context.confirmAction(
         Text(
-          'Are you sure you want to toggle this license? This is for ${accessName.toUpperCaseAll} only.',
+          'Are you sure you want to toggle this license? This is for ${accessName.toUpperAll} only.',
         ),
       );
       return confirm;
@@ -270,7 +270,7 @@ class _ModuleName extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
       child: Text(
-        name.toUpperCaseAll,
+        name.toUpperAll,
         textAlign: TextAlign.center,
         style: context.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,

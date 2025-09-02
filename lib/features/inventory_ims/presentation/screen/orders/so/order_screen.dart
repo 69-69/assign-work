@@ -22,7 +22,7 @@ class OrderScreen extends StatelessWidget {
           OrderBloc(firestore: FirebaseFirestore.instance)
             ..add(GetInventories<Orders>()),
       child: CustomScaffold(
-        title: salesOrderScreenTitle.toUpperCaseAll,
+        title: salesOrderScreenTitle.toUpperAll,
         body: _buildBody(),
         floatingActionButton: context.buildFloatingBtn(
           'Place an Order',

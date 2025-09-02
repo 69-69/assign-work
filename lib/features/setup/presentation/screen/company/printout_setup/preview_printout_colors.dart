@@ -109,12 +109,12 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: _buildText(context, 'Header Color:'.toUpperCaseAll),
+          child: _buildText(context, 'Header Color:'.toUpperAll),
         ),
         _buildHeader(context),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: _buildText(context, 'Footer Color:'.toUpperCaseAll),
+          child: _buildText(context, 'Footer Color:'.toUpperAll),
         ),
         _buildFooter(context),
       ],

@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension CreateRequestForQuoteForm on BuildContext {
-  Future<void> openAddRequestForQuotation({RequestForQuotation? serverQuote}) =>
+  Future<void> openAddRequestForQuotation({RequestForQuote? serverQuote}) =>
       openBottomSheet(
         isExpand: false,
         child: FormBottomSheet(
@@ -33,7 +33,7 @@ extension CreateRequestForQuoteForm on BuildContext {
 }
 
 class _AddRequestForQuoteForm extends StatefulWidget {
-  final RequestForQuotation? serverQuote;
+  final RequestForQuote? serverQuote;
 
   const _AddRequestForQuoteForm({this.serverQuote});
 
@@ -78,7 +78,7 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     );
   }
 
-  RequestForQuotation get _newQuote => RequestForQuotation(
+  RequestForQuote get _newQuote => RequestForQuote(
     rfqNumber: _newRFQNumber,
     status: _selectedRFQStatus ?? '',
     department: _department,
@@ -96,9 +96,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
 
   void _onSubmit() {
     if (_formKey.currentState!.validate() && _newQuote.isNotEmpty) {
-      final bloc = context.read<RequestForQuotationBloc>();
+      final bloc = context.read<RequestForQuoteBloc>();
 
-      bloc.add(AddInventory<RequestForQuotation>(data: _newQuote));
+      bloc.add(AddInventory<RequestForQuote>(data: _newQuote));
 
       _confirmPrintoutDialog().then((_) => _resetForm());
     }

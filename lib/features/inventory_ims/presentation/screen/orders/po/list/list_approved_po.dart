@@ -266,7 +266,7 @@ class _IssueMultiPOPrintout extends StatelessWidget {
 
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
-      Icon(Icons.delete, color: kLightColor),
+      Icon(Icons.delete, color: kWhiteColor),
       style: OutlinedButton.styleFrom(
         backgroundColor: context.colorScheme.error,
       ),
@@ -292,7 +292,7 @@ class _IssueMultiPOPrintout extends StatelessWidget {
             }*/
         }
       },
-      label: const Text('Delete', style: TextStyle(color: kLightColor)),
+      label: const Text('Delete', style: TextStyle(color: kWhiteColor)),
     );
   }
 

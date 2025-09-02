@@ -151,7 +151,7 @@ class _UpdateDeliveryBodyState extends State<_UpdateDeliveryBody> {
         style: context.textTheme.titleLarge,
       ),
       subtitle: Text(
-        'ID ${_delivery.id}'.toUpperCaseAll,
+        'ID ${_delivery.id}'.toUpperAll,
         textAlign: TextAlign.center,
       ),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),

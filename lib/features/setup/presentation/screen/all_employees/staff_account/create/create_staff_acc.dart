@@ -85,7 +85,7 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
 
       if (mounted) {
         context.showAlertOverlay(
-          '${_nameController.text.toTitleCase} successfully created',
+          '${_nameController.text.toTitle} successfully created',
         );
         _generateEmployeeId(); // get a new staff id
         Navigator.pop(context);

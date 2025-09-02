@@ -24,7 +24,7 @@ extension UpdateSubscription<T> on BuildContext {
     child: FormBottomSheet(
       title: isAssign == true
           ? 'Assign Subscriptions'
-          : 'Edit ${subscription.name}'.toTitleCase,
+          : 'Edit ${subscription.name}'.toTitle,
       subtitle:
           'NOTE: Subscriptions are specific to each workspaces.\nNot shared or generic!',
       subTitleColor: kDangerColor,
@@ -97,7 +97,7 @@ class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
       _formKey.currentState!.reset();
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} subscription successfully updated',
+        '${_nameController.text.toTitle} subscription successfully updated',
       );
       Navigator.pop(context);
     }

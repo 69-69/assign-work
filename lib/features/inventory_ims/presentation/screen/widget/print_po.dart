@@ -78,7 +78,7 @@ class PrintPurchaseOrder {
     return await po.buildPdf(format);
   }
 
-  String _toCap(String i) => i.toTitleCase;
+  String _toCap(String i) => i.toTitle;
 }
 
 /*

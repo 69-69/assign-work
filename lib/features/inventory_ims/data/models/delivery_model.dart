@@ -188,13 +188,13 @@ class Delivery extends Equatable {
     id,
     storeNumber,
     orderNumber,
-    status.toTitleCase,
-    deliveryType.toTitleCase,
-    deliveryPerson.toTitleCase,
+    status.toTitle,
+    deliveryType.toTitle,
+    deliveryPerson.toTitle,
     deliveryPhone,
-    createdBy.toTitleCase,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

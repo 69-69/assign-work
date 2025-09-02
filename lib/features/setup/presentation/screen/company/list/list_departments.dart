@@ -76,11 +76,11 @@ class _ListDepartmentsState extends State<ListDepartments> {
           },
         ),
         context.elevatedIconBtn(
-          Icon(Icons.groups, color: kLightColor),
+          Icon(Icons.groups, color: kWhiteColor),
           label: 'Add Departments',
           onPressed: () => context.openAddDepartment(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
       ],
     );

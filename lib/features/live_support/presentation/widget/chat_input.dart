@@ -35,7 +35,7 @@ class ChatInput extends StatelessWidget {
         hintText: 'Enter your message...',
         label: const Text('Live Support'),
         alignLabelWithHint: true,
-        fillColor: kLightColor,
+        fillColor: kWhiteColor,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         prefixIcon: const Icon(Icons.support_agent, size: 15),
         suffixIcon: IconButton(

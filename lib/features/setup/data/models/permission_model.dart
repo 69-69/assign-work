@@ -27,9 +27,9 @@ class Permission extends Equatable {
   Map<String, dynamic> toMap() => {'module': module, 'permission': permission};
 
   bool filterByAny(String filter) {
-    final term = filter.toLowercaseAll;
-    return module.toLowercaseAll.contains(term) ||
-        permission.toLowercaseAll.contains(term);
+    final term = filter.toLowerAll;
+    return module.toLowerAll.contains(term) ||
+        permission.toLowerAll.contains(term);
   }
 
   /// Equality check needed for storing in `Set<Permission>`.
@@ -38,7 +38,7 @@ class Permission extends Equatable {
       identical(this, other) ||
       other is Permission &&
           runtimeType == other.runtimeType &&
-          module.toLowercaseAll == other.module.toLowercaseAll &&
+          module.toLowerAll == other.module.toLowerAll &&
           permission == other.permission;
 
   /// Used by Sets and Maps for uniqueness.

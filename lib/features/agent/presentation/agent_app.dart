@@ -21,7 +21,7 @@ class AgentApp extends StatelessWidget {
           AgentClientBloc(firestore: FirebaseFirestore.instance)
             ..add(LoadClients<AgentClient>()),
       child: CustomScaffold(
-        title: clienteleScreenTitle.toUpperCaseAll,
+        title: clienteleScreenTitle.toUpperAll,
         body: AgentClientsWorkspaces(),
         floatingActionButton: context.buildFloatingBtn(
           'setup new workspace',

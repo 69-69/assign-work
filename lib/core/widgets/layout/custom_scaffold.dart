@@ -341,7 +341,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
       color: kTransparentColor,
       alignment: Alignment.center,
       margin: const EdgeInsets.fromLTRB(10, 20, 0, 20),
-      child: const BackButton(color: kLightColor),
+      child: const BackButton(color: kWhiteColor),
     );
   }
 
@@ -365,7 +365,7 @@ class _Title extends StatelessWidget {
       dense: true,
       titleAlignment: ListTileTitleAlignment.center,
       title: Text(
-        (title ?? appName).toUpperCaseAll,
+        (title ?? appName).toUpperAll,
         textAlign: TextAlign.center,
         maxLines: 1,
         style: const TextStyle(
@@ -376,7 +376,7 @@ class _Title extends StatelessWidget {
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
       subtitle: Text(
-        (subTitle ?? appSubName).toUpperCaseAll,
+        (subTitle ?? appSubName).toUpperAll,
         textAlign: TextAlign.center,
         maxLines: 1,
         style: context.textTheme.titleSmall?.copyWith(

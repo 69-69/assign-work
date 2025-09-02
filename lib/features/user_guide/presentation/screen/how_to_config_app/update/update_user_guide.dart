@@ -44,7 +44,7 @@ class _UpdateUserGuide extends StatelessWidget {
           style: context.textTheme.titleLarge?.copyWith(color: kGrayColor),
         ),
         subtitle: Text(
-          guide.title.toTitleCase,
+          guide.title.toTitle,
           textAlign: TextAlign.center,
           style: context.textTheme.titleMedium?.copyWith(color: kGrayColor),
         ),

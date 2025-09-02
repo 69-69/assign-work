@@ -63,7 +63,7 @@ extension ColorHexConversion on Color {
 
 extension PadColor on String {
   // Return the color in the format "#RRGGBB" as 6 counts
-  String padHex() => substring(2).toUpperCaseAll;
+  String padHex() => substring(2).toUpperAll;
 }
 
 // convert a hexadecimal string to a Color Object

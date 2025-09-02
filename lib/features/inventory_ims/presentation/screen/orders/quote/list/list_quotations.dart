@@ -11,9 +11,11 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/request_price_quotation_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/add/add_request_for_quotation.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/see_details.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_request_for_quote.dart';
 import 'package:assign_erp/features/setup/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/setup/data/data_sources/remote/get_taxes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,32 +31,69 @@ class ListQuotations extends StatefulWidget {
 
 class _ListQuotationsState extends State<ListQuotations> {
   // List to group quotations for printout
-  final List<RequestForQuotation> _printouts = [];
-
+  final List<RequestForQuote> _printouts = [];
   bool get _isAward => widget.isAward;
+
+  /*Future<void> computeAllTaxAmounts(RequestForQuotation quote) async {
+    final taxRateMap = await GetTaxes.loadAllTaxRates();
+
+    if (quote.taxMethod == TaxMethodToApply.perLineTax) {
+      for (final item in quote.lineItems) {
+        final taxRate = item.resolveTaxFromMap(taxRateMap);
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        item.copyWith(taxAmount: taxAmount);
+      }
+    } else {
+      double totalTax = 0.0;
+      final taxRate = quote.resolveTaxFromMap(taxRateMap);
+      for (final item in quote.lineItems) {
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        totalTax += taxAmount;
+      }
+      quote.copyWith(headerTaxAmount: totalTax);
+    }
+  }*/
+
+  /*Future<({RequestForQuote rfq, Map<String, Map<String, dynamic>> taxNames})>
+  calculateTaxAmounts(RequestForQuote quote) async {
+    // Calculate tax amounts for each line item (perLineTax)
+    if (quote.taxMethod == TaxMethodToApply.perLineTax) {
+      final updatedItems = quote.lineItems.map((item) {
+        final taxRate = item.resolveTaxFromMap(taxRateMap);
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        return item.copyWith(taxAmount: taxAmount);
+      }).toList();
+
+      // Update line items in the quote
+      quote = quote.copyWith(lineItems: updatedItems);
+    } else {
+      // Calculate total tax amount (headerTax)
+      final taxRate = quote.resolveTaxFromMap(taxRateMap);
+      final totalTax = quote.lineItems.fold(0.0, (s, item) {
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        return s + taxAmount;
+      });
+      prettyPrint('tax-amt', taxRateMap);
+
+      quote = quote.copyWith(headerTaxAmount: totalTax);
+    }
+    return (rfq: quote, taxNames: taxRateMap);
+  }*/
 
   @override
   Widget build(BuildContext context) {
-    return _buildBody();
-  }
-
-  BlocBuilder<RequestForQuotationBloc, InventoryState<RequestForQuotation>>
-  _buildBody() {
-    return BlocBuilder<
-      RequestForQuotationBloc,
-      InventoryState<RequestForQuotation>
-    >(
+    return BlocBuilder<RequestForQuoteBloc, InventoryState<RequestForQuote>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingInventory<RequestForQuotation>() => context.loader,
-          InventoriesLoaded<RequestForQuotation>(data: var results) =>
+          LoadingInventory<RequestForQuote>() => context.loader,
+          InventoriesLoaded<RequestForQuote>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
                     'Request For Quote',
                     onPressed: () => context.openAddRequestForQuotation(),
                   )
                 : _buildCard(context, results),
-          InventoryError<RequestForQuotation>(error: final error) =>
+          InventoryError<RequestForQuote>(error: final error) =>
             context.buildError(error),
           _ => const SizedBox.shrink(),
         };
@@ -62,21 +101,21 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  ({List<List<String>> rows, List<List<String>>? childrenRow}) _quotes(
-    List<RequestForQuotation> quotes,
+  ({List<List<String>> rows, List<List<String>>? childrenRow}) _filterQuotes(
+    List<RequestForQuote> quotes,
   ) {
     if (_isAward) {
-      final todayQuotes = RequestForQuotation.filterAwardedRFQ(
+      final todayQuotes = RequestForQuote.filterAwardedRFQ(
         quotes,
       ).map((o) => o.itemAsList).toList();
 
       return (rows: todayQuotes, childrenRow: null);
     }
 
-    final todayQuotes = RequestForQuotation.filterRFQByDate(
+    final todayQuotes = RequestForQuote.filterRFQByDate(
       quotes,
     ).map((o) => o.itemAsList).toList();
-    final pastQuotes = RequestForQuotation.filterRFQByDate(
+    final pastQuotes = RequestForQuote.filterRFQByDate(
       quotes,
       isSameDay: false,
     ).map((o) => o.itemAsList).toList();
@@ -84,16 +123,17 @@ class _ListQuotationsState extends State<ListQuotations> {
     return (rows: todayQuotes, childrenRow: pastQuotes);
   }
 
-  Widget _buildCard(BuildContext context, List<RequestForQuotation> quotes) {
+  Widget _buildCard(BuildContext context, List<RequestForQuote> quotes) {
     // Filter for Quotations by date
-    final data = _quotes(quotes);
+    final data = _filterQuotes(quotes);
 
     return DynamicDataTable(
       omitAtIndex: 0,
       anyWidget: _buildAnyWidget(quotes),
-      headers: RequestForQuotation.dataTableHeader,
+      headers: RequestForQuote.dataTableHeader,
       rows: data.rows,
       childrenRow: data.childrenRow,
+      onViewDetailsTap: (row) async => _onViewDetailsTap(quotes, row.first),
       onChecked: (bool? isChecked, row) =>
           _onChecked(quotes, id: row.first, isChecked: isChecked),
       onAllChecked:
@@ -120,7 +160,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  _buildAnyWidget(List<RequestForQuotation> quotes) {
+  _buildAnyWidget(List<RequestForQuote> quotes) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,8 +173,8 @@ class _ListQuotationsState extends State<ListQuotations> {
           // Dispatch an event to refresh data
           onPressed: () {
             // Refresh Request For Quotation Data
-            context.read<RequestForQuotationBloc>().add(
-              RefreshInventories<RequestForQuotation>(),
+            context.read<RequestForQuoteBloc>().add(
+              RefreshInventories<RequestForQuote>(),
             );
           },
         ),
@@ -152,7 +192,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   /// Check if selected Quotes are related by RFQNumber [_haveSameRFQNumber]
   /// @Return: return Pattern, i.e ({bool a, String b})
   ({bool status, String misMatchID}) _haveSameRFQNumber(
-    List<RequestForQuotation> selectedQuotes,
+    List<RequestForQuote> selectedQuotes,
   ) {
     if (selectedQuotes.isEmpty) {
       return (status: true, misMatchID: ''); // Handle empty list
@@ -172,7 +212,7 @@ class _ListQuotationsState extends State<ListQuotations> {
 
   // Handle onChecked Quotations
   void _onChecked(
-    List<RequestForQuotation> quotes, {
+    List<RequestForQuote> quotes, {
     required String id,
     bool? isChecked,
   }) async {
@@ -182,7 +222,7 @@ class _ListQuotationsState extends State<ListQuotations> {
       if (isChecked != null && isChecked) {
         // A temporary list, tempQuotesForPrintout, is created which includes
         // the current quotation in _printouts and the new quotation to be checked.
-        List<RequestForQuotation> tempQuotesForPrintout = List.from(_printouts)
+        List<RequestForQuote> tempQuotesForPrintout = List.from(_printouts)
           ..add(quote);
 
         ({bool status, String misMatchID}) r = _haveSameRFQNumber(
@@ -200,7 +240,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     });
   }
 
-  _onPrintRFQTap(List<RequestForQuotation> quotes, String id) async {
+  _onPrintRFQTap(List<RequestForQuote> quotes, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
       request: _printout(quotes, id),
@@ -213,10 +253,10 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  Future<dynamic> _printout(List<RequestForQuotation> rfq, String id) =>
+  Future<dynamic> _printout(List<RequestForQuote> rfq, String id) =>
       Future.delayed(kRProgressDelay, () async {
         // Simulate loading supplier and company info
-        final quote = RequestForQuotation.findRFQById(rfq, id).first;
+        final quote = RequestForQuote.findRFQById(rfq, id).first;
         final sup = await GetSuppliers.bySupplierId(quote.supplierId);
 
         if (quote.isNotEmpty && sup.isNotEmpty) {
@@ -225,29 +265,45 @@ class _ListQuotationsState extends State<ListQuotations> {
         }
       });
 
-  Future<void> _onEditTap(List<RequestForQuotation> quotes, String id) async {
-    final quote = RequestForQuotation.findRFQById(quotes, id).first;
+  Future<void> _onEditTap(List<RequestForQuote> quotes, String id) async {
+    final quote = RequestForQuote.findRFQById(quotes, id).first;
     await context.openUpdateRequestForQuotation(quote: quote);
   }
 
-  Future<void> _onDeleteTap(List<RequestForQuotation> quotes, String id) async {
-    {
-      final rfq = RequestForQuotation.findRFQById(quotes, id).first;
+  Future<void> _onDeleteTap(List<RequestForQuote> quotes, String id) async {
+    final rfq = RequestForQuote.findRFQById(quotes, id).first;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Remove Quotation from Quote-DB
-        context.read<RequestForQuotationBloc>().add(
-          DeleteInventory<String>(documentId: rfq.id),
-        );
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Remove Quotation from Quote-DB
+      context.read<RequestForQuoteBloc>().add(
+        DeleteInventory<String>(documentId: rfq.id),
+      );
+    }
+  }
+
+  Future<void> _onViewDetailsTap(
+    List<RequestForQuote> quotes,
+    String id,
+  ) async {
+    final taxMap = await GetTaxes.loadAllTaxRates();
+    final quote = RequestForQuote.findRFQById(quotes, id).first;
+
+    var newQuote = quote.computeTaxAmounts(taxMap);
+    final supplier = await GetSuppliers.bySupplierId(quote.supplierId);
+    if (mounted) {
+      await context.openSeeDetails(
+        quote: newQuote,
+        taxNames: taxMap,
+        supplier: supplier.name,
+      );
     }
   }
 }
 
 /// Print grouped or multiple Purchase Quotes [_IssueMultiQuotesPrintout]
 class _IssueMultiQuotesPrintout extends StatelessWidget {
-  final List<RequestForQuotation> quotes;
+  final List<RequestForQuote> quotes;
   final Function(bool) onDone;
 
   const _IssueMultiQuotesPrintout({required this.quotes, required this.onDone});
@@ -309,7 +365,7 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
 
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
-      Icon(Icons.delete, color: kLightColor),
+      Icon(Icons.delete, color: kWhiteColor),
       style: OutlinedButton.styleFrom(
         backgroundColor: context.colorScheme.error,
       ),
@@ -319,7 +375,7 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
           final ids = quotes.map((q) => q.id).toList();
 
           // Remove quotes from quotes-DB
-          RequestForQuotationBloc(
+          RequestForQuoteBloc(
             firestore: FirebaseFirestore.instance,
           ).add(DeleteInventory<List<String>>(documentId: ids));
 
@@ -335,7 +391,7 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
             }*/
         }
       },
-      label: const Text('Delete', style: TextStyle(color: kLightColor)),
+      label: const Text('Delete', style: TextStyle(color: kWhiteColor)),
     );
   }
 

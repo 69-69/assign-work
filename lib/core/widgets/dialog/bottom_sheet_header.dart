@@ -65,6 +65,7 @@ class DialogHeader extends StatelessWidget {
                   onPressed: onPress,
                   child: Text(
                     btnText,
+                    semanticsLabel: btnText,
                     style: customTheme.textTheme.titleMedium?.copyWith(
                       color: color ?? customColor,
                       fontWeight: FontWeight.w400,

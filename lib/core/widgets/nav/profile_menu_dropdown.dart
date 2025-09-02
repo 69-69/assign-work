@@ -73,7 +73,7 @@ class ProfileMenuDropdown extends StatelessWidget {
   }
 
   Widget _buildUserDetails(BuildContext context, String roleName) {
-    final clientName = employee?.fullName.toTitleCase ?? '';
+    final clientName = employee?.fullName.toTitle ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +88,7 @@ class ProfileMenuDropdown extends StatelessWidget {
           ),
         ),
         Text(
-          roleName.toTitleCase,
+          roleName.toTitle,
           style: context.textTheme.labelSmall?.copyWith(color: kLightBlueColor),
         ),
       ],
@@ -171,7 +171,7 @@ class ProfileMenuDropdown extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            workspace!.name.toUpperCaseAll,
+            workspace!.name.toUpperAll,
             style: context.textTheme.bodyLarge?.copyWith(
               color: kLightBlueColor,
             ),
@@ -209,15 +209,15 @@ class ProfileMenuDropdown extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title.toUpperCaseAll,
+          title.toUpperAll,
           style: context.textTheme.labelLarge?.copyWith(
-            color: kLightColor,
+            color: kWhiteColor,
             overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(height: 2),
         Text(
-          subtitle.toTitleCase,
+          subtitle.toTitle,
           style: context.textTheme.labelMedium?.copyWith(
             color: kLightGrayColor,
             overflow: TextOverflow.ellipsis,

@@ -14,7 +14,11 @@ extension SanitizeMap on Map? {
 }
 
 extension ToCurrencyFormat on double {
+  /// [toCurrency] Returns the number formatted with 2 decimal places as a currency string
   get toCurrency => '$this'.isNullOrEmpty ? this : toStringAsFixed(2);
+
+  /// [toPercent] Returns the number formatted with 1 decimal place as a percentage string
+  get toPercent => '$this'.isNullOrEmpty ? this : toStringAsFixed(1);
 }
 
 /// get the first/last index of a list GetIndexPosition
@@ -169,11 +173,11 @@ extension SanitizeExtensions on String? {
   /// TRANSFORM LETTERS TO DIFFERENT CASES ///
 
   /// Helper method to check for null or empty strings
-  String get _checkNullOrEmpty => isNullOrEmpty ? '' : this!;
+  String get _isNullEmpty => isNullOrEmpty ? '' : this!;
 
   /// Create username from email address
   String get emailToUsername {
-    final checkedString = _checkNullOrEmpty;
+    final checkedString = _isNullEmpty;
 
     // If the checkedString is empty, return a default or empty value
     if (checkedString.isEmpty) return '';
@@ -187,117 +191,89 @@ extension SanitizeExtensions on String? {
 
   /// Convert lowerCamelCase to two separate words
   String get separateWord {
-    final checkedString = _checkNullOrEmpty;
-
     // If the string is empty, no need to process further
-    if (checkedString.isEmpty) return '';
+    if (_isNullEmpty.isEmpty) return '';
 
     var regex = RegExp(r'([a-z])([A-Z])');
-    if (!regex.hasMatch(checkedString)) return checkedString;
+    if (!regex.hasMatch(_isNullEmpty)) return _isNullEmpty;
 
-    return checkedString.replaceAllMapped(
+    return _isNullEmpty.replaceAllMapped(
       regex,
-      (match) => '${match.group(1)} ${match.group(2)}',
+      (m) => '${m.group(1)} ${m.group(2)}',
     );
   }
 
   /// This will put the first letter in UpperCase
-  String get toUpperCaseFirst {
-    final checkedString = _checkNullOrEmpty;
+  String get toUpperFirst {
+    final checkedString = _isNullEmpty;
 
     // If the string is empty, return it as is
     if (checkedString.isEmpty) return '';
 
     return checkedString.replaceFirst(
       checkedString[0],
-      checkedString[0].toUpperCaseAll,
+      checkedString[0].toUpperAll,
     );
   }
 
   /// Converts the string to sentence case (first letter capitalized, rest lowercase)
-  String get toSentenceCase {
-    final checkedString = _checkNullOrEmpty;
+  String get toSentence {
+    final checkedString = _isNullEmpty;
 
     // If the string is empty, return it as is
     if (checkedString.isEmpty) return '';
 
-    return checkedString[0].toUpperCaseAll +
-        checkedString.substring(1).toLowercaseAll;
+    return checkedString[0].toUpperAll + checkedString.substring(1).toLowerAll;
   }
 
   /// Capitalizes the first letter of each word in the string (title case)
-  String get toTitleCase {
-    final checkedString = _checkNullOrEmpty;
-
-    // If the string is empty, return it as is
-    if (checkedString.isEmpty) return '';
-
-    return checkedString
-        .split(' ')
-        .map(
-          (word) => word.isNullOrEmpty
-              ? word
-              : word[0].toUpperCaseAll + word.substring(1),
-        )
-        .join(' ');
+  String get toTitle {
+    return _isNullEmpty.isEmpty
+        ? ''
+        : _isNullEmpty
+              .split(' ')
+              .map(
+                (w) => w.isNullOrEmpty ? w : w[0].toUpperAll + w.substring(1),
+              )
+              .join(' ');
   }
 
   /// Converts all letters to lowercase
-  String get toLowercaseAll {
-    final checkedString = _checkNullOrEmpty;
-
-    // If the string is empty, return it as is
-    if (checkedString.isEmpty) return '';
-
-    return checkedString.toLowerCase();
-  }
+  String get toLowerAll =>
+      _isNullEmpty.isEmpty ? '' : _isNullEmpty.toLowerCase();
 
   /// Converts all letters to uppercase
-  String get toUpperCaseAll {
-    final checkedString = _checkNullOrEmpty;
-
-    // If the string is empty, return it as is
-    if (checkedString.isEmpty) return '';
-
-    return checkedString.toUpperCase();
-  }
+  String get toUpperAll =>
+      _isNullEmpty.isEmpty ? '' : _isNullEmpty.toUpperCase();
 
   /// This will put the first letter in LowerCase
-  String get toLowerCaseFirst {
-    final checkedString = _checkNullOrEmpty;
-
-    // If the string is empty, return it as is
-    if (checkedString.isEmpty) return '';
-
-    return checkedString.replaceFirst(
-      checkedString[0],
-      checkedString[0].toLowercaseAll,
-    );
-  }
+  String get toLowerFirst => _isNullEmpty.isEmpty
+      ? ''
+      : _isNullEmpty.replaceFirst(_isNullEmpty[0], _isNullEmpty[0].toLowerAll);
 
   /// This will put the letter in position 1 in UpperCase
   String toUppercaseAnyLetter({required int position}) {
-    final checkedString = _checkNullOrEmpty;
+    final checkedString = _isNullEmpty;
 
     // If the string is empty, return it as is
     if (checkedString.isEmpty) return '';
 
     return checkedString.replaceFirst(
       checkedString[position],
-      checkedString[position].toUpperCaseAll,
+      checkedString[position].toUpperAll,
     );
   }
 
   /// This will put the letter in position 1 in LowerCase
   String toLowercaseAnyLetter({required int position}) {
-    final checkedString = _checkNullOrEmpty;
+    final checkedString = _isNullEmpty;
 
     // If the string is empty, return it as is
     if (checkedString.isEmpty) return '';
 
     return checkedString.replaceFirst(
       checkedString[position],
-      checkedString[position].toLowercaseAll,
+      checkedString[position].toLowerAll,
     );
   }
 }

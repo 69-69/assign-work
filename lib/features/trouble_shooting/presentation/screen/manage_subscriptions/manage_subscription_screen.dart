@@ -19,7 +19,7 @@ class ManageSubscriptionScreen extends StatelessWidget {
           SubscriptionBloc(firestore: FirebaseFirestore.instance)
             ..add(LoadTenants<Subscription>()),
       child: CustomScaffold(
-        title: subscriptionScreenTitle.toUpperCaseAll,
+        title: subscriptionScreenTitle.toUpperAll,
         body: ListSubscriptions(),
       ),
     );

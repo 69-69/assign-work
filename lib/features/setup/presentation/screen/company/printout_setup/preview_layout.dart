@@ -40,17 +40,17 @@ class _Layout extends StatelessWidget {
           'Print Layout',
           textAlign: TextAlign.center,
           semanticsLabel: 'Print Layout',
-          style: context.textTheme.titleLarge?.copyWith(color: kLightColor),
+          style: context.textTheme.titleLarge?.copyWith(color: kWhiteColor),
         ),
         subtitle: Text(
-          layoutName.toTitleCase,
+          layoutName.toTitle,
           textAlign: TextAlign.center,
           style: context.textTheme.titleMedium?.copyWith(
             color: kLightBlueColor,
           ),
         ),
       ),
-      color: kLightColor,
+      color: kWhiteColor,
       btnText: 'Close',
       onPress: () => Navigator.pop(context),
     );

@@ -9,7 +9,7 @@ class ContractManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: contractManagementScreenTitle.toUpperCaseAll,
+      title: contractManagementScreenTitle.toUpperAll,
       body: Center(child: Text("Contract Management Screen")),
     );
   }

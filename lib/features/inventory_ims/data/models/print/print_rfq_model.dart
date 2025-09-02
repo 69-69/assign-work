@@ -332,7 +332,7 @@ class PrintRFQ2 {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              _rfqTitle.toUpperCaseAll,
+              _rfqTitle.toUpperAll,
               style: pw.TextStyle(color: _pdfColors.headerColor, fontSize: 14),
             ),
             pw.SizedBox(height: 3.0),
@@ -480,7 +480,7 @@ class PrintRFQ2 {
       ),
       headers: List<String>.generate(
         tableHeaders.length,
-        (col) => tableHeaders[col].toTitleCase,
+        (col) => tableHeaders[col].toTitle,
       ),
       data: List<List<String>>.generate(
         items.length,

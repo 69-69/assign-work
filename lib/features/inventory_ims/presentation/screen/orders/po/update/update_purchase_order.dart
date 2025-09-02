@@ -20,7 +20,7 @@ extension UpdatePurchaseOrderForm on BuildContext {
         isExpand: false,
         child: FormBottomSheet(
           title: 'Edit Purchase Order',
-          subtitle: po.poNumber.toUpperCaseAll,
+          subtitle: po.poNumber.toUpperAll,
           body: _UpdatePurchaseOrderForm(po: po),
         ),
       );
@@ -191,10 +191,7 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge,
       ),
-      subtitle: Text(
-        'ID ${_order.id}'.toUpperCaseAll,
-        textAlign: TextAlign.center,
-      ),
+      subtitle: Text('ID ${_order.id}'.toUpperAll, textAlign: TextAlign.center),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: [
         const SizedBox(height: 20.0),

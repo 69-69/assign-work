@@ -52,7 +52,7 @@ class _SearchFinanceState extends State<SearchFinance> {
         asyncItems: (String filter, loadProps) async =>
             await _loadOrders(filter: filter),
         filterFn: (order, filter) => _filterOrder(filter, order, context),
-        itemAsString: (Orders order) => order.toString().toTitleCase,
+        itemAsString: (Orders order) => order.toString().toTitle,
         onChanged: (o) => widget.onChanged!(o!.orderNumber, o.itemName),
         validator: (order) => order == null ? 'Select an order' : null,
       );

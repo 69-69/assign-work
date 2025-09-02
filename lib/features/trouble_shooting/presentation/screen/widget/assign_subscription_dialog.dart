@@ -37,7 +37,7 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
     this.workspaceName,
   });
 
-  String get _workspaceName => (workspaceName ?? 'Workspace').toTitleCase;
+  String get _workspaceName => (workspaceName ?? 'Workspace').toTitle;
 
   @override
   Widget build(BuildContext context) {

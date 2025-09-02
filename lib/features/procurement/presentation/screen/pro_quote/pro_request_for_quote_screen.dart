@@ -16,9 +16,9 @@ class ProRequestForQuoteScreen extends StatelessWidget {
     return BlocProvider<ProRequestForQuoteBloc>(
       create: (context) =>
           ProRequestForQuoteBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetProcurements<RequestForQuotation>()),
+            ..add(GetProcurements<RequestForQuote>()),
       child: CustomScaffold(
-        title: requestPriceQuoteScreenTitle.toUpperCaseAll,
+        title: requestPriceQuoteScreenTitle.toUpperAll,
         body: Center(child: Text('Procurement Request For Quote')),
       ),
     );

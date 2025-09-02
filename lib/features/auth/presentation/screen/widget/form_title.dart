@@ -20,12 +20,12 @@ class FormTitle extends StatelessWidget {
         Expanded(
           child: _buildCard(
             context,
-            color: kLightColor.toAlpha(0.8),
+            color: kWhiteColor.toAlpha(0.8),
 
             child: ListTile(
               titleAlignment: ListTileTitleAlignment.center,
               title: Text(
-                title.toTitleCase,
+                title.toTitle,
                 textAlign: TextAlign.center,
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
@@ -50,7 +50,7 @@ class FormTitle extends StatelessWidget {
   _buildCard(BuildContext context, {Color? color, Widget? child}) {
     return Card(
       elevation: 50,
-      color: color ?? kLightColor.toAlpha(0.8),
+      color: color ?? kWhiteColor.toAlpha(0.8),
       margin: context.isMobile || context.isTablet
           ? null
           : const EdgeInsets.symmetric(horizontal: 150),

@@ -35,7 +35,7 @@ class AssignEmployeeRole extends StatelessWidget {
     this.employeeName,
   });
 
-  String get _employeeName => (employeeName ?? 'Employee').toTitleCase;
+  String get _employeeName => (employeeName ?? 'Employee').toTitle;
 
   @override
   Widget build(BuildContext context) {

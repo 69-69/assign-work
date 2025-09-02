@@ -50,7 +50,7 @@ extension ShowSignInAlert on BuildContext {
           'Something went wrong. Please tap the red refresh icon above.';
 
       final msg =
-          simplifiedError.toLowercaseAll.contains(
+          simplifiedError.toLowerAll.contains(
             'cannot add new events after calling close',
           )
           ? fallbackMsg
@@ -60,7 +60,7 @@ extension ShowSignInAlert on BuildContext {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         showAlertOverlay(msg, bgColor: kDangerColor);
 
-        if (isWorkspace && msg.toLowercaseAll.contains('license')) {
+        if (isWorkspace && msg.toLowerAll.contains('license')) {
           await Future.delayed(kRProgressDelay);
           showUpgradeWarningDialog();
         }

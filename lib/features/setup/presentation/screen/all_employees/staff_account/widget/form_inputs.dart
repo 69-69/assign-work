@@ -207,7 +207,7 @@ class _TemporaryPasscodeState extends State<TemporaryPasscode> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      txtColor: kLightColor,
+      txtColor: kWhiteColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       onPressed: () => _controller.text = _generateTemporaryPasscode(),

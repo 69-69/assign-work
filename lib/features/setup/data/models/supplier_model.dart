@@ -106,7 +106,7 @@ class Supplier extends Equatable {
         dt.day == _today.day;
   }
 
-  String get itemAsString => name.toTitleCase;
+  String get itemAsString => name.toTitle;
 
   static get notFound => Supplier(
     name: 'no data',
@@ -174,14 +174,14 @@ class Supplier extends Equatable {
   /// ToList for Items/Products-Supplier address [toListL]
   List<String> toListL() => [
     id,
-    name.toTitleCase,
-    contactPersonName.toTitleCase,
+    name.toTitle,
+    contactPersonName.toTitle,
     phone,
-    (email ?? 'none').toTitleCase,
-    address.toTitleCase,
-    createdBy.toTitleCase,
+    (email ?? 'none').toTitle,
+    address.toTitle,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

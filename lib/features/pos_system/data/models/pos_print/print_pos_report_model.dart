@@ -30,7 +30,7 @@ class PrintPOSReport {
   late final PrintPDFColors _pdfColors;
   late final IssuerCompany _company;
 
-  String get _reportTitle => title.toUpperCaseAll;
+  String get _reportTitle => title.toUpperAll;
 
   /// Generate PDF-Doc [buildPdf]
   Future<Uint8List> buildPdf(PdfPageFormat pageFormat) async {
@@ -178,7 +178,7 @@ class PrintPOSReport {
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
-              title.toUpperCaseAll,
+              title.toUpperAll,
               style: pw.TextStyle(color: hColor, fontSize: 14),
             ),
             pw.SizedBox(height: 3.0),
@@ -335,7 +335,7 @@ class PrintPOSReport {
       ),
       headers: List<String>.generate(
         tableHeaders.length,
-        (col) => tableHeaders[col].toTitleCase,
+        (col) => tableHeaders[col].toTitle,
       ),
       data: List<List<String>>.generate(
         sales.length,

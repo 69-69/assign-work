@@ -41,7 +41,7 @@ extension CompanyStoreBranches on BuildContext {
 
     if (mounted && isConfirmed) {
       final msg =
-          'Branch (Store) location changed to ${location.toTitleCase}\nBranch (Store) number $storeNumber';
+          'Branch (Store) location changed to ${location.toTitle}\nBranch (Store) number $storeNumber';
       // Show progress dialog while updating store number
       await progressBarDialog(
         child: const Text('Please wait...while switching Branch (Store)'),

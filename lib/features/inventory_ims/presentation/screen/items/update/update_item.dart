@@ -19,7 +19,7 @@ extension UpdateItemForm on BuildContext {
     isExpand: false,
     child: FormBottomSheet(
       title: 'Edit Item',
-      subtitle: item.name.toTitleCase,
+      subtitle: item.name.toTitle,
       body: _UpdateItemForm(item: item),
     ),
   );
@@ -118,7 +118,7 @@ class _UpdateItemFormState extends State<_UpdateItemForm> {
       // _formKey.currentState!.reset();
 
       context.showAlertOverlay(
-        '${_product.name.toTitleCase} has been successfully updated',
+        '${_product.name.toTitle} has been successfully updated',
       );
 
       Navigator.of(context).pop();
@@ -175,7 +175,7 @@ class _UpdateItemFormState extends State<_UpdateItemForm> {
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge,
       ),
-      subtitle: Text(_product.name.toTitleCase, textAlign: TextAlign.center),
+      subtitle: Text(_product.name.toTitle, textAlign: TextAlign.center),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: <Widget>[
         const SizedBox(height: 20),

@@ -24,7 +24,7 @@ class DeliveryScreen extends StatelessWidget {
           DeliveryBloc(firestore: FirebaseFirestore.instance)
             ..add(GetInventories<Delivery>()),
       child: CustomScaffold(
-        title: deliveryScreenTitle.toUpperCaseAll,
+        title: deliveryScreenTitle.toUpperAll,
         body: _buildBody(),
         actions: const [],
         floatingActionButton: context.buildFloatingBtn(

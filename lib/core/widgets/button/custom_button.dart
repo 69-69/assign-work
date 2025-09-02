@@ -52,7 +52,7 @@ extension Custombutton on BuildContext {
               child: Text(
                 labelText,
                 style: const TextStyle(
-                  color: kLightColor,
+                  color: kWhiteColor,
                   overflow: TextOverflow.ellipsis,
                 ),
                 semanticsLabel: label,
@@ -220,7 +220,12 @@ extension Custombutton on BuildContext {
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
       ),
-      icon: Icon(icon, color: iconColor ?? kLightColor, size: size),
+      icon: Icon(
+        icon,
+        color: iconColor ?? kWhiteColor,
+        size: size,
+        semanticLabel: tooltip ?? 'Icon button',
+      ),
     );
   }
 

@@ -108,7 +108,7 @@ class Role extends Equatable {
   static Role? findById(List<Role> roles, String id) =>
       roles.firstWhereOrNull((r) => r.id == id);
 
-  String get itemAsString => name.toTitleCase;
+  String get itemAsString => name.toTitle;
 
   /// Filter
   bool filterByAny(String filter) =>
@@ -128,11 +128,11 @@ class Role extends Equatable {
   /// ToList for PRODUCTS [itemAsList]
   List<String> itemAsList() => [
     id,
-    name.toTitleCase,
+    name.toTitle,
     permissions.length.toString(),
     getCreatedAt,
-    createdBy.toTitleCase,
-    updatedBy.toTitleCase,
+    createdBy.toTitle,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 

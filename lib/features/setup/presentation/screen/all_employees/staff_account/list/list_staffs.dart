@@ -85,11 +85,11 @@ class _ListStaffsState extends State<ListStaffs> {
       runAlignment: WrapAlignment.end,
       children: [
         context.elevatedIconBtn(
-          Icon(Icons.person_add, color: kLightColor),
+          Icon(Icons.person_add, color: kWhiteColor),
           label: 'Add Employee',
           onPressed: () async => await context.openCreateStaffAcc(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
         if (_isChecked == true) ...[
           context.elevatedButton(
@@ -100,7 +100,7 @@ class _ListStaffsState extends State<ListStaffs> {
               employeeName: _selectedEmployee?.fullName,
             ),
             bgColor: kPrimaryAccentColor,
-            txtColor: kLightColor,
+            txtColor: kWhiteColor,
           ),
           context.elevatedButton(
             'Assign Department',
@@ -111,7 +111,7 @@ class _ListStaffsState extends State<ListStaffs> {
                   employeeName: _selectedEmployee?.fullName,
                 ),
             bgColor: kPrimaryLightColor,
-            txtColor: kLightColor,
+            txtColor: kWhiteColor,
           ),
 
           context.elevatedButton(
@@ -123,7 +123,7 @@ class _ListStaffsState extends State<ListStaffs> {
                   employeeName: _selectedEmployee?.fullName,
                 ),
             bgColor: kWarningColor,
-            txtColor: kLightColor,
+            txtColor: kWhiteColor,
           ),
         ],
       ],

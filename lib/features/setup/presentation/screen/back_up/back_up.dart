@@ -75,7 +75,7 @@ class _BackUpState extends State<BackUp> {
   }
 
   Future<void> _confirmBackupDialog(String label) async {
-    final title = '${label.toUpperCaseFirst} Backup';
+    final title = '${label.toUpperFirst} Backup';
 
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to continue with the BackUp?'),

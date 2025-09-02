@@ -62,7 +62,7 @@ class Body extends StatelessWidget {
   Center _buildEmptyMessage(BuildContext context) {
     return Center(
       child: Text(
-        '${guideCategory.toUpperCaseAll}: No guides found.',
+        '${guideCategory.toUpperAll}: No guides found.',
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
     );

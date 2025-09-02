@@ -27,19 +27,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../../../core/util/debug_printify.dart';
 
 extension UpdateRequestForQuotationForm on BuildContext {
-  Future openUpdateRequestForQuotation({required RequestForQuotation quote}) =>
+  Future openUpdateRequestForQuotation({required RequestForQuote quote}) =>
       openBottomSheet(
         isExpand: false,
         child: FormBottomSheet(
           title: 'Edit Request For Quote',
-          subtitle: quote.rfqNumber.toUpperCaseAll,
+          subtitle: quote.rfqNumber.toUpperAll,
           body: _UpdateRequestForQuote(quote: quote),
         ),
       );
 }
 
 class _UpdateRequestForQuote extends StatefulWidget {
-  final RequestForQuotation quote;
+  final RequestForQuote quote;
 
   const _UpdateRequestForQuote({required this.quote});
 
@@ -68,7 +68,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   // Add a list to manage line items
   final List<String> _taxCodes = [];
   final List<RFQLineItem> _lineItems = [];
-  RequestForQuotation? get _quote => widget.quote;
+  RequestForQuote? get _quote => widget.quote;
 
   bool get _isValid => _formKey.currentState?.validate() ?? false;
 
@@ -90,28 +90,32 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     super.dispose();
   }
 
-  RequestForQuotation? get _updatedQuote => _quote?.copyWith(
-    taxMethod: _taxMethodToApply,
-    taxCodes: _taxCodes,
-    title: _titleController.text,
-    notes: _notesController.text,
-    deliveryAddress: _addressController.text,
-    status: _selectedRFQStatus ?? _quote?.status,
-    currency: _currency ?? _quote!.currency,
-    department: _department ?? _quote!.department,
-    supplierId: _selectedSupplierId ?? _quote!.supplierId,
-    lineItems: List.from(_lineItems),
-    deadline: _selectedDeadlineDate ?? _quote!.deadline,
-    paymentTerm: _selectedPaymentTerm ?? _quote!.paymentTerm,
-    deliveryDate: _selectedDeliveryDate ?? _quote!.deliveryDate,
-    validityDate: (_selectedValidityDate != null
-        ? '${_selectedValidityDate?.toDays} days'
-        : _quote!.validityDate),
-    updatedBy: context.employee!.fullName,
-  );
+  RequestForQuote? get _updatedQuote {
+    if (_quote == null) return null;
+
+    return _quote!.copyWith(
+      taxMethod: _taxMethodToApply,
+      taxCodes: _taxCodes,
+      title: _titleController.text,
+      notes: _notesController.text,
+      deliveryAddress: _addressController.text,
+      status: _selectedRFQStatus ?? _quote!.status,
+      currency: _currency ?? _quote!.currency,
+      department: _department ?? _quote!.department,
+      supplierId: _selectedSupplierId ?? _quote!.supplierId,
+      lineItems: List.from(_lineItems),
+      deadline: _selectedDeadlineDate ?? _quote!.deadline,
+      paymentTerm: _selectedPaymentTerm ?? _quote!.paymentTerm,
+      deliveryDate: _selectedDeliveryDate ?? _quote!.deliveryDate,
+      validityDate: _selectedValidityDate != null
+          ? '${_selectedValidityDate!.toDays} days'
+          : _quote!.validityDate,
+      updatedBy: context.employee!.fullName,
+    );
+  }
 
   void _onSubmit() {
-    if (!_isValid && _lineItems.isNullOrEmpty) {
+    if (!_isValid || _lineItems.isNullOrEmpty) {
       context.showAlertOverlay(
         'Enter all required fields',
         bgColor: kDangerColor,
@@ -119,21 +123,43 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       return;
     }
 
-    final bloc = context.read<RequestForQuotationBloc>();
+    final updatedQuote = _updatedQuote;
+
+    if (updatedQuote == null) {
+      context.showAlertOverlay(
+        'Unable to update RFQ — missing quote data.',
+        bgColor: kDangerColor,
+      );
+      return;
+    }
+
+    final sanitizedQuote = _sanitizeTaxCodes(updatedQuote);
+
+    prettyPrint('_updatedQuote update', '$sanitizedQuote');
+
+    final bloc = context.read<RequestForQuoteBloc>();
     bloc.add(
-      UpdateInventory<RequestForQuotation>(
-        documentId: _quote?.id ?? '',
-        data: _updatedQuote,
+      UpdateInventory<RequestForQuote>(
+        documentId: sanitizedQuote.id,
+        data: sanitizedQuote,
       ),
     );
 
-    bloc.stream.listen((state) {
-      prettyPrint('Bloc state after update', '$state');
-      // Check if the state changes after this event
-    });
-
     context.showAlertOverlay('RFQ no.: ${_quote?.rfqNumber} has been updated');
+
     _confirmPrintoutDialog();
+  }
+
+  RequestForQuote _sanitizeTaxCodes(RequestForQuote quote) {
+    if (quote.taxMethod != TaxMethodToApply.headerTax) {
+      return quote.copyWith(taxCodes: []);
+    } else {
+      final updatedItems = quote.lineItems
+          .map((e) => e.copyWith(taxCodes: []))
+          .toList();
+
+      return quote.copyWith(lineItems: updatedItems);
+    }
   }
 
   @override
@@ -219,7 +245,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
             ),
             TaxMethodSelector(
               initialValues: List.from(_quote?.taxCodes ?? []),
-              onRadioChanged: __onSelectTaxMethod,
+              onRadioChanged: _onSelectTaxMethod,
               defaultTaxMethod: _taxMethodToApply,
               onCheckChanged: (List<Map<String, dynamic>> data) {
                 // if (_isValid) setState(() {});
@@ -254,17 +280,11 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     );
   }
 
-  void __onSelectTaxMethod(List<Map<String, dynamic>> data) {
+  void _onSelectTaxMethod(List<Map<String, dynamic>> data) {
     final selected = data.firstWhereOrNull((item) => item['selected'] == true);
     final selectedKey = selected?['key'];
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        // Clear _taxCodes, if the selected tax method is different
-        if (TaxMethodToApply.headerTax.label != selectedKey) {
-          _taxCodes.addAll([]);
-        }
-        _taxMethodToApply = getTaxMethodByString(selectedKey);
-      });
+      setState(() => _taxMethodToApply = getTaxMethodByString(selectedKey));
     });
   }
 

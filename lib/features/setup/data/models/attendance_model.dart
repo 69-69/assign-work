@@ -99,8 +99,8 @@ class Attendance {
   List<String> itemAsList() => [
     id,
     userId,
-    type.toTitleCase,
-    name.toTitleCase,
+    type.toTitle,
+    name.toTitle,
     ip ?? '',
     city ?? '',
     region ?? '',

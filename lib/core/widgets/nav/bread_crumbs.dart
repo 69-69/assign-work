@@ -128,13 +128,13 @@ class BuildBreadcrumbs extends StatelessWidget {
   String _prettifyLabel(String part) {
     if (part.isEmpty) return 'Home';
 
-    final label = part[0].toUpperCaseAll + part.substring(1);
+    final label = part[0].toUpperAll + part.substring(1);
     return label
         .replaceAll('_', ' ')
         .replaceAll('-', ' ')
         .replaceAll(RegExp(r'(screen|app)$', caseSensitive: false), '')
         .trim()
-        .toTitleCase;
+        .toTitle;
   }
 }
 

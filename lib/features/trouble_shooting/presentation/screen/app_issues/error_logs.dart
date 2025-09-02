@@ -65,7 +65,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
       children: [
         if (_selectedIds.isNotEmpty) ...[
           context.elevatedIconBtn(
-            Icon(Icons.delete, color: kLightColor),
+            Icon(Icons.delete, color: kWhiteColor),
             style: OutlinedButton.styleFrom(
               backgroundColor: context.colorScheme.error,
             ),
@@ -82,7 +82,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
             },
             label: const Text(
               'Delete all',
-              style: TextStyle(color: kLightColor),
+              style: TextStyle(color: kWhiteColor),
             ),
           ),
         ],

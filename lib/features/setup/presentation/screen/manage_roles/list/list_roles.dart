@@ -67,11 +67,11 @@ class _ListRolesState extends State<ListRoles> {
       runAlignment: WrapAlignment.end,
       children: [
         context.elevatedIconBtn(
-          Icon(Icons.admin_panel_settings, color: kLightColor),
+          Icon(Icons.admin_panel_settings, color: kWhiteColor),
           label: 'Create Role',
           onPressed: () async => await context.openCreateNewRole(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
         if (_isChecked == true) ...{
           context.elevatedButton(
@@ -86,7 +86,7 @@ class _ListRolesState extends State<ListRoles> {
               );
             },
             bgColor: kGrayBlueColor,
-            txtColor: kLightColor,
+            txtColor: kWhiteColor,
           ),
         },
       ],

@@ -20,7 +20,7 @@ class PosSalesScreen extends StatelessWidget {
           POSSaleBloc(firestore: FirebaseFirestore.instance)
             ..add(GetPOSs<POSSale>()),
       child: CustomScaffold(
-        title: posSalesScreenTitle.toUpperCaseAll,
+        title: posSalesScreenTitle.toUpperAll,
         body: const ListPOSSales(),
         floatingActionButton: context.buildFloatingBtn(
           'Add Sales',

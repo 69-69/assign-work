@@ -9,7 +9,7 @@ class WarehouseProductScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: warehouseScreenTitle.toUpperCaseAll,
+      title: warehouseScreenTitle.toUpperAll,
       body: const Padding(
         padding: EdgeInsets.all(8.0),
         child: Text('Warehouse'),

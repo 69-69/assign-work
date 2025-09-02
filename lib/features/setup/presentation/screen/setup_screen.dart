@@ -25,7 +25,7 @@ class SetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: setupAppTitle.toUpperCaseAll,
+      title: setupAppTitle.toUpperAll,
       body: _buildBody(context),
       floatingActionBtnLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: context.buildFloatingBtn(

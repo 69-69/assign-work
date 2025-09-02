@@ -41,7 +41,7 @@ class PrintPOSReceipt {
 
   double get _grandTotalPrice => _subTotal + _taxAmount;
 
-  String get _receiptTitle => title.toUpperCaseAll;
+  String get _receiptTitle => title.toUpperAll;
 
   /// Generate PDF-Doc [buildPdf]
   Future<Uint8List> buildPdf(PdfPageFormat pageFormat) async {

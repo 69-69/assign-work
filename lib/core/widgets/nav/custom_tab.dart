@@ -193,7 +193,7 @@ class _CustomTabState extends State<CustomTab>
           ),
           destinations: widget.tabs.map<NavigationRailDestination>((t) {
             final icon = t['icon'];
-            final label = t['label'].toString().toTitleCase;
+            final label = t['label'].toString().toTitle;
             return NavigationRailDestination(
               icon: Tooltip(message: label, child: Icon(icon)),
               label: Text(
@@ -265,7 +265,7 @@ class _CustomTabState extends State<CustomTab>
                 context.loader,
                 Text(
                   textAlign: TextAlign.center,
-                  'Loading ${widget.tabs[index]['label'].toString().toTitleCase}...',
+                  'Loading ${widget.tabs[index]['label'].toString().toTitle}...',
                 ),
               ],
             ),
@@ -285,7 +285,7 @@ class _CustomTabState extends State<CustomTab>
       labelStyle: const TextStyle(fontWeight: FontWeight.w500),
       labelColor: kPrimaryLightColor,
       tabs: widget.tabs.map<Widget>((t) {
-        final label = t['label'].toString().toTitleCase;
+        final label = t['label'].toString().toTitle;
         final isActive = _tabController.index == widget.tabs.indexOf(t);
         return Tab(
           text: label,

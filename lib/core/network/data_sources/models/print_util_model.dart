@@ -56,10 +56,10 @@ class PrintPDFColors {
 
     if (setup != null && !setup.isColorsEmpty) {
       company = IssuerCompany(
-        name: (setup.companyName ?? '').toTitleCase,
+        name: (setup.companyName ?? '').toTitle,
         email: setup.companyEmail ?? '',
         phone: setup.companyPhone ?? '',
-        address: (setup.companyAddress ?? '').toSentenceCase,
+        address: (setup.companyAddress ?? '').toSentence,
       );
       isDenseLayout = setup.layout == 'dense';
       // footerColorStr = setup.headerColor;

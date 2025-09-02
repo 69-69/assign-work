@@ -242,7 +242,7 @@ class _AddOrderFormState extends State<_AddOrderForm> {
                     padding: EdgeInsets.zero,
                     label: Text(
                       '${o.itemName} - $ghanaCedis${o.unitPrice} x ${o.quantity}'
-                          .toTitleCase,
+                          .toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

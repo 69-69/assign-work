@@ -21,7 +21,7 @@ class TenantWorkspacesScreen extends StatelessWidget {
           AllTenantsBloc(firestore: FirebaseFirestore.instance)
             ..add(LoadTenants<Workspace>()),
       child: CustomScaffold(
-        title: allWorkspacesScreenTitle.toUpperCaseAll,
+        title: allWorkspacesScreenTitle.toUpperAll,
         body: ListTenantWorkspaces(),
         floatingActionButton: context.buildFloatingBtn(
           'setup new workspace',

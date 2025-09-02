@@ -18,7 +18,7 @@ class SearchSubscription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<Subscription>(
-      labelText: (initialValue ?? 'Select Subscription...').toTitleCase,
+      labelText: (initialValue ?? 'Select Subscription...').toTitle,
       asyncItems: (String filter, loadProps) async =>
           await GetSubscriptions.load(),
       filterFn: (sub, filter) {

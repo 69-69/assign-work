@@ -196,13 +196,13 @@ class _RightColumnPane extends StatelessWidget {
 
   _buildOpenCreateWorkspaceButton(BuildContext context) {
     return context.elevatedIconBtn(
-      Icon(Icons.workspaces_outline, color: kLightColor),
+      Icon(Icons.workspaces_outline, color: kWhiteColor),
       style: ElevatedButton.styleFrom(backgroundColor: kGrayBlueColor),
       onPressed: () => context.openCreateWorkspacePopUp(),
       label: Text(
         'Setup New Workspace',
         overflow: TextOverflow.ellipsis,
-        style: context.textTheme.titleLarge?.copyWith(color: kLightColor),
+        style: context.textTheme.titleLarge?.copyWith(color: kWhiteColor),
       ),
     );
   }

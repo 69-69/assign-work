@@ -158,13 +158,13 @@ class Tax extends Equatable {
   /// ToList for tax [toListT]
   List<String> toListT() => [
     id,
-    name.toTitleCase,
-    code.toUpperCaseAll,
+    name.toTitle,
+    code.toUpperAll,
     '$rate',
-    notes.toSentenceCase,
-    createdBy.toTitleCase,
+    notes.toSentence,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 
@@ -180,3 +180,23 @@ class Tax extends Equatable {
     'Updated At',
   ];
 }
+
+/// Resolve Tax Code [ResolveTaxCode]: Get Tax Rate and Name by Tax Code
+class ResolveTaxCode {
+  final double rate;
+  final String name;
+
+  ResolveTaxCode({required this.rate, required this.name});
+
+  String get taxLabel => '$name ${rate.toPercent}%';
+}
+
+/*
+
+  /// Load all Tax Rates.
+  static Future<Map<String, Map<String, dynamic>>> loadAllTaxRates2() async {
+    final List<Tax> taxes = await GetTaxes.getAllTaxes();
+    return {
+      for (final tax in taxes) tax.code: {'rate': tax.rate, 'name': tax.name},
+    };
+  }*/

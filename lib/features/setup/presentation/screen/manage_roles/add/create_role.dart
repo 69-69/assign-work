@@ -60,7 +60,7 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
       _formKey.currentState!.reset();
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} role successfully created',
+        '${_nameController.text.toTitle} role successfully created',
       );
       Navigator.pop(context);
     }

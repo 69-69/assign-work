@@ -90,7 +90,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       children: [
         if (_selectedIds.isNotEmpty) ...[
           context.elevatedIconBtn(
-            Icon(Icons.delete, color: kLightColor),
+            Icon(Icons.delete, color: kWhiteColor),
             style: OutlinedButton.styleFrom(
               backgroundColor: context.colorScheme.error,
             ),
@@ -107,7 +107,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             },
             label: const Text(
               'Delete all',
-              style: TextStyle(color: kLightColor),
+              style: TextStyle(color: kWhiteColor),
             ),
           ),
         ],
@@ -130,7 +130,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       attendance.areasViewed.isEmpty
           ? Text('No areas viewed yet!')
           : _dataTable(attendance),
-      title: 'Areas Viewed by ${attendance.name.toTitleCase}',
+      title: 'Areas Viewed by ${attendance.name.toTitle}',
       onDone: 'Done',
     );
   }
@@ -152,7 +152,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           return DataRow(
             cells: [
-              DataCell(Text(area.toTitleCase)),
+              DataCell(Text(area.toTitle)),
               DataCell(Text(time.timeOnly)),
             ],
           );

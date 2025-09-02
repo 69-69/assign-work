@@ -216,7 +216,7 @@ class _EmployeePasscodeInputState extends State<EmployeePasscodeInput> {
     return context.elevatedButton(
       'Generate',
       tooltip: helperText,
-      txtColor: kLightColor,
+      txtColor: kWhiteColor,
       bgColor: kDangerColor,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       onPressed: _generateAndDispatchPasscode,

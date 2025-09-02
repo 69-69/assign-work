@@ -87,3 +87,4 @@ const kIProgressDelay = Duration(seconds: 20);
 const kTProgressDelay = Duration(seconds: 10);
 const kAnimateDuration = Duration(milliseconds: 300);
 const fAnimateDuration = Duration(milliseconds: 500);
+const fMinutesDuration = Duration(minutes: 5);

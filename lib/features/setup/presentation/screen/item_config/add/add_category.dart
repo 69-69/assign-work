@@ -74,7 +74,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
       _categories.add(_categoryData);
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} added to batch',
+        '${_nameController.text.toTitle} added to batch',
       );
       _clearFields();
     }
@@ -117,7 +117,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
                   child: Chip(
                     padding: EdgeInsets.zero,
                     label: Text(
-                      o.name.toTitleCase,
+                      o.name.toTitle,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

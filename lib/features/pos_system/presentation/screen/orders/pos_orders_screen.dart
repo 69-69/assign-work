@@ -20,7 +20,7 @@ class PosOrdersScreen extends StatelessWidget {
           POSOrderBloc(firestore: FirebaseFirestore.instance)
             ..add(GetPOSs<POSOrder>()),
       child: CustomScaffold(
-        title: posOrdersScreenTitle.toUpperCaseAll,
+        title: posOrdersScreenTitle.toUpperAll,
         body: const ListPOSOrders(),
         floatingActionBtnLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: context.buildPOSGroupBtn(),

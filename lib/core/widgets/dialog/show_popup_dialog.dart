@@ -30,7 +30,7 @@ extension ShowPopupDialog on BuildContext {
       width: screenWidth,
       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
       child: Text(
-        title.toUpperCaseAll,
+        title.toUpperAll,
         textAlign: TextAlign.center,
         style: ofTheme.textTheme.headlineSmall?.copyWith(
           color: kPrimaryColor,

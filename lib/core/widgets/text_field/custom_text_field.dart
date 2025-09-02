@@ -223,9 +223,9 @@ class _LowercaseTextFieldState extends State<LowercaseTextField> {
     setState(() => capsLockOn = _isCapsLockOn(value));
 
     // Only update the controller's text if it's different
-    if (_controller?.text != value.toLowercaseAll) {
+    if (_controller?.text != value.toLowerAll) {
       _controller?.value = _controller!.value.copyWith(
-        text: value.toLowercaseAll,
+        text: value.toLowerAll,
         selection: TextSelection.collapsed(offset: value.length),
       );
     }

@@ -97,16 +97,16 @@ class DashboardMetrics extends StatelessWidget {
       title: Text(
         title,
         style: context.textTheme.bodySmall?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           fontWeight: FontWeight.w500,
           overflow: TextOverflow.ellipsis,
         ),
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
       subtitle: Text(
-        subtitle.toTitleCase,
+        subtitle.toTitle,
         style: context.textTheme.bodyLarge?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           fontWeight: FontWeight.normal,
           overflow: TextOverflow.ellipsis,
         ),
@@ -153,7 +153,7 @@ class _MetricItem extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            label.toTitleCase,
+            label.toTitle,
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 14),

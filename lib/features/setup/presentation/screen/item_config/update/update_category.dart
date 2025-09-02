@@ -16,7 +16,7 @@ extension UpdateCategory on BuildContext {
     isExpand: false,
     child: FormBottomSheet(
       title: 'Edit Category',
-      subtitle: category.name.toTitleCase,
+      subtitle: category.name.toTitle,
       body: _UpdateCategoryForm(category: category),
     ),
   );
@@ -57,7 +57,7 @@ class _UpdateCategoryFormState extends State<_UpdateCategoryForm> {
       );
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} successfully updated',
+        '${_nameController.text.toTitle} successfully updated',
       );
 
       Navigator.pop(context);

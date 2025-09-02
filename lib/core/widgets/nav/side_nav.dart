@@ -76,7 +76,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   Color get _bgColor =>
       _shouldExpand ? kPrimaryLightColor : kTransparentColor; // secondaryColor
   Color get _iconColor =>
-      _shouldExpand ? kLightColor : kLightBlueColor; // surfaceTintColor
+      _shouldExpand ? kWhiteColor : kLightBlueColor; // surfaceTintColor
 
   bool _canAccess(String access, BuildContext cxt) {
     final can =
@@ -124,7 +124,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           margin: EdgeInsets.only(left: 20),
           child: IconButton(
             alignment: Alignment.center,
-            icon: const Icon(Icons.menu, color: kLightColor),
+            icon: const Icon(Icons.menu, color: kWhiteColor),
             style: ElevatedButton.styleFrom(
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -286,9 +286,9 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           : null,
       label: Text(
         softWrap: false,
-        tile.label.toUpperCaseAll,
+        tile.label.toUpperAll,
         style: context.textTheme.bodySmall?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
           fontWeight: FontWeight.w500,
         ),
@@ -347,7 +347,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       label: Text(
         'SIGN OUT',
         style: context.textTheme.bodySmall?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
           fontWeight: FontWeight.w500,
         ),
@@ -412,9 +412,9 @@ class _WorkspaceInfoCard extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           mouseCursor: SystemMouseCursors.click,
           title: Text(
-            workspace!.name.toUpperCaseAll,
+            workspace!.name.toUpperAll,
             style: context.textTheme.bodyMedium?.copyWith(
-              color: kLightColor,
+              color: kWhiteColor,
               fontWeight: FontWeight.w600,
               overflow: TextOverflow.ellipsis,
             ),
@@ -461,16 +461,16 @@ class _WorkspaceInfoCard extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       mouseCursor: SystemMouseCursors.click,
       title: Text(
-        title.toUpperCaseAll,
+        title.toUpperAll,
         style: context.textTheme.bodySmall?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
         ),
       ),
       subtitle: Text(
-        subtitle.toTitleCase,
+        subtitle.toTitle,
         style: context.textTheme.labelSmall?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           overflow: TextOverflow.ellipsis,
           fontWeight: FontWeight.normal,
         ),

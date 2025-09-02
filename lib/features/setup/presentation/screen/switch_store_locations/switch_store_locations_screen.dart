@@ -32,7 +32,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
             ..add(GetSetups<CompanyStores>()),
       child: CustomScaffold(
         isGradientBg: true,
-        title: storeSwitcherAppTitle.toUpperCaseAll,
+        title: storeSwitcherAppTitle.toUpperAll,
         body: CustomScrollBar(
           controller: ScrollController(),
           child: Padding(
@@ -161,7 +161,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
       ),
       icon: Icon(
         icon ?? Icons.store,
-        color: kLightColor,
+        color: kWhiteColor,
         size: context.isMobile ? 40 : circleWidth,
       ),
     );
@@ -178,7 +178,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
 
   Text _buildSubtitle(BuildContext context, {required String subtitle}) {
     return Text(
-      subtitle.toTitleCase,
+      subtitle.toTitle,
       style: context.textTheme.bodyLarge?.copyWith(
         color: kPrimaryColor,
         fontWeight: FontWeight.w500,
@@ -206,7 +206,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTitle(context, title: workspace.name.toUpperCaseAll),
+              _buildTitle(context, title: workspace.name.toUpperAll),
 
               HorizontalDivider(
                 width: context.screenWidth * 0.01,
@@ -216,7 +216,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
               _buildListTile(
                 context,
                 title:
-                    'SUBSCRIPTION: ${context.getSubscriptionName.toUpperCaseAll}',
+                    'SUBSCRIPTION: ${context.getSubscriptionName.toUpperAll}',
                 subtitle: 'Valid Until: ${workspace.expiresOn.toStandardDT}',
               ),
               _buildListTile(
@@ -227,7 +227,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
               ),
               _buildTitle(
                 context,
-                title: 'Hosting: ${workspace.hostingType.label}'.toTitleCase,
+                title: 'Hosting: ${workspace.hostingType.label}'.toTitle,
               ),
               if (showTitle) ...[
                 const SizedBox(height: 16),
@@ -237,7 +237,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
                     context,
                     title: 'Switch Store Locations',
                     style: context.textTheme.titleMedium?.copyWith(
-                      color: kLightColor,
+                      color: kWhiteColor,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -256,7 +256,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
     var deco =
         style ??
         context.textTheme.titleMedium?.copyWith(
-          color: kLightColor,
+          color: kWhiteColor,
           fontWeight: FontWeight.w500,
           overflow: TextOverflow.ellipsis,
         );
@@ -283,7 +283,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           title,
           textAlign: TextAlign.center,
           style: context.textTheme.bodySmall?.copyWith(
-            color: kLightColor,
+            color: kWhiteColor,
             overflow: TextOverflow.ellipsis,
           ),
           textScaler: TextScaler.linear(context.textScaleFactor),
@@ -294,7 +294,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           subtitle,
           textAlign: TextAlign.center,
           style: context.textTheme.bodyLarge?.copyWith(
-            color: kLightColor,
+            color: kWhiteColor,
             overflow: TextOverflow.ellipsis,
             fontWeight: FontWeight.normal,
           ),

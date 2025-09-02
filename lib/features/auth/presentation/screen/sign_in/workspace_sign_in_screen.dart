@@ -124,13 +124,13 @@ class _RightColumnPane extends StatelessWidget {
 
   _buildForgotPasswordBtn(BuildContext cxt) {
     return cxt.elevatedIconBtn(
-      Icon(Icons.help_outline, color: kLightColor),
+      Icon(Icons.help_outline, color: kWhiteColor),
       style: ElevatedButton.styleFrom(backgroundColor: kGrayBlueColor),
       label: Text(
         "Forgot Password?",
         semanticsLabel: "Forgot Password",
         overflow: TextOverflow.ellipsis,
-        style: cxt.textTheme.titleLarge?.copyWith(color: kLightColor),
+        style: cxt.textTheme.titleLarge?.copyWith(color: kWhiteColor),
       ),
       onPressed: () async => await cxt.openForgotWorkspacePopUp(),
     );

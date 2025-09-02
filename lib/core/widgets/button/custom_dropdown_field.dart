@@ -88,7 +88,7 @@ class StaticDropdown<T> extends StatelessWidget {
           buttonDecoration ??
           InputDecoration(
             isDense: true,
-            labelText: _labelWithHelper?.toSentenceCase,
+            labelText: _labelWithHelper?.toSentence,
             helperText: inLabel ? null : helperText,
             labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
           ),
@@ -99,7 +99,7 @@ class StaticDropdown<T> extends StatelessWidget {
         return DropdownMenuItem<String>(
           value: value,
           child: Text(
-            display.toTitleCase,
+            display.toTitle,
             overflow: TextOverflow.fade,
             softWrap: true,
             style: const TextStyle(fontWeight: FontWeight.normal),
@@ -109,7 +109,7 @@ class StaticDropdown<T> extends StatelessWidget {
       validator:
           validator ??
           (val) {
-            final normalized = val?.toLowercaseAll.trim();
+            final normalized = val?.toLowerAll.trim();
             if (normalized.isNullOrEmpty || normalized!.contains('select')) {
               return 'Select $label';
             }
@@ -124,7 +124,7 @@ class StaticDropdown<T> extends StatelessWidget {
         .map(
           (item) => DropdownMenuEntry(
             value: getValue(item),
-            label: getDisplayText(item).toTitleCase,
+            label: getDisplayText(item).toTitle,
             style: ButtonStyle(),
           ),
         )
@@ -133,7 +133,7 @@ class StaticDropdown<T> extends StatelessWidget {
     return DropdownMenu<String>(
       trailingIcon: icon,
       requestFocusOnTap: true,
-      hintText: _labelWithHelper?.toSentenceCase,
+      hintText: _labelWithHelper?.toSentence,
       initialSelection: _defaultValue,
       dropdownMenuEntries: entries,
       textStyle: const TextStyle(fontWeight: FontWeight.normal),
@@ -156,7 +156,7 @@ class StaticDropdown<T> extends StatelessWidget {
   }
 
   bool _valueContains(String value, String query) =>
-      value.toLowercaseAll.contains(query.toLowercaseAll);
+      value.toLowerAll.contains(query.toLowerAll);
 }
 
 /// Form text field [AsyncSearchDropdown]

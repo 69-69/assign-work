@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/tax_methods_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/features/setup/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
 var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
@@ -12,28 +13,19 @@ var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
 // * Attachments (drawings/specs)
 // * Responses (linked or stored in sub-table)
 
-// Calculated net price from the line items
-/*double get netPrice {
-    double total = 0;
-    for (var item in lineItems) {
-      total += item.unitPrice * item.quantity;
-    }
-    return total - (total * discountPercent / 100) + (total * taxPercent / 100);
-  }*/
-
-class RequestForQuotation extends Equatable {
+class RequestForQuote extends Equatable {
   final String id;
   final String storeNumber;
   final String rfqNumber;
   final String supplierId;
-  final List<RFQLineItem> lineItems;
   final String status;
-  final TaxMethodToApply taxMethod;
-  final List<String> taxCodes;
 
   final String title;
   final String currency;
   final String department;
+  final List<RFQLineItem> lineItems;
+  final TaxMethodToApply taxMethod;
+  final List<String> taxCodes;
   final String paymentTerm;
   final String validityDate;
   final String? deliveryAddress;
@@ -45,14 +37,17 @@ class RequestForQuotation extends Equatable {
   final String updatedBy;
   final DateTime updatedAt;
 
-  RequestForQuotation({
+  /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+  final double headerTaxAmount;
+
+  RequestForQuote({
     this.id = '',
     required this.title,
     this.rfqNumber = '',
     required this.storeNumber,
     required this.supplierId,
     required this.status,
-    this.taxMethod = TaxMethodToApply.unknown,
+    this.taxMethod = TaxMethodToApply.perLineTax,
     this.taxCodes = const [],
     required this.lineItems,
     this.paymentTerm = '',
@@ -67,13 +62,16 @@ class RequestForQuotation extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
+
+    /// [headerTaxAmount] For UI header tax amount only (RFQ)
+    this.headerTaxAmount = 0.0,
   }) : deadline = deadline ?? _today,
        deliveryDate = deliveryDate ?? _today,
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory RequestForQuotation.fromMap(Map<String, dynamic> data, String docId) {
-    return RequestForQuotation(
+  factory RequestForQuote.fromMap(Map<String, dynamic> data, String docId) {
+    return RequestForQuote(
       id: docId,
       title: data['title'] ?? '',
       department: data['department'] ?? '',
@@ -146,25 +144,24 @@ class RequestForQuotation extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
+  double resolveHeaderTaxes(Map<String, ResolveTaxCode> taxMap) =>
+      _resolveTaxes(taxCodes, taxMap);
+
+  String getTaxName(Map<String, ResolveTaxCode> taxMap) =>
+      _getTaxName(taxCodes, taxMap);
+
   double get subTotal =>
       lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
 
-  double get discountAmt =>
-      lineItems.fold(0.0, (sum, item) => sum + item.discountAmt);
+  double get discountAmount =>
+      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
 
-  double get taxAmt {
-    final baseAmount = subTotal - discountAmt;
+  double get taxAmount => taxMethod.isHeaderTax
+      ? headerTaxAmount
+      : lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
-    if (taxMethod.isPerLineTax) {
-      return lineItems.fold(0.0, (sum, item) => sum + item.taxAmt);
-    }
-
-    // TODO: Implement logic to resolve taxCodes into rates.
-    // For now, return 0.
-    return 0.0;
-  }
-
-  double get netTotal => subTotal - discountAmt + taxAmt;
+  // subTotal - discountAmount;
+  double get netTotal => subTotal - discountAmount + taxAmount;
 
   bool get isEmpty => lineItems.isEmpty;
   bool get isNotEmpty => lineItems.isNotEmpty;
@@ -201,26 +198,47 @@ class RequestForQuotation extends Equatable {
       getDeliveryDate.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
 
-  static Iterable<RequestForQuotation> findRFQById(
-    List<RequestForQuotation> quotes,
+  static Iterable<RequestForQuote> findRFQById(
+    List<RequestForQuote> quotes,
     String quoteId,
   ) => quotes.where((quote) => quote.id == quoteId);
 
-  static List<RequestForQuotation> filterRFQByDate(
-    List<RequestForQuotation> quotes, {
+  static List<RequestForQuote> filterRFQByDate(
+    List<RequestForQuote> quotes, {
     bool isSameDay = true,
   }) => quotes
       .where((q) => !q.isAwarded && (isSameDay ? q.isToday : !q.isToday))
       .toList();
 
-  static List<RequestForQuotation> filterAwardedRFQ(
-    List<RequestForQuotation> quotes,
-  ) => quotes.where((q) => q.isAwarded).toList();
+  static List<RequestForQuote> filterAwardedRFQ(List<RequestForQuote> quotes) =>
+      quotes.where((q) => q.isAwarded).toList();
+
+  RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
+    if (taxMethod == TaxMethodToApply.perLineTax) {
+      // Calculate tax amounts for each line item (perLineTax)
+      final updatedItems = lineItems.map((item) {
+        final taxRate = item.resolvePerItemTaxes(taxMap);
+        final taxAmount = (item.netPrice * taxRate) / 100;
+
+        return item.copyWith(taxAmount: taxAmount);
+      }).toList();
+
+      return copyWith(lineItems: updatedItems);
+    } else {
+      // Calculate total tax amount (headerTax/overall tax)
+      final taxRate = resolveHeaderTaxes(taxMap);
+      final totalTax = lineItems.fold(0.0, (sum, item) {
+        return sum + ((item.netPrice * taxRate) / 100);
+      });
+
+      return copyWith(headerTaxAmount: totalTax);
+    }
+  }
 
   @override
   String toString() => 'RFQ: $rfqNumber - $supplierId';
 
-  RequestForQuotation copyWith({
+  RequestForQuote copyWith({
     String? id,
     String? title,
     String? department,
@@ -242,8 +260,11 @@ class RequestForQuotation extends Equatable {
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+
+    /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+    double? headerTaxAmount,
   }) {
-    return RequestForQuotation(
+    return RequestForQuote(
       id: id ?? this.id,
       title: title ?? this.title,
       department: department ?? this.department,
@@ -265,6 +286,9 @@ class RequestForQuotation extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+
+      /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+      headerTaxAmount: headerTaxAmount ?? this.headerTaxAmount,
     );
   }
 
@@ -291,6 +315,7 @@ class RequestForQuotation extends Equatable {
     createdBy,
     createdAt,
     updatedBy,
+    headerTaxAmount,
     updatedAt,
   ];
 
@@ -298,24 +323,22 @@ class RequestForQuotation extends Equatable {
     id,
     storeNumber,
     rfqNumber,
-    status.toTitleCase,
-    department.toTitleCase,
+    status.toTitle,
+    department.toTitle,
     getDeadlineDate,
-    getDeliveryDate,
-    createdBy.toTitleCase,
+    createdBy.toTitle,
     getCreatedAt,
-    updatedBy.toTitleCase,
+    updatedBy.toTitle,
     getUpdatedAt,
   ];
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store Number',
+    'Store No.',
     'RFQ Number',
     'Status',
     'Department',
-    'Quotation Deadline',
-    'Delivery Date',
+    'Deadline',
     'Created By',
     'Created At',
     'Updated By',
@@ -331,25 +354,32 @@ class RFQLineItem extends Equatable {
   final double discountPercent;
   final List<String> taxCodes;
 
+  /// [taxAmount] For UI perLineTax tax amount calculation only (RFQ)
+  final double taxAmount;
+
   const RFQLineItem({
     required this.itemName,
     required this.quantity,
     this.taxCodes = const [],
     this.unitPrice = 0.0,
+    this.taxAmount = 0.0,
     this.discountPercent = 0.0,
   });
 
   // get list of tax codes
   List<String> get taxCodesList =>
       List<String>.from(taxCodes).whereType<String>().toList();
-  double get netPrice => unitPrice * quantity;
-  double get subTotal => quantity * unitPrice;
-  double get discountAmt => (discountPercent / 100) * netPrice;
 
-  double get taxAmt {
-    // TODO: Resolve taxCodes to rates.
-    return 0.0;
-  }
+  double get subTotal => quantity * unitPrice;
+  double get discountAmount => (subTotal * discountPercent) / 100;
+  // The amount after applying Discounts BUT before Taxes
+  double get netPrice => subTotal - discountAmount;
+
+  double resolvePerItemTaxes(Map<String, ResolveTaxCode> taxMap) =>
+      _resolveTaxes(taxCodes, taxMap);
+
+  String getTaxName(Map<String, ResolveTaxCode> taxMap) =>
+      _getTaxName(taxCodes, taxMap, '\n');
 
   bool get isEmpty => itemName.isEmpty;
   bool get isNotEmpty => !isEmpty;
@@ -363,15 +393,6 @@ class RFQLineItem extends Equatable {
       taxCodes: List<String>.from(
         data['taxCodes'] ?? [],
       ).whereType<String>().toList(),
-
-      /*taxCodes: (data['taxCodes'] as List?)
-          ?.map((e) {
-        if (e is Tax) return e.id; // or e.code if you prefer codes
-        if (e is String) return e;
-        return null;
-      })
-          .whereType<String>()
-          .toList() ?? [],*/
     );
   }
 
@@ -396,15 +417,17 @@ class RFQLineItem extends Equatable {
     int? quantity,
     List<String>? taxCodes,
     double? discountPercent,
-  }) {
-    return RFQLineItem(
-      itemName: itemName ?? this.itemName,
-      taxCodes: taxCodes ?? this.taxCodes,
-      unitPrice: unitPrice ?? this.unitPrice,
-      quantity: quantity ?? this.quantity,
-      discountPercent: discountPercent ?? this.discountPercent,
-    );
-  }
+
+    /// [taxAmount] For UI perLineTax tax amount calculation only (RFQ)
+    double? taxAmount,
+  }) => RFQLineItem(
+    itemName: itemName ?? this.itemName,
+    quantity: quantity ?? this.quantity,
+    unitPrice: unitPrice ?? this.unitPrice,
+    taxCodes: taxCodes ?? this.taxCodes,
+    taxAmount: taxAmount ?? this.taxAmount,
+    discountPercent: discountPercent ?? this.discountPercent,
+  );
 
   @override
   List<Object?> get props => [
@@ -424,10 +447,58 @@ class RFQLineItem extends Equatable {
   ];
 
   List<String> get itemAsList => [
-    itemName.toTitleCase,
+    itemName.toTitle,
     '$ghanaCedis$unitPrice',
     '$quantity',
-    '$discountPercent% = $ghanaCedis$discountAmt',
+    '$discountPercent% = $ghanaCedis$discountAmount',
     '$ghanaCedis$netPrice',
   ];
+}
+
+/// [_resolveTaxes] Resolves the total tax amount for the current RFQ line item based on the provided tax rate map.
+///
+/// This method takes a map of tax codes and their associated tax rates (`taxMap`), and calculates the total tax
+/// for this line item by summing up the tax rates corresponding to the `taxCodes` associated with the line item.
+///
+/// The tax rate for each code is fetched from the `taxMap`. If a tax code is not found in the map, a default value
+/// of `0.0` is used (i.e., no tax is applied for that code).
+///
+/// Example:
+/// Given the taxCodes `['VAT', 'Service']` and a taxMap that looks like:
+/// ```dart
+/// {'VAT': 0.15, 'Service': 0.02}
+/// ```
+/// The resulting tax amount would be:
+/// `0.15 + 0.02 = 0.17`.
+///
+/// If the `taxMap` contains codes that are not in `taxCodes`, they will be ignored.
+/// If no tax codes are provided, the total tax is `0.0`.
+///
+/// Args:
+///   taxMap: A map of tax codes to tax rates. For example: `{'VAT': 0.15, 'Service': 0.05}`.
+///
+/// Returns:
+///   A double value representing the total tax amount for the line item based on the tax codes and rates.
+double _resolveTaxes(
+  List<String> taxCodes,
+  Map<String, ResolveTaxCode> taxMap,
+) {
+  if (taxCodes.isEmpty || taxMap.isEmpty) return 0.0;
+
+  // Summing up tax rates based on tax codes.
+  // If a tax code is missing from the map, a rate of 0.0 is used.
+  return taxCodes.fold(0.0, (sum, code) => sum + (taxMap[code]?.rate ?? 0.0));
+}
+
+String _getTaxName(
+  List<String> taxCodes,
+  Map<String, ResolveTaxCode> taxMap, [
+  String separator = ', ',
+]) {
+  if (taxCodes.isEmpty || taxMap.isEmpty) return '';
+
+  return taxCodes
+      .map((code) => taxMap[code]?.taxLabel ?? 'N/A')
+      .whereType<String>()
+      .join(separator);
 }

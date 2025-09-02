@@ -89,12 +89,12 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
           ),
         ),
         context.elevatedIconBtn(
-          Icon(Icons.store, color: kLightColor),
+          Icon(Icons.store, color: kWhiteColor),
           label: 'Add Stores',
           tooltip: 'Company\'s Stores or Branches',
           onPressed: () => context.openAddStoreLocations(),
           bgColor: kDangerColor,
-          txtColor: kLightColor,
+          txtColor: kWhiteColor,
         ),
       ],
     );

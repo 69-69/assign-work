@@ -62,7 +62,7 @@ class OnBoardingContentView extends StatelessWidget {
             currentIndex + 1,
             (index) => Icon(
               Icons.adaptive.arrow_forward,
-              color: currentIndex == index ? kLightColor : kLightBlueColor,
+              color: currentIndex == index ? kWhiteColor : kLightBlueColor,
               size: 13,
             ),
           ),
@@ -74,7 +74,7 @@ class OnBoardingContentView extends StatelessWidget {
           // shape: const StadiumBorder(),
         ),
         iconAlignment: IconAlignment.end,
-        label: Text('Next', style: TextStyle(color: kLightColor)),
+        label: Text('Next', style: TextStyle(color: kWhiteColor)),
       ),
     );
   }

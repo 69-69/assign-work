@@ -16,7 +16,7 @@ extension UpdateSupplier on BuildContext {
     isExpand: false,
     child: FormBottomSheet(
       title: 'Edit Supplier',
-      subtitle: supplier.name.toTitleCase,
+      subtitle: supplier.name.toTitle,
       body: _UpdateSupplierForm(supplier: supplier),
     ),
   );
@@ -71,7 +71,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
       );
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} successfully updated',
+        '${_nameController.text.toTitle} successfully updated',
       );
 
       Navigator.pop(context);

@@ -50,7 +50,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 
   Future<void> _saveCardSelection(String label) async {
     final settings = (await _printoutService.getSettings())?.copyWith(
-      layout: label.toLowercaseAll,
+      layout: label.toLowerAll,
     );
     if (settings != null) {
       await _printoutService.setSettings(settings);
@@ -134,7 +134,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 
   Widget _buildCard(int index, String label) {
     final assetName = index > 0 ? loosePrintLayout : densePrintLayout;
-    label = label.toLowercaseAll;
+    label = label.toLowerAll;
 
     return Card(
       margin: const EdgeInsets.all(10),
@@ -174,7 +174,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
             ),
             onPressed: () =>
                 context.previewLayout(img: assetName, layoutName: label),
-            icon: const Icon(Icons.zoom_in, color: kLightColor),
+            icon: const Icon(Icons.zoom_in, color: kWhiteColor),
           ),
         ),
       ),

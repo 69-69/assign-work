@@ -179,7 +179,7 @@ class TextToSpeechState extends State<TextToSpeech> {
           TextSpan(
             text: highlightedText,
             style: const TextStyle(
-              color: kLightColor,
+              color: kWhiteColor,
               backgroundColor: kDangerColor,
             ),
           ),

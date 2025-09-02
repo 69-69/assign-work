@@ -13,7 +13,7 @@ class GetItems {
         as InventoriesLoaded<Item>;
   }
 
-  static Future<List<Item>> load() async {
+  static Future<List<Item>> getAllItems() async {
     final itemBloc = ItemBloc(firestore: FirebaseFirestore.instance);
 
     // Load all data initially to pass to the search delegate

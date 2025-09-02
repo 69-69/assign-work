@@ -200,7 +200,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
         ? const SizedBox.shrink()
         : Card(
             elevation: 5,
-            color: kLightColor,
+            color: kWhiteColor,
             child: Container(
               width: 200,
               height: 200,
@@ -227,7 +227,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
           backgroundColor: kDangerColor.toAlpha(0.5),
         ),
         onPressed: _deleteImgStarted,
-        icon: const Icon(Icons.close, color: kLightColor),
+        icon: const Icon(Icons.close, color: kWhiteColor),
       ),
     );
   }

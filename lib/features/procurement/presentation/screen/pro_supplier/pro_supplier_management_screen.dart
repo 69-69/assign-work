@@ -12,7 +12,7 @@ class ProSupplierManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScaffold(
       isGradientBg: true,
-      title: supplierManagementScreenTitle.toUpperCaseAll,
+      title: supplierManagementScreenTitle.toUpperAll,
       body: DashboardTileCard(tiles: supplierManagementTiles),
     );
   }

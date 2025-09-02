@@ -47,7 +47,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   void _toastMsg(String title) {
     context.showAlertOverlay(
       label: 'Success Message',
-      '${_workspace.name.toTitleCase} $title updated',
+      '${_workspace.name.toTitle} $title updated',
     );
   }
 
@@ -98,7 +98,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   Widget build(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
-        title: _workspace.name.toTitleCase,
+        title: _workspace.name.toTitle,
         subtitle: 'Workspace Role & Status',
       ),
       body: Form(

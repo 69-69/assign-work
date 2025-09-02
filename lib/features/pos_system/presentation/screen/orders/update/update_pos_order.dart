@@ -23,7 +23,7 @@ extension UpdateOrderForm on BuildContext {
     isExpand: false,
     child: FormBottomSheet(
       title: 'Edit Order',
-      subtitle: order.orderNumber.toUpperCaseAll,
+      subtitle: order.orderNumber.toUpperAll,
       body: _UpdateOrderForm(order: order),
     ),
   );
@@ -198,10 +198,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge,
       ),
-      subtitle: Text(
-        'ID ${_order.id}'.toUpperCaseAll,
-        textAlign: TextAlign.center,
-      ),
+      subtitle: Text('ID ${_order.id}'.toUpperAll, textAlign: TextAlign.center),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: [
         const SizedBox(height: 20.0),

@@ -93,7 +93,7 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
 
       _formKey.currentState!.reset();
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} successfully created',
+        '${_nameController.text.toTitle} successfully created',
       );
 
       Navigator.of(context).pop();

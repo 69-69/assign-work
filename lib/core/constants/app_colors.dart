@@ -7,7 +7,7 @@ const kPrimaryColor = Color(0xFF232B5A); //0xff041363 - 0xff232b5a - 0xFF673AB7
 const kPrimaryLightColor = Color(0xFF4A5D8C);
 const kBrightPrimaryColor = Color(0xFF1DD6EF);
 const kPrimaryAccentColor = Color(0xFF3468EA);
-const kLightColor = Color(0xFFFFFFFF);
+const kWhiteColor = Color(0xFFFFFFFF);
 const kOffWhiteColor = Colors.white70;
 const kGrayColor = Color(0xFFB1B3B8);
 const kLightGrayColor = Color(0xFFFbF8FF);
@@ -44,6 +44,7 @@ extension DefaultColors on BuildContext {
   Color get onSecondaryContainer => colorScheme.onSecondaryContainer;
   Color get onPrimaryColor => colorScheme.onPrimary;
   Color get onPrimaryContainer => colorScheme.onPrimaryContainer;
+  Color get primaryContainer => colorScheme.primaryContainer;
   Color get surfaceColor => colorScheme.surface;
   Color get surfaceTintColor => colorScheme.surfaceTint;
   Color get scaffoldBgColor => ofTheme.scaffoldBackgroundColor;

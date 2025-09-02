@@ -75,7 +75,7 @@ class _CreateNewSubscriptionFormState
       _formKey.currentState!.reset();
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} subscription created',
+        '${_nameController.text.toTitle} subscription created',
       );
       Navigator.pop(context);
     }

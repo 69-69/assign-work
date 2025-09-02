@@ -56,7 +56,7 @@ class _SubscriptionDetailsBody extends StatelessWidget {
   }
 
   Widget buildDetails() {
-    final subscription = subscriptionDetails[subscriptionName.toLowercaseAll];
+    final subscription = subscriptionDetails[subscriptionName.toLowerAll];
 
     if (subscription != null) {
       final description = subscription.description;

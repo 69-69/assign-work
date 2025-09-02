@@ -18,7 +18,7 @@ extension UpdateStore<T> on BuildContext {
         isExpand: false,
         child: FormBottomSheet(
           title: 'Edit Store',
-          subtitle: store.name.toTitleCase,
+          subtitle: store.name.toTitle,
           body: _UpdateStoreForm(store: store),
         ),
       );
@@ -67,7 +67,7 @@ class _UpdateStoreFormState extends State<_UpdateStoreForm> {
       );
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitleCase} successfully updated',
+        '${_nameController.text.toTitle} successfully updated',
       );
 
       Navigator.pop(context);

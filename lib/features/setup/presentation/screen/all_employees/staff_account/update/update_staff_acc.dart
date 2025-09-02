@@ -79,9 +79,7 @@ class _UpdateStaffAccFormState extends State<_UpdateStaffAccForm> {
   }
 
   void _toastMsg(String title) {
-    context.showAlertOverlay(
-      '${_employee.fullName.toTitleCase} $title updated',
-    );
+    context.showAlertOverlay('${_employee.fullName.toTitle} $title updated');
   }
 
   /// Update Employee Account Status

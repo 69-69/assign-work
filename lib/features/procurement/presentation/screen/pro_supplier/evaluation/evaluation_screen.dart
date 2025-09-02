@@ -9,7 +9,7 @@ class SupplierEvaluationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: supplierEvaluationScreenTitle.toUpperCaseAll,
+      title: supplierEvaluationScreenTitle.toUpperAll,
       body: Center(child: Text("Supplier Evaluation Screen")),
     );
   }

@@ -19,7 +19,7 @@ extension UpdateCompanyInfo<T> on BuildContext {
         isExpand: false,
         child: FormBottomSheet(
           title: 'Edit Company Info',
-          subtitle: info.name.toTitleCase,
+          subtitle: info.name.toTitle,
           body: _UpdateCompanyForm(info: info),
         ),
       );
@@ -87,7 +87,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
 
       if (mounted) {
         context.showAlertOverlay(
-          '${_nameController.text.toTitleCase} successfully updated',
+          '${_nameController.text.toTitle} successfully updated',
         );
         Navigator.pop(context);
       }
