@@ -289,14 +289,10 @@ class _ListQuotationsState extends State<ListQuotations> {
     final taxMap = await GetTaxes.loadAllTaxRates();
     final quote = RequestForQuote.findRFQById(quotes, id).first;
 
-    var newQuote = quote.computeTaxAmounts(taxMap);
+    final newQuote = quote.computeTaxAmounts(taxMap);
     final supplier = await GetSuppliers.bySupplierId(quote.supplierId);
     if (mounted) {
-      await context.openSeeDetails(
-        quote: newQuote,
-        taxNames: taxMap,
-        supplier: supplier.name,
-      );
+      await context.openSeeDetails(quote: newQuote, supplier: supplier.name);
     }
   }
 }

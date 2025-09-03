@@ -37,8 +37,13 @@ class RequestForQuote extends Equatable {
   final String updatedBy;
   final DateTime updatedAt;
 
-  /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+  /// [headerTaxAmount] is a non-persistent, computed value used for UI display only
+  /// when [TaxMethodToApply.headerTax] is applied. This value is not stored in the database.
   final double headerTaxAmount;
+
+  /// [taxNames] is a non-persistent, computed field used solely for UI display.
+  /// It is derived from [taxCodes] and the tax map. Not stored in the database.
+  final String taxNames;
 
   RequestForQuote({
     this.id = '',
@@ -63,8 +68,11 @@ class RequestForQuote extends Equatable {
     this.updatedBy = '',
     DateTime? updatedAt,
 
-    /// [headerTaxAmount] For UI header tax amount only (RFQ)
+    /// [headerTaxAmount] UI-only, non-persistent value (header tax)
     this.headerTaxAmount = 0.0,
+
+    /// [taxNames] UI-only, non-persistent value (derived from tax codes)
+    this.taxNames = '',
   }) : deadline = deadline ?? _today,
        deliveryDate = deliveryDate ?? _today,
        createdAt = createdAt ?? _today,
@@ -216,11 +224,11 @@ class RequestForQuote extends Equatable {
   RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
     if (taxMethod == TaxMethodToApply.perLineTax) {
       // Calculate tax amounts for each line item (perLineTax)
-      final updatedItems = lineItems.map((item) {
-        final taxRate = item.resolvePerItemTaxes(taxMap);
-        final taxAmount = (item.netPrice * taxRate) / 100;
+      final updatedItems = lineItems.map((i) {
+        final taxRate = i.resolvePerItemTaxes(taxMap);
+        final taxAmount = (i.netPrice * taxRate) / 100;
 
-        return item.copyWith(taxAmount: taxAmount);
+        return i.copyWith(taxAmount: taxAmount, taxNames: i.getTaxName(taxMap));
       }).toList();
 
       return copyWith(lineItems: updatedItems);
@@ -231,7 +239,7 @@ class RequestForQuote extends Equatable {
         return sum + ((item.netPrice * taxRate) / 100);
       });
 
-      return copyWith(headerTaxAmount: totalTax);
+      return copyWith(headerTaxAmount: totalTax, taxNames: getTaxName(taxMap));
     }
   }
 
@@ -261,8 +269,11 @@ class RequestForQuote extends Equatable {
     String? updatedBy,
     DateTime? updatedAt,
 
-    /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+    /// [headerTaxAmount] For UI header tax amount only (RFQ)
     double? headerTaxAmount,
+
+    /// [taxNames] For UI tax names only (RFQ)
+    String? taxNames,
   }) {
     return RequestForQuote(
       id: id ?? this.id,
@@ -289,6 +300,9 @@ class RequestForQuote extends Equatable {
 
       /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
       headerTaxAmount: headerTaxAmount ?? this.headerTaxAmount,
+
+      /// [taxNames] For UI tax names calculation only (RFQ)
+      taxNames: taxNames ?? this.taxNames,
     );
   }
 
@@ -354,16 +368,26 @@ class RFQLineItem extends Equatable {
   final double discountPercent;
   final List<String> taxCodes;
 
-  /// [taxAmount] For UI perLineTax tax amount calculation only (RFQ)
+  /// [taxAmount] is a non-persistent, computed value for UI display only.
+  /// Calculated when [TaxMethodToApply.perLineTax] is used. Not stored in the database.
   final double taxAmount;
+
+  /// [taxNames] is a non-persistent, UI-only field derived from [taxCodes] using the tax map.
+  /// This value is not saved in the database.
+  final String taxNames;
 
   const RFQLineItem({
     required this.itemName,
     required this.quantity,
     this.taxCodes = const [],
     this.unitPrice = 0.0,
-    this.taxAmount = 0.0,
     this.discountPercent = 0.0,
+
+    /// [taxAmount] UI-only, non-persistent value (per-line tax)
+    this.taxAmount = 0.0,
+
+    /// [taxNames] UI-only, non-persistent value (derived from tax codes)
+    this.taxNames = '',
   });
 
   // get list of tax codes
@@ -418,15 +442,20 @@ class RFQLineItem extends Equatable {
     List<String>? taxCodes,
     double? discountPercent,
 
-    /// [taxAmount] For UI perLineTax tax amount calculation only (RFQ)
+    /// [taxAmount] For UI perLineTax tax amount only
     double? taxAmount,
+
+    /// [taxNames] For UI tax names calculation only
+    String? taxNames,
   }) => RFQLineItem(
     itemName: itemName ?? this.itemName,
     quantity: quantity ?? this.quantity,
     unitPrice: unitPrice ?? this.unitPrice,
     taxCodes: taxCodes ?? this.taxCodes,
-    taxAmount: taxAmount ?? this.taxAmount,
     discountPercent: discountPercent ?? this.discountPercent,
+
+    taxAmount: taxAmount ?? this.taxAmount,
+    taxNames: taxNames ?? this.taxNames,
   );
 
   @override

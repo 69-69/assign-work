@@ -7,7 +7,6 @@ import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quotation_model.dart';
-import 'package:assign_erp/features/setup/data/models/tax_model.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -17,7 +16,6 @@ extension RFQDetails on BuildContext {
   Future openSeeDetails({
     String supplier = '',
     required RequestForQuote quote,
-    Map<String, ResolveTaxCode> taxNames = const {},
   }) => openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
@@ -25,11 +23,7 @@ extension RFQDetails on BuildContext {
       isDetails: true,
       title: quote.title.toTitle,
       subtitle: quote.rfqNumber.toUpperAll,
-      body: RFQPrintoutPage(
-        quote: quote,
-        supplier: supplier,
-        taxNames: taxNames,
-      ),
+      body: RFQPrintoutPage(quote: quote, supplier: supplier),
       onPrint: () async => _generatePdf(),
     ),
   );
@@ -188,14 +182,8 @@ extension RFQDetails on BuildContext {
 class RFQPrintoutPage extends StatelessWidget {
   final String supplier;
   final RequestForQuote? quote;
-  final Map<String, ResolveTaxCode> taxNames;
 
-  const RFQPrintoutPage({
-    super.key,
-    this.quote,
-    this.supplier = '',
-    this.taxNames = const {},
-  });
+  const RFQPrintoutPage({super.key, this.quote, this.supplier = ''});
 
   List<RFQLineItem> get _items => quote?.lineItems ?? [];
 
@@ -372,7 +360,7 @@ class RFQPrintoutPage extends StatelessWidget {
 
           if (_isPerLineTax) ...[
             _buildItem('$_currency${item.taxAmount.toCurrency}', isBold: false),
-            _buildItem(item.getTaxName(taxNames).toTitle, isBold: false),
+            _buildItem(item.taxNames.toTitle, isBold: false),
           ],
           _buildItem('$_currency${total.toCurrency}', isBold: false),
         ],
@@ -401,7 +389,7 @@ class RFQPrintoutPage extends StatelessWidget {
             _buildInfoRow(
               context,
               title: 'Applied Taxes',
-              value: quote?.getTaxName(taxNames).toTitle ?? 'N/A',
+              value: quote?.taxNames.toTitle ?? 'N/A',
             ),
           },
           if (quote?.deliveryAddress?.isNotEmpty ?? false)

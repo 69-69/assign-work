@@ -1,7 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -151,13 +150,13 @@ class _CustomTabState extends State<CustomTab>
           mainAxisSize: MainAxisSize.min,
           children: [
             // Toggle button for NavigationRail visibility
-            context.iconButton(
-              _isNavigationRailVisible
-                  ? Icons.chevron_left
-                  : Icons.chevron_right,
-              iconColor: kPrimaryLightColor,
-              tooltip:
-                  '${_isNavigationRailVisible ? 'Expand' : 'Collapse'} Navigation',
+            IconButton(
+              icon: Icon(
+                _isNavigationRailVisible
+                    ? Icons.chevron_right
+                    : Icons.chevron_left,
+              ),
+              tooltip: '${_isNavigationRailVisible ? 'Show' : 'Hide'} Sidebar',
               onPressed: _toggleNavigationRail,
             ),
             Expanded(child: _buildSideNavRail()),
