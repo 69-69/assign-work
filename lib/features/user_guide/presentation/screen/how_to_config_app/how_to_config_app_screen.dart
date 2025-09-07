@@ -67,7 +67,7 @@ class HowToConfigAppScreen extends StatelessWidget {
         .toList();
 
     return CustomTab(
-      isVerticalTab: true,
+      isVertical: true,
       openThisTab: openThisTab,
       length: guideCategories.length,
       tabs: tabs,
@@ -78,7 +78,7 @@ class HowToConfigAppScreen extends StatelessWidget {
   IconData _iconForType(String type) {
     return switch (type) {
       'agent' => Icons.real_estate_agent,
-      'setup' => Icons.settings,
+      'setup admin' => Icons.settings,
       'pos' => Icons.point_of_sale,
       'crm' => Icons.group,
       'inventory' => Icons.inventory_sharp,

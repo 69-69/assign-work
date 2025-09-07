@@ -4,7 +4,7 @@ import 'package:assign_erp/config/routes/route_logger.dart';
 import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/core/constants/collection_type_enum.dart';
+import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/models/result_data.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_helper.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_repository.dart';
@@ -21,11 +21,11 @@ import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_creation_stages.dart';
-import 'package:assign_erp/features/setup/data/models/attendance_model.dart';
-import 'package:assign_erp/features/setup/data/models/company_stores_model.dart';
-import 'package:assign_erp/features/setup/data/models/department_model.dart';
-import 'package:assign_erp/features/setup/data/models/employee_model.dart';
-import 'package:assign_erp/features/setup/data/permission/setup_permission.dart';
+import 'package:assign_erp/features/system_admin/data/models/attendance_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -126,7 +126,7 @@ class AuthRepository extends FirestoreRepository {
       // Try to get the Employee from the cache
       Employee? cacheEmployee = _getEmployeeCache();
       if (cacheEmployee != null &&
-          cacheEmployee.status == AccountStatus.enabled.label &&
+          cacheEmployee.status == AccountStatus.enabled.getValue &&
           cacheEmployee.workspaceId == firebaseUser?.uid) {
         return cacheEmployee;
       }
@@ -359,7 +359,7 @@ class AuthRepository extends FirestoreRepository {
       // Convert the data to an Employee object
       final employee = Employee.fromMap(data, id: doc.id);
 
-      if (employee.status != AccountStatus.enabled.label ||
+      if (employee.status != AccountStatus.enabled.getValue ||
           employee.workspaceId != workspace.uid ||
           employee.roleId.isEmpty) {
         return invalid;
@@ -697,7 +697,7 @@ class AuthRepository extends FirestoreRepository {
       fullName: fullName,
       mobileNumber: mobileNumber,
       storeNumber: storeNumber,
-      status: AccountStatus.enabled.label,
+      status: AccountStatus.enabled.getValue,
       createdBy: byWho?.fullName ?? createdBy,
       passCode: SecretHasher.hash(employeePasscode),
     );

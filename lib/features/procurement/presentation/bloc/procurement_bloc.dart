@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type_enum.dart';
+import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
 import 'package:assign_erp/features/procurement/domain/repository/procurement_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';

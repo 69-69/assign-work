@@ -500,7 +500,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
   /// Parent checkbox (Multiple check)
   Checkbox _buildParentCheckbox() {
-    return Checkbox(
+    return Checkbox.adaptive(
       value: _allSelectedStatus,
       side: const BorderSide(width: 3.0, color: kWhiteColor),
       onChanged: _toggleAllSelection,
@@ -627,7 +627,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
   /// Placeholder for empty cell [_buildPlaceholder]
   _buildPlaceholder(BuildContext context) {
-    final pColor = context.colorScheme.error;
+    final pColor = context.errorColor;
     return Tooltip(
       message: "Your update will replace this information.",
       decoration: const BoxDecoration(color: kDangerColor),
@@ -643,9 +643,9 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   // Build individual checkboxes
   DataCell _buildEachCheckBox(int index, List<String> row) {
     return DataCell(
-      Checkbox(
+      Checkbox.adaptive(
         value: _selectedRowsStatus[index],
-        side: const BorderSide(width: 1.0),
+        side: BorderSide(width: 1.0, color: context.onSurfaceColor),
         onChanged: (bool? selected) {
           // Update the selection status of the individual checkbox
           setState(() => _selectedRowsStatus[index] = selected ?? false);
@@ -1123,7 +1123,7 @@ class _DeleteButton extends StatelessWidget {
 
     return context.elevatedIconBtn(
       Icon(icon ?? Icons.delete, color: kWhiteColor),
-      bgColor: context.colorScheme.error,
+      bgColor: context.errorColor,
       tooltip: text,
       onPressed: onTap,
       label: Text(

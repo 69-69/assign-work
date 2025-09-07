@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/features/auth/presentation/screen/sign_in/workspace_sign_in_screen.dart';
 import 'package:assign_erp/features/onboarding/onboarding_screen.dart';
-import 'package:assign_erp/features/splash/splash_screen.dart';
+import 'package:assign_erp/features/startup/splash_screen.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/device_info_cache.dart';
 import 'package:flutter/material.dart';
 

@@ -1,4 +1,6 @@
 // WORKSPACE ROLE or ACCOUNT TYPE
+import 'package:assign_erp/core/util/str_util.dart';
+
 enum WorkspaceRole {
   /// Workspace Role for creating first-time Agent Workspaces [onboarding].
   onboarding,
@@ -18,16 +20,7 @@ enum WorkspaceRole {
 
 extension WorkspaceRoleExtension on WorkspaceRole {
   /// USAGE: `WorkspaceRole.onboarding.label`
-  String get label {
-    var role = switch (this) {
-      WorkspaceRole.onboarding => 'onboarding',
-      WorkspaceRole.agentFranchise => 'agentFranchise',
-      WorkspaceRole.tenant => 'tenant',
-      WorkspaceRole.developer => 'developer',
-      _ => 'unknown',
-    };
-    return role;
-  }
+  String get getValue => getEnumName<WorkspaceRole>(this);
 
   /// [assign] Determines the role for a "New Workspace Setup" based on the
   /// currently signed-in user's role (cached workspace role).
@@ -53,14 +46,24 @@ extension WorkspaceRoleExtension on WorkspaceRole {
   }
 }
 
-/// Get WorkspaceRole by String [getRoleByString]
-WorkspaceRole getRoleByString(String role) => WorkspaceRole.values.firstWhere(
-  (e) => e.label == role,
-  orElse: () => WorkspaceRole.unknown,
-);
+/// [WorkspaceRoleHelper] Utility class for WorkspaceRole operations
+class WorkspaceRoleHelper {
+  /// [WorkspaceRole] Convert string to WorkspaceRole enum
+  static WorkspaceRole fromString(String role) {
+    return WorkspaceRole.values.firstWhere(
+      (e) => e.getValue == role,
+      orElse: () => WorkspaceRole.unknown,
+    );
+  }
 
-/// Enum values to a list of strings [workspaceRoleList]
-final workspaceRoleList = [
-  'workspace role',
-  ...WorkspaceRole.values.map((e) => e.label),
-];
+  /// [toStringList] Convert enum list to a list of strings
+  static List<String> toStringList([bool includeLabel = true]) {
+    final list = WorkspaceRole.values.map((e) => e.getValue).toList();
+    return includeLabel ? ['workspace role', ...list] : list;
+  }
+
+  /// Check if role exists in the enum
+  static bool exists(String role) {
+    return WorkspaceRole.values.any((e) => e.getValue == role);
+  }
+}

@@ -143,7 +143,7 @@ class TextToSpeechState extends State<TextToSpeech> {
             tooltip: isSpeaking ? 'Pause speech' : 'Listen to speech',
             icon: Icon(
               isSpeaking ? Icons.pause : Icons.volume_up,
-              color: context.colorScheme.error,
+              color: context.errorColor,
               size: 16,
             ),
             onPressed: onPressed,

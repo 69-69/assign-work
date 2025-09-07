@@ -12,12 +12,13 @@ import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quotation_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quote_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/request_price_quotation_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/widget/form_inputs.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_request_for_quote.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -238,6 +239,16 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     ),
   );
 
+  Future<RequestForQuote> _applyTaxesToQuote(RequestForQuote quote) async {
+    final taxMap = await GetTaxes.loadAllTaxRates();
+    return quote.computeTaxAmounts(taxMap);
+  }
+
+  Future _getSupplier(String supplierId) async {
+    final supplier = await GetSuppliers.bySupplierId(supplierId);
+    return supplier.isEmpty ? null : supplier;
+  }
+
   Future<void> _confirmPrintoutDialog() async {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the request for quotation: RFQ?'),
@@ -250,9 +261,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('PO successfully created'),
-        onError: (error) => context.showAlertOverlay(
-          'PO printout failed',
+        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
+        onError: (e) => context.showAlertOverlay(
+          'RFQ printout failed',
           bgColor: kDangerColor,
         ),
       );
@@ -262,12 +273,11 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
     if (_newQuote.isEmpty) return;
 
-    // Simulate loading supplier and company info
-    final sup = await GetSuppliers.bySupplierId(_newQuote.supplierId);
-    if (sup.isNotEmpty) {
-      // Perform action after loading
-      PrintRequestForQuotation(quote: _newQuote, supplier: sup).onPrintRFQ();
-    }
+    final quoteWithTaxes = await _applyTaxesToQuote(_newQuote);
+    final supplier = await _getSupplier(_newQuote.supplierId);
+    if (supplier.isEmpty) return;
+
+    await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
   });
 }
 

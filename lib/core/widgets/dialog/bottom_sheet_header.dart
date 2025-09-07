@@ -105,7 +105,7 @@ class DialogTitle extends StatelessWidget {
         textAlign: TextAlign.center,
         style: context.textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.w500,
-          color: txtColor ?? kPrimaryColor,
+          color: txtColor ?? context.onSurfaceColor,
           fontSize: fontSize,
         ),
         textScaler: textScaler,
@@ -114,7 +114,7 @@ class DialogTitle extends StatelessWidget {
         subtitle,
         textAlign: TextAlign.center,
         style: context.textTheme.titleSmall?.copyWith(
-          color: txtColor ?? kTextColor,
+          color: txtColor ?? context.outlineColor,
         ),
         textScaler: textScaler,
       ),

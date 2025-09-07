@@ -12,11 +12,11 @@ class CustomTab extends StatefulWidget {
   final double indicatorWeight;
   final List<Widget> children;
   final bool isScrollable;
+  final Color? bgColor;
+  final bool isVertical;
   final bool hideIcon;
-  final bool isColoredTab;
-  final bool isVerticalTab;
-  final bool showScrollUpButton;
   final int? length;
+  final bool showScrollUpButton;
   final Function(int)? onTapChanged;
   final EdgeInsetsGeometry? padding;
 
@@ -30,9 +30,9 @@ class CustomTab extends StatefulWidget {
     this.length,
     required this.children,
     this.hideIcon = true,
-    this.isColoredTab = true,
+    this.bgColor,
     this.isScrollable = false,
-    this.isVerticalTab = false,
+    this.isVertical = false,
     this.openThisTab = 0,
     this.indicatorWeight = 1.0,
     this.onTapChanged,
@@ -135,103 +135,36 @@ class _CustomTabState extends State<CustomTab>
       length: _length,
 
       // isVerticalTab = true: create a vertical tabs (side)  else create horizontal tabs
-      child: widget.isVerticalTab
-          ? _buildVerticalTabs(context)
-          : _buildHorizontalTabs(context),
-    );
-  }
-
-  // Left side vertical tabs
-  Row _buildVerticalTabs(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Toggle button for NavigationRail visibility
-            IconButton(
-              icon: Icon(
-                _isNavigationRailVisible
-                    ? Icons.chevron_right
-                    : Icons.chevron_left,
-              ),
-              tooltip: '${_isNavigationRailVisible ? 'Show' : 'Hide'} Sidebar',
-              onPressed: _toggleNavigationRail,
+      child: widget.isVertical
+          ? _VerticalTabBars(
+              tabs: widget.tabs,
+              bgColor: widget.bgColor,
+              isScrollable: widget.isScrollable,
+              showScrollUpButton: widget.showScrollUpButton,
+              isNavRailVisible: _isNavigationRailVisible,
+              onDestinationSelected: (i) {
+                _tabController.animateTo(i);
+                _handleTabTap(i);
+              },
+              selectedIndex: _tabController.index,
+              content: _buildTabBarView(),
+              toggleNavRail: _toggleNavigationRail,
+            )
+          : _HorizontalTabBars(
+              tabs: widget.tabs,
+              bgColor: widget.bgColor,
+              indicatorWeight: widget.indicatorWeight,
+              tabController: _tabController,
+              hideIcon: widget.hideIcon,
+              padding: widget.padding,
+              isScrollable: widget.isScrollable,
+              content: _buildTabBarView(),
+              handleTabTap: _handleTabTap,
             ),
-            Expanded(child: _buildSideNavRail()),
-          ],
-        ),
-        const VerticalDivider(thickness: 1, width: 1),
-        // This is the main content.
-        Expanded(child: _buildTabBarView()),
-      ],
     );
   }
 
-  // NavigationRail for vertical tabs
-  _buildSideNavRail() {
-    return CustomScrollBar(
-      controller: ScrollController(),
-      showScrollUpButton: widget.showScrollUpButton,
-      child: SizedBox(
-        height: context.screenHeight * 0.9,
-        width: _isNavigationRailVisible ? 50 : 100,
-        child: NavigationRail(
-          indicatorColor: kTransparentColor,
-          selectedIndex: _tabController.index,
-          onDestinationSelected: (index) {
-            _tabController.animateTo(index);
-            _handleTabTap(index);
-          },
-          labelType: NavigationRailLabelType.all,
-          // Set the visual properties for the selected destination
-          selectedLabelTextStyle: const TextStyle(
-            color: kPrimaryLightColor,
-            fontWeight: FontWeight.w500,
-          ),
-          destinations: widget.tabs.map<NavigationRailDestination>((t) {
-            final icon = t['icon'];
-            final label = t['label'].toString().toTitle;
-            return NavigationRailDestination(
-              icon: Tooltip(message: label, child: Icon(icon)),
-              label: Text(
-                _isNavigationRailVisible ? '' : label,
-                textAlign: TextAlign.center,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 3),
-              selectedIcon: Icon(icon, color: kPrimaryLightColor),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  // Top side horizontal tabs
-  Widget _buildHorizontalTabs(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _buildColoredTabBar(context),
-        // This is the main content.
-        Expanded(child: _buildTabBarView()),
-      ],
-    );
-  }
-
-  /// This is the TabBarBar content
-  Widget _buildColoredTabBar(BuildContext context) {
-    return widget.isColoredTab
-        ? ColoredBox(
-            color: context.secondaryContainerColor,
-            child: _buildTabBar(context),
-          ).addNeumorphism()
-        : _buildTabBar(context);
-  }
-
-  /// This is the main TabBarView content
+  /// This is the TabBarView content
   TabBarView _buildTabBarView() {
     return TabBarView(
       controller: _tabController,
@@ -273,22 +206,68 @@ class _CustomTabState extends State<CustomTab>
       ),
     );
   }
+}
 
+class _HorizontalTabBars extends StatelessWidget {
+  final TabController tabController;
+  final List<Map<String, dynamic>> tabs;
+  final Color? bgColor;
+  final double indicatorWeight;
+  final bool hideIcon;
+  final EdgeInsetsGeometry? padding;
+  final bool isScrollable;
+  final Widget content;
+  final Function(int)? handleTabTap;
+
+  const _HorizontalTabBars({
+    required this.tabs,
+    this.bgColor,
+    required this.indicatorWeight,
+    required this.tabController,
+    required this.hideIcon,
+    required this.padding,
+    required this.isScrollable,
+    required this.content,
+    required this.handleTabTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildHorizontalTabs(context);
+  }
+
+  /// Top/horizontal tabs [_buildHorizontalTabs]
+  Widget _buildHorizontalTabs(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ColoredBox(
+          color: bgColor ?? context.secondaryContainerColor,
+          child: _buildTabBar(context),
+        ).addNeumorphism(),
+        // This is the main content.
+        Expanded(child: content),
+      ],
+    );
+  }
+
+  /// This the TabBars
   TabBar _buildTabBar(BuildContext context) {
     return TabBar(
-      indicatorWeight: widget.indicatorWeight,
-      controller: _tabController,
-      isScrollable: widget.isScrollable,
+      indicatorWeight: indicatorWeight,
+      controller: tabController,
+      isScrollable: isScrollable,
       indicatorSize: TabBarIndicatorSize.tab,
-      padding: widget.padding ?? EdgeInsets.zero,
+      padding: padding ?? EdgeInsets.zero,
       labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-      labelColor: kPrimaryLightColor,
-      tabs: widget.tabs.map<Widget>((t) {
+      // labelColor: kPrimaryLightColor,
+      tabs: tabs.map<Widget>((t) {
         final label = t['label'].toString().toTitle;
-        final isActive = _tabController.index == widget.tabs.indexOf(t);
+        final isActive = tabController.index == tabs.indexOf(t);
         return Tab(
           text: label,
-          icon: widget.hideIcon
+          icon: hideIcon
               ? null
               : Tooltip(
                   message: label,
@@ -300,7 +279,112 @@ class _CustomTabState extends State<CustomTab>
           iconMargin: EdgeInsets.zero,
         );
       }).toList(),
-      onTap: _handleTabTap,
+      onTap: handleTabTap,
+    );
+  }
+}
+
+class _VerticalTabBars extends StatelessWidget {
+  final Widget content;
+  final Color? bgColor;
+  final bool isScrollable;
+  final int? selectedIndex;
+  final bool isNavRailVisible; // State variable for toggle
+  final bool showScrollUpButton;
+  final Function()? toggleNavRail;
+  final List<Map<String, dynamic>> tabs;
+  final void Function(int)? onDestinationSelected;
+
+  const _VerticalTabBars({
+    this.bgColor,
+    this.selectedIndex,
+    this.toggleNavRail,
+    required this.tabs,
+    required this.content,
+    required this.isScrollable,
+    this.onDestinationSelected,
+    required this.isNavRailVisible,
+    required this.showScrollUpButton,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildVerticalTabs(context);
+  }
+
+  // Left side vertical tabs
+  Row _buildVerticalTabs(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        bgColor != null
+            ? ColoredBox(
+                color: bgColor!,
+                child: _buildColumn(context),
+              ).addNeumorphism()
+            : _buildColumn(context),
+        const VerticalDivider(thickness: 1, width: 1),
+        // This is the main content.
+        Expanded(child: content),
+      ],
+    );
+  }
+
+  Column _buildColumn(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Toggle button for NavigationRail visibility
+        IconButton(
+          icon: Icon(
+            isNavRailVisible ? Icons.chevron_right : Icons.chevron_left,
+          ),
+          tooltip: '${isNavRailVisible ? 'Expand' : 'Collapse'} Sidebar',
+          onPressed: toggleNavRail,
+        ),
+        Expanded(child: _buildSideNavRail(context)),
+      ],
+    );
+  }
+
+  // NavigationRail for vertical tabs
+  _buildSideNavRail(BuildContext context) {
+    return CustomScrollBar(
+      controller: ScrollController(),
+      showScrollUpButton: showScrollUpButton,
+      child: SizedBox(
+        height: context.screenHeight,
+        width: isNavRailVisible ? 50 : 100,
+        child: _navigationRail(context),
+      ),
+    );
+  }
+
+  NavigationRail _navigationRail(BuildContext context) {
+    return NavigationRail(
+      backgroundColor: bgColor,
+      indicatorColor: kTransparentColor,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onDestinationSelected,
+      labelType: NavigationRailLabelType.all,
+      // Set the visual properties for the selected destination
+      selectedLabelTextStyle: const TextStyle(
+        color: kPrimaryLightColor,
+        fontWeight: FontWeight.w500,
+      ),
+      destinations: tabs.map<NavigationRailDestination>((t) {
+        final icon = t['icon'];
+        final label = t['label'].toString().toTitle;
+        return NavigationRailDestination(
+          icon: Tooltip(message: label, child: Icon(icon)),
+          label: Text(
+            isNavRailVisible ? '' : label,
+            textAlign: TextAlign.center,
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 3),
+          selectedIcon: Icon(icon, color: kPrimaryLightColor),
+        );
+      }).toList(),
     );
   }
 }

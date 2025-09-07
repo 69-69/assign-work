@@ -13,7 +13,7 @@ import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/sales/pos_sale_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/sales/add/add_pos_sale.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/sales/update/update_pos_sale.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/widget/print_pos_sales_report.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/widget/pos_report_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -192,10 +192,10 @@ class _ListPOSSalesState extends State<ListPOSSales> {
         final getSales = POSSale.findSaleById(sales, saleId: id).toList();
 
         if (mounted && getSales.isNotEmpty) {
-          PrintPOSSalesReport(
+          POSReportPrinter(
             sales: getSales,
             storeNumber: context.employee!.storeNumber,
-          ).onPrintPOS();
+          ).printReport();
         }
       });
 
@@ -275,10 +275,10 @@ class _IssueMultiReportPrintout extends StatelessWidget {
         ),
       ),
       onPressed: () async {
-        PrintPOSSalesReport(
+        POSReportPrinter(
           sales: sales,
           storeNumber: context.employee!.storeNumber,
-        ).onPrintPOS();
+        ).printReport();
       },
       label: const Text('Report', style: TextStyle(color: kWarningColor)),
     );
@@ -296,9 +296,7 @@ class _IssueMultiReportPrintout extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

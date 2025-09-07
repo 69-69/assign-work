@@ -65,16 +65,29 @@ extension ScaffoldSnackBar on BuildContext {
     String? label,
     bool isTop = false,
     VoidCallback? onPressed,
-    int duration = 4,
+    int duration = 6,
     bool showProgress = true,
+    void Function()? popContext,
   }) {
     OverlayEntry? overlayEntry;
     final overlay = Overlay.of(this);
+    bool isDismissed = false; // Track dismissal
 
-    void removeOverlay() {
+    void handleClose() {
+      if (isDismissed) return; // Prevent double removal
+      isDismissed = true;
+
       overlayEntry?.remove();
       overlayEntry?.dispose();
       overlayEntry = null;
+    }
+
+    void dismissOverlay() {
+      if (isDismissed) return; // Prevent double dismiss
+      handleClose();
+      if (popContext != null && Navigator.of(this).canPop()) {
+        popContext();
+      }
     }
 
     assert(overlayEntry == null);
@@ -111,9 +124,9 @@ extension ScaffoldSnackBar on BuildContext {
                     ),
                   ),
                 ),
-                if (label != null) ...{
+                if (label != null) ...[
                   TextButton(
-                    onPressed: onPressed ?? removeOverlay,
+                    onPressed: onPressed ?? dismissOverlay,
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.black26,
                     ),
@@ -122,8 +135,9 @@ extension ScaffoldSnackBar on BuildContext {
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),
-                },
-                _animatedCloseButton(animationController, removeOverlay),
+                  const SizedBox(width: 8),
+                ],
+                _animatedCloseButton(animationController, handleClose),
               ],
             ),
             /*if (showProgress)
@@ -152,7 +166,10 @@ extension ScaffoldSnackBar on BuildContext {
     overlay.insert(overlayEntry!);
 
     // Remove after the duration
-    Future.delayed(Duration(seconds: duration), removeOverlay);
+    // Delayed auto-dismiss
+    Future.delayed(Duration(seconds: duration), () {
+      if (!isDismissed) dismissOverlay();
+    });
   }
 
   Stack _animatedCloseButton(

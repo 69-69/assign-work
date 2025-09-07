@@ -18,10 +18,10 @@ class MasterResetButton extends StatelessWidget {
         context.showAlertOverlay(
           'Master Reset Successful',
           label: 'Done',
-          duration: 100,
+          duration: 10,
         );
       },
-      icon: Icon(Icons.reset_tv, color: kGrayBlueColor, size: 20),
+      icon: Icon(Icons.reset_tv, color: kGrayBlueColor.toAlpha(0.5), size: 20),
       onPressed: () {},
     );
   }

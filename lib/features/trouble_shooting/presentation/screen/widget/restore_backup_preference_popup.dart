@@ -51,7 +51,6 @@ class RestoreBackupPreference extends StatelessWidget {
   _buildBody(BuildContext context) {
     return CustomTab(
       length: 3,
-      isColoredTab: false,
       padding: EdgeInsets.zero,
       tabs: [
         {'label': 'From Local', 'icon': Icons.computer},

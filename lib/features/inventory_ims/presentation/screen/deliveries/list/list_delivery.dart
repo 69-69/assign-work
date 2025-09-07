@@ -14,7 +14,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/delivery/del
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/add/add_delivery.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/update/update_delivery.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_order_invoice.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -159,10 +159,10 @@ class _ListDeliveriesState extends State<ListDeliveries> {
 
         final cus = await GetAllCustomers.byCustomerId(orders.first.customerId);
         if (orders.isNotEmpty && cus.isNotEmpty) {
-          PrintOrderInvoice(
+          SalesDocPrinter(
             orders: orders,
             customer: cus,
-          ).onPrintIn(title: 'delivery note');
+          ).printDoc(title: 'delivery note');
         }
       });
 
@@ -217,9 +217,7 @@ class _IssueMultiDelete extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

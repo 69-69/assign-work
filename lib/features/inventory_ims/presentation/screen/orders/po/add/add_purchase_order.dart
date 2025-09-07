@@ -16,8 +16,8 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/purchase_or
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/purchase_order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/widget/form_inputs.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_po.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/po_printer.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -418,7 +418,7 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
     final sup = await GetSuppliers.bySupplierId(_orders.first.supplierId);
     if (sup.isNotEmpty) {
       // Perform action after loading
-      PrintPurchaseOrder(orders: _orders, supplier: sup).onPrintPO();
+      POPrinter(orders: _orders, supplier: sup).printPO();
     }
   });
 }

@@ -2,7 +2,7 @@ import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/setup/presentation/setup_tiles.dart';
+import 'package:assign_erp/features/system_admin/presentation/setup_tiles.dart';
 import 'package:flutter/material.dart';
 
 /// Returns a list of Main-Dashboard-Tiles based on the specified license package [LicenseTiles]

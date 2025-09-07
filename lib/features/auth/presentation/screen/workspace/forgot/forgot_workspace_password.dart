@@ -39,6 +39,7 @@ class ForgotWorkspacePassword extends StatelessWidget {
 
   _buildAlertDialog(BuildContext context) {
     return CustomDialog(
+      bgColor: context.scaffoldBgColor,
       title: DialogTitle(
         title: 'Reset Workspace Password',
         subtitle: "This is your Organization Workspace Password",
@@ -56,6 +57,7 @@ class ForgotWorkspacePassword extends StatelessWidget {
       listener: (_, state) => _showSignUpAlert(state, context),
       child: Container(
         width: context.screenWidth,
+        color: context.scaffoldBgColor,
         padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
         child: const AutofillGroup(child: EmailInput()),
       ),

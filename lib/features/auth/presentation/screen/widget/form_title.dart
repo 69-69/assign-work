@@ -20,7 +20,7 @@ class FormTitle extends StatelessWidget {
         Expanded(
           child: _buildCard(
             context,
-            color: kWhiteColor.toAlpha(0.8),
+            color: context.scaffoldBgColor.toAlpha(0.8),
 
             child: ListTile(
               titleAlignment: ListTileTitleAlignment.center,
@@ -29,7 +29,7 @@ class FormTitle extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: context.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: kPrimaryColor,
+                  color: context.onSurfaceColor, // kPrimaryColor
                 ),
                 textScaler: TextScaler.linear(context.textScaleFactor),
               ),
@@ -37,7 +37,7 @@ class FormTitle extends StatelessWidget {
                 subtitle,
                 textAlign: TextAlign.center,
                 style: context.textTheme.titleSmall?.copyWith(
-                  color: kTextColor,
+                  color: context.outlineColor,
                 ),
               ),
             ),

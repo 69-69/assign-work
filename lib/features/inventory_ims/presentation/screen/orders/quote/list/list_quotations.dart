@@ -7,15 +7,15 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quotation_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quote_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/request_price_quotation_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/add/add_request_for_quotation.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/see_details.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/update/update_request_for_quotation.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_request_for_quote.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_suppliers.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_taxes.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,7 +37,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   /*Future<void> computeAllTaxAmounts(RequestForQuotation quote) async {
     final taxRateMap = await GetTaxes.loadAllTaxRates();
 
-    if (quote.taxMethod == TaxMethodToApply.perLineTax) {
+    if (quote.taxMode == TaxMode.perLineTax) {
       for (final item in quote.lineItems) {
         final taxRate = item.resolveTaxFromMap(taxRateMap);
         final taxAmount = (item.netPrice * taxRate) / 100;
@@ -57,7 +57,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   /*Future<({RequestForQuote rfq, Map<String, Map<String, dynamic>> taxNames})>
   calculateTaxAmounts(RequestForQuote quote) async {
     // Calculate tax amounts for each line item (perLineTax)
-    if (quote.taxMethod == TaxMethodToApply.perLineTax) {
+    if (quote.taxMode == TaxModeToApply.perLineTax) {
       final updatedItems = quote.lineItems.map((item) {
         final taxRate = item.resolveTaxFromMap(taxRateMap);
         final taxAmount = (item.netPrice * taxRate) / 100;
@@ -133,7 +133,7 @@ class _ListQuotationsState extends State<ListQuotations> {
       headers: RequestForQuote.dataTableHeader,
       rows: data.rows,
       childrenRow: data.childrenRow,
-      onViewDetailsTap: (row) async => _onViewDetailsTap(quotes, row.first),
+      onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
       onChecked: (bool? isChecked, row) =>
           _onChecked(quotes, id: row.first, isChecked: isChecked),
       onAllChecked:
@@ -154,7 +154,7 @@ class _ListQuotationsState extends State<ListQuotations> {
             }
           },
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onPrintRFQTap(quotes, row.first),
+      onOptButtonTap: (row) async => await _onPrintRFQ(quotes, row.first),
       onEditTap: (row) async => await _onEditTap(quotes, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(quotes, row.first),
     );
@@ -189,6 +189,21 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
+  RequestForQuote? _getQuoteById(List<RequestForQuote> quotes, String id) {
+    final quote = RequestForQuote.findRFQById(quotes, id);
+    return quote.isEmpty ? null : quote;
+  }
+
+  Future<RequestForQuote> _applyTaxesToQuote(RequestForQuote quote) async {
+    final taxMap = await GetTaxes.loadAllTaxRates();
+    return quote.computeTaxAmounts(taxMap);
+  }
+
+  Future _getSupplier(String supplierId) async {
+    final supplier = await GetSuppliers.bySupplierId(supplierId);
+    return supplier.isEmpty ? null : supplier;
+  }
+
   /// Check if selected Quotes are related by RFQNumber [_haveSameRFQNumber]
   /// @Return: return Pattern, i.e ({bool a, String b})
   ({bool status, String misMatchID}) _haveSameRFQNumber(
@@ -211,7 +226,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   // Handle onChecked Quotations
-  void _onChecked(
+  Future<void> _onChecked(
     List<RequestForQuote> quotes, {
     required String id,
     bool? isChecked,
@@ -240,7 +255,19 @@ class _ListQuotationsState extends State<ListQuotations> {
     });
   }
 
-  _onPrintRFQTap(List<RequestForQuote> quotes, String id) async {
+  Future<void> _onViewDetails(List<RequestForQuote> quotes, String id) async {
+    final quote = _getQuoteById(quotes, id);
+    if (quote == null) return;
+
+    final quoteWithTaxes = await _applyTaxesToQuote(quote);
+    final supplier = await _getSupplier(quote.supplierId);
+
+    if (mounted) {
+      await context.openSeeDetails(quote: quoteWithTaxes, supplier: supplier);
+    }
+  }
+
+  Future<void> _onPrintRFQ(List<RequestForQuote> quotes, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
       request: _printout(quotes, id),
@@ -253,46 +280,36 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  Future<dynamic> _printout(List<RequestForQuote> rfq, String id) =>
+  Future<dynamic> _printout(List<RequestForQuote> quotes, String id) =>
       Future.delayed(kRProgressDelay, () async {
-        // Simulate loading supplier and company info
-        final quote = RequestForQuote.findRFQById(rfq, id).first;
-        final sup = await GetSuppliers.bySupplierId(quote.supplierId);
+        final quote = _getQuoteById(quotes, id);
+        if (quote == null) return;
 
-        if (quote.isNotEmpty && sup.isNotEmpty) {
-          // Perform action after loading
-          PrintRequestForQuotation(quote: quote, supplier: sup).onPrintRFQ();
-        }
+        final quoteWithTaxes = await _applyTaxesToQuote(quote);
+        final supplier = await _getSupplier(quote.supplierId);
+        if (supplier == null) return;
+
+        // Perform action after loading
+        RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
       });
 
   Future<void> _onEditTap(List<RequestForQuote> quotes, String id) async {
-    final quote = RequestForQuote.findRFQById(quotes, id).first;
+    final quote = _getQuoteById(quotes, id);
+    if (quote == null) return;
+
     await context.openUpdateRequestForQuotation(quote: quote);
   }
 
   Future<void> _onDeleteTap(List<RequestForQuote> quotes, String id) async {
-    final rfq = RequestForQuote.findRFQById(quotes, id).first;
+    final quote = _getQuoteById(quotes, id);
+    if (quote == null) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
       /// Remove Quotation from Quote-DB
       context.read<RequestForQuoteBloc>().add(
-        DeleteInventory<String>(documentId: rfq.id),
+        DeleteInventory<String>(documentId: quote.id),
       );
-    }
-  }
-
-  Future<void> _onViewDetailsTap(
-    List<RequestForQuote> quotes,
-    String id,
-  ) async {
-    final taxMap = await GetTaxes.loadAllTaxRates();
-    final quote = RequestForQuote.findRFQById(quotes, id).first;
-
-    final newQuote = quote.computeTaxAmounts(taxMap);
-    final supplier = await GetSuppliers.bySupplierId(quote.supplierId);
-    if (mounted) {
-      await context.openSeeDetails(quote: newQuote, supplier: supplier.name);
     }
   }
 }
@@ -341,10 +358,7 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
         final sup = await GetSuppliers.bySupplierId(quotes.first.supplierId);
 
         // Perform action after loading
-        PrintRequestForQuotation(
-          quote: quotes.first,
-          supplier: sup,
-        ).onPrintRFQ();
+        RFQPrinter(quote: quotes.first, supplier: sup).printRFQ();
       },
       label: const Text('Print', style: TextStyle(color: kWarningColor)),
     );
@@ -362,9 +376,7 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

@@ -13,7 +13,7 @@ import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_orde
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/orders/add/add_pos_order.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/orders/update/update_pos_order.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/widget/print_pos_receipt.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/widget/pos_receipt_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -184,11 +184,11 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
         // Simulate loading supplier and company info
         final getOrders = POSOrder.findOrdersById(orders, orderId: id).toList();
         if (mounted && getOrders.isNotEmpty) {
-          PrintPOSSalesReceipt(
+          POSReceiptPrinter(
             orders: getOrders,
             storeNumber: context.employee!.storeNumber,
             customerId: getOrders.first.customerId,
-          ).onPrintPOS();
+          ).printReceipt();
         }
       });
 
@@ -254,11 +254,11 @@ class _IssueMultiReceipts extends StatelessWidget {
         ),
       ),
       onPressed: () async {
-        PrintPOSSalesReceipt(
+        POSReceiptPrinter(
           orders: orders,
           storeNumber: context.employee!.storeNumber,
           customerId: orders.first.customerId,
-        ).onPrintPOS();
+        ).printReceipt();
       },
       label: const Text('Receipt', style: TextStyle(color: kWarningColor)),
     );
@@ -276,9 +276,7 @@ class _IssueMultiReceipts extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

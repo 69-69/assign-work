@@ -281,7 +281,7 @@ final List<String> departmentsList = [
 /// User Guide Categories
 final List<String> userGuideCategories = [
   'agent',
-  'setup',
+  'system admin',
   'pos',
   'crm',
   'inventory',

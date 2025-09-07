@@ -9,7 +9,7 @@ extension GroupBtnCard on BuildContext {
   buildPOSGroupBtn() {
     return Card(
       elevation: 55,
-      color: ofTheme.colorScheme.error,
+      color: errorColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(15)),
       ),

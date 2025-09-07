@@ -163,7 +163,8 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
         style: IconButton.styleFrom(shape: const RoundedRectangleBorder()),
       ),
       // contentPadding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 15.0),
-      hintStyle: const TextStyle(fontWeight: FontWeight.normal),
+      labelStyle: TextStyle(color: context.onSurfaceColor),
+      hintStyle: TextStyle(fontWeight: FontWeight.normal),
     );
   }
 }
@@ -253,6 +254,7 @@ class _TimePickerState extends State<TimePicker> {
         icon: const Icon(Icons.access_time),
         onPressed: () => _selectTime(context),
       ),
+      labelStyle: TextStyle(color: context.onSurfaceColor),
       hintStyle: const TextStyle(
         // color: kLightColor,
         fontWeight: FontWeight.normal,

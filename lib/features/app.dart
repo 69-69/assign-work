@@ -4,8 +4,7 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/access_control/domain/repository/access_control_repository.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/index.dart';
-import 'package:assign_erp/features/setup/data/models/company_info_model.dart';
-import 'package:assign_erp/features/setup/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,9 +48,7 @@ class App extends StatelessWidget {
         /* Get Setup data on app startup */
       ),
       _bloc<CompanyStoresBloc>(() => CompanyStoresBloc(firestore: _fireStore)),
-      _bloc<TaxBloc>(
-        () => TaxBloc(firestore: _fireStore)..add(GetSetups<Tax>()),
-      ),
+      _bloc<TaxBloc>(() => TaxBloc(firestore: _fireStore)),
       _bloc<CategoryBloc>(() => CategoryBloc(firestore: _fireStore)),
       _bloc<SupplierBloc>(() => SupplierBloc(firestore: _fireStore)),
       _bloc<EmployeeBloc>(() => EmployeeBloc(firestore: _fireStore)),

@@ -18,7 +18,12 @@ extension ToCurrencyFormat on double {
   get toCurrency => '$this'.isNullOrEmpty ? this : toStringAsFixed(2);
 
   /// [toPercent] Returns the number formatted with 1 decimal place as a percentage string
-  get toPercent => '$this'.isNullOrEmpty ? this : toStringAsFixed(1);
+  /// If number is `15.0 or 15.00` return 15, else if number is `15.5` return 15.5
+  get toPercent => '$this'.isNullOrEmpty
+      ? this
+      : ('$this'.trim().split('.')).last == '0'
+      ? toStringAsFixed(0)
+      : toStringAsFixed(1);
 }
 
 /// get the first/last index of a list GetIndexPosition

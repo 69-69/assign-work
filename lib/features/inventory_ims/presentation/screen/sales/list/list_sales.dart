@@ -13,7 +13,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/sales/sale_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/sales/add/add_sale.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/sales/update/update_sale.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_sales_report.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_report_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -192,11 +192,11 @@ class _ListSalesState extends State<ListSales> {
         final getSales = Sale.findSaleById(sales, saleId: id).toList();
 
         if (mounted && getSales.isNotEmpty) {
-          PrintSalesReport(
+          SalesReportPrinter(
             sales: getSales,
             createdBy: context.employee!.createdBy,
             storeNumber: context.employee!.storeNumber,
-          ).onPrint(title: 'Sales Reports');
+          ).printReport(title: 'Sales Reports');
         }
       });
 
@@ -276,11 +276,11 @@ class _IssueMultiReportPrintout extends StatelessWidget {
         ),
       ),
       onPressed: () async {
-        PrintSalesReport(
+        SalesReportPrinter(
           sales: sales,
           createdBy: context.employee!.createdBy,
           storeNumber: context.employee!.storeNumber,
-        ).onPrint(title: 'Sales Reports');
+        ).printReport(title: 'Sales Reports');
       },
       label: const Text('Report', style: TextStyle(color: kWarningColor)),
     );
@@ -298,9 +298,7 @@ class _IssueMultiReportPrintout extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

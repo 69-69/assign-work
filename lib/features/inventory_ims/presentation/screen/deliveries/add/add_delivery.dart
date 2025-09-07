@@ -14,7 +14,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/delivery_model.dar
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/delivery/delivery_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/widget/form_inputs.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_order_invoice.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -146,10 +146,10 @@ class _AddDeliveryBodyState extends State<_AddDeliveryBody> {
     final orders = await GetOrders.getWithSameId(_selectedOrderNumber);
     final cus = await GetAllCustomers.byCustomerId(orders.first.customerId);
     if (orders.isNotEmpty && cus.isNotEmpty) {
-      PrintOrderInvoice(
+      SalesDocPrinter(
         orders: orders,
         customer: cus,
-      ).onPrintIn(title: 'delivery note');
+      ).printDoc(title: 'delivery note');
     }
   });
 }

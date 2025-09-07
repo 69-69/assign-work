@@ -154,7 +154,7 @@ Yes — **each of those modules** in your procurement system **requires its own 
 * Target price (optional)
 * Required delivery time
 * List of invited suppliers
-* RFQ issue date
+* RFQ issued date
 * Quotation deadline
 * Terms & conditions
 * Attachments (drawings/specs)

@@ -5,7 +5,7 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/domain/repository/auth_repository.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
-import 'package:assign_erp/features/setup/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:async/async.dart';
 import 'package:equatable/equatable.dart';

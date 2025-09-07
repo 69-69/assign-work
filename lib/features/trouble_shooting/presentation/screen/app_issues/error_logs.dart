@@ -67,7 +67,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
           context.elevatedIconBtn(
             Icon(Icons.delete, color: kWhiteColor),
             style: OutlinedButton.styleFrom(
-              backgroundColor: context.colorScheme.error,
+              backgroundColor: context.errorColor,
             ),
             onPressed: () async {
               final isConfirmed = await context.confirmUserActionDialog();

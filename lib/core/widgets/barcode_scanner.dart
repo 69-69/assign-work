@@ -22,10 +22,7 @@ extension BarcodeScanners on BuildContext {
         barcode.call(res);
       }
     } catch (e) {
-      showAlertOverlay(
-        'Failed to scan barcode',
-        bgColor: ofTheme.colorScheme.error,
-      );
+      showAlertOverlay('Failed to scan barcode', bgColor: errorColor);
     }
   }
 }

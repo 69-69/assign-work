@@ -21,7 +21,7 @@ extension ScreenHelper on BuildContext {
     return FloatingActionButton.extended(
       heroTag: Key(tooltip ?? label),
       isExtended: label.isNotEmpty,
-      backgroundColor: bgColor ?? colorScheme.error,
+      backgroundColor: bgColor ?? errorColor,
       tooltip: (tooltip ?? label).toTitle,
       shape: shape,
       label: label.isEmpty
@@ -101,9 +101,9 @@ extension ScreenHelper on BuildContext {
       },
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        backgroundColor: colorScheme.error,
+        backgroundColor: errorColor,
       ),
-      child: const Text('Sign out'),
+      child: Text('Sign out', style: TextStyle(color: kWhiteColor)),
     );
   }
 

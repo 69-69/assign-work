@@ -13,7 +13,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/add/add_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/update/update_order.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_order_invoice.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -191,10 +191,10 @@ class _ListOrdersState extends State<ListOrders> {
         );
 
         if (getOrders.isNotEmpty && cus.isNotEmpty) {
-          PrintOrderInvoice(
+          SalesDocPrinter(
             orders: getOrders,
             customer: cus,
-          ).onPrintIn(title: 'proforma invoice');
+          ).printDoc(title: 'proforma invoice');
         }
       });
 
@@ -263,10 +263,10 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
       onPressed: () async {
         final cus = await GetAllCustomers.byCustomerId(orders.first.customerId);
 
-        PrintOrderInvoice(
+        SalesDocPrinter(
           orders: orders,
           customer: cus,
-        ).onPrintIn(title: 'proforma invoice');
+        ).printDoc(title: 'proforma invoice');
       },
       label: const Text('Print', style: TextStyle(color: kWarningColor)),
     );
@@ -284,9 +284,7 @@ class _IssueMultiInvoicePrintout extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

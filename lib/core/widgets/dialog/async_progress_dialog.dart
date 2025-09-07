@@ -160,7 +160,7 @@ class _AsyncProgressBarDialogState extends State<AsyncProgressBarDialog> {
 
   _body(double w) {
     final boxDeco = BoxDecoration(
-      color: Colors.white,
+      color: context.scaffoldBgColor,
       borderRadius: BorderRadius.circular(10),
     );
 

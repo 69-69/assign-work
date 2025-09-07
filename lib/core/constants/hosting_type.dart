@@ -2,6 +2,8 @@
 // ⚙️ Hosting Type Definitions
 // ---------------------------
 
+import 'package:assign_erp/core/util/str_util.dart';
+
 enum HostingType { cloud, onPremise, hybrid }
 
 /* USAGE:
@@ -9,26 +11,20 @@ enum HostingType { cloud, onPremise, hybrid }
 * print(type.label); // Output: cloud
 * */
 extension HostingTypeExtension on HostingType {
-  String get label {
-    return switch (this) {
-      HostingType.cloud => 'cloud', // Hosted on a cloud provider (e.g., GCP)
-      HostingType.hybrid =>
-        'hybrid', // Hosted on a cloud provider and on-premises
-      HostingType.onPremise => 'onPremise', // Locally hosted on user's computer
-    };
+  String get getValue => getEnumName<HostingType>(this);
+}
+
+class HostingTypeHelper {
+  static HostingType fromString(String value) {
+    return HostingType.values.firstWhere(
+      (e) => e.getValue == value,
+      orElse: () => HostingType.onPremise,
+    );
+  }
+
+  /// [toStringList] Convert enum list to a list of strings
+  static List<String> toStringList([bool includeLabel = true]) {
+    final list = HostingType.values.map((e) => e.getValue).toList();
+    return includeLabel ? ['hosting type', ...list] : list;
   }
 }
-
-final accountStatusList = HostingType.values.map((e) => e.label).toList();
-
-HostingType getHostingByString(String value) {
-  return HostingType.values.firstWhere(
-    (e) => e.label == value,
-    orElse: () => HostingType.onPremise,
-  );
-}
-
-final hostingTypeList = [
-  'hosting type',
-  ...HostingType.values.map((e) => e.label),
-];

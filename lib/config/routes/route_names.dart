@@ -26,7 +26,7 @@ abstract class RouteNames {
   static const inventoryApp = 'inventory_app';
   static const procurementApp = 'procurement_app';
   static const posApp = 'pos_app';
-  static const setupApp = 'setup_app';
+  static const systemAdminApp = 'setup_app';
   static const warehouseApp = 'warehouse_app';
   static const customersApp = 'customers_app';
 

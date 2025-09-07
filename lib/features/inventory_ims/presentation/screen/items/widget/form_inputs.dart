@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
-import 'package:assign_erp/features/setup/presentation/screen/item_config/widget/search_category.dart';
-import 'package:assign_erp/features/setup/presentation/screen/item_config/widget/search_suppliers.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/search_category.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/search_suppliers.dart';
 import 'package:flutter/material.dart';
 
 /// Cost Price & Selling Price TextField [CostAndSellingPriceInput]

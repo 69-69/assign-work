@@ -12,7 +12,7 @@ import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/home/data/permission/main_permission.dart';
-import 'package:assign_erp/features/setup/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -333,7 +333,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     return TextButton.icon(
       style: _btnStyle(context).copyWith(
         backgroundColor: _shouldExpand
-            ? WidgetStatePropertyAll(context.colorScheme.error)
+            ? WidgetStatePropertyAll(context.errorColor)
             : null,
       ),
       onPressed: () async {
@@ -443,7 +443,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           ),
           _buildListTile(
             context,
-            title: 'Hosting: ${workspace!.hostingType.label}',
+            title: 'Hosting: ${workspace!.hostingType.getValue}',
             subtitle: 'Store Location: ${employee?.storeNumber}',
           ),
         ],

@@ -171,7 +171,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   final bool isMultiSelect;
   final String labelText;
   final T? selectedItem;
-  final List<T>? selectedItems;
+  final List<T>? selectedMultiItems;
   final String? helperText;
   final IconData? trailingIcon;
   final Function(T?)? onChanged;
@@ -198,7 +198,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
     this.trailingIcon,
     this.onNoDataFound,
     this.selectedItem,
-    this.selectedItems,
+    this.selectedMultiItems,
   });
 
   @override
@@ -234,7 +234,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
     final helpText = helperText != null ? '($helperText)' : '';
 
     return DropdownSearch<T>.multiSelection(
-      selectedItems: selectedItems ?? [],
+      selectedItems: selectedMultiItems ?? [],
       autoValidateMode: AutovalidateMode.onUserInteraction,
       popupProps: const PopupPropsMultiSelection.menu(showSearchBox: true),
       filterFn: (obj, filter) => filterFn(obj, filter),

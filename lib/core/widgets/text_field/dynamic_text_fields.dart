@@ -13,8 +13,11 @@ enum FieldWidgetType {
 
 class DynamicTextFields extends StatefulWidget {
   final String? title;
-  final Color? textColor;
+
+  /// [fullWidthKey] Use to specify the key for the full width field, else fallback to the last field
+  final String? fullWidthKey;
   final bool showButton;
+  final Color? textColor;
   final List<FieldGroupConfig> fieldsConfig;
   final List<Map<String, dynamic>>? initialData;
   final Function(List<Map<String, dynamic>>) onChanged;
@@ -27,6 +30,7 @@ class DynamicTextFields extends StatefulWidget {
     this.showButton = false,
     required this.fieldsConfig,
     required this.onChanged,
+    this.fullWidthKey,
     this.initialData,
     this.textColor,
     this.onCount,
@@ -122,7 +126,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     final inputType = config.type;
     final validator = config.validator;
     final helperText = config.helperText;
-    final maxLines = config.maxLines ?? 1;
+    final maxLines = config.isTextArea ? null : 1;
     final labelText = config.label.toTitle;
 
     final inputDecoration =
@@ -170,7 +174,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     final total = fields.length;
 
     for (var i = 0; i < total; i += 2) {
-      final isLast = i == total - 1;
+      final isLast = i == total - 2;
       final isOdd = total % 2 != 0;
 
       rows.add(
@@ -273,7 +277,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 class FieldGroupConfig {
   final String key;
   final String label;
-  final int? maxLines;
+  final bool isTextArea;
   final bool hideField;
   final String? helperText;
   final TextInputType type;
@@ -292,7 +296,7 @@ class FieldGroupConfig {
     required this.key,
     required this.type,
     required this.label,
-    this.maxLines,
+    this.isTextArea = false,
     this.validator,
     this.helperText,
     this.inputDecoration,

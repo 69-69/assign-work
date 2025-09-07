@@ -40,6 +40,7 @@ class ChangeWorkspacePassword extends StatelessWidget {
 
   _buildAlertDialog(BuildContext context) {
     return CustomDialog(
+      bgColor: context.scaffoldBgColor,
       title: DialogTitle(
         title: 'Change Workspace Password',
         subtitle:

@@ -12,8 +12,8 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/purchase_order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/add/add_purchase_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/update/update_purchase_order.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_po.dart';
-import 'package:assign_erp/features/setup/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/po_printer.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -183,7 +183,7 @@ class _ListApprovedPOState extends State<ListApprovedPO> {
         final orders = PurchaseOrder.findPurchaseOrderById(po, id).toList();
         final sup = await GetSuppliers.bySupplierId(orders.first.supplierId);
         if (orders.isNotEmpty && sup.isNotEmpty) {
-          PrintPurchaseOrder(orders: orders, supplier: sup).onPrintPO();
+          POPrinter(orders: orders, supplier: sup).printPO();
         }
       });
 
@@ -248,7 +248,7 @@ class _IssueMultiPOPrintout extends StatelessWidget {
         final sup = await GetSuppliers.bySupplierId(orders.first.supplierId);
 
         // Perform action after loading
-        PrintPurchaseOrder(orders: orders, supplier: sup).onPrintPO();
+        POPrinter(orders: orders, supplier: sup).printPO();
       },
       icon: const Icon(Icons.print, color: kWarningColor),
       label: const Text('Print PO', style: TextStyle(color: kWarningColor)),
@@ -267,9 +267,7 @@ class _IssueMultiPOPrintout extends StatelessWidget {
   _buildDeleteButton(BuildContext context) {
     return context.elevatedIconBtn(
       Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(
-        backgroundColor: context.colorScheme.error,
-      ),
+      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
       onPressed: () async {
         final isConfirmed = await _confirmDeleteDialog(context);
         if (context.mounted && isConfirmed) {

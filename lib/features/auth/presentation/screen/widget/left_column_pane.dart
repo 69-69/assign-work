@@ -27,7 +27,7 @@ class LeftColumnPane extends StatelessWidget {
   _buildLeftColumn(BuildContext context) {
     return Card(
       elevation: 50,
-      color: kWhiteColor.toAlpha(0.8),
+      color: context.scaffoldBgColor.toAlpha(0.8),
       margin: context.isMobile || context.isTablet
           ? null
           : const EdgeInsets.symmetric(horizontal: 150),
@@ -50,7 +50,7 @@ class LeftColumnPane extends StatelessWidget {
             textAlign: TextAlign.center,
             style: context.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w500,
-              color: kPrimaryColor,
+              color: context.onSurfaceColor,
             ),
           ),
           subtitle: Text(

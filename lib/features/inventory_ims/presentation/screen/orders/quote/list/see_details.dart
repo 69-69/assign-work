@@ -1,20 +1,25 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/tax_methods_enum.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quotation_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quote_model.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/system_admin/data/models/supplier_model.dart';
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
+/*import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:printing/printing.dart';*/
 
 extension RFQDetails on BuildContext {
   Future openSeeDetails({
-    String supplier = '',
+    required Supplier supplier,
     required RequestForQuote quote,
   }) => openBottomSheet(
     isExpand: true,
@@ -23,12 +28,25 @@ extension RFQDetails on BuildContext {
       isDetails: true,
       title: quote.title.toTitle,
       subtitle: quote.rfqNumber.toUpperAll,
-      body: RFQPrintoutPage(quote: quote, supplier: supplier),
-      onPrint: () async => _generatePdf(),
+      body: RFQPrintoutPage(quote: quote, supplier: supplier.name),
+      onPrint: () async => await _printRFQ(this, quote, supplier),
     ),
   );
 
-  void _generatePdf() async {
+  _printRFQ(BuildContext cxt, quote, supplier) async {
+    await cxt.progressBarDialog(
+      request: Future.delayed(
+        kRProgressDelay,
+        () async =>
+            await RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
+      ),
+      onSuccess: (_) => cxt.showAlertOverlay('RFQ successfully created'),
+      onError: (e) =>
+          cxt.showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
+    );
+  }
+
+  /*void _generatePdf() async {
     final List<Map<String, dynamic>> items = [
       {
         'description': 'Hotel Booking',
@@ -176,7 +194,7 @@ extension RFQDetails on BuildContext {
     );
 
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-  }
+  }*/
 }
 
 class RFQPrintoutPage extends StatelessWidget {
@@ -188,13 +206,18 @@ class RFQPrintoutPage extends StatelessWidget {
   List<RFQLineItem> get _items => quote?.lineItems ?? [];
 
   double get _subtotal => quote?.subTotal ?? 0.0;
-  double get _totalTax => quote?.taxAmount ?? 0.0;
-  double get _discount => quote?.discountAmount ?? 0.0;
-  double get _grandTotal => quote?.netTotal ?? 0.0;
-  TaxMethodToApply? get _taxMethod => quote?.taxMethod;
-  bool get _isPerLineTax => (_taxMethod?.isPerLineTax ?? false);
 
-  String? get _currency => getCurrencySign(quote?.currency ?? 'GHC');
+  double get _totalTax => quote?.taxAmount ?? 0.0;
+
+  double get _totalDiscount => quote?.discountAmount ?? 0.0;
+
+  double get _grandTotal => quote?.netTotal ?? 0.0;
+
+  TaxMode? get _taxMode => quote?.taxMode;
+
+  bool get _isPerLineTax => (_taxMode?.isPerLineTax ?? false);
+
+  String? get _currencySign => getCurrencySign(quote?.currency ?? 'GHC');
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +225,13 @@ class RFQPrintoutPage extends StatelessWidget {
       return const Center(child: Text("No RFQ data available."));
     }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [_buildBody(context), _buildFooter(context)],
+    );
+  }
+
+  _buildBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -222,21 +252,26 @@ class RFQPrintoutPage extends StatelessWidget {
         const SizedBox(height: 12),
 
         AdaptiveLayout(
-          children: [_buildExtra(context), _buildSummary(context)],
+          children: [_buildLeftSummary(context), _buildRightSummary(context)],
         ),
         const SizedBox(height: 20),
       ],
     );
   }
 
-  _buildInfoRow(BuildContext context, {String title = '', String value = ''}) {
+  _buildInfoRow(
+    BuildContext context, {
+    String title = '',
+    String value = '',
+    String separator = ': ',
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 2.0),
       child: RichText(
         text: TextSpan(
-          text: '$title: ',
+          text: '$title$separator',
           style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             color: context.secondaryColor,
           ),
           children: [
@@ -296,18 +331,13 @@ class RFQPrintoutPage extends StatelessWidget {
             title: 'Department',
             value: quote!.department.toTitle,
           ),
-        if (quote?.taxMethod.label.isNotEmpty ?? false)
+        if (quote?.taxMode.getValue.isNotEmpty ?? false)
           _buildInfoRow(
             context,
-            title: 'Tax Method',
-            value: (_taxMethod?.label.separateWord).toTitle,
+            title: 'Tax Mode',
+            value: (_taxMode?.getValue.separateWord).toTitle,
           ),
         _buildInfoRow(context, title: 'Vendor', value: supplier.toUpperAll),
-        _buildInfoRow(
-          context,
-          title: 'Date',
-          value: quote?.getCreatedAt ?? 'N/A',
-        ),
       ],
     );
   }
@@ -319,7 +349,8 @@ class RFQPrintoutPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildItem('No. Item', flex: 2),
+          _buildItem('#', flex: 1),
+          _buildItem('Item', flex: 2),
           _buildItem('Qty'),
           _buildItem('Unit Price'),
           _buildItem('Discount'),
@@ -328,47 +359,48 @@ class RFQPrintoutPage extends StatelessWidget {
             _buildItem('Tax Amount'),
             _buildItem('Tax Codes'),
           ],
-          _buildItem('Total'),
+          _buildItem('Line Total'),
         ],
       ),
     );
   }
 
   Widget _buildItemRow(RFQLineItem item, int index) {
-    final total = item.subTotal - item.discountAmount + item.taxAmount;
-
-    /*final taxCodes = isPerLineTax ? item.taxCodesList : quote?.taxCodes;
-    final taxAmt = (item.taxAmount > 0 ? item.taxAmount : totalTax).toCurrency;*/
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildItem(
-            '${index + 1} - ${item.itemName.toTitle}',
-            flex: 2,
-            isBold: false,
-          ),
+          _buildItem('${index + 1}', flex: 1, isBold: false),
+          _buildItem(item.itemName.toTitle, flex: 2, isBold: false),
           _buildItem('${item.quantity}', isBold: false),
 
-          _buildItem('$_currency${item.unitPrice.toCurrency}', isBold: false),
           _buildItem(
-            '$_currency${item.discountAmount.toCurrency}',
+            '$_currencySign${item.unitPrice.toCurrency}',
+            isBold: false,
+          ),
+          _buildItem(
+            '-$_currencySign${item.discountAmount.toCurrency}',
             isBold: false,
           ),
 
           if (_isPerLineTax) ...[
-            _buildItem('$_currency${item.taxAmount.toCurrency}', isBold: false),
-            _buildItem(item.taxNames.toTitle, isBold: false),
+            _buildItem(
+              '$_currencySign${item.taxAmount.toCurrency}',
+              isBold: false,
+            ),
+            _buildItem(item.taxNames.toUpperAll, isBold: false),
           ],
-          _buildItem('$_currency${total.toCurrency}', isBold: false),
+          _buildItem(
+            '$_currencySign${item.perLineTotal.toCurrency}',
+            isBold: false,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildExtra(BuildContext context) {
+  Widget _buildLeftSummary(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Column(
@@ -389,27 +421,33 @@ class RFQPrintoutPage extends StatelessWidget {
             _buildInfoRow(
               context,
               title: 'Applied Taxes',
-              value: quote?.taxNames.toTitle ?? 'N/A',
+              value: quote?.lineItems.first.taxNames.toUpperAll ?? 'N/A',
             ),
           },
-          if (quote?.deliveryAddress?.isNotEmpty ?? false)
+          if (quote?.deliveryAddress?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 8),
             _buildInfoRow(
               context,
+              separator: ':\n',
               title: 'Delivery Address',
               value: quote!.deliveryAddress.toSentence,
             ),
-          if (quote?.notes?.isNotEmpty ?? false)
+          ],
+          if (quote?.notes?.isNotEmpty ?? false) ...[
+            const SizedBox(height: 8),
             _buildInfoRow(
               context,
+              separator: ':\n',
               title: 'Additional Notes',
               value: quote!.notes.toSentence,
             ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildSummary(BuildContext context) {
+  Widget _buildRightSummary(BuildContext context) {
     return Align(
       alignment: Alignment.centerRight,
       child: Column(
@@ -419,22 +457,47 @@ class RFQPrintoutPage extends StatelessWidget {
           _buildInfoRow(
             context,
             title: 'Subtotal',
-            value: '$_currency${_subtotal.toCurrency}',
+            value: '$_currencySign${_subtotal.toCurrency}',
           ),
           _buildInfoRow(
             context,
             title: 'Discount',
-            value: '-$_currency${_discount.toCurrency}',
+            value: '-$_currencySign${_totalDiscount.toCurrency}',
           ),
           _buildInfoRow(
             context,
             title: 'Tax',
-            value: '$_currency${_totalTax.toCurrency}',
+            value: '$_currencySign${_totalTax.toCurrency}',
           ),
           const SizedBox(height: 8),
           Text(
-            'Grand Total: $_currency${_grandTotal.toCurrency}',
+            'Grand Total: $_currencySign${_grandTotal.toCurrency}',
             style: context.textTheme.titleLarge?.copyWith(color: kDangerColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container _buildFooter(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      color: context.secondaryContainerColor,
+      child: AdaptiveLayout(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildInfoRow(
+            context,
+            title: 'Created',
+            value:
+                '${quote?.getCreatedAt} - By: [ ${quote?.createdBy.toTitle} ]',
+          ),
+          _buildInfoRow(
+            context,
+            title: 'Last Updated',
+            value:
+                '${quote?.getUpdatedAt} - By: [ ${quote?.updatedBy.toTitle} ]',
           ),
         ],
       ),

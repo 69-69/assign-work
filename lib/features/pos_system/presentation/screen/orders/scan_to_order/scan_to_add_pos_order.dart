@@ -16,7 +16,7 @@ import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_i
 import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_order_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/widget/print_pos_receipt.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/widget/pos_receipt_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -512,11 +512,11 @@ class _ScannedItemsState extends State<_ScannedItems> {
   Future<void> _printout() async {
     await Future.delayed(kRProgressDelay);
     if (mounted) {
-      PrintPOSSalesReceipt(
+      POSReceiptPrinter(
         orders: _orders,
         storeNumber: context.employee!.storeNumber,
         customerId: _orders.first.customerId,
-      ).onPrintPOS();
+      ).printReceipt();
     }
   }
 }

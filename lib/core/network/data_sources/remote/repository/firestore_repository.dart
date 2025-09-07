@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/collection_type_enum.dart';
+import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_helper.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

@@ -2,6 +2,8 @@
 // ⚙️ Account Status Definitions
 // ---------------------------
 
+import 'package:assign_erp/core/util/str_util.dart';
+
 enum AccountStatus { enabled, disabled }
 
 /* USAGE:
@@ -9,18 +11,23 @@ enum AccountStatus { enabled, disabled }
 * print(status.label); // Output: enable
 * */
 extension AccountStatusExtension on AccountStatus {
-  String get label {
-    return switch (this) {
-      AccountStatus.enabled => 'enable',
-      AccountStatus.disabled => 'disable',
-    };
-  }
+  String get getValue => getEnumName<AccountStatus>(this);
 }
 
-final employeeAccountStatusList = [
-  'account status',
-  ...AccountStatus.values.map((e) => e.label),
-];
+class AccountStatusHelper {
+  /// Get Account Status from String value [fromString].
+  static AccountStatus fromString(String? value) =>
+      AccountStatus.values.firstWhere(
+        (e) => e.getValue == value,
+        orElse: () => AccountStatus.disabled,
+      );
+
+  /// [toStringList] Convert enum list to a list of strings
+  static List<String> toStringList([bool includeLabel = true]) {
+    final list = AccountStatus.values.map((e) => e.getValue).toList();
+    return includeLabel ? ['account status', ...list] : list;
+  }
+}
 
 // ---------------------------
 // 🔐 Authentication & Temporary Passcode

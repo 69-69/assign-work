@@ -10,8 +10,8 @@ export 'package:assign_erp/features/customer_crm/presentation/bloc/create_acc/cu
 export 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 export 'package:assign_erp/features/inventory_ims/presentation/bloc/index.dart';
 export 'package:assign_erp/features/live_support/presentation/bloc/index.dart';
-export 'package:assign_erp/features/setup/presentation/bloc/create_roles/role_bloc.dart';
-export 'package:assign_erp/features/setup/presentation/bloc/index.dart';
+export 'package:assign_erp/features/system_admin/presentation/bloc/create_roles/role_bloc.dart';
+export 'package:assign_erp/features/system_admin/presentation/bloc/index.dart';
 export 'package:assign_erp/features/trouble_shooting/presentation/bloc/index.dart';
 export 'package:cloud_firestore/cloud_firestore.dart';
 export 'package:flutter_bloc/flutter_bloc.dart';

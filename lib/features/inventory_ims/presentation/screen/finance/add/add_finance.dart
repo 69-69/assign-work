@@ -20,7 +20,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/order_model
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/widget/form_inputs.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/print_order_invoice.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -525,10 +525,10 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
     // Simulate loading supplier and company info
     final cus = await GetAllCustomers.byCustomerId(_orders.first.customerId);
     if (cus.isNotEmpty) {
-      PrintOrderInvoice(
+      SalesDocPrinter(
         orders: _orders,
         customer: cus,
-      ).onPrintIn(title: 'proforma invoice');
+      ).printDoc(title: 'proforma invoice');
     }
   });
 }

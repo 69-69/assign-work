@@ -27,14 +27,14 @@ class CustomDialog extends StatelessWidget {
             icon ??
             IconButton(
               style: IconButton.styleFrom(
-                backgroundColor: kWhiteColor.toAlpha(0.4),
+                backgroundColor: context.outlineColor.toAlpha(0.4),
               ),
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.close, color: kTextColor),
             ),
       ),
       iconPadding: const EdgeInsets.only(right: 5, top: 5),
-      backgroundColor: bgColor ?? kWhiteColor.toAlpha(0.8),
+      backgroundColor: bgColor ?? context.scaffoldBgColor.toAlpha(0.8),
       title: title,
       content: body,
       actions: actions,

@@ -12,12 +12,12 @@ class DynamicCheckboxList extends StatefulWidget {
   final bool showButton;
   final List<Map<String, dynamic>>? initialData;
   final List<CheckboxGroupConfig> checkboxesConfig;
-  final Function(List<Map<String, dynamic>>) onChanged;
+  final Function(List<Map<String, dynamic>>) onCheckChanged;
 
   const DynamicCheckboxList({
     super.key,
     required this.checkboxesConfig,
-    required this.onChanged,
+    required this.onCheckChanged,
     this.initialData,
     this.title,
     this.showButton = false,
@@ -96,9 +96,9 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
     return _checkboxGroups.asMap().entries.expand((entry) {
       final group = entry.value;
 
-      final checkboxes = _configs.map((config) {
-        return _buildCheckbox(group, config);
-      }).toList();
+      final checkboxes = _configs
+          .map((config) => _buildCheckbox(group, config))
+          .toList();
 
       return checkboxes.length <= 1 ? checkboxes : _groupIntoRows(checkboxes);
     }).toList();
@@ -131,9 +131,7 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
         ],
       ),
       onChanged: (value) {
-        setState(() {
-          group[config.key] = value ?? false;
-        });
+        setState(() => group[config.key] = value ?? false);
         _notifyParent();
       },
     );
@@ -184,16 +182,14 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
       }
     }
 
-    widget.onChanged(output);
+    widget.onCheckChanged(output);
   }
 
   Future<void> _showInfoDialog(
     BuildContext context,
     String title,
     String description,
-  ) async {
-    await context.confirmDone(Text(description), title: title);
-  }
+  ) async => await context.confirmDone(Text(description), title: title);
 }
 
 class CheckboxGroupConfig<T> {

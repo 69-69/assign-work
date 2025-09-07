@@ -134,18 +134,44 @@ class MaterialTheme {
         RoundedRectangleBorder(borderRadius: borderRadius),
       ),
     );
+    var dtColor = WidgetStatePropertyAll(colorScheme.onSurface);
+    var dtBtn = ButtonStyle(foregroundColor: dtColor);
+
     return ThemeData(
       useMaterial3: true,
       brightness: colorScheme.brightness,
       colorScheme: colorScheme,
       cardColor: colorScheme.surface,
+      canvasColor: colorScheme.surface,
+      scaffoldBackgroundColor: colorScheme.surface,
+      appBarTheme: AppBarTheme(backgroundColor: colorScheme.primary),
       textTheme: textTheme.apply(
         bodyColor: colorScheme.onSurface,
         displayColor: colorScheme.onSurface,
       ),
-      canvasColor: colorScheme.surface,
-      scaffoldBackgroundColor: colorScheme.surface,
-      appBarTheme: AppBarTheme(backgroundColor: colorScheme.primary),
+      tabBarTheme: TabBarThemeData(
+        // indicator: BoxDecoration(color: colorScheme.surface),
+        labelColor: colorScheme.onPrimaryContainer,
+        unselectedLabelColor: colorScheme.onPrimaryContainer,
+        labelStyle: TextStyle(
+          overflow: TextOverflow.ellipsis,
+          color: colorScheme.onPrimaryContainer,
+        ),
+        indicatorColor: colorScheme.onPrimaryContainer,
+      ),
+      timePickerTheme: TimePickerThemeData(
+        confirmButtonStyle: dtBtn,
+        cancelButtonStyle: dtBtn,
+      ),
+      checkboxTheme: CheckboxThemeData(
+        checkColor: WidgetStatePropertyAll(colorScheme.inversePrimary),
+      ),
+      datePickerTheme: DatePickerThemeData(
+        confirmButtonStyle: dtBtn,
+        cancelButtonStyle: dtBtn,
+        todayForegroundColor: dtColor,
+        dayForegroundColor: dtColor,
+      ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         enabledBorder: OutlineInputBorder(
@@ -161,12 +187,22 @@ class MaterialTheme {
           borderSide: BorderSide(color: colorScheme.error),
         ),
         border: OutlineInputBorder(borderRadius: borderRadius),
+        labelStyle: TextStyle(
+          overflow: TextOverflow.ellipsis,
+          color: colorScheme.onSurface,
+        ),
       ),
       dropdownMenuTheme: DropdownMenuThemeData(
-        textStyle: const TextStyle(overflow: TextOverflow.ellipsis),
+        textStyle: TextStyle(
+          overflow: TextOverflow.ellipsis,
+          color: colorScheme.onSurface,
+        ),
         inputDecorationTheme: InputDecorationTheme(
           isDense: true,
-          labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
+          labelStyle: TextStyle(
+            overflow: TextOverflow.ellipsis,
+            color: colorScheme.onSurface,
+          ),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: colorScheme.outlineVariant),
           ),

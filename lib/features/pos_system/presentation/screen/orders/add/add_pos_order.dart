@@ -18,7 +18,7 @@ import 'package:assign_erp/features/pos_system/data/models/pos_order_model.dart'
 import 'package:assign_erp/features/pos_system/presentation/bloc/orders/pos_order_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/orders/widget/form_inputs.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/widget/print_pos_receipt.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/widget/pos_receipt_printer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -453,11 +453,11 @@ class _AddOrderFormState extends State<_AddOrderForm> {
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
     if (mounted) {
-      PrintPOSSalesReceipt(
+      POSReceiptPrinter(
         orders: _orders,
         storeNumber: context.employee!.storeNumber,
         customerId: _orders.first.customerId,
-      ).onPrintPOS();
+      ).printReceipt();
     }
   });
 }

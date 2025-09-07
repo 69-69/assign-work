@@ -36,17 +36,24 @@ extension DefaultColors on BuildContext {
   TextTheme get textTheme => ofTheme.textTheme;
   ColorScheme get colorScheme => ofTheme.colorScheme;
   Color get primaryColor => ofTheme.primaryColor;
+  Color get mainPrimaryColor => colorScheme.primary;
   Color get errorColor => colorScheme.error;
+  Color get onErrorColor => colorScheme.onError;
   Color get primaryColorLight => ofTheme.primaryColorLight;
   Color get secondaryColor => colorScheme.secondary;
   Color get onSecondaryColor => colorScheme.onSecondary;
   Color get secondaryContainerColor => colorScheme.secondaryContainer;
   Color get onSecondaryContainer => colorScheme.onSecondaryContainer;
   Color get onPrimaryColor => colorScheme.onPrimary;
+  // switch between primary/light
   Color get onPrimaryContainer => colorScheme.onPrimaryContainer;
   Color get primaryContainer => colorScheme.primaryContainer;
   Color get surfaceColor => colorScheme.surface;
+  // switch between black/white
+  Color get onSurfaceColor => colorScheme.onSurface;
+  Color get outlineColor => colorScheme.outline;
   Color get surfaceTintColor => colorScheme.surfaceTint;
+  // switch between black/white
   Color get scaffoldBgColor => ofTheme.scaffoldBackgroundColor;
 }
 

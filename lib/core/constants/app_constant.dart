@@ -50,7 +50,7 @@ const inventoryAppTitle = 'inventory - ims';
 const procurementAppTitle = 'procurement & suppliers';
 const warehouseAppTitle = 'warehouse - wms';
 const customerAppTitle = 'customer - crm';
-const setupAppTitle = 'setup';
+const systemAdminAppTitle = 'System Administration';
 const storeSwitcherAppTitle = 'switch store locations';
 const userGuideAppTitle = 'user - guide';
 
@@ -80,6 +80,7 @@ const posOrdersScreenTitle = 'p.o.s - orders';
 const guideToScreenTitle = 'Guide to...';
 
 const kAppBarHeight = 80.0;
+const fMinutesDuration = Duration(minutes: 5);
 const kDProgressDelay = Duration(seconds: 2);
 const kRProgressDelay = Duration(seconds: 3);
 const kFProgressDelay = Duration(seconds: 5);
@@ -87,4 +88,3 @@ const kIProgressDelay = Duration(seconds: 20);
 const kTProgressDelay = Duration(seconds: 10);
 const kAnimateDuration = Duration(milliseconds: 300);
 const fAnimateDuration = Duration(milliseconds: 500);
-const fMinutesDuration = Duration(minutes: 5);

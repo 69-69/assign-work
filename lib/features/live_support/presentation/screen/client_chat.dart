@@ -10,7 +10,7 @@ import 'package:assign_erp/features/live_support/data/models/live_chat_model.dar
 import 'package:assign_erp/features/live_support/presentation/bloc/chat/chat_bloc.dart';
 import 'package:assign_erp/features/live_support/presentation/bloc/live_chat_bloc.dart';
 import 'package:assign_erp/features/live_support/presentation/widget/chat_input.dart';
-import 'package:assign_erp/features/setup/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

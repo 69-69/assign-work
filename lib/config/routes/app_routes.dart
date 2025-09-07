@@ -12,8 +12,8 @@ import 'package:assign_erp/features/inventory_ims/presentation/index.dart';
 import 'package:assign_erp/features/live_support/presentation/index.dart';
 import 'package:assign_erp/features/pos_system/presentation/index.dart';
 import 'package:assign_erp/features/procurement/presentation/index.dart';
-import 'package:assign_erp/features/setup/presentation/index.dart';
 import 'package:assign_erp/features/startup/initial_screen.dart';
+import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/index.dart';
 import 'package:assign_erp/features/warehouse_wms/presentation/index.dart';
@@ -160,8 +160,8 @@ GoRoute _setupRoute() {
   ];
 
   return GoRoute(
-    name: RouteNames.setupApp,
-    path: RouteNames.setupApp,
+    name: RouteNames.systemAdminApp,
+    path: RouteNames.systemAdminApp,
     pageBuilder: (context, state) =>
         _animateTransition(state, const SetupApp()),
     routes: setupRoutes

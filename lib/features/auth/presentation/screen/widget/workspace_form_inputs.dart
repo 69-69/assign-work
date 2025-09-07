@@ -31,11 +31,13 @@ class WorkspaceRoleDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strList = WorkspaceRoleHelper.toStringList();
+
     return StaticDropdown<String>(
       key: key,
       initialValue: serverRole,
-      items: workspaceRoleList,
-      label: workspaceRoleList.first,
+      items: strList,
+      label: strList.first,
       getValue: (role) => role,
       getDisplayText: (role) => role,
       onChanged: (String? v) => onRoleChanged(v),

@@ -147,7 +147,7 @@ class _ChatDetailPaneState extends State<ChatDetailPane> {
     final message = LiveChatMessage(
       senderId: _agentId,
       message: msg,
-      senderRole: WorkspaceRole.agentFranchise.label,
+      senderRole: WorkspaceRole.agentFranchise.getValue,
     );
 
     /// 3. Add message to BLoC
@@ -248,7 +248,7 @@ class _ChatDetailPaneState extends State<ChatDetailPane> {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final msg = messages[index];
-        final isAgent = msg.senderRole == WorkspaceRole.agentFranchise.label;
+        final isAgent = msg.senderRole == WorkspaceRole.agentFranchise.getValue;
 
         return _listCard(isAgent, msg);
       },

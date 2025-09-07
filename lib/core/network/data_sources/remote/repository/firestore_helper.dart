@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/collection_type_enum.dart';
+import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,7 +31,7 @@ class FirestoreHelper {
   (String role, String id) get _workspaceDetails {
     final workspace = _authCacheService.getWorkspace();
     return (
-      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.tenant.label,
+      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.tenant.getValue,
       _workspaceId ?? workspace?.id ?? '',
     );
   }
@@ -81,7 +81,7 @@ class FirestoreHelper {
     // Collection('workspaceRole/workspaceId/stores/storeNumber/collectionPath')
     // Example: Collection('subscriber/3449854123s/stores/Store-46557-ER/products_db')
     return _getWorkspaceRoleCollectionRef(
-      CollectionType.stores.label,
+      CollectionType.stores.getValue,
     ).doc(storeNumber).collection(collectionPath);
   }
 
@@ -95,7 +95,7 @@ class FirestoreHelper {
 
     return _getGlobalCollectionRef(
       collectionPath,
-    ).doc(workspaceId).collection(CollectionType.chats.label);
+    ).doc(workspaceId).collection(CollectionType.chats.getValue);
   }
 
   /// Returns the agent-clients mapping reference: `/collectionPath/workspaceId/clients`
@@ -105,7 +105,7 @@ class FirestoreHelper {
     final (_, id) = _workspaceDetails;
     return _getGlobalCollectionRef(
       collectionPath,
-    ).doc(id).collection(CollectionType.clients.label);
+    ).doc(id).collection(CollectionType.clients.getValue);
   }
 }
 
