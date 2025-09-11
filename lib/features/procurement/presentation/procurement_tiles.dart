@@ -199,9 +199,9 @@ Yes — **each of those modules** in your procurement system **requires its own 
 * Contact info (email, phone, person)
 * Address info
 * Bank & tax details
+* Products or services offered
 * Documents (certifications, licenses)
 * Approved/Blacklisted status
-* Products or services offered
 * Rating info (auto or manual)
 
 \[📌 Already detailed earlier in our chat.]

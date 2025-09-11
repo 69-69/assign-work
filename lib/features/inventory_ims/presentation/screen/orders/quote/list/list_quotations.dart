@@ -11,7 +11,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/request_price_quotation_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/add/add_request_for_quotation.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/see_details.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/list/see_quote_details.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/rfq_printer.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
@@ -263,7 +263,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     final supplier = await _getSupplier(quote.supplierId);
 
     if (mounted) {
-      await context.openSeeDetails(quote: quoteWithTaxes, supplier: supplier);
+      await context.openRFQDetails(quote: quoteWithTaxes, supplier: supplier);
     }
   }
 
@@ -297,7 +297,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     final quote = _getQuoteById(quotes, id);
     if (quote == null) return;
 
-    await context.openUpdateRequestForQuotation(quote: quote);
+    await context.openUpdateRequestForQuote(quote: quote);
   }
 
   Future<void> _onDeleteTap(List<RequestForQuote> quotes, String id) async {

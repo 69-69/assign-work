@@ -19,7 +19,9 @@ class GetTaxes {
     final taxBloc = TaxBloc(firestore: FirebaseFirestore.instance);
     final now = DateTime.now();
 
-    if (!forceRefresh && _cached != null && _lastFetched != null) {
+    if (!forceRefresh &&
+        (_cached?.isNotEmpty ?? false) &&
+        _lastFetched != null) {
       final isFresh = now.difference(_lastFetched!) < _cacheDuration;
       if (isFresh) return _cached!;
     }
@@ -59,7 +61,7 @@ class GetTaxes {
   }
 }
 
-class GetTaxes2 {
+/*class GetTaxes2 {
   static final taxBloc = TaxBloc(firestore: FirebaseFirestore.instance);
 
   static Future<SetupsLoaded<Tax>> _dataLoadedState(TaxBloc bloc) async {
@@ -100,4 +102,4 @@ class GetTaxes2 {
 
     return state.data.isEmpty ? [] : state.data;
   }
-}
+}*/

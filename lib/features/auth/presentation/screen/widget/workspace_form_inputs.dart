@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/business_type_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -23,11 +23,11 @@ class WorkspaceRoleDropdown extends StatelessWidget {
   const WorkspaceRoleDropdown({
     super.key,
     required this.onRoleChanged,
-    this.serverRole,
+    this.initialValue,
   });
 
   final Function(String?) onRoleChanged;
-  final String? serverRole;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class WorkspaceRoleDropdown extends StatelessWidget {
 
     return StaticDropdown<String>(
       key: key,
-      initialValue: serverRole,
+      initialValue: initialValue,
       items: strList,
       label: strList.first,
       getValue: (role) => role,
@@ -47,22 +47,35 @@ class WorkspaceRoleDropdown extends StatelessWidget {
 
 /// Workspace Category Dropdown [workspace Category]
 class WorkspaceCategory extends StatelessWidget {
-  const WorkspaceCategory({super.key, this.serverEntity});
+  const WorkspaceCategory({super.key, this.initialValue});
 
-  final String? serverEntity;
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       buildWhen: (previous, current) =>
           previous.workspaceCategory != current.workspaceCategory,
-      builder: (_, state) => _buildBody(context, state),
+      builder: (_, state) => _buildBody(context),
     );
   }
 
-  StaticDropdown _buildBody(BuildContext context, WorkspaceAuthState state) {
+  Widget _buildBody(BuildContext context) {
+    return BusinessToIndustriesDropdown(
+      initialIndustry: initialValue,
+      onIndustryChanged: (String? business, String? industry) {
+        if (business != null && industry != null) {
+          context.read<WorkspaceAuthBloc>().add(
+            WorkspaceCategoryChanged('$business - $industry'),
+          );
+        }
+      },
+    );
+  }
+
+  /*StaticDropdown _buildBody2(BuildContext context, WorkspaceAuthState state) {
     return StaticDropdown<String>(
-      initialValue: serverEntity,
+      initialValue: initialValue,
       label: 'Workspace category',
       items: workspaceCategories,
       getValue: (type) => type,
@@ -80,7 +93,7 @@ class WorkspaceCategory extends StatelessWidget {
             : null,
       ),
     );
-  }
+  }*/
 }
 
 // Workspace name

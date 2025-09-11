@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class CustomTextField extends StatelessWidget {
   final int? maxLength;
   final int? maxLines;
+  final int? minLines;
   final bool? enable;
   final bool autofocus;
   final Color? fillColor;
@@ -36,6 +37,7 @@ class CustomTextField extends StatelessWidget {
     this.enable,
     this.maxLength,
     this.maxLines,
+    this.minLines,
     this.focusNode,
     this.fillColor,
     this.autofillHints,
@@ -77,6 +79,7 @@ class CustomTextField extends StatelessWidget {
             focusNode: focusNode,
             controller: controller,
             maxLines: maxLines,
+            minLines: minLines,
             maxLength: maxLength,
             onChanged: onChanged,
             inputDecoration: decoration,
@@ -89,6 +92,7 @@ class CustomTextField extends StatelessWidget {
             focusNode: focusNode,
             enabled: enable,
             maxLines: maxLines,
+            minLines: minLines,
             maxLength: maxLength,
             keyboardType: keyboardType,
             obscureText: obscureText,
@@ -128,6 +132,7 @@ class LowercaseTextField extends StatefulWidget {
   final int? maxLength;
   final bool autofocus;
   final int? maxLines;
+  final int? minLines;
   final bool? enable;
   final String? labelText;
   final String? helperText;
@@ -143,6 +148,7 @@ class LowercaseTextField extends StatefulWidget {
     super.key,
     this.enable,
     this.maxLines,
+    this.minLines,
     this.focusNode,
     this.labelText,
     this.validator,
@@ -172,6 +178,7 @@ class _LowercaseTextFieldState extends State<LowercaseTextField> {
       enabled: widget.enable,
       focusNode: widget.focusNode,
       maxLines: widget.maxLines,
+      minLines: widget.minLines,
       maxLength: widget.maxLength,
       keyboardType: TextInputType.text,
       textInputAction: widget.textInputAction,

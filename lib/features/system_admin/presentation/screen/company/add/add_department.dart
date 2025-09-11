@@ -45,28 +45,33 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
       final bloc = context.read<DepartmentBloc>();
 
       if (_serverDepartment != null) {
-        final updated = _departmentList.first.copyWith(
-          id: _serverDepartment!.id,
-          code: _serverDepartment!.code,
-          updatedBy: _employeeName,
-        );
+        final updated = _prepareUpdatedDepartment();
 
         bloc.add(
           UpdateSetup<Department>(documentId: updated.id, data: updated),
         );
+        context.showAlertOverlay('Changes successfully saved');
       } else {
-        final newDepartments = _prepareNewDepartment();
+        final newDepartments = _prepareNewDepartments();
         bloc.add(AddSetup<List<Department>>(data: newDepartments));
+
+        _formKey.currentState!.reset();
+        context.showAlertOverlay('Department(s) successfully created');
+        Navigator.pop(context);
       }
-
-      _formKey.currentState!.reset();
-
-      context.showAlertOverlay('Department(s) successfully created');
-      Navigator.pop(context);
     }
   }
 
-  List<Department> _prepareNewDepartment() {
+  Department _prepareUpdatedDepartment() {
+    final updated = _departmentList.first.copyWith(
+      id: _serverDepartment!.id,
+      code: _serverDepartment!.code,
+      updatedBy: _employeeName,
+    );
+    return updated;
+  }
+
+  List<Department> _prepareNewDepartments() {
     // Append department code to each department
     final newDeparts = _departmentList
         .map(
@@ -82,8 +87,9 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   // load existing departments
   void _loadExistingDeparts() {
     if (_serverDepartment != null) {
-      _departmentList.clear();
-      _departmentList.add(_serverDepartment!);
+      _departmentList
+        ..clear()
+        ..add(_serverDepartment!);
     }
   }
 
@@ -109,7 +115,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              showButton: _serverDepartment != null,
+              showButton: _serverDepartment == null,
               title: _serverDepartment?.name ?? 'Organization\'s Departments',
               fieldsConfig: _fieldsConfig,
               initialData: [?_serverDepartment?.toMap()],

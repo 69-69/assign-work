@@ -4,19 +4,7 @@ import 'package:equatable/equatable.dart';
 
 var _today = DateTime.now();
 
-class Supplier extends Equatable {
-  final String id;
-  final String name;
-  final String contactName;
-  final String phone;
-  final String? email;
-  final String address;
-  final String createdBy;
-  final DateTime createdAt;
-  final String updatedBy;
-  final DateTime updatedAt;
-
-  /*class ProductSupplier {
+/*class ProductSupplier {
   final String productId;
   final String supplierId; // foreign key to Procurement's Supplier
   final double price;
@@ -25,13 +13,39 @@ class Supplier extends Equatable {
   final bool isDefault;
 }*/
 
+class Supplier extends Equatable {
+  final String id;
+  final String name;
+  final String phone;
+  final String? email;
+  final String address;
+
+  /// Supplier Code
+  final String code;
+  final String businessType;
+  final String? bankDetails;
+  final String? taxDetails;
+
+  /// [items] Products or Services that supplier/vendor supplies
+  final String items;
+  final List<SupplierContactPerson> contactPersons;
+  final String createdBy;
+  final DateTime createdAt;
+  final String updatedBy;
+  final DateTime updatedAt;
+
   Supplier({
     this.id = '',
     required this.name,
-    this.phone = '',
+    required this.phone,
+    required this.code,
     this.email,
     required this.address,
-    required this.contactName,
+    required this.businessType,
+    this.bankDetails,
+    this.taxDetails,
+    required this.items,
+    required this.contactPersons,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -40,29 +54,46 @@ class Supplier extends Equatable {
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [Supplier.fromMap]
-  factory Supplier.fromMap(Map<String, dynamic> data, String documentId) {
+  factory Supplier.fromMap(Map<String, dynamic> map, {String? id}) {
     return Supplier(
-      id: documentId,
-      name: data['name'] ?? '',
-      phone: data['phone'] ?? '',
-      email: data['email'] ?? '',
-      address: data['address'] ?? '',
-      contactName: data['contactName'] ?? '',
-      createdBy: data['createdBy'] ?? '',
-      createdAt: toDateTimeFn(data['createdAt']),
-      updatedBy: data['updatedBy'] ?? '',
-      updatedAt: toDateTimeFn(data['updatedAt']),
+      id: id ?? map['id'] ?? '',
+      code: map['code'] ?? '',
+      name: map['name'] ?? '',
+      phone: map['phone'] ?? '',
+      email: map['email'] ?? '',
+      address: map['address'] ?? '',
+      items: map['items'] ?? '',
+      businessType: map['businessType'] ?? '',
+      bankDetails: map['bankDetails'] ?? '',
+      taxDetails: map['taxDetails'] ?? '',
+      contactPersons:
+          (map['contactPersons'] as List<dynamic>?)
+              ?.map(
+                (i) =>
+                    SupplierContactPerson.fromMap(Map<String, dynamic>.from(i)),
+              )
+              .toList() ??
+          [],
+      createdBy: map['createdBy'] ?? '',
+      createdAt: toDateTimeFn(map['createdAt']),
+      updatedBy: map['updatedBy'] ?? '',
+      updatedAt: toDateTimeFn(map['updatedAt']),
     );
   }
 
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'code': code,
     'name': name,
     'phone': phone,
     'email': email,
     'address': address,
-    'contactName': contactName,
+    'items': items,
+    'businessType': businessType,
+    'bankDetails': bankDetails,
+    'taxDetails': taxDetails,
+    'contactPersons': contactPersons.map((item) => item.toMap()).toList(),
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
@@ -89,14 +120,30 @@ class Supplier extends Equatable {
 
   /// A singleton instance representing an empty/default Supplier.
   /// Used as a fallback when no matching Supplier is found.
-  static get empty =>
-      Supplier(id: '', name: '', address: '', contactName: '', createdBy: '');
+  static get empty => Supplier(
+    id: '',
+    code: '',
+    name: '',
+    phone: '',
+    address: '',
+    items: '',
+    businessType: '',
+    contactPersons: const [],
+    createdBy: '',
+  );
 
   /// Returns true if this instance is the singleton [empty] Supplier.
   /// Use this to check if the Supplier is the default/fallback (e.g., not found).
   bool get isEmpty => identical(this, Supplier.empty);
 
   bool get isNotEmpty => !isEmpty;
+
+  get _parts => businessType.split(' - '); // business - industry
+  /// Business Type: Manufacturer, Distributor, Wholesaler, Retailer
+  String get getBusinessType => _parts.first;
+
+  /// Industry Type: Telecommunication, Clothing, Electronics, Furniture
+  String get getIndustryType => _parts.last;
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;
@@ -118,25 +165,33 @@ class Supplier extends Equatable {
   /// Filter Search
   bool filterByAny(String filter) =>
       id.contains(filter) ||
+      code.contains(filter) ||
       name.contains(filter) ||
       phone.contains(filter) ||
       email!.contains(filter) ||
-      contactName.contains(filter) ||
-      address.contains(filter);
+      address.contains(filter) ||
+      items.contains(filter) ||
+      businessType.contains(filter) ||
+      bankDetails!.contains(filter) ||
+      taxDetails!.contains(filter) ||
+      contactPersons.any((e) => e.filterByAny(filter));
 
-  /// [findCategoriesById]
-  static Iterable<Supplier> findCategoriesById(
-    List<Supplier> suppliers,
-    String id,
-  ) => suppliers.where((d) => d.id == id);
+  /// [findById]
+  static Supplier findById(List<Supplier> suppliers, String id) =>
+      suppliers.firstWhere((s) => s.id == id, orElse: () => Supplier.empty);
 
   /// copyWith method
   Supplier copyWith({
     String? id,
     String? name,
+    String? code,
     String? phone,
     String? address,
-    String? contactName,
+    String? items,
+    String? businessType,
+    String? bankDetails,
+    String? taxDetails,
+    List<SupplierContactPerson>? contactPersons,
     String? email,
     String? createdBy,
     DateTime? createdAt,
@@ -145,11 +200,16 @@ class Supplier extends Equatable {
   }) {
     return Supplier(
       id: id ?? this.id,
+      code: code ?? this.code,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       email: email ?? this.email,
+      items: items ?? this.items,
       address: address ?? this.address,
-      contactName: contactName ?? this.contactName,
+      businessType: businessType ?? this.businessType,
+      bankDetails: bankDetails ?? this.bankDetails,
+      taxDetails: taxDetails ?? this.taxDetails,
+      contactPersons: contactPersons ?? this.contactPersons,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -160,11 +220,15 @@ class Supplier extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    code,
     name,
     phone,
-    address,
-    contactName,
     email,
+    address,
+    businessType,
+    bankDetails,
+    taxDetails,
+    contactPersons,
     createdBy,
     createdAt,
     updatedBy,
@@ -175,7 +239,6 @@ class Supplier extends Equatable {
   List<String> toListL() => [
     id,
     name.toTitle,
-    contactName.toTitle,
     phone,
     (email ?? 'none').toLowerAll,
     address.toSentence,
@@ -187,14 +250,105 @@ class Supplier extends Equatable {
 
   static List<String> get dataHeader => const [
     'ID',
-    'Supplier Name',
-    'Contact Name',
+    'Supplier',
     'Phone',
     'Email',
-    'Address / Location',
+    'Address',
     'Created By',
     'Created At',
     'Updated By',
     'Updated At',
+  ];
+}
+
+/// RFQ Line Items
+class SupplierContactPerson extends Equatable {
+  final String name;
+  final String email;
+  final String phone;
+  final String department;
+  final String position;
+  final DateTime createdAt;
+
+  SupplierContactPerson({
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.department,
+    required this.position,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? _today;
+
+  factory SupplierContactPerson.fromMap(Map<String, dynamic> data) {
+    return SupplierContactPerson(
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'] ?? '',
+      department: data['department'] ?? '',
+      position: data['position'] ?? '',
+      createdAt: toDateTimeFn(data['createdAt']),
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'email': email,
+    'phone': phone,
+    'department': department,
+    'position': position,
+    'createdAt': createdAt.toISOString,
+  };
+
+  SupplierContactPerson copyWith({
+    String? name,
+    String? email,
+    String? phone,
+    String? department,
+    String? position,
+    DateTime? createdAt,
+  }) => SupplierContactPerson(
+    name: name ?? this.name,
+    email: email ?? this.email,
+    phone: phone ?? this.phone,
+    department: department ?? this.department,
+    position: position ?? this.position,
+    createdAt: createdAt ?? this.createdAt,
+  );
+
+  String get getCreatedAt => createdAt.toStandardDT;
+
+  bool filterByAny(String filter) =>
+      name.contains(filter) ||
+      email.contains(filter) ||
+      phone.contains(filter) ||
+      department.contains(filter) ||
+      position.contains(filter);
+
+  @override
+  List<Object?> get props => [
+    name,
+    email,
+    phone,
+    department,
+    position,
+    createdAt,
+  ];
+
+  static List<String> get dataTableHeader => const [
+    'Name',
+    'Email',
+    'Phone',
+    'Department',
+    'Position',
+    'Created At',
+  ];
+
+  List<String> get itemAsList => [
+    name.toTitle,
+    email.toLowerAll,
+    phone,
+    department.toTitle,
+    position.toTitle,
+    createdAt.toStandardDT,
   ];
 }

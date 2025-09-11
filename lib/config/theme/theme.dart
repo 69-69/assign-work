@@ -159,18 +159,18 @@ class MaterialTheme {
         ),
         indicatorColor: colorScheme.onPrimaryContainer,
       ),
+      checkboxTheme: CheckboxThemeData(
+        checkColor: WidgetStatePropertyAll(colorScheme.inversePrimary),
+      ),
       timePickerTheme: TimePickerThemeData(
         confirmButtonStyle: dtBtn,
         cancelButtonStyle: dtBtn,
       ),
-      checkboxTheme: CheckboxThemeData(
-        checkColor: WidgetStatePropertyAll(colorScheme.inversePrimary),
-      ),
       datePickerTheme: DatePickerThemeData(
         confirmButtonStyle: dtBtn,
         cancelButtonStyle: dtBtn,
-        todayForegroundColor: dtColor,
-        dayForegroundColor: dtColor,
+        todayForegroundColor: WidgetStatePropertyAll(colorScheme.outline),
+        dayForegroundColor: WidgetStatePropertyAll(colorScheme.outline),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,

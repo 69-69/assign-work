@@ -190,7 +190,7 @@ class RFQPdfBuilder {
                     style: pw.TextStyle(
                       fontWeight: pw.FontWeight.normal,
                       fontSize: 12,
-                      color: _pdfColors.headerColor,
+                      color: _pdfColors.blackColor,
                     ),
                   ),
                 ],

@@ -6,7 +6,7 @@ class SupplierBloc extends SetupBloc<Supplier> {
   SupplierBloc({required super.firestore})
     : super(
         collectionPath: supplierDBCollectionPath,
-        fromFirestore: (data, id) => Supplier.fromMap(data, id),
+        fromFirestore: (data, id) => Supplier.fromMap(data, id: id),
         toFirestore: (info) => info.toMap(),
         toCache: (info) => info.toCache(),
       );

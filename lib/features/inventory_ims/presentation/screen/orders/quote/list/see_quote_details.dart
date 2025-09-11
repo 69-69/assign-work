@@ -18,7 +18,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';*/
 
 extension RFQDetails on BuildContext {
-  Future openSeeDetails({
+  Future openRFQDetails({
     required Supplier supplier,
     required RequestForQuote quote,
   }) => openBottomSheet(
@@ -28,7 +28,7 @@ extension RFQDetails on BuildContext {
       isDetails: true,
       title: quote.title.toTitle,
       subtitle: quote.rfqNumber.toUpperAll,
-      body: RFQPrintoutPage(quote: quote, supplier: supplier.name),
+      body: _RFQInfoPage(quote: quote, supplier: supplier.name),
       onPrint: () async => await _printRFQ(this, quote, supplier),
     ),
   );
@@ -197,31 +197,39 @@ extension RFQDetails on BuildContext {
   }*/
 }
 
-class RFQPrintoutPage extends StatelessWidget {
-  final String supplier;
-  final RequestForQuote? quote;
+class _RFQInfoPage extends StatelessWidget {
+  final String _supplier;
+  final RequestForQuote? _quote;
 
-  const RFQPrintoutPage({super.key, this.quote, this.supplier = ''});
+  const _RFQInfoPage({RequestForQuote? quote, String supplier = ''})
+    : _quote = quote,
+      _supplier = supplier;
 
-  List<RFQLineItem> get _items => quote?.lineItems ?? [];
+  List<RFQLineItem> get _items => _quote?.lineItems ?? [];
 
-  double get _subtotal => quote?.subTotal ?? 0.0;
+  double get _subtotal => _quote?.subTotal ?? 0.0;
 
-  double get _totalTax => quote?.taxAmount ?? 0.0;
+  double get _totalTax => _quote?.taxAmount ?? 0.0;
 
-  double get _totalDiscount => quote?.discountAmount ?? 0.0;
+  double get _totalDiscount => _quote?.discountAmount ?? 0.0;
 
-  double get _grandTotal => quote?.netTotal ?? 0.0;
+  double get _grandTotal => _quote?.netTotal ?? 0.0;
 
-  TaxMode? get _taxMode => quote?.taxMode;
+  TaxMode? get _taxMode => _quote?.taxMode;
 
   bool get _isPerLineTax => (_taxMode?.isPerLineTax ?? false);
 
-  String? get _currencySign => getCurrencySign(quote?.currency ?? 'GHC');
+  String? get _currencySign => getCurrencySign(_quote?.currency ?? ghanaCedis);
+
+  String? get _updatedBy =>
+      _quote!.updatedBy.isNullOrEmpty ? 'N/A' : _quote.updatedBy;
+
+  String? get _createdBy =>
+      _quote!.createdBy.isNullOrEmpty ? 'N/A' : _quote.createdBy;
 
   @override
   Widget build(BuildContext context) {
-    if (quote == null) {
+    if (_quote == null) {
       return const Center(child: Text("No RFQ data available."));
     }
 
@@ -236,7 +244,17 @@ class RFQPrintoutPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(context),
-        const SizedBox(height: 16),
+
+        /// Table Headers
+        Align(
+          alignment: Alignment.center,
+          child: Text(
+            'Line Items (${_items.length})',
+            style: context.textTheme.titleLarge?.copyWith(
+              color: context.secondaryColor,
+            ),
+          ),
+        ),
         HorizontalDivider(),
 
         /// Table Headers
@@ -313,31 +331,31 @@ class RFQPrintoutPage extends StatelessWidget {
         _buildInfoRow(
           context,
           title: 'RFQ #',
-          value: quote?.rfqNumber ?? 'N/A',
+          value: _quote?.rfqNumber ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           title: 'Store ID',
-          value: quote?.storeNumber.toUpperAll ?? 'N/A',
+          value: _quote?.storeNumber.toUpperAll ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           title: 'Status',
-          value: quote?.status.toSentence ?? 'N/A',
+          value: _quote?.status.toSentence ?? 'N/A',
         ),
-        if (quote?.department.isNotEmpty ?? false)
+        if (_quote?.department.isNotEmpty ?? false)
           _buildInfoRow(
             context,
             title: 'Department',
-            value: quote!.department.toTitle,
+            value: _quote!.department.toTitle,
           ),
-        if (quote?.taxMode.getValue.isNotEmpty ?? false)
+        if (_quote?.taxMode.getValue.isNotEmpty ?? false)
           _buildInfoRow(
             context,
             title: 'Tax Mode',
             value: (_taxMode?.getValue.separateWord).toTitle,
           ),
-        _buildInfoRow(context, title: 'Vendor', value: supplier.toUpperAll),
+        _buildInfoRow(context, title: 'Vendor', value: _supplier.toUpperAll),
       ],
     );
   }
@@ -410,36 +428,36 @@ class RFQPrintoutPage extends StatelessWidget {
           _buildInfoRow(
             context,
             title: 'Deadline',
-            value: quote!.getDeadlineDate,
+            value: _quote!.getDeadlineDate,
           ),
           _buildInfoRow(
             context,
             title: 'Delivery',
-            value: quote!.getDeliveryDate,
+            value: _quote.getDeliveryDate,
           ),
           if (!_isPerLineTax) ...{
             _buildInfoRow(
               context,
               title: 'Applied Taxes',
-              value: quote?.lineItems.first.taxNames.toUpperAll ?? 'N/A',
+              value: _quote.lineItems.first.taxNames.toUpperAll,
             ),
           },
-          if (quote?.deliveryAddress?.isNotEmpty ?? false) ...[
+          if (_quote.deliveryAddress?.isNotEmpty ?? false) ...[
             const SizedBox(height: 8),
             _buildInfoRow(
               context,
               separator: ':\n',
               title: 'Delivery Address',
-              value: quote!.deliveryAddress.toSentence,
+              value: _quote.deliveryAddress.toSentence,
             ),
           ],
-          if (quote?.notes?.isNotEmpty ?? false) ...[
+          if (_quote.notes?.isNotEmpty ?? false) ...[
             const SizedBox(height: 8),
             _buildInfoRow(
               context,
               separator: ':\n',
               title: 'Additional Notes',
-              value: quote!.notes.toSentence,
+              value: _quote.notes.toSentence,
             ),
           ],
         ],
@@ -490,14 +508,12 @@ class RFQPrintoutPage extends StatelessWidget {
           _buildInfoRow(
             context,
             title: 'Created',
-            value:
-                '${quote?.getCreatedAt} - By: [ ${quote?.createdBy.toTitle} ]',
+            value: '${_quote?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
           ),
           _buildInfoRow(
             context,
             title: 'Last Updated',
-            value:
-                '${quote?.getUpdatedAt} - By: [ ${quote?.updatedBy.toTitle} ]',
+            value: '${_quote!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
           ),
         ],
       ),

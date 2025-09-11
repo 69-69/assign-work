@@ -6,6 +6,7 @@ import 'package:assign_erp/features/system_admin/data/models/supplier_model.dart
 import 'package:assign_erp/features/system_admin/presentation/bloc/product_config/suppliers_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/add/add_suppliers.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/item_config/list/see_supplier_details.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/update/update_supplier.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -58,6 +59,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
       anyWidgetAlignment: WrapAlignment.spaceBetween,
       anyWidget: _buildAnyWidget(suppliers),
       rows: suppliers.map((d) => d.toListL()).toList(),
+      onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.first),
       onEditTap: (row) async => _onEditTap(suppliers, row.first),
       onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),
     );
@@ -87,12 +89,29 @@ class _ListSuppliersState extends State<ListSuppliers> {
   }
 
   Future<void> _onEditTap(List<Supplier> suppliers, String id) async {
-    final supplier = Supplier.findCategoriesById(suppliers, id).first;
+    Supplier? supplier = _getSupplierById(suppliers, id);
+    if (supplier == null) return;
+
     await context.openUpdateSupplier(supplier: supplier);
   }
 
+  Future<void> _onViewDetails(List<Supplier> suppliers, String id) async {
+    Supplier? supplier = _getSupplierById(suppliers, id);
+    if (supplier == null) return;
+
+    if (mounted) {
+      await context.openSupplierDetails(supplier: supplier);
+    }
+  }
+
+  Supplier? _getSupplierById(List<Supplier> suppliers, String id) {
+    final supplier = Supplier.findById(suppliers, id);
+    return supplier.isEmpty ? null : supplier;
+  }
+
   Future<void> _onDeleteTap(List<Supplier> suppliers, String id) async {
-    final supplier = Supplier.findCategoriesById(suppliers, id).first;
+    Supplier? supplier = _getSupplierById(suppliers, id);
+    if (supplier == null) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {

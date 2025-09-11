@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -54,11 +53,12 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   DateTime? _selectedDeadlineDate;
   DateTime? _selectedDeliveryDate;
   final _titleController = TextEditingController();
-  final _notesController = TextEditingController();
-  final _addressController = TextEditingController();
 
   // Add a list to manage line items
   final List<RFQLineItem> _lineItems = [];
+  final Map<String, dynamic> _addressAndNotes = {};
+
+  bool get isFormValid => _formKey.currentState!.validate();
 
   @override
   void initState() {
@@ -86,31 +86,34 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     supplierId: _selectedSupplierId,
     currency: _currency,
     title: _titleController.text,
-    notes: _notesController.text,
-    deliveryAddress: _addressController.text,
-    lineItems: List.from(_lineItems),
     deadline: _selectedDeadlineDate,
     deliveryDate: _selectedDeliveryDate,
     storeNumber: context.employee!.storeNumber,
+    notes: _addressAndNotes['notes'],
+    deliveryAddress: _addressAndNotes['deliveryAddress'],
+    lineItems: List.from(_lineItems),
     createdBy: context.employee!.fullName,
   );
 
   void _onSubmit() {
-    if (_formKey.currentState!.validate() && _newQuote.isNotEmpty) {
-      final bloc = context.read<RequestForQuoteBloc>();
-
-      bloc.add(AddInventory<RequestForQuote>(data: _newQuote));
-
-      _confirmPrintoutDialog().then((_) => _resetForm());
+    if (!isFormValid && _newQuote.isEmpty) {
+      context.showAlertOverlay(
+        'Please fill in all required fields',
+        bgColor: kDangerColor,
+      );
+      return;
     }
+    final bloc = context.read<RequestForQuoteBloc>();
+
+    bloc.add(AddInventory<RequestForQuote>(data: _newQuote));
+
+    _confirmPrintoutDialog().then((_) => _resetForm());
   }
 
   void _resetForm() {
     if (mounted) {
-      _formKey.currentState?.reset(); // reset validators
+      _formKey.currentState?.reset();
       _titleController.clear();
-      _addressController.clear();
-      _notesController.clear();
       _generateRFQNumber(); // get a new RFQ number
 
       setState(() {
@@ -121,6 +124,7 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
         _selectedDeadlineDate = null;
         _selectedDeliveryDate = null;
         _lineItems.clear();
+        _addressAndNotes.clear();
       });
     }
   }
@@ -160,8 +164,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              showButton: true,
               title: 'Products / Services',
+              initialData: [{}],
+              showButton: true,
               fieldsConfig: [
                 FieldGroupConfig(
                   key: 'itemName',
@@ -174,12 +179,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
                   type: TextInputType.number,
                 ),
               ],
-              initialData: [{}],
               onChanged: (List<Map<String, dynamic>> data) {
-                if (_formKey.currentState!.validate()) setState(() {});
-                prettyPrint('Data', data);
+                if (isFormValid) setState(() {});
 
-                // Create a new line item
                 _lineItems
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map((e) => RFQLineItem.fromMap(e)));
@@ -206,13 +208,35 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
         ),
 
         FormGroupCard(
-          title: 'Delivery Address and Notes',
           children: [
-            DeliveryAddressAndNotes(
-              notesController: _notesController,
-              addressController: _addressController,
-              onAddressChanged: (t) => setState(() {}),
-              onNotesChanged: (t) => setState(() {}),
+            DynamicTextFields(
+              title: 'Delivery Address and Notes',
+              initialData: [{}],
+              fieldsConfig: [
+                FieldGroupConfig(
+                  key: 'deliveryAddress',
+                  label: 'Delivery address (if any)...',
+                  type: TextInputType.multiline,
+                  isTextArea: true,
+                  minLines: 3,
+                  validator: (_) => null,
+                ),
+                FieldGroupConfig(
+                  key: 'notes',
+                  label: 'Additional Notes (if any)...',
+                  type: TextInputType.multiline,
+                  isTextArea: true,
+                  minLines: 3,
+                  validator: (_) => null,
+                ),
+              ],
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (isFormValid) setState(() {});
+
+                _addressAndNotes
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.first);
+              },
             ),
           ],
         ),

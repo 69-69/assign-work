@@ -195,10 +195,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
           return AutoApplyTaxOnDropdown(
             initialValues: TaxContextHelper.parseList(initialData),
             onMultiChanged: onChanged,
-            /*onMultiChanged: (List<TaxContext> selected) {
-              final taxContexts = selected.map((e) => e.getValue).toList();
-              onChanged(taxContexts);
-            },*/
+            // final taxContexts = selected.map((e) => e.getValue).toList();
           );
         },
       ),

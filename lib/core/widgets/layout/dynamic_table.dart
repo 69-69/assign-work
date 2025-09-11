@@ -557,7 +557,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           /// View Details Link
           if (widget.onViewDetailsTap != null) ...{
             DataCell(
-              _ViewDetails(
+              _ViewDetailsButton(
                 label: widget.viewDetailsLabel,
                 onTap: () => widget.onViewDetailsTap!(row),
               ),
@@ -765,11 +765,11 @@ class _DataTableHelper {
   }
 }
 
-class _ViewDetails extends StatelessWidget {
+class _ViewDetailsButton extends StatelessWidget {
   final String? label;
   final VoidCallback onTap;
 
-  const _ViewDetails({required this.onTap, this.label});
+  const _ViewDetailsButton({required this.onTap, this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -948,7 +948,11 @@ class _ToggleMaskButton extends StatelessWidget {
       onPressed: onPressed,
       label: isToggle
           ? context.copyPasteText(str: rowValue)
-          : const Text('***', overflow: TextOverflow.ellipsis),
+          : Text(
+              '***',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: context.onSurfaceColor),
+            ),
     );
   }
 }

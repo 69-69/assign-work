@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,8 +36,9 @@ extension GetIndexPosition on List {
 
 /// Copy/Paste text or string to/from Clipboard
 extension CopyTextToClipboard on BuildContext {
-  SelectionArea copyPasteText({String? str, Widget? child}) =>
-      SelectionArea(child: child ?? Text(str ?? ''));
+  SelectionArea copyPasteText({String? str, Widget? child}) => SelectionArea(
+    child: child ?? Text(str ?? '', style: TextStyle(color: onSurfaceColor)),
+  );
 
   toClipboard(String text) async =>
       await Clipboard.setData(ClipboardData(text: text));

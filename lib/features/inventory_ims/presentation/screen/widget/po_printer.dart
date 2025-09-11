@@ -65,7 +65,7 @@ class POPrinter {
       supplierName: _toCap(supplier.name),
       supplierAddress: _toCap(supplier.address),
       supplierPhone: supplier.phone,
-      contactName: _toCap(supplier.contactName),
+      contactName: _toCap(supplier.contactPersons.first.name),
       // baseColor: PdfColors.teal,
       // accentColor: PdfColors.blueGrey900,
     );

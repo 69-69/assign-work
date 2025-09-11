@@ -162,6 +162,25 @@ class Employee extends Equatable {
     return createdAt.isAfter(_today) && createdAt.isBefore(oneWeekFromNow);
   }
 
+  /// A singleton instance representing an empty/default Employee.
+  /// Used as a fallback when no matching Employee is found.
+  static final Employee empty = Employee(
+    id: '',
+    workspaceId: '',
+    fullName: '',
+    mobileNumber: '',
+    role: '',
+    roleId: '',
+    departmentCode: '',
+    email: '',
+    status: '',
+    createdBy: '',
+  );
+
+  /// Returns true if this instance is the singleton [empty] Employee.
+  /// Use this to check if the Employee is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, Employee.empty);
+
   /// Verified Status [isActive]
   bool get isActive => status == AccountStatus.enabled.getValue;
 
@@ -170,6 +189,20 @@ class Employee extends Equatable {
 
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
+
+  String get itemAsString => '$fullName $role'.toTitle;
+
+  /// Filter Search
+  bool filterByAny(String filter) =>
+      fullName.contains(filter) ||
+      role.contains(filter) ||
+      departmentCode.contains(filter) ||
+      mobileNumber.contains(filter) ||
+      email.contains(filter) ||
+      employeeId.contains(filter) ||
+      status.contains(filter) ||
+      storeNumber.contains(filter) ||
+      username.contains(filter);
 
   /// [findById]
   static Iterable<Employee> findById(List<Employee> employees, String id) =>
@@ -204,7 +237,7 @@ class Employee extends Equatable {
   ];
 
   /// ToList for Employee [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     employeeId,
     status.toTitle,

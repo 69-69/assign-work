@@ -1,13 +1,15 @@
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/business_type_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/product_config/suppliers_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,50 +34,49 @@ class _UpdateSupplierForm extends StatefulWidget {
 }
 
 class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
-  Supplier get _supplier => widget.supplier;
+  Supplier get _serverSupplier => widget.supplier;
 
   final _formKey = GlobalKey<FormState>();
-  late final _nameController = TextEditingController(text: _supplier.name);
-  late final _contactPersonNameController = TextEditingController(
-    text: _supplier.contactName,
-  );
-  late final _phoneController = TextEditingController(text: _supplier.phone);
-  late final _emailController = TextEditingController(text: _supplier.email);
-  late final _addressController = TextEditingController(
-    text: _supplier.address,
-  );
+  final List<Supplier> _suppliers = [];
+  final List<SupplierContactPerson> _contactPersons = [];
+
+  bool get isFormValid => _formKey.currentState!.validate();
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _addressController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
   void _onSubmit() {
-    if (_formKey.currentState!.validate()) {
-      final item = _supplier.copyWith(
-        name: _nameController.text,
-        contactName: _contactPersonNameController.text,
-        phone: _phoneController.text,
-        email: _emailController.text,
-        address: _addressController.text,
-        createdBy: _supplier.createdBy,
-        updatedBy: context.employee!.fullName,
-      );
+    if (_serverSupplier.isNotNullNorEmpty) {
+      final updated = _prepareUpdatedSupplier();
 
-      /// Update Suppliers
       context.read<SupplierBloc>().add(
-        UpdateSetup<Supplier>(documentId: _supplier.id, data: item),
+        UpdateSetup<Supplier>(documentId: _serverSupplier.id, data: updated),
       );
 
       context.showAlertOverlay(
-        '${_nameController.text.toTitle} successfully updated',
+        'Changes successfully saved',
+        popContext: () => Navigator.pop(context),
       );
-
-      Navigator.pop(context);
     }
+  }
+
+  Supplier _prepareUpdatedSupplier() {
+    final supplier = _suppliers.first;
+
+    return _serverSupplier.copyWith(
+      name: supplier.name,
+      phone: supplier.phone,
+      email: supplier.email,
+      address: supplier.address,
+      items: supplier.items,
+      businessType: supplier.businessType,
+      bankDetails: supplier.bankDetails,
+      taxDetails: supplier.taxDetails,
+      contactPersons: List.from(_contactPersons),
+      updatedBy: context.employee?.fullName ?? 'unknown',
+    );
   }
 
   @override
@@ -91,27 +92,142 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        const SizedBox(height: 20.0),
-        SupplierNameAndContactPersonNameInput(
-          supplierNameController: _nameController,
-          contactPersonNameController: _contactPersonNameController,
-          onSupplierNameChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onContactPersonNameChanged: (s) => setState(() {}),
+        FormGroupCard(
+          children: [
+            DynamicTextFields(
+              title: 'Supplier (Vendor) Details',
+              initialData: [_serverSupplier.toMap()],
+              fieldsConfig: _supplierFieldConfig,
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (isFormValid) setState(() {});
+
+                _suppliers
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.map((e) => Supplier.fromMap(e)));
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 20.0),
-        SupplierPhoneAndEmailInput(
-          phoneController: _phoneController,
-          emailController: _emailController,
-          onEmailChanged: (s) => setState(() {}),
-          onPhoneChanged: (s) => setState(() {}),
+        FormGroupCard(
+          children: [
+            DynamicTextFields(
+              title: 'Contact Person Details',
+              initialData: _serverSupplier.contactPersons
+                  .map((e) => e.toMap())
+                  .toList(),
+              showButton: true,
+              fieldsConfig: _contactPersonFieldConfig,
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (isFormValid) setState(() {});
+
+                _contactPersons
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.map((e) => SupplierContactPerson.fromMap(e)));
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 20.0),
-        AddressTextField(controller: _emailController),
-        const SizedBox(height: 20.0),
+
         context.confirmableActionButton(onPressed: _onSubmit),
+        const SizedBox(height: 20.0),
       ],
     );
   }
+
+  final _supplierFieldConfig = [
+    FieldGroupConfig(
+      key: 'name',
+      label: 'Company Name',
+      type: TextInputType.text,
+    ),
+    FieldGroupConfig(
+      key: 'email',
+      label: 'Email',
+      type: TextInputType.emailAddress,
+    ),
+    FieldGroupConfig(
+      key: 'phone',
+      label: 'Mobile Number',
+      type: TextInputType.phone,
+    ),
+    FieldGroupConfig(
+      key: 'businessType',
+      label: 'Business type',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        final parts = initialData?.toString().split('-') ?? [];
+
+        final initialBusiness = parts.length >= 2 ? parts.first.trim() : '';
+        final initialIndustry = parts.length >= 2 ? parts.last.trim() : '';
+
+        return BusinessToIndustriesDropdown(
+          initialBusiness: initialBusiness,
+          initialIndustry: initialIndustry,
+          onIndustryChanged: (String? business, String? industry) {
+            if (business != null && industry != null) {
+              onChanged('$business - $industry');
+            }
+          },
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'address',
+      label: 'Address info',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      minLines: 3,
+    ),
+    FieldGroupConfig(
+      key: 'items',
+      label: 'Products / services offered',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      minLines: 3,
+    ),
+    FieldGroupConfig(
+      key: 'bankDetails',
+      label: 'Bank Details',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      minLines: 3,
+      helperText:
+          'Bank Name, Account Number, Account Holder Name, Swift Code, etc.',
+    ),
+    FieldGroupConfig(
+      key: 'taxDetails',
+      label: 'Tax Details',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      minLines: 3,
+      helperText: 'TIN or GST, etc.',
+    ),
+  ];
+
+  final _contactPersonFieldConfig = [
+    FieldGroupConfig(key: 'name', label: 'Name', type: TextInputType.text),
+    FieldGroupConfig(
+      key: 'email',
+      label: 'Email',
+      type: TextInputType.emailAddress,
+    ),
+    FieldGroupConfig(
+      key: 'phone',
+      label: 'Mobile Number',
+      type: TextInputType.phone,
+    ),
+    FieldGroupConfig(
+      key: 'position',
+      label: 'Position',
+      type: TextInputType.text,
+      helperText: 'E.g., Manager, Procurement officer,...',
+    ),
+    FieldGroupConfig(
+      key: 'department',
+      label: 'Department',
+      type: TextInputType.text,
+      helperText: 'E.g., Sales, Purchasing,...',
+    ),
+  ];
 }

@@ -154,7 +154,7 @@ class PrintItem {
   double get _discountAmt => (discount / 100) * _subTotal;
 
   /// NetPrice: Is after discount is applied to subTotal [totalNetPrice]
-  double get totalNetPrice => _subTotal - _discountAmt;
+  double get totalNetPrice => _subTotal - _discountAmt + (taxAmount ?? 0.0);
 
   String getIndex(String label, int index) {
     // final  skuLength = sku != null ? (sku!.length ~/ 2) : 0;

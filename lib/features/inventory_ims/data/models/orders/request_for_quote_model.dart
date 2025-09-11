@@ -23,6 +23,7 @@ class RequestForQuote extends Equatable {
   final String title;
   final String currency;
   final String department;
+
   final List<RFQLineItem> lineItems;
   final TaxMode taxMode;
   // final List<String> taxCodes;

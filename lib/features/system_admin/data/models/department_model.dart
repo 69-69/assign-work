@@ -80,7 +80,18 @@ class Department extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => name.isEmpty;
+  /// A singleton instance representing an empty/default Department.
+  /// Used as a fallback when no matching Department is found.
+  static final Department empty = Department(
+    id: '',
+    name: '',
+    code: '',
+    createdBy: '',
+  );
+
+  /// Returns true if this instance is the singleton [empty] Department.
+  /// Use this to check if the Department is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, Department.empty);
 
   bool get isNotEmpty => !isEmpty;
 

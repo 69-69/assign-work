@@ -52,7 +52,7 @@ class _ListStaffsState extends State<ListStaffs> {
       headers: Employee.dataTableHeader,
       anyWidget: _buildAnyWidget(),
       anyWidgetAlignment: WrapAlignment.end,
-      rows: employees.map((d) => d.itemAsList()).toList(),
+      rows: employees.map((d) => d.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(employees, row.first, isChecked),
       onEditTap: (row) async => _onEditTap(employees, row.first),

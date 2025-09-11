@@ -116,7 +116,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       children: [
         WorkspaceRoleDropdown(
           key: const Key('edit-workspace-role'),
-          serverRole: _workspace.role.name,
+          initialValue: _workspace.role.name,
           onRoleChanged: (v) =>
               v.isNullOrEmpty ? null : _updateWorkspaceRole(v!),
         ),

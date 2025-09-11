@@ -26,15 +26,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension UpdateRequestForQuotationForm on BuildContext {
-  Future openUpdateRequestForQuotation({required RequestForQuote quote}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: FormBottomSheet(
-          title: 'Edit Request For Quote',
-          subtitle: quote.rfqNumber.toUpperAll,
-          body: _UpdateRequestForQuote(quote: quote),
-        ),
-      );
+  Future openUpdateRequestForQuote({required RequestForQuote quote}) async {
+    if (quote.id.isEmpty) return;
+
+    return await openBottomSheet(
+      isExpand: false,
+      child: FormBottomSheet(
+        title: 'Edit Request For Quote',
+        subtitle: quote.rfqNumber.toUpperAll,
+        body: _UpdateRequestForQuote(quote: quote),
+      ),
+    );
+  }
 }
 
 class _UpdateRequestForQuote extends StatefulWidget {
@@ -60,73 +63,68 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   DateTime? _selectedDeadlineDate;
   DateTime? _selectedDeliveryDate;
   DateTime? _selectedValidityDate;
-  final _notesController = TextEditingController();
   final _titleController = TextEditingController();
-  final _addressController = TextEditingController();
 
   final List<String> _taxCodes = [];
   // Add a list to manage line items
   final List<RFQLineItem> _lineItems = [];
-  RequestForQuote? get _quote => widget.quote;
+  final Map<String, dynamic> _addressAndNotes = {};
 
-  List<String> get _initialHeaderTaxes => _quote?.taxMode == TaxMode.headerTax
-      ? List.from(_quote?.lineItems.first.taxCodes ?? [])
+  RequestForQuote get _serverQuote => widget.quote;
+
+  List<String> get _initialHeaderTaxes =>
+      _serverQuote.taxMode == TaxMode.headerTax
+      ? List.from(_serverQuote.lineItems.first.taxCodes)
       : [];
 
-  bool get _isValid => _formKey.currentState?.validate() ?? false;
+  bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
   @override
   void initState() {
     super.initState();
-    if (_quote != null) {
-      _taxModeToApply = _quote?.taxMode;
-      _titleController.text = _quote?.title ?? '';
-      _notesController.text = _quote?.notes ?? '';
-      _addressController.text = _quote?.deliveryAddress ?? '';
-      _lineItems.addAll(_quote!.lineItems);
-    }
+    _taxModeToApply = _serverQuote.taxMode;
+    _titleController.text = _serverQuote.title;
+    _addressAndNotes.addAll({
+      'notes': _serverQuote.notes,
+      'deliveryAddress': _serverQuote.deliveryAddress,
+    });
+    _lineItems.addAll(_serverQuote.lineItems);
   }
 
   @override
   void dispose() {
-    _notesController.dispose();
     super.dispose();
   }
 
-  RequestForQuote? get _updatedQuote {
-    if (_quote == null) return null;
-
-    return _quote!.copyWith(
-      taxMode: _taxModeToApply,
-      title: _titleController.text,
-      notes: _notesController.text,
-      deliveryAddress: _addressController.text,
-      status: _selectedRFQStatus ?? _quote!.status,
-      currency: _currency ?? _quote!.currency,
-      department: _department ?? _quote!.department,
-      supplierId: _selectedSupplierId ?? _quote!.supplierId,
-      lineItems: List.from(_lineItems),
-      deadline: _selectedDeadlineDate ?? _quote!.deadline,
-      paymentTerm: _selectedPaymentTerm ?? _quote!.paymentTerm,
-      deliveryDate: _selectedDeliveryDate ?? _quote!.deliveryDate,
-      validityDate: _selectedValidityDate != null
-          ? '${_selectedValidityDate!.toDays} days'
-          : _quote!.validityDate,
-      updatedBy: context.employee!.fullName,
-    );
-  }
+  RequestForQuote get _updatedQuote => _serverQuote.copyWith(
+    taxMode: _taxModeToApply,
+    title: _titleController.text,
+    notes: _addressAndNotes['notes'],
+    deliveryAddress: _addressAndNotes['deliveryAddress'],
+    status: _selectedRFQStatus ?? _serverQuote.status,
+    currency: _currency ?? _serverQuote.currency,
+    department: _department ?? _serverQuote.department,
+    supplierId: _selectedSupplierId ?? _serverQuote.supplierId,
+    lineItems: List.from(_lineItems),
+    deadline: _selectedDeadlineDate ?? _serverQuote.deadline,
+    paymentTerm: _selectedPaymentTerm ?? _serverQuote.paymentTerm,
+    deliveryDate: _selectedDeliveryDate ?? _serverQuote.deliveryDate,
+    validityDate: _selectedValidityDate != null
+        ? '${_selectedValidityDate!.toDays} days'
+        : _serverQuote.validityDate,
+    updatedBy: context.employee!.fullName,
+  );
 
   void _onSubmit() {
-    final updatedQuote = _updatedQuote;
-    if (!_isValid || _lineItems.isNullOrEmpty || updatedQuote == null) {
+    if (!isFormValid || _lineItems.isNullOrEmpty) {
       context.showAlertOverlay(
-        'Unable to update RFQ — missing quote data.',
+        'Please enter all required fields',
         bgColor: kDangerColor,
       );
       return;
     }
 
-    final sanitizedQuote = _sanitizeTaxCodes(updatedQuote);
+    final sanitizedQuote = _sanitizeTaxCodes(_updatedQuote);
 
     final bloc = context.read<RequestForQuoteBloc>();
     bloc.add(
@@ -136,7 +134,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       ),
     );
 
-    context.showAlertOverlay('RFQ no.: ${_quote?.rfqNumber} has been updated');
+    context.showAlertOverlay('Changes successfully saved');
 
     _confirmPrintoutDialog();
   }
@@ -171,13 +169,13 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
             TitleAndDepartments(
               controller: _titleController,
               onChanged: (t) => setState(() {}),
-              initialDepartment: _quote?.department ?? '',
+              initialDepartment: _serverQuote.department,
               onDepartmentChange: (id, code, name) =>
                   setState(() => _department = name),
             ),
             SuppliersAndRFQStatusDropdown(
-              initialSupplier: _quote?.supplierId ?? '',
-              initialStatus: _quote?.status,
+              initialSupplier: _serverQuote.supplierId,
+              initialStatus: _serverQuote.status,
               onSupplierChanged: (id, name) =>
                   setState(() => _selectedSupplierId = id),
               onStatusChanged: (s) => setState(() => _selectedRFQStatus = s),
@@ -190,10 +188,12 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
             DynamicTextFields(
               showButton: true,
               title: 'Products / Services',
-              fieldsConfig: _fieldsConfig,
-              initialData: _quote?.lineItems.map((e) => e.toMap()).toList(),
+              fieldsConfig: _itemsFieldsConfig,
+              initialData: _serverQuote.lineItems
+                  .map((e) => e.toMap())
+                  .toList(),
               onChanged: (List<Map<String, dynamic>> data) {
-                if (_isValid) setState(() {});
+                if (isFormValid) setState(() {});
                 _lineItems
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map((e) => RFQLineItem.fromMap(e)));
@@ -208,15 +208,15 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
             DeadlineAndDeliveryDateInput(
               labelDelivery: "Delivery date",
               labelDeadline: "Deadline date",
-              initialDeadlineDate: _quote?.getDeadlineDate,
-              initialDeliveryDate: _quote?.getDeliveryDate,
+              initialDeadlineDate: _serverQuote.getDeadlineDate,
+              initialDeliveryDate: _serverQuote.getDeliveryDate,
               onDeliveryChanged: (date) =>
                   setState(() => _selectedDeliveryDate = date),
               onDeadlineChanged: (date) =>
                   setState(() => _selectedDeadlineDate = date),
             ),
             CurrencyDropdown(
-              initialCurrency: _quote?.currency ?? '',
+              initialCurrency: _serverQuote.currency,
               onCurrencyChanged: (s) => setState(() => _currency = s),
             ),
           ],
@@ -226,10 +226,10 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
           title: 'Supplier Terms',
           children: [
             ValidityAndPayTermsDropdown(
-              initialPayTerms: _quote?.paymentTerm,
+              initialPayTerms: _serverQuote.paymentTerm,
               onPayTermsChanged: (s) =>
                   setState(() => _selectedPaymentTerm = s),
-              initialValidity: _quote?.getValidityDate,
+              initialValidity: _serverQuote.getValidityDate,
               onValidityChanged: (date) =>
                   setState(() => _selectedValidityDate = date),
             ),
@@ -254,16 +254,44 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         ),
 
         FormGroupCard(
-          title: 'Delivery Address and Notes',
           children: [
-            DeliveryAddressAndNotes(
-              notesController: _notesController,
-              addressController: _addressController,
-              onAddressChanged: (t) => setState(() {}),
-              onNotesChanged: (t) => setState(() {}),
+            DynamicTextFields(
+              title: 'Delivery Address and Notes',
+              initialData: [
+                {
+                  'notes': _serverQuote.notes,
+                  'deliveryAddress': _serverQuote.deliveryAddress,
+                },
+              ],
+              fieldsConfig: [
+                FieldGroupConfig(
+                  key: 'deliveryAddress',
+                  label: 'Delivery address (if any)...',
+                  type: TextInputType.multiline,
+                  isTextArea: true,
+                  minLines: 3,
+                  validator: (_) => null,
+                ),
+                FieldGroupConfig(
+                  key: 'notes',
+                  label: 'Additional Notes (if any)...',
+                  type: TextInputType.multiline,
+                  isTextArea: true,
+                  minLines: 3,
+                  validator: (_) => null,
+                ),
+              ],
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (isFormValid) setState(() {});
+
+                _addressAndNotes
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.first);
+              },
             ),
           ],
         ),
+
         context.confirmableActionButton(onPressed: _onSubmit),
         const SizedBox(height: 20.0),
       ],
@@ -315,16 +343,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_updatedQuote.isNullOrEmpty) return;
-
-    final quoteWithTaxes = await _applyTaxesToQuote(_updatedQuote!);
-    final supplier = await _getSupplier(_updatedQuote!.supplierId);
+    final quoteWithTaxes = await _applyTaxesToQuote(_updatedQuote);
+    final supplier = await _getSupplier(_updatedQuote.supplierId);
     if (supplier.isEmpty) return;
 
     RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
   });
 
-  get _fieldsConfig => [
+  get _itemsFieldsConfig => [
     FieldGroupConfig(
       key: 'itemName',
       label: 'Item name',

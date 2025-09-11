@@ -43,6 +43,9 @@ class DynamicTextFields extends StatefulWidget {
 
 class _DynamicTextFieldsState extends State<DynamicTextFields> {
   final List<FieldGroup> _fieldGroups = [];
+  String? get _fullWidthKey => widget.fullWidthKey;
+
+  String? get _title => widget.title;
 
   @override
   void initState() {
@@ -53,6 +56,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   void _initializeGroups() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final initialData = widget.initialData;
+
       if (initialData.isNotNullNorEmpty) {
         for (final map in initialData!) {
           _fieldGroups.add(FieldGroup(widget.fieldsConfig, initialValues: map));
@@ -134,7 +138,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         InputDecoration(
           helperText: helperText,
           labelText: labelText,
-          suffixIcon: _prefixIcon(labelText, index),
+          suffixIcon: widget.showButton ? _prefixIcon(labelText, index) : null,
           suffixIconConstraints: const BoxConstraints(
             minHeight: 26,
             minWidth: 26,
@@ -147,6 +151,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       keyboardType: inputType,
       onChanged: (_) => _notifyParent(),
       maxLines: maxLines,
+      minLines: config.minLines ?? 1,
       helperText: helperText,
       inputDecoration: inputDecoration,
       validator: validator,
@@ -172,45 +177,52 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   List<Widget> _groupByTwo(List<Widget> fields) {
     final rows = <Widget>[];
     final total = fields.length;
+    int i = 0;
 
-    for (var i = 0; i < total; i += 2) {
-      final isLast = i == total - 2;
-      final isOdd = total % 2 != 0;
+    while (i < total) {
+      final bool isFirst = i == 0;
+      final bool isLast = i == total - 1;
 
-      rows.add(
-        AdaptiveLayout(
-          children: [
-            if (isLast && isOdd) ...[
-              fields[i], // Make last field full-width
-            ] else ...[
-              fields[i],
-              if (i + 1 < total) fields[i + 1],
-            ],
-          ],
-        ),
-      );
+      final bool isFullWidth =
+          (isFirst && widget.fieldsConfig[i].key == _fullWidthKey) ||
+          (_fullWidthKey == null && isLast && total.isOdd);
 
-      // Only add horizontal divider to the last, If new group is added
-      if (i == total - 2 && _fieldGroups.length > 1) {
-        rows.add(const HorizontalDivider());
+      // Case 1: Full-width field (either first or fallback last)
+      if (isFullWidth) {
+        rows.add(AdaptiveLayout(children: [fields[i]]));
+        i += 1;
       }
+      // Case 2: Last field remaining, render it alone
+      else if (isLast) {
+        rows.add(AdaptiveLayout(children: [fields[i]]));
+        i += 1;
+      }
+      // Case 3: Normal pair
+      else {
+        rows.add(AdaptiveLayout(children: [fields[i], fields[i + 1]]));
+        i += 2;
+      }
+    }
+
+    // Add divider if multiple field groups
+    if (_fieldGroups.length > 1) {
+      rows.add(const HorizontalDivider());
     }
 
     return rows;
   }
 
   _buildHeader(BuildContext context) {
-    var title = widget.title;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (title != null) ...[
+        if (_title != null) ...[
           Expanded(
             child: Text(
-              title.toTitle,
+              _title.toTitle,
               style: context.textTheme.titleMedium?.copyWith(
-                color: widget.textColor ?? kPrimaryColor.toAlpha(0.8),
+                color:
+                    widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
               ),
             ),
           ),
@@ -220,7 +232,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           context.iconButton(
             Icons.add,
             isCard: true,
-            tooltip: 'Add more field group',
+            tooltip: 'Add more ${_title ?? 'field'} group'.toSentence,
             onPressed: _addTextField,
             iconColor: kPrimaryAccentColor,
             borderColor: kPrimaryAccentColor,
@@ -229,7 +241,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
             context.iconButton(
               Icons.remove,
               isCard: true,
-              tooltip: 'Remove last field group',
+              tooltip: 'Remove last ${_title ?? 'field'} group'.toSentence,
               iconColor: kDangerColor,
               bgColor: kWhiteColor,
               borderColor: kDangerColor,
@@ -278,6 +290,7 @@ class FieldGroupConfig {
   final String key;
   final String label;
   final bool isTextArea;
+  final int? minLines;
   final bool hideField;
   final String? helperText;
   final TextInputType type;
@@ -297,6 +310,7 @@ class FieldGroupConfig {
     required this.type,
     required this.label,
     this.isTextArea = false,
+    this.minLines,
     this.validator,
     this.helperText,
     this.inputDecoration,
@@ -343,7 +357,39 @@ class FieldGroup {
   }
 }
 
-/*List<Widget> _groupByTwo2(List<CustomTextField> fields) {
+/*
+  List<Widget> _groupByTwo2(List<Widget> fields) {
+    final rows = <Widget>[];
+    final total = fields.length;
+
+    for (var i = 0; i < total; i += 2) {
+      final isLast = i == total - 2;
+      final isOdd = total % 2 != 0;
+
+      rows.add(
+        AdaptiveLayout(
+          children: [
+            if (isLast && isOdd) ...[
+              fields[i], // Make last field full-width
+            ] else ...[
+              fields[i],
+              if (i + 1 < total) fields[i + 1],
+            ],
+          ],
+        ),
+      );
+
+      // Only add horizontal divider to the last, If new group is added
+      if (i == total - 2 && _fieldGroups.length > 1) {
+        rows.add(const HorizontalDivider());
+      }
+    }
+
+    return rows;
+  }
+
+
+List<Widget> _groupByTwo2(List<CustomTextField> fields) {
     final rows = <Widget>[];
     for (var i = 0; i < fields.length; i += 2) {
       rows.add(

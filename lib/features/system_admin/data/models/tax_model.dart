@@ -107,7 +107,20 @@ class Tax extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => name.isEmpty || '$rate'.isEmpty;
+  /// A singleton instance representing an empty/default Tax.
+  /// Used as a fallback when no matching Tax is found.
+  static final Tax empty = Tax(
+    id: '',
+    name: '',
+    code: '',
+    rate: 0.0,
+    notes: '',
+    createdBy: '',
+  );
+
+  /// Returns true if this instance is the singleton [empty] Tax.
+  /// Use this to check if the Tax is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, Tax.empty);
 
   bool get isNotEmpty => !isEmpty;
 

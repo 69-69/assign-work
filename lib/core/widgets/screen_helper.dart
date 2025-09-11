@@ -121,11 +121,12 @@ extension ScreenHelper on BuildContext {
   Future<void> orderNumberMisMatchWarningDialog(String id) async {
     await confirmDone(
       barrierDismissible: false,
-      title: "Order Number Mismatch",
+      title: "Reference Number Mismatch",
       RichText(
+        textAlign: TextAlign.center,
         text: TextSpan(
           text:
-              'Selected orders are unrelated. Multiple orders MUST have the same order number: ',
+              'Selected items are unrelated. Multiple items MUST have the same Reference number: ',
           style: const TextStyle(color: kDarkTextColor),
           children: [
             TextSpan(

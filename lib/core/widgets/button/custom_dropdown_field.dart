@@ -110,7 +110,9 @@ class StaticDropdown<T> extends StatelessWidget {
           validator ??
           (val) {
             final normalized = val?.toLowerAll.trim();
-            if (normalized.isNullOrEmpty || normalized!.contains('select')) {
+            if (normalized.isNullOrEmpty ||
+                normalized!.contains('select') ||
+                normalized.contains('type')) {
               return 'Select $label';
             }
             return null;
