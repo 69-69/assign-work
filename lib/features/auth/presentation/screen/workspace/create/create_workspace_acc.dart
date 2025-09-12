@@ -38,7 +38,7 @@ class WorkspaceScreen extends StatelessWidget {
       child: CustomDialog(
         title: DialogTitle(
           title: 'Setup New Workspace'.toUpperAll,
-          subtitle: "steve Create a new Workspace for your new Client.",
+          subtitle: "Create a new Workspace for your new Client.",
         ),
         body: _buildFormBody(context),
         actions: [CreateWorkspaceButton(onPressed: (v) {})],
@@ -92,14 +92,13 @@ class CreateNewWorkspaceForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildColumn(context);
+    return WorkspaceCategory(children: _buildColumn(context));
   }
 
   _buildColumn(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const WorkspaceCategory(),
         const SizedBox(height: 20),
         AdaptiveLayout(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

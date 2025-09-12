@@ -47,9 +47,9 @@ class WorkspaceRoleDropdown extends StatelessWidget {
 
 /// Workspace Category Dropdown [workspace Category]
 class WorkspaceCategory extends StatelessWidget {
-  const WorkspaceCategory({super.key, this.initialValue});
+  const WorkspaceCategory({super.key, required this.children});
 
-  final String? initialValue;
+  final Widget children;
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +61,21 @@ class WorkspaceCategory extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
+    return BusinessIndustryType(
+      externalWidget: children,
+      onBusinessChanged: (v) {},
+      onIndustryChanged: (String? business, String? industry) {
+        if (business != null && industry != null) {
+          context.read<WorkspaceAuthBloc>().add(
+            WorkspaceCategoryChanged('$business - $industry'),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildBody2(BuildContext context) {
     return BusinessToIndustriesDropdown(
-      initialIndustry: initialValue,
       onIndustryChanged: (String? business, String? industry) {
         if (business != null && industry != null) {
           context.read<WorkspaceAuthBloc>().add(

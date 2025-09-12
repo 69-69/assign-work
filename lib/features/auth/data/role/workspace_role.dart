@@ -49,7 +49,7 @@ extension WorkspaceRoleExtension on WorkspaceRole {
 /// [WorkspaceRoleHelper] Utility class for WorkspaceRole operations
 class WorkspaceRoleHelper {
   /// [WorkspaceRole] Convert string to WorkspaceRole enum
-  static WorkspaceRole fromString(String role) {
+  static WorkspaceRole fromString(String? role) {
     return WorkspaceRole.values.firstWhere(
       (e) => e.getValue == role,
       orElse: () => WorkspaceRole.unknown,
