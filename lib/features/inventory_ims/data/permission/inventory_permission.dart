@@ -48,16 +48,15 @@ enum InventoryPermission {
   viewMO,
   updateMO,
   deleteMO,
-  // RFQs = Request for Quotation
-  manageRFQs,
-  createRFQ,
-  viewRFQ,
-  updateRFQ,
-  deleteRFQ,
+  // GRN = Goods Receipt Note
+  manageGRN,
+  createGRN,
+  updateGRN,
+  deleteGRN,
   // Item Category
-  manageItemCategory,
+  // manageItemCategory,
   // Item Suppliers/Vendors
-  manageItemSuppliers,
+  // manageItemSuppliers,
   // Customer
   manageCustomers,
   createCustomer,
@@ -90,31 +89,31 @@ final List<AccessControl> _inventoryPermissions = [
 final List<AccessControl> _salesPermissions = [
   // Sales
   AccessControl(
-    module: "ims sales",
+    module: "sales",
     title: "Manage sales",
     description: "Allow users to create, edit, and delete sales.",
     access: InventoryPermission.manageSales,
   ),
   AccessControl(
-    module: "ims sales",
+    module: "sales",
     title: "Create new sales",
     description: "Allow users to process new sales at any location.",
     access: InventoryPermission.createSale,
   ),
   AccessControl(
-    module: "ims sales",
+    module: "sales",
     title: "View sales records",
     description: "Allow access to a list of all completed sales.",
     access: InventoryPermission.viewSale,
   ),
   AccessControl(
-    module: "ims sales",
+    module: "sales",
     title: "Edit existing sales",
     description: "Allow users to modify details of an existing sale.",
     access: InventoryPermission.updateSale,
   ),
   AccessControl(
-    module: "ims sales",
+    module: "sales",
     title: "Delete sales",
     description: "Allow users to permanently remove a sale record.",
     access: InventoryPermission.deleteSale,
@@ -123,7 +122,7 @@ final List<AccessControl> _salesPermissions = [
 
 final List<AccessControl> _ordersPermissions = [
   AccessControl(
-    module: "ims orders",
+    module: "orders",
     title: "Manage orders",
     description: "Allow users to create, edit, and delete all orders.",
     access: InventoryPermission.manageOrders,
@@ -132,31 +131,31 @@ final List<AccessControl> _ordersPermissions = [
 
 final List<AccessControl> _salesOrderPermissions = [
   AccessControl(
-    module: "ims sales orders",
+    module: "sales orders",
     title: "Manage sales orders",
     description: "Allow users to create, edit, and delete sales orders.",
     access: InventoryPermission.manageSOs,
   ),
   AccessControl(
-    module: "ims sales orders",
+    module: "sales orders",
     title: "Create new sales orders",
     description: "Allow users to process new sales orders at any location.",
     access: InventoryPermission.createSO,
   ),
   AccessControl(
-    module: "ims sales orders",
+    module: "sales orders",
     title: "View sales orders",
     description: "Allow access to a list of all completed sales orders.",
     access: InventoryPermission.viewSO,
   ),
   AccessControl(
-    module: "ims sales orders",
+    module: "sales orders",
     title: "Edit existing sales orders",
     description: "Allow users to modify details of an existing sales order.",
     access: InventoryPermission.updateSO,
   ),
   AccessControl(
-    module: "ims sales orders",
+    module: "sales orders",
     title: "Delete sales orders",
     description: "Allow users to permanently remove a sales order record.",
     access: InventoryPermission.deleteSO,
@@ -165,31 +164,31 @@ final List<AccessControl> _salesOrderPermissions = [
 
 final List<AccessControl> _purchaseOrderPermissions = [
   AccessControl(
-    module: "ims purchase orders",
+    module: "purchase orders",
     title: "Manage purchase orders",
     description: "Allow users to create, edit, and delete purchase orders.",
     access: InventoryPermission.managePOs,
   ),
   AccessControl(
-    module: "ims purchase orders",
+    module: "purchase orders",
     title: "Create new purchase orders",
     description: "Allow users to process new purchase orders at any location.",
     access: InventoryPermission.createPO,
   ),
   AccessControl(
-    module: "ims purchase orders",
+    module: "purchase orders",
     title: "View purchase orders",
     description: "Allow access to a list of all completed purchase orders.",
     access: InventoryPermission.viewPO,
   ),
   AccessControl(
-    module: "ims purchase orders",
+    module: "purchase orders",
     title: "Edit existing purchase orders",
     description: "Allow users to modify details of an existing purchase order.",
     access: InventoryPermission.updatePO,
   ),
   AccessControl(
-    module: "ims purchase orders",
+    module: "purchase orders",
     title: "Delete purchase orders",
     description: "Allow users to permanently remove a purchase order record.",
     access: InventoryPermission.deletePO,
@@ -198,101 +197,94 @@ final List<AccessControl> _purchaseOrderPermissions = [
 
 final List<AccessControl> _miscOrderPermissions = [
   AccessControl(
-    module: "ims misc orders",
+    module: "misc orders",
     title: "Manage misc orders",
     description: "Allow users to create, edit, and delete misc orders.",
     access: InventoryPermission.manageMOs,
   ),
   AccessControl(
-    module: "ims misc orders",
+    module: "misc orders",
     title: "Create new misc orders",
     description: "Allow users to process new misc orders at any location.",
     access: InventoryPermission.createMO,
   ),
   AccessControl(
-    module: "ims misc orders",
+    module: "misc orders",
     title: "View misc orders",
     description: "Allow access to a list of all completed misc orders.",
     access: InventoryPermission.viewMO,
   ),
   AccessControl(
-    module: "ims misc orders",
+    module: "misc orders",
     title: "Edit existing misc orders",
     description: "Allow users to modify details of an existing misc order.",
     access: InventoryPermission.updateMO,
   ),
   AccessControl(
-    module: "ims misc orders",
+    module: "misc orders",
     title: "Delete misc orders",
     description: "Allow users to permanently remove a misc order record.",
     access: InventoryPermission.deleteMO,
   ),
 ];
 
-final List<AccessControl> _requestForQuotePermissions = [
+final List<AccessControl> _goodsReceiptNotePermissions = [
   AccessControl(
-    module: "ims request for quotes",
-    title: "Manage request for quotes",
-    description: "Allow users to create, edit, and delete request for quotes.",
-    access: InventoryPermission.manageRFQs,
+    module: "goods receipt note",
+    title: "Manage goods receipt note",
+    description: "Allow users to create, edit, and delete goods receipt note.",
+    access: InventoryPermission.manageGRN,
   ),
   AccessControl(
-    module: "ims request for quotes",
-    title: "Create new request for quotes",
+    module: "goods receipt note",
+    title: "Create goods receipt note",
     description:
-        "Allow users to process new request for quotes at any location.",
-    access: InventoryPermission.createRFQ,
+        "Allow users to process new goods receipt note at any location.",
+    access: InventoryPermission.createGRN,
   ),
   AccessControl(
-    module: "ims request for quotes",
-    title: "View request for quotes",
-    description: "Allow access to a list of all completed request for quotes.",
-    access: InventoryPermission.viewRFQ,
-  ),
-  AccessControl(
-    module: "ims request for quotes",
-    title: "Edit existing request for quotes",
+    module: "goods receipt note",
+    title: "Edit goods receipt note",
     description:
-        "Allow users to modify details of an existing request for quote.",
-    access: InventoryPermission.updateRFQ,
+        "Allow users to modify details of an existing goods receipt note.",
+    access: InventoryPermission.updateGRN,
   ),
   AccessControl(
-    module: "ims request for quotes",
-    title: "Delete request for quotes",
-    description:
-        "Allow users to permanently remove a request for quote record.",
-    access: InventoryPermission.deleteRFQ,
+    module: "goods receipt note",
+    title: "Delete goods receipt note",
+    description: "Allow users to permanently remove a goods receipt note.",
+    access: InventoryPermission.deleteGRN,
   ),
 ];
 
 final List<AccessControl> _customersPermissions = [
   AccessControl(
-    module: "ims customers",
+    module: "customers",
     title: "Manage customers",
     description: "Allow users to create, edit, and delete customers.",
     access: InventoryPermission.manageCustomers,
   ),
   AccessControl(
-    module: "ims customers",
+    module: "customers",
     title: "View customers",
     description:
         "Allow access to customer lists, profiles, and contact details.",
     access: InventoryPermission.viewCustomer,
   ),
   AccessControl(
-    module: "ims customers",
+    module: "customers",
     title: "Add new customers",
     description: "Allow users to create new customer records.",
     access: InventoryPermission.createCustomer,
   ),
   AccessControl(
-    module: "ims customers",
+    module: "customers",
     title: "Edit customer information",
     description: "Allow updates to customer contact info, tags, and notes.",
     access: InventoryPermission.updateCustomer,
   ),
   AccessControl(
-    module: "ims customers",
+    module: "customers",
     title: "Delete customers",
     description: "Allow permanent removal of customer records from the system.",
     access: InventoryPermission.deleteCustomer,
@@ -301,32 +293,32 @@ final List<AccessControl> _customersPermissions = [
 
 final List<AccessControl> _stockPermissions = [
   AccessControl(
-    module: "ims stock",
+    module: "stock",
     title: "Manage inventory",
     description: "Allow users to create, edit, and delete inventory items.",
     access: InventoryPermission.manageStock,
   ),
   AccessControl(
-    module: "ims stock",
+    module: "stock",
     title: "View inventory",
     description:
         "Allow access to inventory items, stock levels, and product details.",
     access: InventoryPermission.viewStock,
   ),
   AccessControl(
-    module: "ims stock",
+    module: "stock",
     title: "Add new inventory items",
     description: "Allow users to create new products or stock items.",
     access: InventoryPermission.createStock,
   ),
   AccessControl(
-    module: "ims stock",
+    module: "stock",
     title: "Edit inventory items",
     description: "Allow users to update item names, prices, or stock details.",
     access: InventoryPermission.updateStock,
   ),
   AccessControl(
-    module: "ims stock",
+    module: "stock",
     title: "Delete inventory items",
     description: "Allow users to remove items from the inventory database.",
     access: InventoryPermission.deleteStock,
@@ -335,31 +327,31 @@ final List<AccessControl> _stockPermissions = [
 
 final List<AccessControl> _deliveryPermissions = [
   AccessControl(
-    module: "ims delivery",
+    module: "delivery",
     title: "Manage deliveries",
     description: "Allow users to create, edit, and delete deliveries.",
     access: InventoryPermission.manageDeliveries,
   ),
   AccessControl(
-    module: "ims delivery",
+    module: "delivery",
     title: "View delivery records",
     description: "Allow access to a list of all completed deliveries.",
     access: InventoryPermission.viewDelivery,
   ),
   AccessControl(
-    module: "ims delivery",
+    module: "delivery",
     title: "Create new deliveries",
     description: "Allow users to process new deliveries at any location.",
     access: InventoryPermission.createDelivery,
   ),
   AccessControl(
-    module: "ims delivery",
+    module: "delivery",
     title: "Edit existing deliveries",
     description: "Allow users to modify details of an existing delivery.",
     access: InventoryPermission.updateDelivery,
   ),
   AccessControl(
-    module: "ims delivery",
+    module: "delivery",
     title: "Delete deliveries",
     description: "Allow users to permanently remove a delivery record.",
     access: InventoryPermission.deleteDelivery,
@@ -368,19 +360,19 @@ final List<AccessControl> _deliveryPermissions = [
 
 final List<AccessControl> _metricsPermissions = [
   AccessControl(
-    module: "ims metrics",
+    module: "metrics",
     title: "Print Invoices",
     description: "Allow users to view customer invoices and print copies.",
     access: InventoryPermission.printInvoice,
   ),
   AccessControl(
-    module: "ims metrics",
+    module: "metrics",
     title: "View financial data",
     description: "Allow access to financial reports and summaries.",
     access: InventoryPermission.viewInvoice,
   ),
   AccessControl(
-    module: "ims metrics",
+    module: "metrics",
     title: "Access reports and analytics",
     description: "Allow users to access sales, order, and product reports.",
     access: InventoryPermission.viewReport,
@@ -389,7 +381,7 @@ final List<AccessControl> _metricsPermissions = [
 
 final List<AccessControl> _secretPermissions = [
   AccessControl(
-    module: "IMS Secrets",
+    module: "Secrets",
     title: "View Item IDs",
     description: "Allow users to view the reference numbers or IDs of items.",
     access: InventoryPermission.viewImsSecrets,
@@ -406,7 +398,7 @@ final List<AccessControl> inventoryPermissions = [
   ..._salesOrderPermissions,
   ..._purchaseOrderPermissions,
   ..._miscOrderPermissions,
-  ..._requestForQuotePermissions,
+  ..._goodsReceiptNotePermissions,
   ..._deliveryPermissions,
   ..._customersPermissions,
   ..._metricsPermissions,

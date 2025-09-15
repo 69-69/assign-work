@@ -13,6 +13,7 @@ import 'package:assign_erp/features/live_support/presentation/index.dart';
 import 'package:assign_erp/features/onboarding/initial_screen.dart';
 import 'package:assign_erp/features/pos_system/presentation/index.dart';
 import 'package:assign_erp/features/procurement/presentation/index.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/index.dart';
@@ -226,11 +227,10 @@ GoRoute _inventoryRoute() {
     (name: RouteNames.imsPurchaseOrders, screen: const PurchaseOrderScreen()),
     (name: RouteNames.miscOrders, screen: const MiscOrderScreen()),
 
-    /// @TODO be move to procurement
-    (
+    /*(
       name: RouteNames.imsRequestForQuote,
       screen: const RequestForQuotationScreen(),
-    ),
+    ),*/
   ];
 
   return GoRoute(
@@ -268,13 +268,14 @@ GoRoute _procurementRoute() {
       name: RouteNames.purchaseRequisition,
       screen: const ProPurchaseRequisitionScreen(),
     ),
+    /*(
+      name: RouteNames.imsRequestForQuote,
+      screen: const RequestForQuotationScreen(),
+    ),*/
   ];
 
   final List<({String name, Widget screen})> supplierSubRoutes = [
-    (
-      name: RouteNames.supplierAccount,
-      screen: const SupplierEvaluationScreen(),
-    ),
+    (name: RouteNames.supplierAccount, screen: const SupplierAccountScreen()),
     (
       name: RouteNames.supplierEvaluation,
       screen: const SupplierEvaluationScreen(),
@@ -301,6 +302,26 @@ GoRoute _procurementRoute() {
         builder: (context, state) => const ProSupplierManagementScreen(),
         routes: _mapStaticRoutes(supplierSubRoutes),
       ),
+    ],
+  );
+}
+
+/// Sales and Distribution App
+GoRoute _salesDistributionRoute() {
+  final List<({String name, Widget screen})> salesDistributionRoutes = [
+    (name: RouteNames.salesOrders2, screen: const SalesOrderScreen()),
+    (name: RouteNames.deliveries2, screen: const OrderDeliveryScreen()),
+    (name: RouteNames.ordersTracking2, screen: const TrackingScreen()),
+  ];
+
+  return GoRoute(
+    name: RouteNames.salesDistributionApp,
+    path: RouteNames.salesDistributionApp,
+    pageBuilder: (context, state) =>
+        _animateTransition(state, const SalesDistributionApp()),
+    routes: [
+      // Sales Distribution subroutes
+      ..._mapStaticRoutes(salesDistributionRoutes),
     ],
   );
 }
@@ -404,6 +425,7 @@ List<RouteBase> appRouterConfig = <RouteBase>[
           _warehouseRoute(),
           _customerRoute(),
           _posRoute(),
+          _salesDistributionRoute(),
           _userGuideRoute(),
           _liveSupportRoute(),
           _agentRoute(),

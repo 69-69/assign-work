@@ -11,13 +11,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
 extension UpdateWorkspacePopUp on BuildContext {
-  Future<void> openUpdateWorkspacePopUp() => showModalBottomSheet(
-    context: this,
-    isDismissible: true,
-    isScrollControlled: true,
-    backgroundColor: kTransparentColor,
-    builder: (_) => const ChangeWorkspacePassword(),
-  );
+  Future<void> openUpdateWorkspacePopUp() async =>
+      await ChangeWorkspacePassword().openCustomDialog(
+        this,
+        isScrollControlled: true,
+        constraints: null,
+      );
 }
 
 class ChangeWorkspacePassword extends StatelessWidget {

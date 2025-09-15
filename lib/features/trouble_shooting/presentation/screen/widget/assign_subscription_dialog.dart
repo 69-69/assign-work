@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -15,16 +14,16 @@ extension AssignSubscriptionDialog on BuildContext {
   Future<void> assignSubscriptionToWorkspaceDialog({
     required String workspaceId,
     String? workspaceName,
-  }) => showModalBottomSheet(
-    context: this,
-    isDismissible: false,
-    isScrollControlled: true,
-    backgroundColor: kTransparentColor,
-    builder: (_) => AssignSubscriptionWorkspace(
-      workspaceId: workspaceId,
-      workspaceName: workspaceName,
-    ),
-  );
+  }) async =>
+      await AssignSubscriptionWorkspace(
+        workspaceId: workspaceId,
+        workspaceName: workspaceName,
+      ).openCustomDialog(
+        this,
+        isDismissible: true,
+        isScrollControlled: true,
+        constraints: null,
+      );
 }
 
 class AssignSubscriptionWorkspace extends StatelessWidget {

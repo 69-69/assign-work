@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -15,16 +14,16 @@ extension AssignDepartmentDialog on BuildContext {
   Future<void> openAssignEmployeeDepartmentDialog({
     required String employeeId,
     String? employeeName,
-  }) => showModalBottomSheet(
-    context: this,
-    isDismissible: false,
-    isScrollControlled: true,
-    backgroundColor: kTransparentColor,
-    builder: (_) => AssignEmployeeDepartment(
-      employeeId: employeeId,
-      employeeName: employeeName,
-    ),
-  );
+  }) async =>
+      await AssignEmployeeDepartment(
+        employeeId: employeeId,
+        employeeName: employeeName,
+      ).openCustomDialog(
+        this,
+        isDismissible: true,
+        isScrollControlled: true,
+        constraints: null,
+      );
 }
 
 class AssignEmployeeDepartment extends StatelessWidget {

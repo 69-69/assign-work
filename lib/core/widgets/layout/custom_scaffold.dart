@@ -149,6 +149,190 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   }
 }
 
+class _AppBar extends StatelessWidget implements PreferredSizeWidget {
+  final AuthState authState;
+  final dynamic title;
+  final String? subTitle;
+  final List<Widget>? actions;
+  final Widget? drawer;
+  final Widget? backButton;
+  final Function()? onPressed;
+  final PreferredSizeWidget? appBar;
+  final bool showSearchBar;
+
+  const _AppBar({
+    required this.authState,
+    this.title,
+    this.subTitle,
+    this.actions,
+    this.drawer,
+    this.backButton,
+    this.onPressed,
+    this.appBar,
+    this.showSearchBar = false,
+  });
+
+  bool _isMobile(BuildContext context) => context.isMobile;
+
+  @override
+  Widget build(BuildContext context) {
+    return appBar ?? _buildAppBar(context);
+  }
+
+  AppBar _buildAppBar(BuildContext context) {
+    bool canGoBack = Navigator.of(context).canPop();
+
+    return AppBar(
+      leading: canGoBack ? _buildLeading(context) : null,
+      leadingWidth: _isMobile(context) ? null : 80,
+      automaticallyImplyLeading: canGoBack,
+      toolbarHeight: kAppBarHeight,
+      centerTitle: true,
+      elevation: 20,
+      scrolledUnderElevation: 20,
+      title: title is Widget ? title : _Title(title: title, subTitle: subTitle),
+      actions: _buildActions(),
+    );
+  }
+
+  List<Widget> _buildActions() {
+    return actions ??
+        [
+          if (showSearchBar) ...[
+            _iconButton(
+              'Workspace search',
+              icon: Icons.search,
+              onPressed: onPressed,
+            ),
+            SizedBox(width: 10),
+          ],
+          Stack(
+            children: [
+              _iconButton(
+                '9 Notifications',
+                onPressed: () {},
+                icon: Icons.notifications,
+              ),
+              Positioned(
+                top: 1.0,
+                right: 8.0,
+                child: Text(
+                  '9',
+                  style: TextStyle(color: kLightBlueColor, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          ProfileMenuDropdown(
+            workspace: authState.workspace,
+            employee: authState.employee,
+          ),
+        ];
+  }
+
+  IconButton _iconButton(
+    String tooltip, {
+    void Function()? onPressed,
+    required IconData icon,
+  }) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: tooltip,
+      icon: Icon(icon, color: kLightBlueColor),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(kGrayBlueColor.toAlpha(0.2)),
+        side: WidgetStateProperty.resolveWith<BorderSide?>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.hovered)) {
+            return BorderSide(color: kGrayBlueColor, width: 2);
+          }
+          return null;
+        }),
+      ),
+    );
+  }
+
+  Widget? _buildLeading(BuildContext context) {
+    if (drawer != null) return null;
+    if (backButton != null) return backButton;
+
+    return Container(
+      alignment: Alignment.center,
+      margin: const EdgeInsets.fromLTRB(10, 20, 0, 20),
+      child: _isMobile(context)
+          ? BackButton(color: kWhiteColor)
+          : InkWell(
+              onTap: () => Navigator.of(context).maybePop(),
+              borderRadius: BorderRadius.circular(15),
+              hoverColor: kWhiteColor.toAlpha(0.1),
+              child: Padding(
+                padding: EdgeInsets.all(8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.adaptive.arrow_back,
+                      color: kWhiteColor,
+                      size: 16,
+                    ),
+                    SizedBox(width: 4),
+                    Text('Back', style: TextStyle(color: kWhiteColor)),
+                  ],
+                ),
+              ),
+            ), // const BackButton(color: kWhiteColor),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kAppBarHeight);
+}
+
+class _Title extends StatelessWidget {
+  final String? title;
+  final String? subTitle;
+
+  const _Title({this.title, this.subTitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: (subTitle ?? appSubName).toUpperAll,
+      child: _buildTitle(context),
+    );
+  }
+
+  ListTile _buildTitle(BuildContext context) {
+    return ListTile(
+      dense: true,
+      titleAlignment: ListTileTitleAlignment.center,
+      title: Text(
+        (title ?? appName).toUpperAll,
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        style: const TextStyle(
+          color: kLightBlueColor,
+          fontWeight: FontWeight.bold,
+          overflow: TextOverflow.fade,
+        ),
+        textScaler: TextScaler.linear(context.textScaleFactor),
+      ),
+      subtitle: Text(
+        (subTitle ?? appSubName).toUpperAll,
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        style: context.textTheme.titleMedium?.copyWith(
+          fontSize: 10,
+          color: kLightBlueColor,
+          overflow: TextOverflow.fade,
+        ),
+        // textScaler: TextScaler.linear(context.textScaleFactor),
+      ),
+    );
+  }
+}
+
 /*class _CustomScaffoldState extends State<CustomScaffold> {
   bool _isSearchActive = false;
 
@@ -231,164 +415,6 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     );
   }
 }*/
-
-class _AppBar extends StatelessWidget implements PreferredSizeWidget {
-  final AuthState authState;
-  final dynamic title;
-  final String? subTitle;
-  final List<Widget>? actions;
-  final Widget? drawer;
-  final Widget? backButton;
-  final Function()? onPressed;
-  final PreferredSizeWidget? appBar;
-  final bool showSearchBar;
-
-  const _AppBar({
-    required this.authState,
-    this.title,
-    this.subTitle,
-    this.actions,
-    this.drawer,
-    this.backButton,
-    this.onPressed,
-    this.appBar,
-    this.showSearchBar = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return appBar ?? _buildAppBar(context);
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    bool canGoBack = Navigator.of(context).canPop();
-
-    return AppBar(
-      leading: canGoBack ? _buildLeading(context) : null,
-      automaticallyImplyLeading: canGoBack,
-      toolbarHeight: kAppBarHeight,
-      centerTitle: true,
-      elevation: 20,
-      scrolledUnderElevation: 20,
-      title: title is Widget ? title : _Title(title: title, subTitle: subTitle),
-      actions: _buildActions(),
-    );
-  }
-
-  List<Widget> _buildActions() {
-    return actions ??
-        [
-          if (showSearchBar) ...[
-            _iconButton(
-              'Workspace search',
-              icon: Icons.search,
-              onPressed: onPressed,
-            ),
-            SizedBox(width: 10),
-          ],
-          Stack(
-            children: [
-              _iconButton(
-                '9 Notifications',
-                onPressed: () {},
-                icon: Icons.notifications,
-              ),
-              Positioned(
-                top: 1.0,
-                right: 8.0,
-                child: Text(
-                  '9',
-                  style: TextStyle(color: kLightBlueColor, fontSize: 12),
-                ),
-              ),
-            ],
-          ),
-          ProfileMenuDropdown(
-            workspace: authState.workspace,
-            employee: authState.employee,
-          ),
-        ];
-  }
-
-  IconButton _iconButton(
-    String tooltip, {
-    void Function()? onPressed,
-    required IconData icon,
-  }) {
-    return IconButton(
-      onPressed: onPressed,
-      tooltip: tooltip,
-      icon: Icon(icon, color: kLightBlueColor),
-      style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(kGrayBlueColor.toAlpha(0.2)),
-        side: WidgetStateProperty.resolveWith<BorderSide?>((
-          Set<WidgetState> states,
-        ) {
-          if (states.contains(WidgetState.hovered)) {
-            return BorderSide(color: kGrayBlueColor, width: 2);
-          }
-          return null;
-        }),
-      ),
-    );
-  }
-
-  Widget? _buildLeading(BuildContext context) {
-    if (drawer != null) return null;
-    if (backButton != null) return backButton;
-
-    return Container(
-      color: kTransparentColor,
-      alignment: Alignment.center,
-      margin: const EdgeInsets.fromLTRB(10, 20, 0, 20),
-      child: const BackButton(color: kWhiteColor),
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kAppBarHeight);
-}
-
-class _Title extends StatelessWidget {
-  final String? title;
-  final String? subTitle;
-
-  const _Title({this.title, this.subTitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildTitle(context);
-  }
-
-  ListTile _buildTitle(BuildContext context) {
-    return ListTile(
-      dense: true,
-      titleAlignment: ListTileTitleAlignment.center,
-      title: Text(
-        (title ?? appName).toUpperAll,
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        style: const TextStyle(
-          color: kLightBlueColor,
-          fontWeight: FontWeight.bold,
-          overflow: TextOverflow.fade,
-        ),
-        textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
-      subtitle: Text(
-        (subTitle ?? appSubName).toUpperAll,
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        style: context.textTheme.titleSmall?.copyWith(
-          fontSize: 10,
-          color: kLightBlueColor,
-          overflow: TextOverflow.fade,
-        ),
-        textScaler: TextScaler.linear(context.textScaleFactor),
-      ),
-    );
-  }
-}
 
 /*Drawer _drawer(BuildContext context) {
     return Drawer(

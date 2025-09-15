@@ -25,24 +25,6 @@ extension InventoryTiles on dynamic {
         'access': _getValue(InventoryPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
       },
-      {
-        'label': 'misc - order',
-        'icon': Icons.payments_outlined,
-        'action': RouteNames.miscOrders,
-        'param': {},
-        'access': _getValue(InventoryPermission.manageMOs),
-        'description':
-            'create additional orders that may include special requests, one-time purchases',
-      },
-      {
-        'label': 'request - for quotes',
-        'icon': Icons.request_page_outlined,
-        'action': RouteNames.imsRequestForQuote,
-        'param': {},
-        'access': _getValue(InventoryPermission.manageRFQs),
-        'description':
-            'create quotation requests to suppliers for pricing and terms',
-      },
     ];
 
     return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
@@ -69,7 +51,26 @@ extension InventoryTiles on dynamic {
         'description':
             'create purchase orders (POs), sales orders (SOs), and miscellaneous orders (MOs) for suppliers or customers',
       },
+      // for inventory
       {
+        'label': 'misc - order',
+        'icon': Icons.payments_outlined,
+        'action': RouteNames.miscOrders,
+        'param': {},
+        'access': _getValue(InventoryPermission.manageMOs),
+        'description':
+            'create additional orders that may include special requests, one-time purchases',
+      },
+      {
+        'label': 'goods receipt note',
+        'icon': Icons.receipt_long,
+        'action': RouteNames.goodsReceiptNote,
+        'param': {},
+        'access': _getValue(InventoryPermission.manageGRN),
+        'description':
+            'Record and manage the receipt of goods from suppliers. This allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
+      },
+      /*{
         'label': 'Item Categories',
         'icon': Icons.dashboard_customize_outlined,
         'action': RouteNames.itemCategories,
@@ -86,7 +87,7 @@ extension InventoryTiles on dynamic {
         'access': _getValue(InventoryPermission.manageItemSuppliers),
         'description':
             'Manage suppliers linked to specific items for sourcing and restocking.',
-      },
+      },*/
       // deliveries tab
       {
         'label': 'deliveries',

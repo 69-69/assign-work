@@ -1,19 +1,17 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/delayed_animation.dart';
 import 'package:assign_erp/features/onboarding/data/onboarding_data.dart';
 import 'package:flutter/material.dart';
 
 const int delayedAmount = 500;
 
-const _onBoardingButtonColors = [
+/*const _onBoardingButtonColors = [
   kDarkWarningColor,
   kBrightPrimaryColor,
   Color(0xFF4F82C9),
   kLightOrangeColor,
   Color(0xFF5E9FEE),
-];
+];*/
 
 class OnBoardingContentView extends StatelessWidget {
   const OnBoardingContentView({
@@ -37,14 +35,14 @@ class OnBoardingContentView extends StatelessWidget {
 
         /// Title, Subtitle, Button
         _buildTitle(context.ofTheme),
-        if (context.isMobile && context.isLandscapeMode)
+        /*if (context.isMobile && context.isLandscapeMode)
           ...[]
         else ...[
           DelayedAnimation(
             delay: delayedAmount + 2000,
-            child: buildNextButton(context),
+            child: _buildNextButton(context),
           ),
-        ],
+        ],*/
       ],
     );
   }
@@ -53,7 +51,7 @@ class OnBoardingContentView extends StatelessWidget {
     return Expanded(child: Image.asset(board.imageLink, fit: BoxFit.contain));
   }
 
-  SizedBox buildNextButton(BuildContext context) {
+  /*SizedBox _buildNextButton(BuildContext context) {
     return SizedBox(
       width: context.screenWidth * 0.5,
       child: context.elevatedIconBtn(
@@ -77,7 +75,7 @@ class OnBoardingContentView extends StatelessWidget {
         label: Text('Next', style: TextStyle(color: kWhiteColor)),
       ),
     );
-  }
+  }*/
 
   _buildTitle(ThemeData customTheme) {
     return Column(

@@ -15,10 +15,10 @@ class ProductConfigScreen extends StatelessWidget {
       length: 2,
       indicatorWeight: 1.0,
       tabs: [
-        {'label': 'Item Suppliers', 'icon': Icons.select_all},
+        {'label': 'Any widgets', 'icon': Icons.select_all},
         {'label': 'Item Category', 'icon': Icons.category_outlined},
       ],
-      children: [ListSuppliers(), ListCategories()],
+      children: [Text('Any widgets can be here'), ListCategories()],
     );
   }
 }

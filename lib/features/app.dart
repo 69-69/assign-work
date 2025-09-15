@@ -58,8 +58,8 @@ class App extends StatelessWidget {
       _bloc<MiscOrderBloc>(() => MiscOrderBloc(firestore: _fireStore)),
       _bloc<DeliveryBloc>(() => DeliveryBloc(firestore: _fireStore)),
       _bloc<SaleBloc>(() => SaleBloc(firestore: _fireStore)),
-      _bloc<RequestForQuoteBloc>(
-        () => RequestForQuoteBloc(firestore: _fireStore),
+      _bloc<ProRequestForQuoteBloc>(
+        () => ProRequestForQuoteBloc(firestore: _fireStore),
       ),
       _bloc<CustomerAccountBloc>(
         () => CustomerAccountBloc(firestore: _fireStore),

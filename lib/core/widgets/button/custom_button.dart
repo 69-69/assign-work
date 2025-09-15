@@ -96,6 +96,47 @@ extension Custombutton on BuildContext {
     );
   }
 
+  /// [compareButton] A customizable elevated button widget to compare two Quotes.
+  Widget compareButton(
+    String label, {
+    VoidCallback? onPressed,
+    Color? bgColor,
+    Color? txtColor,
+    String? tooltip,
+    EdgeInsetsGeometry? padding,
+    ButtonStyle? style,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        gradient: LinearGradient(
+          colors: [kSuccessColor, kWarningColor],
+          stops: [0.5, 0.5],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style:
+            style ??
+            ElevatedButton.styleFrom(
+              backgroundColor: kTransparentColor,
+              shadowColor: kTransparentColor,
+              padding: padding,
+            ),
+        child: Tooltip(
+          message: tooltip ?? label,
+          child: Text(
+            label,
+            style: TextStyle(color: txtColor, overflow: TextOverflow.ellipsis),
+            semanticsLabel: label,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// [elevatedButton] A customizable elevated button widget.
   ///
   Widget elevatedButton(

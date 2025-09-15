@@ -127,7 +127,7 @@ extension ScreenHelper on BuildContext {
         text: TextSpan(
           text:
               'Selected items are unrelated. Multiple items MUST have the same Reference number: ',
-          style: const TextStyle(color: kDarkTextColor),
+          style: TextStyle(color: onSurfaceColor),
           children: [
             TextSpan(
               text: id,
@@ -151,7 +151,7 @@ extension ScreenHelper on BuildContext {
         text: TextSpan(
           text:
               'Some of the selected sales have incomplete information. Please uncheck or deselect those fields with missing details.',
-          style: const TextStyle(color: kDarkTextColor),
+          style: TextStyle(color: onSurfaceColor),
           children: [
             TextSpan(
               text: '\nReceipt Number: $id',
@@ -171,9 +171,9 @@ extension ScreenHelper on BuildContext {
     await confirmDone(
       barrierDismissible: false,
       title: "Image Size Warning",
-      const Text(
+      Text(
         'The image exceeds the maximum allowed size of 300px x 320px.',
-        style: TextStyle(color: kDarkTextColor),
+        style: TextStyle(color: onSurfaceColor),
       ),
     );
   }
@@ -183,9 +183,9 @@ extension ScreenHelper on BuildContext {
     await confirmDone(
       barrierDismissible: false,
       title: "Image Type Warning",
-      const Text(
+      Text(
         'Only the following image formats are allowed: .PNG, .JPG, .JPEG.',
-        style: TextStyle(color: kDarkTextColor),
+        style: TextStyle(color: onSurfaceColor),
       ),
     );
   }
@@ -195,9 +195,9 @@ extension ScreenHelper on BuildContext {
     await confirmDone(
       barrierDismissible: false,
       title: "Scan Warning",
-      const Text(
+      Text(
         'Item Scan is accessible only on mobile devices.',
-        style: TextStyle(color: kDarkTextColor),
+        style: TextStyle(color: onSurfaceColor),
       ),
     );
   }

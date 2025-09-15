@@ -6,7 +6,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/search_suppliers.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
 import 'package:flutter/material.dart';
 
 /// Customer ID TextField [SupplierIDInput]
@@ -22,7 +22,10 @@ class SupplierIDInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SearchSuppliers(initialValue: initialValue, onChanged: onChanged);
+    return SearchSuppliers(
+      initialSupplier: initialValue,
+      onSupplierChanged: onChanged,
+    );
   }
 }
 

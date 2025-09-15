@@ -75,9 +75,8 @@ class _ListDepartmentsState extends State<ListDepartments> {
             context.read<DepartmentBloc>().add(RefreshSetups<Department>());
           },
         ),
-        context.elevatedIconBtn(
-          Icon(Icons.groups, color: kWhiteColor),
-          label: 'Add Departments',
+        context.elevatedButton(
+          'Add Departments',
           onPressed: () => context.openAddDepartment(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,

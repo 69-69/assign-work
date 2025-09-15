@@ -5,6 +5,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/features/auth/domain/repository/auth_repository.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
@@ -14,14 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
 extension CreateWorkspacePopUp on BuildContext {
-  Future<void> openCreateWorkspacePopUp() => showModalBottomSheet(
-    context: this,
-    isDismissible: false,
-    isScrollControlled: true,
-    backgroundColor: kTransparentColor,
-    constraints: BoxConstraints(maxWidth: screenWidth),
-    builder: (_) => const WorkspaceScreen(),
-  );
+  Future<void> openCreateWorkspacePopUp() =>
+      WorkspaceScreen().openCustomDialog(this);
 }
 
 class WorkspaceScreen extends StatelessWidget {
@@ -36,10 +31,8 @@ class WorkspaceScreen extends StatelessWidget {
         );
       },
       child: CustomDialog(
-        title: DialogTitle(
-          title: 'Setup New Workspace'.toUpperAll,
-          subtitle: "Create a new Workspace for your new Client.",
-        ),
+        isCard: true,
+        title: DialogTitle(title: 'Setup New Workspace'.toUpperAll),
         body: _buildFormBody(context),
         actions: [CreateWorkspaceButton(onPressed: (v) {})],
       ),
@@ -100,23 +93,35 @@ class CreateNewWorkspaceForm extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 20),
-        AdaptiveLayout(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [const WorkspaceNameInput(), const ClientNameInput()],
-        ),
-        const SizedBox(height: 20),
-        AddressInput(),
-        const SizedBox(height: 20),
-        AdaptiveLayout(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        FormGroupCard(
+          title: 'Business Info',
+          // bgColor: context.scaffoldBgColor.toAlpha(0.8),
           children: [
-            const MobileNumberInput(),
-            const EmailInput(checkMobileNumber: true),
+            AdaptiveLayout(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [const WorkspaceNameInput(), const ClientNameInput()],
+            ),
+            const SizedBox(height: 20),
+            AddressInput(),
           ],
         ),
-        const SizedBox(height: 20),
-        const PasswordInput(label: 'Workspace password'),
-        TemporaryPasscodeInput(),
+        FormGroupCard(
+          title: 'Workspace Info',
+          children: [
+            AdaptiveLayout(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const MobileNumberInput(),
+                const EmailInput(checkMobileNumber: true),
+              ],
+            ),
+            const PasswordInput(label: 'Workspace password'),
+          ],
+        ),
+        FormGroupCard(
+          title: 'Passcode Info',
+          children: [TemporaryPasscodeInput()],
+        ),
       ],
     );
   }

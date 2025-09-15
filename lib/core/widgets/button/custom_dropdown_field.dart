@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -24,9 +25,13 @@ class StaticDropdown<T> extends StatelessWidget {
   final String? initialValue;
   final InputDecoration? buttonDecoration;
   final void Function(String?) onChanged;
+
+  /// [getValue] Get & Set the value of the selected item in the dropdown.
   final String Function(T item) getValue;
   final String? Function(String?)? validator;
   final InputDecorationTheme? menuDecoration;
+
+  /// [getDisplayText] Get & set the display text of the selected item in the dropdown.
   final String Function(T item) getDisplayText;
 
   const StaticDropdown({
@@ -49,7 +54,7 @@ class StaticDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isMenu ? _buildDropdownMenu() : _buildDropdownButton();
+    return isMenu ? _buildDropdownMenu(context) : _buildDropdownButton(context);
   }
 
   /*String? get _defaultValue2 {
@@ -77,7 +82,7 @@ class StaticDropdown<T> extends StatelessWidget {
   }
 
   /// DropdownButtonFormField [_buildDropdownButton]
-  DropdownButtonFormField<String> _buildDropdownButton() {
+  DropdownButtonFormField<String> _buildDropdownButton(BuildContext context) {
     return DropdownButtonFormField<String>(
       isExpanded: true,
       isDense: true,
@@ -90,7 +95,10 @@ class StaticDropdown<T> extends StatelessWidget {
             isDense: true,
             labelText: _labelWithHelper?.toSentence,
             helperText: inLabel ? null : helperText,
-            labelStyle: const TextStyle(overflow: TextOverflow.ellipsis),
+            labelStyle: TextStyle(
+              overflow: TextOverflow.ellipsis,
+              color: context.onSurfaceColor,
+            ),
           ),
       items: items.map((item) {
         final value = getValue(item);
@@ -121,7 +129,7 @@ class StaticDropdown<T> extends StatelessWidget {
   }
 
   /// DropdownMenu [_buildDropdownMenu]
-  DropdownMenu<String> _buildDropdownMenu() {
+  DropdownMenu<String> _buildDropdownMenu(BuildContext context) {
     final entries = items
         .map(
           (item) => DropdownMenuEntry(
@@ -152,7 +160,10 @@ class StaticDropdown<T> extends StatelessWidget {
       menuStyle: menuStyle,
       inputDecorationTheme: menuDecoration?.copyWith(
         isDense: true,
-        labelStyle: TextStyle(overflow: TextOverflow.ellipsis),
+        labelStyle: TextStyle(
+          overflow: TextOverflow.ellipsis,
+          color: context.onSurfaceColor,
+        ),
       ),
     );
   }

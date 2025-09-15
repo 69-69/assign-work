@@ -14,8 +14,8 @@ extension SetupTiles on dynamic {
     'param': {},
     'access': _getValue(SetupPermission.manageSetup),
     'description':
-        'company, employees, accounts, backups, licensing, & software update',
-    // system settings, configurations, backups, and general maintenance
+        'system settings, configs, company, backups, and general maintenance',
+    // 'company, employees, taxes, roles, permissions, backups, licensing',
   };
 
   List<DashboardTile> get setupTiles {
@@ -56,13 +56,13 @@ extension SetupTiles on dynamic {
             'Manage tax rates (VAT or sales tax). Apply them to items, services, and invoices as needed.',
       },
       {
-        'label': 'Product - config',
+        'label': 'Item Preferences',
         'icon': Icons.category,
         'action': RouteNames.productConfig,
         'param': {'openTab': '4'},
         'access': _getValue(SetupPermission.manageItemCategory),
         'description':
-            "add suppliers & product categories to fit the company's specific needs",
+            'Customize item categories, units of measure, and other preferences for inventory management.',
       },
       {
         'label': 'back - up',

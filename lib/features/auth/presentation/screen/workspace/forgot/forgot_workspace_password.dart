@@ -10,13 +10,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:formz/formz.dart';
 
 extension ForgotWorkspacePopUp on BuildContext {
-  Future<void> openForgotWorkspacePopUp() => showModalBottomSheet(
-    context: this,
-    isDismissible: true,
-    isScrollControlled: true,
-    backgroundColor: kTransparentColor,
-    builder: (_) => const ForgotWorkspacePassword(),
-  );
+  Future<void> openForgotWorkspacePopUp() async =>
+      await ForgotWorkspacePassword().openCustomDialog(
+        this,
+        isDismissible: true,
+        isScrollControlled: true,
+        constraints: null,
+      );
 }
 
 class ForgotWorkspacePassword extends StatelessWidget {

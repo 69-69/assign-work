@@ -17,7 +17,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/purchase_order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/widget/form_inputs.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/po_printer.dart';
-import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

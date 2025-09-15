@@ -14,7 +14,7 @@ const _nChar = '⏺';
 // WORKSPACE, HEALTHSPACE, EDUSPACE
 const appName = 'ASSIGN.WORK';
 const appSubName =
-    'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Warehouse $_nChar Reports $_nChar Cloud $_nChar Multi-Location';
+    'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Reports $_nChar Multi-Location';
 const ghanaCedis = '¢';
 
 /// APP LOGO
@@ -48,6 +48,7 @@ const agentTitle = 'agent';
 const posAppTitle = 'p.o.s';
 const inventoryAppTitle = 'inventory - ims';
 const procurementAppTitle = 'procurement & suppliers';
+const salesDistributionAppTitle = 'sales - distribution';
 const warehouseAppTitle = 'warehouse - wms';
 const customerAppTitle = 'customer - crm';
 const systemAdminAppTitle = 'System Administration';

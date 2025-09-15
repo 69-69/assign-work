@@ -95,6 +95,7 @@ extension ProcurementTiles on dynamic {
       {
         'label': 'suppliers - management',
         'icon': Icons.store_mall_directory_outlined,
+        // local_shipping
         'action': RouteNames.supplierManagement,
         'param': {},
         'access': _getValue(ProcurementPermission.manageSuppliers),

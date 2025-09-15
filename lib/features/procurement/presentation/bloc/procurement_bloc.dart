@@ -24,6 +24,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
 
   /// fromJson/fromMap Function [fromFirestore]
   final T Function(Map<String, dynamic> data, String documentId) fromFirestore;
+  final CollectionType? collectionType;
 
   // Set up the stream subscription
   late StreamSubscription<List<CacheData>> _getDataStreamObserver;
@@ -34,10 +35,11 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     required this.fromFirestore,
     required this.toFirestore,
     required this.toCache,
+    this.collectionType,
   }) : _procurementRepository = ProcurementRepository(
          firestore: firestore,
          collectionPath: collectionPath,
-         collectionType: CollectionType.stores,
+         collectionType: collectionType ?? CollectionType.stores,
        ),
        super(LoadingProcurement<T>()) {
     _initialize();

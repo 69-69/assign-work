@@ -16,6 +16,9 @@ enum SubscriptionLicenses {
   /// [inventory] Inventory (I.M.S) License: Grants customers access to the Inventory Management System.
   inventory,
 
+  /// [salesDistribution] Sales Distribution License: Grants customers access to the Sales Distribution system.
+  salesDistribution,
+
   /// [procurement] Procurement License: Grants customers access to the Procurement system.
   procurement,
 
@@ -70,6 +73,13 @@ final List<AccessControl> subscriptionLicenses = [
     title: 'Inventory License',
     description: 'Access to the Inventory Management System.',
     access: SubscriptionLicenses.inventory,
+  ),
+
+  AccessControl(
+    module: 'sales distribution',
+    title: 'Sales Distribution License',
+    description: 'Access to the Sales Distribution system.',
+    access: SubscriptionLicenses.salesDistribution,
   ),
 
   AccessControl(

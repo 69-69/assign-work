@@ -13,7 +13,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Search Taxes [TaxModeSelector]
+/// Tax Modes Radio-Selector [TaxModeSelector]
 class TaxModeSelector extends StatefulWidget {
   final TaxMode? defaultTaxMode;
   final List<String>? initialValues;
@@ -195,6 +195,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
     ];*/
 }
 
+/// Tax Checkboxes-Options Panel [TaxOptionsPanel]
 class _TaxOptionsPanel extends StatelessWidget {
   final double taxRate;
   final List<String>? initialValues;
@@ -245,6 +246,7 @@ class _TaxOptionsPanel extends StatelessWidget {
   }
 }
 
+/// Tax Multi Select Dropdown [TaxMultiSelectDropdown]
 class TaxMultiSelectDropdown extends StatefulWidget {
   const TaxMultiSelectDropdown({
     super.key,

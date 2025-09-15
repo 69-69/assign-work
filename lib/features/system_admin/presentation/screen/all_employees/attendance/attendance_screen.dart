@@ -66,20 +66,39 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       editIcon: Icons.explore_outlined,
       onEditTap: (row) async => _onViewTap(cxt, attendances, row.first),
       onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row.first),
+      onChecked: (bool? isChecked, row) {
+        setState(() => _updateSelectedIds(isChecked, row.first));
+      },
       onAllChecked:
           (
             bool isChecked,
             List<bool> isAllChecked,
             List<List<String>> checkedRows,
           ) {
-            setState(() {
-              _selectedIds.clear();
-              if (isChecked) {
-                _selectedIds.addAll(checkedRows.map((e) => e.first));
-              }
-            });
+            setState(() => _updateAllSelectedIds(isChecked, checkedRows));
           },
     );
+  }
+
+  // Add item to the selected list if checked, but only if not already in the list
+  void _updateSelectedIds(bool? isChecked, String id) {
+    if (isChecked == true) {
+      if (!_selectedIds.contains(id)) {
+        _selectedIds.add(id);
+      }
+    } else {
+      // Remove item from the selected list if unchecked
+      _selectedIds.removeWhere((selectedId) => selectedId == id);
+    }
+  }
+
+  // Updates selected IDs for all checked rows
+  void _updateAllSelectedIds(bool isChecked, List<List<String>> checkedRows) {
+    _selectedIds.clear(); // Clear previous selections
+    if (isChecked) {
+      // Add all selected rows, ensuring uniqueness using a Set
+      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+    }
   }
 
   Widget _anyWidget(BuildContext cxt) {
@@ -88,12 +107,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       runSpacing: 10.0,
       runAlignment: WrapAlignment.spaceBetween,
       children: [
-        if (_selectedIds.isNotEmpty) ...[
-          context.elevatedIconBtn(
-            Icon(Icons.delete, color: kWhiteColor),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: context.errorColor,
-            ),
+        if (_selectedIds.length > 1) ...[
+          context.elevatedButton(
+            'Delete Selected',
+            txtColor: kWhiteColor,
+            bgColor: kDangerColor,
+            tooltip: 'Delete selected attendance',
             onPressed: () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (cxt.mounted && isConfirmed) {
@@ -101,14 +120,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 cxt.read<AttendanceBloc>().add(
                   DeleteSetup<List<String>>(documentId: _selectedIds),
                 );
-                // _selectedIds.clear();
-                // setState(() {});
               }
             },
-            label: const Text(
-              'Delete all',
-              style: TextStyle(color: kWhiteColor),
-            ),
           ),
         ],
       ],

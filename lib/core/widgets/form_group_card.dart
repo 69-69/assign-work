@@ -30,7 +30,7 @@ class FormGroupCard extends StatelessWidget {
               Text(
                 title,
                 style: context.textTheme.titleMedium?.copyWith(
-                  color: textColor ?? kPrimaryColor.toAlpha(0.8),
+                  color: textColor ?? context.onPrimaryContainer.toAlpha(0.8),
                 ),
               ),
             },

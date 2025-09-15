@@ -12,7 +12,7 @@ const _sideTabs = [
   {'label': 'employees', 'icon': Icons.manage_accounts},
   {'label': 'Roles & Permissions', 'icon': Icons.admin_panel_settings},
   {'label': 'Tax rates', 'icon': Icons.calculate},
-  {'label': 'product config', 'icon': Icons.category},
+  {'label': 'item preference', 'icon': Icons.category},
   {'label': 'back up', 'icon': Icons.backup},
   {'label': 'renew license', 'icon': Icons.local_police},
 ];

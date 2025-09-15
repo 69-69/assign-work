@@ -5,7 +5,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/business_type_to_industries_dropdown.dart';
+import 'package:assign_erp/core/widgets/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -61,8 +61,8 @@ class WorkspaceCategory extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return BusinessIndustryType(
-      externalWidget: children,
+    return BusinessToIndustriesGrid(
+      externalWidget: SingleChildScrollView(child: children),
       onBusinessChanged: (v) {},
       onIndustryChanged: (String? business, String? industry) {
         if (business != null && industry != null) {
@@ -74,7 +74,7 @@ class WorkspaceCategory extends StatelessWidget {
     );
   }
 
-  Widget _buildBody2(BuildContext context) {
+  /* Widget _buildBody2(BuildContext context) {
     return BusinessToIndustriesDropdown(
       onIndustryChanged: (String? business, String? industry) {
         if (business != null && industry != null) {
@@ -86,7 +86,7 @@ class WorkspaceCategory extends StatelessWidget {
     );
   }
 
-  /*StaticDropdown _buildBody2(BuildContext context, WorkspaceAuthState state) {
+  StaticDropdown _buildBody2(BuildContext context, WorkspaceAuthState state) {
     return StaticDropdown<String>(
       initialValue: initialValue,
       label: 'Workspace category',

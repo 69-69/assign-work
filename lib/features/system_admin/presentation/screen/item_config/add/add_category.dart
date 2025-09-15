@@ -7,7 +7,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/product_config/category_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/form_inputs.dart';
 import 'package:flutter/material.dart';

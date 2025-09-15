@@ -39,6 +39,15 @@ extension LicenseTiles on BuildContext {
         'description':
             'Handle retail transactions, sales, and customer checkouts.',
       },
+      // Sales Distribution Package
+      {
+        'label': 'sales - distribution',
+        'icon': Icons.local_shipping,
+        'action': RouteNames.salesDistributionApp,
+        'param': {},
+        'access': _getValue(SubscriptionLicenses.salesDistribution),
+        'description': 'Manage sales orders, deliveries, and tracking.',
+      },
       // Warehouse Package
       {
         'label': 'warehouse',

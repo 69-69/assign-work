@@ -4,7 +4,7 @@ import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/product_config/category_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/add/add_category.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/update/update_category.dart';

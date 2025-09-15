@@ -13,7 +13,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/purch
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/add/add_purchase_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/update/update_purchase_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/po_printer.dart';
-import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

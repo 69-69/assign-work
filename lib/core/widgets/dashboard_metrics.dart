@@ -22,7 +22,7 @@ class DashboardMetrics extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0.01,
-      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      margin: const EdgeInsets.fromLTRB(0, 20, 20, 0),
       color: kTransparentColor, // context.secondaryColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: _buildCard(context),

@@ -90,7 +90,7 @@ class DialogTitle extends StatelessWidget {
   const DialogTitle({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     this.txtColor,
     this.fontSize,
     this.textScaler,
@@ -110,14 +110,16 @@ class DialogTitle extends StatelessWidget {
         ),
         textScaler: textScaler,
       ),
-      subtitle: Text(
-        subtitle,
-        textAlign: TextAlign.center,
-        style: context.textTheme.titleSmall?.copyWith(
-          color: txtColor ?? context.outlineColor,
-        ),
-        textScaler: textScaler,
-      ),
+      subtitle: subtitle.isEmpty
+          ? null
+          : Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: context.textTheme.titleSmall?.copyWith(
+                color: txtColor ?? context.outlineColor,
+              ),
+              textScaler: textScaler,
+            ),
     );
   }
 }

@@ -22,6 +22,9 @@ abstract class RouteNames {
   static const wAddMissingSocialAuthInfo = 'add_missing_social_auth_info';
   // static const workspaceSignup = 'create_workspace_acc';
 
+  /// ──────────────────────── 🏠 Sales & Distribution Modules / Tiles ────────────────────────
+  static const salesDistributionApp = 'sales_distribution_app';
+
   /// ──────────────────────── 🏠 Home Modules / Tiles ────────────────────────
   static const inventoryApp = 'inventory_app';
   static const procurementApp = 'procurement_app';
@@ -50,16 +53,19 @@ abstract class RouteNames {
   /// ───────────────────────── 📦 Inventory Module ─────────────────────────
   static const invoice = 'invoice_screen';
   static const orders = 'all_orders_screen';
-  static const itemCategories = 'product_categories_screen';
-  static const itemSuppliers = 'product_suppliers_screen';
+  // static const itemCategories = 'product_categories_screen';
+  // static const itemSuppliers = 'product_suppliers_screen';
   static const salesOrders = 'sales_orders_screen';
+  static const salesOrders2 = 'temp_sales_orders_screen';
+  static const deliveries = 'deliveries_screen';
+  static const deliveries2 = 'temp_deliveries_screen';
+  static const ordersTracking = 'orders_tracking';
+  static const ordersTracking2 = 'temp_orders_tracking';
   static const imsPurchaseOrders = 'inventory_purchase_orders_screen';
   static const miscOrders = 'miscellaneous_orders_screen';
-  static const imsRequestForQuote = 'inventory_request_for_quote_screen';
-  static const deliveries = 'deliveries_screen';
+  static const goodsReceiptNote = 'goods_receipt_note_screen';
   static const items = 'products_screen';
   static const sales = 'sales_screen';
-  static const ordersTracking = 'orders_tracking';
   static const inventReports = 'invent_reports_screen';
 
   // for procurement

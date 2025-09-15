@@ -19,13 +19,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension ForgotPasscodeDialog on BuildContext {
-  Future<void> openForgotPasscode({required Employee employee}) =>
-      showModalBottomSheet(
-        context: this,
+  Future<void> openForgotPasscode({required Employee employee}) async =>
+      await ForgotPasscode(employee: employee).openCustomDialog(
+        this,
         isDismissible: true,
         isScrollControlled: true,
-        backgroundColor: kTransparentColor,
-        builder: (_) => ForgotPasscode(employee: employee),
+        constraints: null,
       );
 }
 

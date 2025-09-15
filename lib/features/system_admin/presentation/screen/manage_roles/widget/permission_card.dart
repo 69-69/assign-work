@@ -10,6 +10,7 @@ import 'package:assign_erp/features/customer_crm/data/permission/crm_permission.
 import 'package:assign_erp/features/inventory_ims/data/permission/inventory_permission.dart';
 import 'package:assign_erp/features/pos_system/data/permission/pos_permission.dart';
 import 'package:assign_erp/features/procurement/data/permission/procurement_permission.dart';
+import 'package:assign_erp/features/sales_distribution/data/permission/sales_distribution_permission.dart';
 import 'package:assign_erp/features/system_admin/data/models/permission_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tab_content_model.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
@@ -38,6 +39,13 @@ final _tabContent = [
     accessEnum: SubscriptionLicenses.pos,
     displayName: posDisplayName,
     permissions: posPermissions,
+  ),
+  TabContent<SubscriptionLicenses>(
+    label: 'SD',
+    icon: Icons.local_shipping,
+    accessEnum: SubscriptionLicenses.salesDistribution,
+    displayName: salesDistributionDisplayName,
+    permissions: salesDistributionPermissions,
   ),
   TabContent<SubscriptionLicenses>(
     label: 'WMS',

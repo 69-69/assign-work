@@ -51,7 +51,7 @@ class _ListRolesState extends State<ListRoles> {
       maskAtIndex: 1,
       headers: Role.dataTableHeader,
       anyWidget: _buildAnyWidget(),
-      anyWidgetAlignment: WrapAlignment.end,
+      anyWidgetAlignment: WrapAlignment.start,
       rows: roles.map((d) => d.itemAsList()).toList(),
       onEditTap: (List<String> row) async => _onEditTap(roles, row.first),
       onDeleteTap: (List<String> row) async => _onDeleteTap(roles, row.first),
@@ -64,11 +64,10 @@ class _ListRolesState extends State<ListRoles> {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,
-      runAlignment: WrapAlignment.end,
+      runAlignment: WrapAlignment.start,
       children: [
-        context.elevatedIconBtn(
-          Icon(Icons.admin_panel_settings, color: kWhiteColor),
-          label: 'Create Role',
+        context.elevatedButton(
+          'Create Role',
           onPressed: () async => await context.openCreateNewRole(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,

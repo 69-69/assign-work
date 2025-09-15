@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:flutter/material.dart';
@@ -84,7 +85,7 @@ extension ShowBottomSheet<T> on BuildContext {
           padding: EdgeInsets.zero,
           shape: LinearBorder.none,
           backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor)
-              .toAlpha(0.4 * 255),
+              .toAlpha(0.4),
         ),
         icon:
             Icon(
@@ -145,10 +146,35 @@ class CustomBottomSheet extends StatelessWidget {
   }
 
   Widget makeDismissible(BuildContext context, {required Widget child}) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onPress ?? () => Navigator.of(context).pop(),
-      child: GestureDetector(onTap: () {}, child: child),
+    return _buildWillPopScope(
+      context,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onPress ?? () => Navigator.of(context).pop(),
+        child: GestureDetector(onTap: () {}, child: child),
+      ),
+    );
+  }
+
+  PopScope<Object> _buildWillPopScope(
+    BuildContext context, {
+    required Widget child,
+  }) {
+    return PopScope(
+      canPop: false, // disables default back navigation
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          bool shouldPop = await context.confirmAction(
+            Text('Are you sure you want to exit?'),
+            title: 'Confirm Exit',
+          );
+          if (context.mounted && shouldPop) {
+            // or pass result: Navigator.of(context).pop(myResult);
+            Navigator.of(context).pop();
+          }
+        }
+      },
+      child: child,
     );
   }
 

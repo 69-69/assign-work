@@ -6,14 +6,13 @@ import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:flutter/material.dart';
 
 extension LicenseWarningDialog on BuildContext {
-  Future<void> showUpgradeWarningDialog() => showModalBottomSheet(
-    context: this,
-    isDismissible: false,
-    isScrollControlled: true,
-    backgroundColor: Colors.red.toAlpha(0.5),
-    constraints: BoxConstraints(maxWidth: screenWidth),
-    builder: (_) => const LicenseWarning(),
-  );
+  Future<void> showUpgradeWarningDialog() async =>
+      await LicenseWarning().openCustomDialog(
+        this,
+        isDismissible: false,
+        isScrollControlled: true,
+        bgColor: Colors.red.toAlpha(0.5),
+      );
 }
 
 class LicenseWarning extends StatelessWidget {

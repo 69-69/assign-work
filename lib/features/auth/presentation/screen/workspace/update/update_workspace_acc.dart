@@ -14,14 +14,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension UpdateWorkspacePopUp on BuildContext {
-  Future<void> openUpdateWorkspacePopUp({required Workspace workspace}) =>
-      showModalBottomSheet(
-        context: this,
-        isDismissible: true,
-        isScrollControlled: true,
-        backgroundColor: kTransparentColor,
-        builder: (_) => WorkspaceScreen(workspace: workspace),
-      );
+  Future<void> openUpdateWorkspacePopUp({required Workspace workspace}) async =>
+      await WorkspaceScreen(
+        workspace: workspace,
+      ).openCustomDialog(this, isDismissible: true, isScrollControlled: true);
 }
 
 class WorkspaceScreen extends StatefulWidget {

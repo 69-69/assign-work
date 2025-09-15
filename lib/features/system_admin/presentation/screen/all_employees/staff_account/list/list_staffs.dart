@@ -51,7 +51,7 @@ class _ListStaffsState extends State<ListStaffs> {
       maskAtIndex: 1,
       headers: Employee.dataTableHeader,
       anyWidget: _buildAnyWidget(),
-      anyWidgetAlignment: WrapAlignment.end,
+      anyWidgetAlignment: WrapAlignment.start,
       rows: employees.map((d) => d.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(employees, row.first, isChecked),
@@ -82,11 +82,10 @@ class _ListStaffsState extends State<ListStaffs> {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,
-      runAlignment: WrapAlignment.end,
+      runAlignment: WrapAlignment.start,
       children: [
-        context.elevatedIconBtn(
-          Icon(Icons.person_add, color: kWhiteColor),
-          label: 'Add Employee',
+        context.elevatedButton(
+          'Add Employee',
           onPressed: () async => await context.openCreateStaffAcc(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,

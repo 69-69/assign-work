@@ -104,11 +104,11 @@ class EntitlementTabViewState extends State<EntitlementTabView>
           destinations: _tabs
               .map(
                 (t) => NavigationRailDestination(
-                  icon: Icon(t['icon']),
-                  label: Tooltip(
+                  icon: Tooltip(
                     message: '${t['tooltip']}'.toSentence,
-                    child: Text(t['label'] ?? 'Unnamed'),
+                    child: Icon(t['icon']),
                   ),
+                  label: Text(t['label'] ?? 'Unnamed'),
                 ),
               )
               .toList(),

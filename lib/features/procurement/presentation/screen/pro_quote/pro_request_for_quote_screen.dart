@@ -1,9 +1,11 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/orders/request_for_quote_model.dart';
+import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_quote/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/list/list_quotations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,8 +21,20 @@ class ProRequestForQuoteScreen extends StatelessWidget {
             ..add(GetProcurements<RequestForQuote>()),
       child: CustomScaffold(
         title: requestPriceQuoteScreenTitle.toUpperAll,
-        body: Center(child: Text('Procurement Request For Quote')),
+        body: _buildBody(),
       ),
+    );
+  }
+
+  CustomTab _buildBody() {
+    return CustomTab(
+      length: 2,
+      openThisTab: 0,
+      tabs: [
+        {'label': 'Request For Quote', 'icon': Icons.miscellaneous_services},
+        {'label': 'Awarded RFQ', 'icon': Icons.card_giftcard},
+      ],
+      children: [ListQuotations(), ListQuotations(isAward: true)],
     );
   }
 }
