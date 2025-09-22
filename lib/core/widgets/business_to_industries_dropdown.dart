@@ -169,11 +169,13 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
   }
 
   List<String> get _items {
-    return _selectedBusiness == null
+    var items = _selectedBusiness == null
         ? _businessToIndustries.keys
               .where((key) => !_isPlaceholder(key))
               .toList()
         : _businessToIndustries[_selectedBusiness!] ?? [];
+    items.sort();
+    return items;
   }
 
   @override
@@ -319,6 +321,7 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
         .join(', ');
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           label.toUpperAll,

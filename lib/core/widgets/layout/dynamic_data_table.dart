@@ -803,13 +803,16 @@ class _LinkAnchor extends StatelessWidget {
   _buildDeleteBtn(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Text.rich(
-        TextSpan(
-          text: label,
-          style: TextStyle(
-            decoration: TextDecoration.underline,
-            decorationColor: context.errorColor,
-            decorationThickness: 2.0,
+      child: Tooltip(
+        message: 'Tap to take action',
+        child: Text.rich(
+          TextSpan(
+            text: label,
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+              decorationColor: context.errorColor,
+              decorationThickness: 2.0,
+            ),
           ),
         ),
       ),

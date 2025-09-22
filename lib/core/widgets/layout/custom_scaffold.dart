@@ -5,6 +5,7 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/check_for_app_update.dart';
 import 'package:assign_erp/core/widgets/nav/bread_crumbs.dart';
+import 'package:assign_erp/core/widgets/nav/notification_dropdown.dart';
 import 'package:assign_erp/core/widgets/nav/profile_menu_dropdown.dart';
 import 'package:assign_erp/core/widgets/search/spotlight_search_bar.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
@@ -206,22 +207,9 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             SizedBox(width: 10),
           ],
-          Stack(
-            children: [
-              _iconButton(
-                '9 Notifications',
-                onPressed: () {},
-                icon: Icons.notifications,
-              ),
-              Positioned(
-                top: 1.0,
-                right: 8.0,
-                child: Text(
-                  '9',
-                  style: TextStyle(color: kLightBlueColor, fontSize: 12),
-                ),
-              ),
-            ],
+          NotificationsDropdown(
+            workspace: authState.workspace,
+            employee: authState.employee,
           ),
           ProfileMenuDropdown(
             workspace: authState.workspace,
@@ -232,8 +220,8 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
   IconButton _iconButton(
     String tooltip, {
-    void Function()? onPressed,
     required IconData icon,
+    void Function()? onPressed,
   }) {
     return IconButton(
       onPressed: onPressed,

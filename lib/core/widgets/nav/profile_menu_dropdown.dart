@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/hosting_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
@@ -36,16 +37,13 @@ class ProfileMenuDropdown extends StatelessWidget {
       alignment: Alignment.center,
       margin: const EdgeInsets.all(20),
       child: PopupMenuButton<String>(
-        tooltip: 'Tap to open menu',
+        tooltip: 'Tap to open notifications',
         padding: EdgeInsets.zero,
-        offset: const Offset(0, 80),
+        offset: const Offset(0, 60),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         onSelected: (value) => _handleMenuAction(context, value),
         itemBuilder: (context) => _buildMenuItems(context),
-        child: Tooltip(
-          message: 'Tap to open menu',
-          child: _buildProfileIcon(context, isLargeScreen),
-        ),
+        child: _buildProfileIcon(context, isLargeScreen),
       ),
     );
   }
@@ -173,20 +171,20 @@ class ProfileMenuDropdown extends StatelessWidget {
               color: kLightBlueColor,
             ),
           ),
-          const Divider(thickness: 4),
+          const HorizontalDivider(thickness: 4),
           _buildListTile(
             context,
             title: 'SUB.: ${context.readSubscriptionName}',
             subtitle: 'Validity: ${workspace.expiresOn.toStandardDT}',
           ),
-          const Divider(thickness: 0.4),
+          const HorizontalDivider(thickness: 0.4),
           _buildListTile(
             context,
             title:
                 "Multi-Location: ${workspace.maxAllowedDevices > 1 ? 'On' : 'Off'}",
             subtitle: 'Max-Devices: ${workspace.maxAllowedDevices}',
           ),
-          const Divider(thickness: 0.4),
+          const HorizontalDivider(thickness: 0.4),
           _buildListTile(
             context,
             title: 'Hosting: ${workspace.hostingType.getValue}',
