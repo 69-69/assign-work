@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "Refactored RFQ View details"
+git commit -m "Refactored RFQ View details and DynamicDataTable"
 git branch -M main
 git push -u origin main
 

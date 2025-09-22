@@ -1,11 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
-import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
+import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
@@ -17,7 +17,6 @@ import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/li
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/widget/rfq_printer.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,52 +37,6 @@ class _ListQuotationsState extends State<ListQuotations> {
   final List<Supplier> _suppliers = [];
 
   bool get _isAward => widget.isAward;
-
-  /*Future<void> computeAllTaxAmounts(RequestForQuotation quote) async {
-    final taxRateMap = await GetTaxes.loadAllTaxRates();
-
-    if (quote.taxMode == TaxMode.perLineTax) {
-      for (final item in quote.lineItems) {
-        final taxRate = item.resolveTaxFromMap(taxRateMap);
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        item.copyWith(taxAmount: taxAmount);
-      }
-    } else {
-      double totalTax = 0.0;
-      final taxRate = quote.resolveTaxFromMap(taxRateMap);
-      for (final item in quote.lineItems) {
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        totalTax += taxAmount;
-      }
-      quote.copyWith(headerTaxAmount: totalTax);
-    }
-  }*/
-
-  /*Future<({RequestForQuote rfq, Map<String, Map<String, dynamic>> taxNames})>
-  calculateTaxAmounts(RequestForQuote quote) async {
-    // Calculate tax amounts for each line item (perLineTax)
-    if (quote.taxMode == TaxModeToApply.perLineTax) {
-      final updatedItems = quote.lineItems.map((item) {
-        final taxRate = item.resolveTaxFromMap(taxRateMap);
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        return item.copyWith(taxAmount: taxAmount);
-      }).toList();
-
-      // Update line items in the quote
-      quote = quote.copyWith(lineItems: updatedItems);
-    } else {
-      // Calculate total tax amount (headerTax)
-      final taxRate = quote.resolveTaxFromMap(taxRateMap);
-      final totalTax = quote.lineItems.fold(0.0, (s, item) {
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        return s + taxAmount;
-      });
-      prettyPrint('tax-amt', taxRateMap);
-
-      quote = quote.copyWith(headerTaxAmount: totalTax);
-    }
-    return (rfq: quote, taxNames: taxRateMap);
-  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +95,8 @@ class _ListQuotationsState extends State<ListQuotations> {
       rows: data.rows,
       childrenRow: data.childrenRow,
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
+      selectedRowKeyIndex: 0, // Column index used as row key (e.g., ID)
+      selectedRowKeys: _selectedIds, // Currently selected row keys
       onChecked: (bool? isChecked, checkedRow) {
         setState(() {
           _updateSelectedIds(isChecked, checkedRow.first, quotes);
@@ -289,7 +244,22 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   Future<void> _onCompareTwoRFQ(BuildContext cxt) async {
-    // for-loop limit 2
+    if (_selectedForCompare.length != 2) {
+      context.showAlertOverlay(
+        'Please select two quotes to compare.',
+        bgColor: kDangerColor,
+        popContext: () {
+          setState(() {
+            _selectedIds.clear();
+            _selectedForCompare.clear();
+            _quotesWithTaxes.clear();
+            _suppliers.clear();
+          });
+        },
+      );
+      return;
+    }
+    // limit to 2 quotes
     for (int i = 0; i < 2; i++) {
       final quote = _selectedForCompare[i];
       final quoteWithTaxes = await _applyTaxesToQuote(quote);
@@ -299,12 +269,15 @@ class _ListQuotationsState extends State<ListQuotations> {
     }
 
     if (cxt.mounted) {
-      if (_quotesWithTaxes.length != _suppliers.length) {
+      if (_quotesWithTaxes.length > 1 &&
+          (_quotesWithTaxes.length != _suppliers.length)) {
         cxt.showAlertOverlay('Mismatch between quotes and suppliers.');
         return;
       }
+
       await cxt.openCompareRFQ(quotes: _quotesWithTaxes, suppliers: _suppliers);
       setState(() {
+        _selectedIds.clear();
         _selectedForCompare.clear();
         _quotesWithTaxes.clear();
         _suppliers.clear();
@@ -313,6 +286,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   Future<void> _onViewDetails(List<RequestForQuote> quotes, String id) async {
+    prettyPrint('steven', '22333');
     final quote = _getQuoteById(quotes, id);
     if (quote == null) return;
 
@@ -371,7 +345,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 }
 
-/// Print grouped or multiple Purchase Quotes [_IssueMultiQuotesPrintout]
+/*/// Print grouped or multiple Purchase Quotes [_IssueMultiQuotesPrintout]
 class _IssueMultiQuotesPrintout extends StatelessWidget {
   final List<RequestForQuote> quotes;
   final Function(bool) onDone;
@@ -447,13 +421,6 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
           // Check if totalDeleted isEqual to total quotes,
           // is so, then deletion completed
           onDone(true);
-
-          /* int totalDeleted = 0;
-            totalDeleted++;
-            for (var quote in quotes) {}
-            if (totalDeleted == quote.length) {
-              onDone(true);
-            }*/
         }
       },
       label: const Text('Delete', style: TextStyle(color: kWhiteColor)),
@@ -481,4 +448,4 @@ class _IssueMultiQuotesPrintout extends StatelessWidget {
       ),
     );
   }
-}
+}*/

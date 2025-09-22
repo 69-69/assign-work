@@ -17,8 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';*/
 
-const _compareBgColor = [kSuccessColor, kWarningColor];
-
 extension RFQDetails on BuildContext {
   Future openRFQDetails({
     required Supplier supplier,
@@ -42,7 +40,8 @@ extension RFQDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: FormBottomSheet(
-      title: 'Quotes Comparison',
+      title: 'Compare Suppliers Quotes',
+      subtitle: 'AI-powered cost-value analysis',
       body: _CompareTwoRFQ(quotes: quotes, suppliers: suppliers),
     ),
   );
@@ -66,11 +65,13 @@ class _CompareTwoRFQ extends StatelessWidget {
   final List<Supplier> _suppliers;
 
   const _CompareTwoRFQ({
-    super.key,
     required List<RequestForQuote> quotes,
     required List<Supplier> suppliers,
   }) : _quotes = quotes,
        _suppliers = suppliers;
+
+  double get _maxNetTotal =>
+      _quotes.map((q) => q.netTotal).reduce((a, b) => a > b ? a : b);
 
   @override
   Widget build(BuildContext context) {
@@ -79,27 +80,46 @@ class _CompareTwoRFQ extends StatelessWidget {
         final index = q.key;
         final quote = q.value;
 
+        // The Quote with cheaper price will be highlighted Green background
+        Color rowColor = (quote.netTotal == _maxNetTotal)
+            ? kWarningColor
+            : kSuccessColor;
+        IconData icon = (quote.netTotal == _maxNetTotal)
+            ? Icons.warning_amber_rounded
+            : Icons.check_circle;
+        final currencySign = getCurrencySign(quote.currency);
+        final adjective = (quote.netTotal == _maxNetTotal) ? 'Worst' : 'Best';
+
         return Container(
           padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
           decoration: BoxDecoration(
-            color: _compareBgColor[index].toAlpha(0.1),
+            color: rowColor.toAlpha(0.1),
             border: Border(
-              bottom: BorderSide(color: _compareBgColor[index], width: 10),
-              right: _borderSide(index, 0),
-              left: _borderSide(index, 1),
+              bottom: BorderSide(color: rowColor, width: 10),
+              right: _borderSide(index, 0, rowColor),
+              left: _borderSide(index, 1, rowColor),
             ),
           ),
-          child: _RFQInfoPage(quote: quote, supplier: _suppliers[index].name),
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: Tooltip(
+                  message:
+                      'AI: $adjective choice based on price ($currencySign${quote.netTotal})',
+                  child: Icon(icon, color: rowColor),
+                ),
+              ),
+              _RFQInfoPage(quote: quote, supplier: _suppliers[index].name),
+            ],
+          ),
         );
       }).toList(),
     );
   }
 
-  BorderSide _borderSide(int index, int count) {
-    return index == count
-        ? BorderSide(color: _compareBgColor[index], width: 0.2)
-        : BorderSide.none;
-  }
+  BorderSide _borderSide(int i, int count, Color color) =>
+      i == count ? BorderSide(color: color, width: 0.2) : BorderSide.none;
 }
 
 class _RFQInfoPage extends StatelessWidget {

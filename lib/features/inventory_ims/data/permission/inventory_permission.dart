@@ -48,11 +48,6 @@ enum InventoryPermission {
   viewMO,
   updateMO,
   deleteMO,
-  // GRN = Goods Receipt Note
-  manageGRN,
-  createGRN,
-  updateGRN,
-  deleteGRN,
   // Item Category
   // manageItemCategory,
   // Item Suppliers/Vendors
@@ -228,35 +223,6 @@ final List<AccessControl> _miscOrderPermissions = [
   ),
 ];
 
-final List<AccessControl> _goodsReceiptNotePermissions = [
-  AccessControl(
-    module: "goods receipt note",
-    title: "Manage goods receipt note",
-    description: "Allow users to create, edit, and delete goods receipt note.",
-    access: InventoryPermission.manageGRN,
-  ),
-  AccessControl(
-    module: "goods receipt note",
-    title: "Create goods receipt note",
-    description:
-        "Allow users to process new goods receipt note at any location.",
-    access: InventoryPermission.createGRN,
-  ),
-  AccessControl(
-    module: "goods receipt note",
-    title: "Edit goods receipt note",
-    description:
-        "Allow users to modify details of an existing goods receipt note.",
-    access: InventoryPermission.updateGRN,
-  ),
-  AccessControl(
-    module: "goods receipt note",
-    title: "Delete goods receipt note",
-    description: "Allow users to permanently remove a goods receipt note.",
-    access: InventoryPermission.deleteGRN,
-  ),
-];
-
 final List<AccessControl> _customersPermissions = [
   AccessControl(
     module: "customers",
@@ -398,7 +364,6 @@ final List<AccessControl> inventoryPermissions = [
   ..._salesOrderPermissions,
   ..._purchaseOrderPermissions,
   ..._miscOrderPermissions,
-  ..._goodsReceiptNotePermissions,
   ..._deliveryPermissions,
   ..._customersPermissions,
   ..._metricsPermissions,

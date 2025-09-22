@@ -93,6 +93,15 @@ extension ProcurementTiles on dynamic {
         'description': 'generate POs to suppliers to request goods or services',
       },
       {
+        'label': 'goods receipt note',
+        'icon': Icons.receipt_long,
+        'action': RouteNames.goodsReceiptNote,
+        'param': {},
+        'access': _getValue(ProcurementPermission.manageGRN),
+        'description':
+            'Record and manage the receipt of goods from suppliers. This allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
+      },
+      {
         'label': 'suppliers - management',
         'icon': Icons.store_mall_directory_outlined,
         // local_shipping

@@ -58,9 +58,6 @@ class DynamicDataTable extends StatefulWidget {
   /// Delete button label [deleteLabel]
   final String? deleteLabel;
 
-  /// View details Link label [viewDetailsLabel]
-  final String? viewDetailsLabel;
-
   /// DataTable header [headers]
   final List<String> headers;
 
@@ -89,6 +86,30 @@ class DynamicDataTable extends StatefulWidget {
   /// View details via Link onClick Action [onViewDetailsTap]
   final Function(List<String>)? onViewDetailsTap;
 
+  /// [selectedRowKeyIndex] OPTIONAL: The index of the column used to uniquely identify each row for selection tracking.
+  ///
+  /// This value is used to extract a "key" from each row in the table, typically used to
+  /// determine which rows are selected or checked. The value at this column index in each row
+  /// must be **unique and consistent**, but it doesn't have to be a database ID —
+  /// it could be a name, email, or any other unique value.
+  ///
+  /// For example, if `selectedKeyIndex = 1`, and a row is `['1', 'john@example.com', 'John']`,
+  /// then `'john@example.com'` is considered the row key.
+  final int? selectedRowKeyIndex;
+
+  /// [selectedRowKeys] OPTIONAL: A list of keys representing the rows that are currently selected (checked).
+  ///
+  /// Each key in this list is compared against the value found at `selectedRowKeyIndex`
+  /// in each row. If there's a match, that row is considered "selected" and its checkbox
+  /// will be checked.
+  ///
+  /// This allows external state to control row selection from outside the widget.
+  ///
+  /// For example:
+  /// - If `selectedRowKeyIndex = 1`, and a row is `['1', 'john@example.com', 'John']`,
+  ///   and `'john@example.com'` is in `selectedRowKeys`, then that checkbox is checked.
+  final List<String>? selectedRowKeys;
+
   const DynamicDataTable({
     super.key,
     required this.headers,
@@ -102,7 +123,6 @@ class DynamicDataTable extends StatefulWidget {
     this.optButtonIcon,
     this.editLabel,
     this.deleteLabel,
-    this.viewDetailsLabel,
     this.optButtonLabel,
     this.onCellTap,
     this.onEditTap,
@@ -111,6 +131,8 @@ class DynamicDataTable extends StatefulWidget {
     this.onOptButtonTap,
     this.onChecked,
     this.onAllChecked,
+    this.selectedRowKeyIndex,
+    this.selectedRowKeys,
     this.anyWidgetAlignment = WrapAlignment.start,
   });
 
@@ -257,6 +279,30 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       headers: widget.headers,
       sortBy: _currentSortColumn,
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant DynamicDataTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If using external selection, sync internal state with selectedRowKeys
+    if (widget.selectedRowKeys != null && widget.selectedRowKeyIndex != null) {
+      final keyIndex = widget.selectedRowKeyIndex!;
+      final newStatus = List<bool>.filled(totalRows, false);
+
+      int i = 0;
+      for (final row in [...widget.rows, ...(widget.childrenRow ?? [])]) {
+        final key = (keyIndex >= 0 && keyIndex < row.length)
+            ? row[keyIndex]
+            : '';
+        newStatus[i] = widget.selectedRowKeys!.contains(key);
+        i++;
+      }
+
+      setState(() {
+        _selectedRowsStatus = newStatus;
+      });
+    }
   }
 
   @override
@@ -431,17 +477,6 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 
   /// Excludes/Hides a value at a specific position from the UI but keeps it in the data layer or code.
-  /*Iterable<String> _excludeTheFirstValue2(List<String> list) =>
-      widget.skip ? list.skip(widget.skipAtIndex) : list;
-
-     Iterable<String> _excludeAtIndex(List<String> list) =>
-      _skipAtIndex.isNotNullNorEmpty
-      ? List.generate(
-          list.length,
-          (i) => i,
-        ).where((i) => i != _skipAtIndex).map((i) => list[i])
-      : list;*/
-
   Iterable<String> _excludeAtIndex(List<String> list) {
     final indicesToExclude = <int>{
       if (_maskAtIndex != null) _maskAtIndex!,
@@ -461,9 +496,6 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       // Toggle All CheckBoxes
       DataColumn(tooltip: 'Select all', label: _buildParentCheckbox()),
 
-      if (widget.onViewDetailsTap != null) ...{
-        _buildDataColumn(widget.viewDetailsLabel ?? 'Details'),
-      },
       // Toggle Multiple (mask/unmask) secrets in a  (e.g., IDs, any sensitive data)
       if (_maskAtIndex.isNotNullNorEmpty) ...{
         DataColumn(
@@ -554,16 +586,6 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           // Individual Checkboxes
           _buildEachCheckBox(index, row),
 
-          /// View Details Link
-          if (widget.onViewDetailsTap != null) ...{
-            DataCell(
-              _ViewDetailsButton(
-                label: widget.viewDetailsLabel,
-                onTap: () => widget.onViewDetailsTap!(row),
-              ),
-            ),
-          },
-
           // Toggle Single (mask/unmask) secret (e.g., ID, any sensitive data)
           if (_maskAtIndex.isNotNullNorEmpty) ...{
             DataCell(
@@ -576,18 +598,29 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           },
 
           // Data to display: Skip the first value in each row: ...row.skip(1)
-          ..._excludeAtIndex(row).map((cell) {
-            return DataCell(
-              showEditIcon: false,
-              cell.isNullOrEmpty
-                  ? _buildPlaceholder(context)
-                  : context.copyPasteText(str: cell),
-              onTap: () {
-                if (widget.onCellTap != null) {
-                  widget.onCellTap!(cell, row);
-                }
-              },
-            );
+          ..._excludeAtIndex(row).toList().asMap().entries.map((entry) {
+            final colIndex = entry.key;
+            final cell = entry.value;
+
+            return widget.onViewDetailsTap != null && colIndex == 0
+                ? DataCell(
+                    // View Details Link
+                    _LinkAnchor(
+                      label: cell,
+                      onTap: () => widget.onViewDetailsTap?.call(row),
+                    ),
+                  )
+                : DataCell(
+                    showEditIcon: false,
+                    cell.isNullOrEmpty
+                        ? _buildPlaceholder(context)
+                        : context.copyPasteText(str: cell),
+                    onTap: () {
+                      if (widget.onCellTap != null) {
+                        widget.onCellTap!(cell, row);
+                      }
+                    },
+                  );
           }),
           // onOptButtonTap
           if (widget.onOptButtonTap != null) ...{
@@ -640,11 +673,27 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     );
   }
 
-  // Build individual checkboxes
+  /// Determines if a row is selected based on external keys or internal state.
+  bool _isRowChecked(int index, List<String> row) {
+    final keyIndex = widget.selectedRowKeyIndex ?? 0;
+
+    // Defensive fallback if index is out of range
+    final rowKey = (keyIndex >= 0 && keyIndex < row.length)
+        ? row[keyIndex]
+        : '';
+
+    // Use external selection if available, else fallback to internal state
+    return widget.selectedRowKeys?.contains(rowKey) ??
+        _selectedRowsStatus[index];
+  }
+
+  /// Build individual checkboxes
   DataCell _buildEachCheckBox(int index, List<String> row) {
+    final isChecked = _isRowChecked(index, row);
+
     return DataCell(
       Checkbox.adaptive(
-        value: _selectedRowsStatus[index],
+        value: isChecked,
         side: BorderSide(width: 1.0, color: context.onSurfaceColor),
         onChanged: (bool? selected) {
           // Update the selection status of the individual checkbox
@@ -672,33 +721,6 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       ),
     );
   }
-
-  /*DataCell _buildEachCheckBox2(int index, List<String> row) {
-    return DataCell(
-      Checkbox(
-        value: _selectedRowsStatus[index],
-        side: const BorderSide(width: 1.0),
-        onChanged: (bool? selected) {
-          /*setState(() {
-            if (selected == true) {
-              // Uncheck all except the currently selected
-              for (int i = 0; i < _selectedRowsStatus.length; i++) {
-                _selectedRowsStatus[i] = (i == index);
-              }
-            } else {
-              // Allow unchecking the currently selected box
-              _selectedRowsStatus[index] = false;
-            }
-          });*/
-          // Notify if a callback is provided
-          if (widget.onChecked != null) {
-            widget.onChecked!(selected, row);
-          }
-          setState(() => _selectedRowsStatus[index] = selected ?? false);
-        },
-      ),
-    );
-  }*/
 }
 
 /// [_DataTableHelper] for filtering and sorting
@@ -765,11 +787,13 @@ class _DataTableHelper {
   }
 }
 
-class _ViewDetailsButton extends StatelessWidget {
-  final String? label;
+/// [_LinkAnchor] A reusable text link widget styled as an underline anchor.
+/// When tapped, it triggers the provided [onTap] callback.
+class _LinkAnchor extends StatelessWidget {
+  final String label;
   final VoidCallback onTap;
 
-  const _ViewDetailsButton({required this.onTap, this.label});
+  const _LinkAnchor({required this.onTap, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -777,20 +801,15 @@ class _ViewDetailsButton extends StatelessWidget {
   }
 
   _buildDeleteBtn(BuildContext context) {
-    final text = label ?? 'View details >';
-
-    return ColoredBox(
-      color: kDangerColor,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4.0),
-        child: InkWell(
-          onTap: onTap,
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: kWhiteColor,
-              overflow: TextOverflow.ellipsis,
-            ),
+    return InkWell(
+      onTap: onTap,
+      child: Text.rich(
+        TextSpan(
+          text: label,
+          style: TextStyle(
+            decoration: TextDecoration.underline,
+            decorationColor: context.errorColor,
+            decorationThickness: 2.0,
           ),
         ),
       ),

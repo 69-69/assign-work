@@ -3,24 +3,37 @@ import 'package:assign_erp/features/access_control/data/model/access_control_mod
 /// PERMISSION BASED ACCESS-CONTROL
 enum ProcurementPermission {
   manageProcurement,
-  //POs = Purchase Orders
-  managePOs,
-  createPO,
-  updatePO,
-  deletePO,
-  viewPO,
+  // PR = Purchase Requisition
+  managePRs,
+  createPR,
+  viewPR,
+  updatePR,
+  deletePR,
+  approvePR,
+  rejectPR,
   // RFQs = Request for Quotation
   manageRFQs,
   createRFQ,
   viewRFQ,
   updateRFQ,
   deleteRFQ,
-  // Purchase Requisition
-  managePRs,
-  createPR,
-  viewPR,
-  updatePR,
-  deletePR,
+  approveRFQ,
+  rejectRFQ,
+  //POs = Purchase Orders
+  managePOs,
+  createPO,
+  updatePO,
+  deletePO,
+  viewPO,
+  approvePO,
+  rejectPO,
+  // GRN = Goods Receipt Note
+  manageGRN,
+  createGRN,
+  updateGRN,
+  deleteGRN,
+  approveGRN,
+  rejectGRN,
   // Suppliers Management
   manageSuppliers,
   createSuppliers,
@@ -78,36 +91,53 @@ final List<AccessControl> _supplierManagementPermissions = [
   ),
 ];
 
-final List<AccessControl> _purchaseOrderPermissions = [
+final List<AccessControl> _purchaseRequisitionPermissions = [
   AccessControl(
-    module: "pro purchase orders",
-    title: "Manage purchase orders",
-    description: "Allow users to create, edit, and delete purchase orders.",
-    access: ProcurementPermission.managePOs,
+    module: "pro purchase requisition",
+    title: "Manage purchase requisition",
+    description:
+        "Allow users to create, edit, and delete purchase requisition.",
+    access: ProcurementPermission.managePRs,
   ),
   AccessControl(
-    module: "pro purchase orders",
-    title: "Create new purchase orders",
-    description: "Allow users to process new purchase orders at any location.",
-    access: ProcurementPermission.createPO,
+    module: "pro purchase requisition",
+    title: "Create new purchase requisition",
+    description:
+        "Allow users to process new purchase requisition at any location.",
+    access: ProcurementPermission.createPR,
   ),
   AccessControl(
-    module: "pro purchase orders",
-    title: "View purchase orders",
-    description: "Allow access to a list of all completed purchase orders.",
-    access: ProcurementPermission.viewPO,
+    module: "pro purchase requisition",
+    title: "View purchase requisition",
+    description:
+        "Allow access to a list of all completed purchase requisition.",
+    access: ProcurementPermission.viewPR,
   ),
   AccessControl(
-    module: "pro purchase orders",
-    title: "Edit existing purchase orders",
-    description: "Allow users to modify details of an existing purchase order.",
-    access: ProcurementPermission.updatePO,
+    module: "pro purchase requisition",
+    title: "Edit existing purchase requisition",
+    description:
+        "Allow users to modify details of an existing purchase requisition.",
+    access: ProcurementPermission.updatePR,
   ),
   AccessControl(
-    module: "pro purchase orders",
-    title: "Delete purchase orders",
-    description: "Allow users to permanently remove a purchase order record.",
-    access: ProcurementPermission.deletePO,
+    module: "pro purchase requisition",
+    title: "Delete purchase requisition",
+    description:
+        "Allow users to permanently remove a purchase requisition record.",
+    access: ProcurementPermission.deletePR,
+  ),
+  AccessControl(
+    module: "pro purchase requisition",
+    title: "Approve purchase requisition",
+    description: "Allow users to approve purchase requisition.",
+    access: ProcurementPermission.approvePR,
+  ),
+  AccessControl(
+    module: "pro purchase requisition",
+    title: "Reject purchase requisition",
+    description: "Allow users to reject purchase requisition.",
+    access: ProcurementPermission.rejectPR,
   ),
 ];
 
@@ -145,43 +175,103 @@ final List<AccessControl> _requestForQuotePermissions = [
         "Allow users to permanently remove a request for quote record.",
     access: ProcurementPermission.deleteRFQ,
   ),
+  AccessControl(
+    module: "pro request for quotes",
+    title: "Approve request for quotes",
+    description: "Allow users to approve request for quotes.",
+    access: ProcurementPermission.approveRFQ,
+  ),
+  AccessControl(
+    module: "pro request for quotes",
+    title: "Reject request for quotes",
+    description: "Allow users to reject request for quotes.",
+    access: ProcurementPermission.rejectRFQ,
+  ),
 ];
 
-final List<AccessControl> _purchaseRequisitionPermissions = [
+final List<AccessControl> _purchaseOrderPermissions = [
   AccessControl(
-    module: "pro purchase requisition",
-    title: "Manage purchase requisition",
-    description:
-        "Allow users to create, edit, and delete purchase requisition.",
-    access: ProcurementPermission.managePRs,
+    module: "pro purchase orders",
+    title: "Manage purchase orders",
+    description: "Allow users to create, edit, and delete purchase orders.",
+    access: ProcurementPermission.managePOs,
   ),
   AccessControl(
-    module: "pro purchase requisition",
-    title: "Create new purchase requisition",
-    description:
-        "Allow users to process new purchase requisition at any location.",
-    access: ProcurementPermission.createPR,
+    module: "pro purchase orders",
+    title: "Create new purchase orders",
+    description: "Allow users to process new purchase orders at any location.",
+    access: ProcurementPermission.createPO,
   ),
   AccessControl(
-    module: "pro purchase requisition",
-    title: "View purchase requisition",
-    description:
-        "Allow access to a list of all completed purchase requisition.",
-    access: ProcurementPermission.viewPR,
+    module: "pro purchase orders",
+    title: "View purchase orders",
+    description: "Allow access to a list of all completed purchase orders.",
+    access: ProcurementPermission.viewPO,
   ),
   AccessControl(
-    module: "pro purchase requisition",
-    title: "Edit existing purchase requisition",
-    description:
-        "Allow users to modify details of an existing purchase requisition.",
-    access: ProcurementPermission.updatePR,
+    module: "pro purchase orders",
+    title: "Edit existing purchase orders",
+    description: "Allow users to modify details of an existing purchase order.",
+    access: ProcurementPermission.updatePO,
   ),
   AccessControl(
-    module: "pro purchase requisition",
-    title: "Delete purchase requisition",
+    module: "pro purchase orders",
+    title: "Delete purchase orders",
+    description: "Allow users to permanently remove a purchase order record.",
+    access: ProcurementPermission.deletePO,
+  ),
+  AccessControl(
+    module: "pro purchase orders",
+    title: "Approve purchase orders",
+    description: "Allow users to approve purchase orders.",
+    access: ProcurementPermission.approvePO,
+  ),
+  AccessControl(
+    module: "pro purchase orders",
+    title: "Reject purchase orders",
+    description: "Allow users to reject purchase orders.",
+    access: ProcurementPermission.rejectPO,
+  ),
+];
+
+final List<AccessControl> _goodsReceiptNotePermissions = [
+  AccessControl(
+    module: "goods receipt note",
+    title: "Manage goods receipt note",
+    description: "Allow users to create, edit, and delete goods receipt note.",
+    access: ProcurementPermission.manageGRN,
+  ),
+  AccessControl(
+    module: "goods receipt note",
+    title: "Create goods receipt note",
     description:
-        "Allow users to permanently remove a purchase requisition record.",
-    access: ProcurementPermission.deletePR,
+        "Allow users to process new goods receipt note at any location.",
+    access: ProcurementPermission.createGRN,
+  ),
+  AccessControl(
+    module: "goods receipt note",
+    title: "Edit goods receipt note",
+    description:
+        "Allow users to modify details of an existing goods receipt note.",
+    access: ProcurementPermission.updateGRN,
+  ),
+  AccessControl(
+    module: "goods receipt note",
+    title: "Delete goods receipt note",
+    description: "Allow users to permanently remove a goods receipt note.",
+    access: ProcurementPermission.deleteGRN,
+  ),
+  AccessControl(
+    module: "goods receipt note",
+    title: "Approve goods receipt note",
+    description: "Allow users to approve goods receipt note.",
+    access: ProcurementPermission.approveGRN,
+  ),
+  AccessControl(
+    module: "goods receipt note",
+    title: "Reject goods receipt note",
+    description: "Allow users to reject goods receipt note.",
+    access: ProcurementPermission.rejectGRN,
   ),
 ];
 
@@ -219,9 +309,10 @@ final procurementDisplayName = 'procurement & Supplier';
 
 final List<AccessControl> procurementPermission = [
   ..._procurementPermissions,
-  ..._purchaseOrderPermissions,
-  ..._requestForQuotePermissions,
   ..._purchaseRequisitionPermissions,
+  ..._requestForQuotePermissions,
+  ..._purchaseOrderPermissions,
+  ..._goodsReceiptNotePermissions,
   ..._supplierManagementPermissions,
   ..._metricsPermissions,
   ..._secretPermissions,

@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/layout/dynamic_table.dart';
+import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/agent/data/models/agent_client_model.dart';
 import 'package:assign_erp/features/agent/presentation/bloc/agent_bloc.dart';

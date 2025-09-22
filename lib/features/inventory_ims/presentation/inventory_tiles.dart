@@ -61,15 +61,6 @@ extension InventoryTiles on dynamic {
         'description':
             'create additional orders that may include special requests, one-time purchases',
       },
-      {
-        'label': 'goods receipt note',
-        'icon': Icons.receipt_long,
-        'action': RouteNames.goodsReceiptNote,
-        'param': {},
-        'access': _getValue(InventoryPermission.manageGRN),
-        'description':
-            'Record and manage the receipt of goods from suppliers. This allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
-      },
       /*{
         'label': 'Item Categories',
         'icon': Icons.dashboard_customize_outlined,

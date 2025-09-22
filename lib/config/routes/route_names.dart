@@ -63,16 +63,16 @@ abstract class RouteNames {
   static const ordersTracking2 = 'temp_orders_tracking';
   static const imsPurchaseOrders = 'inventory_purchase_orders_screen';
   static const miscOrders = 'miscellaneous_orders_screen';
-  static const goodsReceiptNote = 'goods_receipt_note_screen';
   static const items = 'products_screen';
   static const sales = 'sales_screen';
   static const inventReports = 'invent_reports_screen';
 
   // for procurement
   /// ───────────────────────── 📦 Procurement Module ─────────────────────────
-  static const proPurchaseOrders = 'procurement_purchase_orders_screen';
   static const purchaseRequisition = 'purchase_requisition_screen';
   static const proRequestForQuote = 'procurement_request_for_quote_screen';
+  static const proPurchaseOrders = 'procurement_purchase_orders_screen';
+  static const goodsReceiptNote = 'goods_receipt_note_screen';
   static const supplierManagement = 'supplier_management_screen';
   static const supplierAccount = 'supplier_account_screen';
   static const procurementReports = 'procurement_reports_screen';
