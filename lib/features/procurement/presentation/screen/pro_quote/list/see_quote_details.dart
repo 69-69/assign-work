@@ -96,8 +96,8 @@ class _CompareTwoRFQ extends StatelessWidget {
             color: rowColor.toAlpha(0.1),
             border: Border(
               bottom: BorderSide(color: rowColor, width: 10),
-              right: _borderSide(index, 0, rowColor),
-              left: _borderSide(index, 1, rowColor),
+              // right: _borderSide(index, 0, rowColor),
+              // left: _borderSide(index, 1, rowColor),
             ),
           ),
           child: Stack(
