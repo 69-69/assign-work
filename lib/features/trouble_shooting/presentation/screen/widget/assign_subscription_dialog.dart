@@ -14,40 +14,34 @@ extension AssignSubscriptionDialog on BuildContext {
   Future<void> assignSubscriptionToWorkspaceDialog({
     required String workspaceId,
     String? workspaceName,
-  }) async =>
-      await AssignSubscriptionWorkspace(
-        workspaceId: workspaceId,
-        workspaceName: workspaceName,
-      ).openCustomDialog(
-        this,
-        isDismissible: true,
-        isScrollControlled: true,
-        constraints: null,
-      );
+    int? initialMaxDevices,
+  }) async => await AssignSubscriptionWorkspace(
+    workspaceId: workspaceId,
+    workspaceName: workspaceName,
+    initialMaxDevices: initialMaxDevices,
+  ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
 class AssignSubscriptionWorkspace extends StatelessWidget {
   final String workspaceId;
   final String? workspaceName;
+  final int? initialMaxDevices;
 
   const AssignSubscriptionWorkspace({
     super.key,
     required this.workspaceId,
     this.workspaceName,
+    this.initialMaxDevices,
   });
 
   String get _workspaceName => (workspaceName ?? 'Workspace').toTitle;
 
   @override
   Widget build(BuildContext context) {
-    return _buildAlertDialog(context);
-  }
-
-  _buildAlertDialog(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
         title: 'Assign Subscription',
-        subtitle: 'Assign subscription to $_workspaceName',
+        subtitle: 'Assign subscription to: $_workspaceName',
       ),
       body: _buildBody(context),
       actions: [],
@@ -63,14 +57,11 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             SubscriptionAndTotalDevicesDropdown(
+              initialTotalDevices: initialMaxDevices?.toString(),
               onTotalDevicesChanged: (v) {
                 _updateSpecificData(context, {
                   'maxAllowedDevices': int.tryParse(v ?? ''),
-                });
-
-                context.showAlertOverlay(
-                  "$_workspaceName's Max allowed devices updated successfully",
-                );
+                }, title: 'Max-Allowed-Devices');
               },
               onChanged: (id, name, fee, effectiveFrom, expiresOn) {
                 _updateSpecificData(context, {
@@ -78,11 +69,7 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
                   'subscriptionFee': fee,
                   'expiresOn': expiresOn?.millisecondsSinceEpoch,
                   'effectiveFrom': effectiveFrom?.millisecondsSinceEpoch,
-                });
-
-                context.showAlertOverlay(
-                  'Subscription successfully assigned to $_workspaceName',
-                );
+                }, title: 'Subscription');
               },
             ),
           ],
@@ -91,9 +78,18 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
     );
   }
 
-  void _updateSpecificData(BuildContext context, Map<String, dynamic> map) {
+  void _updateSpecificData(
+    BuildContext context,
+    Map<String, dynamic> map, {
+    String? title,
+  }) {
     context.read<AllTenantsBloc>().add(
       UpdateTenant<Workspace>(documentId: workspaceId, mapData: map),
+    );
+
+    context.showAlertOverlay(
+      '$_workspaceName $title successfully updated',
+      popContext: () => Navigator.of(context),
     );
   }
 }

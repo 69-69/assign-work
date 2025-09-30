@@ -14,16 +14,10 @@ extension AssignRoleDialog on BuildContext {
   Future<void> openAssignEmployeeRoleDialog({
     required String employeeId,
     String? employeeName,
-  }) async =>
-      await AssignEmployeeRole(
-        employeeId: employeeId,
-        employeeName: employeeName,
-      ).openCustomDialog(
-        this,
-        isDismissible: true,
-        isScrollControlled: true,
-        constraints: null,
-      );
+  }) async => await AssignEmployeeRole(
+    employeeId: employeeId,
+    employeeName: employeeName,
+  ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
 class AssignEmployeeRole extends StatelessWidget {

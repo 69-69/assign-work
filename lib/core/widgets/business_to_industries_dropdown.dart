@@ -110,7 +110,7 @@ class _BusinessToIndustriesDropdownState
   }
 }
 
-/// [BusinessToIndustriesGrid] Business to industries grid view
+/// Business to industries grid view [BusinessToIndustriesGrid]
 class BusinessToIndustriesGrid extends StatefulWidget {
   final Widget? externalWidget;
   final void Function(String?)? onBusinessChanged;
@@ -134,6 +134,9 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
 
   String? _selectedBusiness;
   String? _selectedIndustry;
+  // Map to track the selected business and industry states.
+  String? _highlightedBusiness;
+  String? _highlightedIndustry;
 
   Map<String, List<String>> get _businessToIndustries =>
       businessTypeToIndustries;
@@ -213,10 +216,9 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
         }),
 
         if (_isShowingExternal)
-          _buildTextButton(
-            'Change Industry',
-            () => setState(() => _selectedIndustry = null),
-          ),
+          _buildTextButton('Change Industry', () {
+            setState(() => _selectedIndustry = null);
+          }),
       ],
     );
   }
@@ -242,7 +244,8 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
       contentPadding: EdgeInsets.zero,
       titleAlignment: ListTileTitleAlignment.center,
       title: Text(
-        _selectedBusiness?.toSentence ?? 'What kind of work do you do?',
+        _selectedIndustry?.toSentence ??
+            'What kind of ${_selectedBusiness?.toSentence ?? 'work do you do'}?',
         textAlign: TextAlign.center,
         style: context.textTheme.bodyLarge?.copyWith(
           color: context.onPrimaryContainer,
@@ -275,17 +278,21 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
 
         return GestureDetector(
           onTap: () {
-            if (_selectedBusiness == null) {
-              setState(() {
+            setState(() {
+              if (_selectedBusiness == null) {
                 _selectedBusiness = label;
+                _highlightedBusiness = label;
                 _selectedIndustry = null;
-              });
-              widget.onBusinessChanged?.call(label);
-            } else {
-              setState(() => _selectedIndustry = label);
-              widget.onIndustryChanged?.call(_selectedBusiness, label);
-            }
+                _highlightedIndustry = null;
+                widget.onBusinessChanged?.call(label);
+              } else {
+                _selectedIndustry = label;
+                _highlightedIndustry = label;
+                widget.onIndustryChanged?.call(_selectedBusiness, label);
+              }
+            });
           },
+
           child: _buildGridItemCard(context, label: label, index: index),
         );
       },
@@ -298,8 +305,9 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
     required int index,
   }) {
     final isSelected = _selectedBusiness == null
-        ? _selectedBusiness == label
-        : _selectedIndustry == label;
+        ? _highlightedBusiness == label
+        : _highlightedIndustry == label;
+
     final ranColor = randomBgColors[index % randomBgColors.length];
 
     return AnimatedContainer(
@@ -307,9 +315,9 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
       padding: const EdgeInsets.all(20.0),
       duration: kAnimateDuration,
       decoration: BoxDecoration(
-        color: isSelected ? ranColor : context.onSecondaryColor,
+        color: isSelected ? ranColor.toAlpha(0.6) : context.onSecondaryColor,
         borderRadius: BorderRadius.circular(kBorderRadius),
-        border: isSelected ? null : Border.all(color: ranColor, width: 5),
+        border: Border.all(color: ranColor, width: 5),
       ),
       child: _buildGridItemContent(label, context),
     );
@@ -348,7 +356,7 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
   }
 }
 
-/*String selectedIndustry = 'Food & Beverage';
+/* String selectedIndustry = 'Food & Beverage';
 
 List<String> businessTypesForIndustry = businessTypeToIndustries.entries
     .where((entry) => entry.value.contains(selectedIndustry))

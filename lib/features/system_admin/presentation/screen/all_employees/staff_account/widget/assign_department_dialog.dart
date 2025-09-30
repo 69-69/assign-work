@@ -14,16 +14,10 @@ extension AssignDepartmentDialog on BuildContext {
   Future<void> openAssignEmployeeDepartmentDialog({
     required String employeeId,
     String? employeeName,
-  }) async =>
-      await AssignEmployeeDepartment(
-        employeeId: employeeId,
-        employeeName: employeeName,
-      ).openCustomDialog(
-        this,
-        isDismissible: true,
-        isScrollControlled: true,
-        constraints: null,
-      );
+  }) async => await AssignEmployeeDepartment(
+    employeeId: employeeId,
+    employeeName: employeeName,
+  ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
 class AssignEmployeeDepartment extends StatelessWidget {

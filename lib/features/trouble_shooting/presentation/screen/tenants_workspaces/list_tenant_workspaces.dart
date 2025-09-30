@@ -116,6 +116,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
               await context.assignSubscriptionToWorkspaceDialog(
                 workspaceId: _selectedWorkspace!.id,
                 workspaceName: _selectedWorkspace?.name,
+                initialMaxDevices: _selectedWorkspace?.maxAllowedDevices,
               );
             },
             bgColor: kGrayBlueColor,

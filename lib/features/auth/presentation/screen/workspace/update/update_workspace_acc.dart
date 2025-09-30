@@ -17,7 +17,7 @@ extension UpdateWorkspacePopUp on BuildContext {
   Future<void> openUpdateWorkspacePopUp({required Workspace workspace}) async =>
       await WorkspaceScreen(
         workspace: workspace,
-      ).openCustomDialog(this, isDismissible: true, isScrollControlled: true);
+      ).openCustomDialog(this, isScrollControlled: true);
 }
 
 class WorkspaceScreen extends StatefulWidget {

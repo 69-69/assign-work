@@ -21,6 +21,7 @@ const kOrangeColor = Color(0xFFE65100);
 const kLightOrangeColor = Color(0xFFF67952);
 const kGoldColor = Color(0xFFAA7706);
 const kSuccessColor = Color(0xFF44CA03);
+const kDarkSuccessColor = Color(0xFF3AAE02);
 const kDangerColor = Color(0xFFEE3737);
 const kDarkTextColor = Colors.black;
 const kDefaultPadding = 20.0;

@@ -76,7 +76,7 @@ class DashboardMetrics extends StatelessWidget {
           child: _buildListTile(context, title: title, subtitle: subtitle),
         ),
         IconButton(
-          tooltip: 'Pin Metrics',
+          tooltip: 'Pin Metrics - KPI',
           onPressed: onPressed,
           icon: Icon(Icons.push_pin, color: kBrightPrimaryColor),
           hoverColor: kLightBlueColor.toAlpha(0.3),

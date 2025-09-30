@@ -20,12 +20,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension ForgotPasscodeDialog on BuildContext {
   Future<void> openForgotPasscode({required Employee employee}) async =>
-      await ForgotPasscode(employee: employee).openCustomDialog(
-        this,
-        isDismissible: true,
-        isScrollControlled: true,
-        constraints: null,
-      );
+      await ForgotPasscode(
+        employee: employee,
+      ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
 class ForgotPasscode extends StatefulWidget {

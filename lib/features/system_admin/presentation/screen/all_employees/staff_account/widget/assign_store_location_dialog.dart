@@ -14,16 +14,10 @@ extension AssignStoreLocationDialog on BuildContext {
   Future<void> assignEmployeeToStoreLocationDialog({
     required String employeeId,
     String? employeeName,
-  }) async =>
-      await AssignStoreLocation(
-        employeeId: employeeId,
-        employeeName: employeeName,
-      ).openCustomDialog(
-        this,
-        isDismissible: true,
-        isScrollControlled: true,
-        constraints: null,
-      );
+  }) async => await AssignStoreLocation(
+    employeeId: employeeId,
+    employeeName: employeeName,
+  ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
 class AssignStoreLocation extends StatelessWidget {

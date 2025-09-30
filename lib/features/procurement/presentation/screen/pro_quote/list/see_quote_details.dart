@@ -89,6 +89,9 @@ class _CompareTwoRFQ extends StatelessWidget {
             : Icons.check_circle;
         final currencySign = getCurrencySign(quote.currency);
         final adjective = (quote.netTotal == _maxNetTotal) ? 'Worst' : 'Best';
+        final textColor = (quote.netTotal == _maxNetTotal)
+            ? kDarkWarningColor
+            : kDarkSuccessColor;
 
         return Container(
           padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
@@ -110,7 +113,11 @@ class _CompareTwoRFQ extends StatelessWidget {
                   child: Icon(icon, color: rowColor),
                 ),
               ),
-              _RFQInfoPage(quote: quote, supplier: _suppliers[index].name),
+              _RFQInfoPage(
+                quote: quote,
+                supplier: _suppliers[index].name,
+                textColor: textColor,
+              ),
             ],
           ),
         );
@@ -118,17 +125,22 @@ class _CompareTwoRFQ extends StatelessWidget {
     );
   }
 
-  BorderSide _borderSide(int i, int count, Color color) =>
-      i == count ? BorderSide(color: color, width: 0.2) : BorderSide.none;
+  // BorderSide _borderSide(int i, int count, Color color) =>
+  //     i == count ? BorderSide(color: color, width: 0.2) : BorderSide.none;
 }
 
 class _RFQInfoPage extends StatelessWidget {
   final String _supplier;
   final RequestForQuote? _quote;
+  final Color? _textColor;
 
-  const _RFQInfoPage({RequestForQuote? quote, String supplier = ''})
-    : _quote = quote,
-      _supplier = supplier;
+  const _RFQInfoPage({
+    RequestForQuote? quote,
+    String supplier = '',
+    Color? textColor,
+  }) : _quote = quote,
+       _supplier = supplier,
+       _textColor = textColor;
 
   List<RFQLineItem> get _items => _quote?.lineItems ?? [];
 
@@ -176,7 +188,7 @@ class _RFQInfoPage extends StatelessWidget {
           child: Text(
             'Line Items (${_items.length})',
             style: context.textTheme.titleLarge?.copyWith(
-              color: context.secondaryColor,
+              color: _textColor ?? kSuccessColor,
             ),
           ),
         ),
@@ -215,7 +227,7 @@ class _RFQInfoPage extends StatelessWidget {
           text: '$title$separator',
           style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: context.secondaryColor,
+            color: _textColor ?? context.secondaryColor,
           ),
           children: [
             TextSpan(
@@ -358,12 +370,14 @@ class _RFQInfoPage extends StatelessWidget {
           _buildInfoRow(
             context,
             title: 'Delivery',
+
             value: _quote.getDeliveryDate,
           ),
           if (!_isPerLineTax) ...{
             _buildInfoRow(
               context,
               title: 'Applied Taxes',
+
               value: _quote.lineItems.first.taxNames.toUpperAll,
             ),
           },
@@ -373,6 +387,7 @@ class _RFQInfoPage extends StatelessWidget {
               context,
               separator: ':\n',
               title: 'Delivery Address',
+
               value: _quote.deliveryAddress.toSentence,
             ),
           ],

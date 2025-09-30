@@ -13,7 +13,6 @@ extension ForgotWorkspacePopUp on BuildContext {
   Future<void> openForgotWorkspacePopUp() async =>
       await ForgotWorkspacePassword().openCustomDialog(
         this,
-        isDismissible: true,
         isScrollControlled: true,
         constraints: null,
       );
