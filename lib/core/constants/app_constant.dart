@@ -80,6 +80,7 @@ const posSalesScreenTitle = 'p.o.s - sales';
 const posOrdersScreenTitle = 'p.o.s - orders';
 const guideToScreenTitle = 'Guide to...';
 
+const borderRadius = 15.0;
 const kAppBarHeight = 80.0;
 const fMinutesDuration = Duration(minutes: 5);
 const kDProgressDelay = Duration(seconds: 2);

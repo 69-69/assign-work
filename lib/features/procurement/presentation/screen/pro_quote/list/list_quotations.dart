@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -98,9 +97,7 @@ class _ListQuotationsState extends State<ListQuotations> {
       selectedRowKeyIndex: 0, // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds, // Currently selected row keys
       onChecked: (bool? isChecked, checkedRow) {
-        setState(() {
-          _updateSelectedIds(isChecked, checkedRow.first, quotes);
-        });
+        setState(() => _updateSelectedIds(isChecked, checkedRow.first, quotes));
       },
       onAllChecked:
           (
@@ -108,9 +105,9 @@ class _ListQuotationsState extends State<ListQuotations> {
             List<bool> isAllChecked,
             List<List<String>> checkedRows,
           ) {
-            setState(() {
-              _updateAllSelectedIds(isChecked, checkedRows, quotes);
-            });
+            setState(
+              () => _updateAllSelectedIds(isChecked, checkedRows, quotes),
+            );
           },
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintRFQ(quotes, row.first),
@@ -161,6 +158,15 @@ class _ListQuotationsState extends State<ListQuotations> {
         }
       });
     }
+  }
+
+  void _clearComparisonData() {
+    setState(() {
+      _selectedIds.clear();
+      _selectedForCompare.clear();
+      _quotesWithTaxes.clear();
+      _suppliers.clear();
+    });
   }
 
   _buildAnyWidget(List<RequestForQuote> quotes) {
@@ -246,16 +252,9 @@ class _ListQuotationsState extends State<ListQuotations> {
   Future<void> _onCompareTwoRFQ(BuildContext cxt) async {
     if (_selectedForCompare.length != 2) {
       context.showAlertOverlay(
-        'Please select two quotes to compare.',
+        'To compare, deselect and then reselect two quotes',
         bgColor: kDangerColor,
-        popContext: () {
-          setState(() {
-            _selectedIds.clear();
-            _selectedForCompare.clear();
-            _quotesWithTaxes.clear();
-            _suppliers.clear();
-          });
-        },
+        popContext: () => _clearComparisonData(),
       );
       return;
     }
@@ -276,17 +275,11 @@ class _ListQuotationsState extends State<ListQuotations> {
       }
 
       await cxt.openCompareRFQ(quotes: _quotesWithTaxes, suppliers: _suppliers);
-      setState(() {
-        _selectedIds.clear();
-        _selectedForCompare.clear();
-        _quotesWithTaxes.clear();
-        _suppliers.clear();
-      });
+      _clearComparisonData();
     }
   }
 
   Future<void> _onViewDetails(List<RequestForQuote> quotes, String id) async {
-    prettyPrint('steven', '22333');
     final quote = _getQuoteById(quotes, id);
     if (quote == null) return;
 

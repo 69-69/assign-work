@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -60,7 +61,7 @@ extension RFQDetails on BuildContext {
   }
 }
 
-class _CompareTwoRFQ extends StatelessWidget {
+class _CompareTwoRFQ extends StatefulWidget {
   final List<RequestForQuote> _quotes;
   final List<Supplier> _suppliers;
 
@@ -70,63 +71,137 @@ class _CompareTwoRFQ extends StatelessWidget {
   }) : _quotes = quotes,
        _suppliers = suppliers;
 
-  double get _maxNetTotal =>
-      _quotes.map((q) => q.netTotal).reduce((a, b) => a > b ? a : b);
+  @override
+  State<_CompareTwoRFQ> createState() => _CompareTwoRFQState();
+}
+
+class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
+  // Width ratio between first and second panel (0.0 - 1.0)
+  double _firstPanelRatio = 0.5;
+  final double _minRatio = 0.2;
+  final double _maxRatio = 0.8;
 
   @override
   Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      children: _quotes.asMap().entries.map((q) {
-        final index = q.key;
-        final quote = q.value;
+    final isTwoQuotes = widget._quotes.length == 2;
 
-        // The Quote with cheaper price will be highlighted Green background
-        Color rowColor = (quote.netTotal == _maxNetTotal)
-            ? kWarningColor
-            : kSuccessColor;
-        IconData icon = (quote.netTotal == _maxNetTotal)
-            ? Icons.warning_amber_rounded
-            : Icons.check_circle;
-        final currencySign = getCurrencySign(quote.currency);
-        final adjective = (quote.netTotal == _maxNetTotal) ? 'Worst' : 'Best';
-        final textColor = (quote.netTotal == _maxNetTotal)
-            ? kDarkWarningColor
-            : kDarkSuccessColor;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dragHandleWidth = 20.0;
+        // Reduce the total width by the drag handle width
+        final totalWidth =
+            constraints.maxWidth - (isTwoQuotes ? dragHandleWidth : 0);
 
-        return Container(
-          padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-          decoration: BoxDecoration(
-            color: rowColor.toAlpha(0.1),
-            border: Border(
-              bottom: BorderSide(color: rowColor, width: 10),
-              // right: _borderSide(index, 0, rowColor),
-              // left: _borderSide(index, 1, rowColor),
+        final firstPanelWidth = totalWidth * _firstPanelRatio;
+        final secondPanelWidth = totalWidth * (1 - _firstPanelRatio);
+
+        return Row(
+          children: [
+            SizedBox(width: firstPanelWidth, child: _buildQuote(context, 0)),
+            SizedBox(
+              width: dragHandleWidth,
+              height: context.screenHeight * 0.8,
+              child: _buildDragHandle(),
             ),
-          ),
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: Tooltip(
-                  message:
-                      'AI: $adjective choice based on price ($currencySign${quote.netTotal})',
-                  child: Icon(icon, color: rowColor),
-                ),
-              ),
-              _RFQInfoPage(
-                quote: quote,
-                supplier: _suppliers[index].name,
-                textColor: textColor,
-              ),
-            ],
-          ),
+            SizedBox(width: secondPanelWidth, child: _buildQuote(context, 1)),
+          ],
         );
-      }).toList(),
+      },
     );
   }
 
-  // BorderSide _borderSide(int i, int count, Color color) =>
-  //     i == count ? BorderSide(color: color, width: 0.2) : BorderSide.none;
+  /// Drag handle to resize
+  Widget _buildDragHandle() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragUpdate: (details) {
+        setState(() {
+          _firstPanelRatio += details.delta.dx / context.size!.width;
+          _firstPanelRatio = _firstPanelRatio.clamp(_minRatio, _maxRatio);
+        });
+      },
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeLeftRight,
+        child: Icon(Icons.drag_indicator, size: 20, color: kGrayBlueColor),
+      ),
+    );
+  }
+
+  /// Build single quote widget
+  Widget _buildQuote(BuildContext context, int index) {
+    final quote = widget._quotes[index];
+    final supplier = widget._suppliers[index];
+    final maxNetTotal = widget._quotes
+        .map((q) => q.netTotal)
+        .reduce((a, b) => a > b ? a : b);
+
+    final rowColor = (quote.netTotal == maxNetTotal)
+        ? kWarningColor
+        : kSuccessColor;
+    final icon = (quote.netTotal == maxNetTotal)
+        ? Icons.warning_amber_rounded
+        : Icons.check_circle;
+    final currencySign = getCurrencySign(quote.currency);
+    final adjective = (quote.netTotal == maxNetTotal) ? 'Worst' : 'Best';
+    final textColor = (quote.netTotal == maxNetTotal)
+        ? kDarkWarningColor
+        : kDarkSuccessColor;
+
+    return _buildBody(
+      rowColor,
+      adjective,
+      currencySign,
+      quote,
+      icon,
+      supplier,
+      textColor,
+    );
+  }
+
+  Container _buildBody(
+    Color rowColor,
+    String adjective,
+    String? currencySign,
+    RequestForQuote quote,
+    IconData icon,
+    Supplier supplier,
+    Color textColor,
+  ) {
+    final radius = BorderRadius.circular(borderRadius);
+    final bSide = BorderSide(color: rowColor.toAlpha(0.6), width: 0.6);
+
+    return Container(
+      padding: EdgeInsets.all(6.0),
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border(bottom: bSide, right: bSide, left: bSide, top: bSide),
+      ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+        decoration: BoxDecoration(
+          color: rowColor.toAlpha(0.06),
+          borderRadius: radius,
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topRight,
+              child: Tooltip(
+                message:
+                    'AI: $adjective choice based on price ($currencySign${quote.netTotal})',
+                child: Icon(icon, color: rowColor),
+              ),
+            ),
+            _RFQInfoPage(
+              quote: quote,
+              supplier: supplier.name,
+              textColor: textColor,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _RFQInfoPage extends StatelessWidget {
@@ -609,4 +684,73 @@ class _RFQInfoPage extends StatelessWidget {
     );
 
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-  }*/
+  }
+
+  class _CompareTwoRFQ2 extends StatelessWidget {
+  final List<RequestForQuote> _quotes;
+  final List<Supplier> _suppliers;
+
+  const _CompareTwoRFQ2({
+    required List<RequestForQuote> quotes,
+    required List<Supplier> suppliers,
+  }) : _quotes = quotes,
+       _suppliers = suppliers;
+
+  double get _maxNetTotal =>
+      _quotes.map((q) => q.netTotal).reduce((a, b) => a > b ? a : b);
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveLayout(
+      children: _quotes.asMap().entries.map((q) {
+        final index = q.key;
+        final quote = q.value;
+
+        // The Quote with cheaper price will be highlighted Green background
+        Color rowColor = (quote.netTotal == _maxNetTotal)
+            ? kWarningColor
+            : kSuccessColor;
+        IconData icon = (quote.netTotal == _maxNetTotal)
+            ? Icons.warning_amber_rounded
+            : Icons.check_circle;
+        final currencySign = getCurrencySign(quote.currency);
+        final adjective = (quote.netTotal == _maxNetTotal) ? 'Worst' : 'Best';
+        final textColor = (quote.netTotal == _maxNetTotal)
+            ? kDarkWarningColor
+            : kDarkSuccessColor;
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+          decoration: BoxDecoration(
+            color: rowColor.toAlpha(0.1),
+            border: Border(
+              bottom: BorderSide(color: rowColor, width: 10),
+              // right: _borderSide(index, 0, rowColor),
+              // left: _borderSide(index, 1, rowColor),
+            ),
+          ),
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: Tooltip(
+                  message:
+                      'AI: $adjective choice based on price ($currencySign${quote.netTotal})',
+                  child: Icon(icon, color: rowColor),
+                ),
+              ),
+              _RFQInfoPage(
+                quote: quote,
+                supplier: _suppliers[index].name,
+                textColor: textColor,
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // BorderSide _borderSide(int i, int count, Color color) =>
+  //     i == count ? BorderSide(color: color, width: 0.2) : BorderSide.none;
+}*/
