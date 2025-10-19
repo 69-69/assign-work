@@ -5,6 +5,7 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/check_for_app_update.dart';
 import 'package:assign_erp/core/widgets/nav/bread_crumbs.dart';
+import 'package:assign_erp/core/widgets/nav/breadcrumb_service.dart';
 import 'package:assign_erp/core/widgets/nav/notification_dropdown.dart';
 import 'package:assign_erp/core/widgets/nav/profile_menu_dropdown.dart';
 import 'package:assign_erp/core/widgets/search/spotlight_search_bar.dart';
@@ -185,7 +186,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       leading: canGoBack ? _buildLeading(context) : null,
-      leadingWidth: _isMobile(context) ? null : 80,
+      leadingWidth: _isMobile(context) ? null : 100,
       automaticallyImplyLeading: canGoBack,
       toolbarHeight: kAppBarHeight,
       centerTitle: true,
@@ -244,6 +245,13 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget? _buildLeading(BuildContext context) {
     if (drawer != null) return null;
     if (backButton != null) return backButton;
+    final routePath = BreadcrumbService.currentPath(context);
+    final backTitle = routePath.isEmpty
+        ? 'Back'
+        : BreadcrumbService.generateBreadcrumbs(
+            routePath,
+            optFallback: 'Back',
+          ).last.label;
 
     return Container(
       alignment: Alignment.center,
@@ -256,17 +264,28 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
               hoverColor: kWhiteColor.toAlpha(0.1),
               child: Padding(
                 padding: EdgeInsets.all(8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.adaptive.arrow_back,
-                      color: kWhiteColor,
-                      size: 16,
-                    ),
-                    SizedBox(width: 4),
-                    Text('Back', style: TextStyle(color: kWhiteColor)),
-                  ],
+                child: Tooltip(
+                  message: backTitle.toTitle,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.adaptive.arrow_back,
+                        color: kWhiteColor,
+                        size: 16,
+                      ),
+                      Expanded(
+                        child: Text(
+                          backTitle.toTitle,
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(
+                            color: kWhiteColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ), // const BackButton(color: kWhiteColor),
