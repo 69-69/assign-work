@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+const _size = 40.0;
+
 class SideNav extends StatefulWidget {
   final List<DashboardTile> tiles;
   final bool Function(String)? canAccess;
@@ -52,7 +54,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _cachedIsMobile = context.isMobile;
-    final beginWidth = _cachedIsMobile ? 200.0 : 50.0;
+    final beginWidth = _cachedIsMobile ? 200.0 : _size;
     _widthAnimation ??= Tween<double>(
       begin: beginWidth,
       end: 200.0,
@@ -71,7 +73,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   bool get _shouldExpand => _cachedIsMobile || _isDrawerOpen;
 
   double get _dynamicWidth =>
-      _shouldExpand ? (_widthAnimation?.value ?? 200) : 50;
+      _shouldExpand ? (_widthAnimation?.value ?? 200) : _size;
 
   Color get _bgColor =>
       _shouldExpand ? kPrimaryLightColor : kTransparentColor; // secondaryColor
@@ -121,7 +123,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       children: [
         Container(
           alignment: Alignment.centerLeft,
-          margin: EdgeInsets.only(left: 20),
+          margin: EdgeInsets.only(left: 18.0),
           child: IconButton(
             alignment: Alignment.center,
             icon: const Icon(Icons.menu, color: kWhiteColor),
@@ -129,8 +131,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
               ),
-              // backgroundColor: kBrightPrimaryColor.toAlpha(0.6),
-            ),
+            ).copyWith(backgroundColor: _buildResolveWith(context)),
             onPressed: () =>
                 _cachedIsMobile ? _buildMobileDrawer(context) : _toggleDrawer(),
           ),
@@ -138,6 +139,18 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
         if (!_cachedIsMobile) Expanded(child: _buildDesktopDrawer(context)),
       ],
     );
+  }
+
+  WidgetStateProperty<Color?> _buildResolveWith(BuildContext context) {
+    return WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+      if (_shouldExpand && states.contains(WidgetState.disabled)) {
+        return kGrayColor;
+      }
+      if (states.contains(WidgetState.hovered)) {
+        return context.colorScheme.primary;
+      }
+      return _bgColor;
+    });
   }
 
   void _buildMobileDrawer(BuildContext context) {
@@ -255,7 +268,10 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
         ...tiles.map(
           (tile) => Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: _buildLinks(context, tile: tile),
+            child: SizedBox(
+              width: _dynamicWidth,
+              child: _buildLinks(context, tile: tile),
+            ),
           ),
         ),
         _buildLogout(context),
@@ -284,15 +300,17 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
                           ));
             }
           : null,
-      label: Text(
-        softWrap: false,
-        tile.label.toUpperAll,
-        style: context.textTheme.bodySmall?.copyWith(
-          color: kWhiteColor,
-          overflow: TextOverflow.ellipsis,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      label: _shouldExpand
+          ? Text(
+              softWrap: false,
+              tile.label.toUpperAll,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: kWhiteColor,
+                overflow: TextOverflow.ellipsis,
+                fontWeight: FontWeight.w500,
+              ),
+            )
+          : const SizedBox.shrink(),
       icon: Icon(tile.icon, color: _iconColor),
     );
   }
@@ -303,7 +321,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       elevation: 30,
       padding: const EdgeInsets.all(6),
       backgroundColor: _bgColor,
-      fixedSize: Size(_dynamicWidth, 50),
+      fixedSize: Size(_dynamicWidth, _size),
       disabledBackgroundColor: kGrayColor,
       alignment: _shouldExpand ? Alignment.centerLeft : Alignment.center,
       animationDuration: kAnimateDuration,
@@ -313,19 +331,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     );
     return _cachedIsMobile
         ? base
-        : base.copyWith(
-            backgroundColor: WidgetStateProperty.resolveWith<Color?>((
-              Set<WidgetState> states,
-            ) {
-              if (_shouldExpand && states.contains(WidgetState.disabled)) {
-                return kGrayColor;
-              }
-              if (states.contains(WidgetState.hovered)) {
-                return context.colorScheme.primary;
-              }
-              return _bgColor;
-            }),
-          );
+        : base.copyWith(backgroundColor: _buildResolveWith(context));
   }
 
   // Build the logout button
@@ -344,14 +350,16 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           _handleSignOut(context);
         }
       },
-      label: Text(
-        'SIGN OUT',
-        style: context.textTheme.bodySmall?.copyWith(
-          color: kWhiteColor,
-          overflow: TextOverflow.ellipsis,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      label: _shouldExpand
+          ? Text(
+              'SIGN OUT',
+              style: context.textTheme.bodySmall?.copyWith(
+                color: kWhiteColor,
+                overflow: TextOverflow.ellipsis,
+                fontWeight: FontWeight.w500,
+              ),
+            )
+          : const SizedBox.shrink(),
       icon: Icon(Icons.logout, color: _iconColor),
     );
   }
@@ -479,88 +487,3 @@ class _WorkspaceInfoCard extends StatelessWidget {
     );
   }
 }
-
-/*
-// Build the toggle button for the side navigation drawer
-  Widget _toggleButton(BuildContext context) {
-    return TextButton.icon(
-      style: _btnStyle(context).copyWith(
-        overlayColor: WidgetStateProperty.resolveWith<Color?>((
-          Set<WidgetState> states,
-        ) {
-          return states.contains(WidgetState.hovered)
-              ? kGrayBlueColor
-              : _bgColor;
-        }),
-      ),
-      icon: Icon(_isDrawerOpen ? Icons.close : Icons.menu, color: _iconColor),
-      onPressed: _toggleDrawer,
-      label: Text(
-        _isDrawerOpen ? 'Close' : 'Menu',
-        style: context.textTheme.titleMedium?.copyWith(
-          color: kLightBlueColor,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-
-Build the toggle button for the side navigation drawer
-  Widget _profileButton(BuildContext context) {
-    return TextButton.icon(
-      style: _btnStyle(context),
-      icon: _workspace != null
-          ? Icon(Icons.workspaces, color: _iconColor)
-          : Image.asset(
-              appLogoWithBG,
-              scale: 24,
-              alignment: Alignment.centerLeft,
-            ),
-      onPressed: () => context.goNamed(RouteNames.swicthStoresAccount),
-      label: Text(
-        (_workspace?.workspaceName ?? appName).toUpperCase(),
-        style: context.textTheme.titleMedium?.copyWith(
-          color: kLightBlueColor,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }*/
-
-/*// Build the navigation links list
-  Widget _buildNav2(BuildContext context) {
-    // Check if we're not on the main dashboard route
-    final isNotOnDashboard = context.routeFromUri != RouteNames.mainDashboard;
-
-    // Build the dashboard tile conditionally
-    final List<DashboardTile> tiles = [
-      if (isNotOnDashboard)
-        DashboardTile(
-          icon: Icons.dashboard,
-          label: 'Dashboard',
-          action: RouteNames.mainDashboard,
-          description: 'Access to dashboard',
-        ),
-      ...widget.tiles,
-    ];
-
-    return SingleChildScrollView(
-      primary: true,
-      padding: EdgeInsets.zero,
-      scrollDirection: Axis.vertical,
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...tiles.map(
-            (s) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: _buildLinks(context, tile: s),
-            ),
-          ),
-          _buildLogout(),
-        ],
-      ),
-    );
-  }*/

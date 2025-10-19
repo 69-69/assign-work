@@ -82,7 +82,7 @@ extension LicenseTiles on BuildContext {
       },
       // Live Chat Support Package
       {
-        'label': 'live chat support',
+        'label': 'support - (Live Chat)',
         'icon': Icons.support_agent,
         'action': RouteNames.liveChatSupport,
         'param': {},
