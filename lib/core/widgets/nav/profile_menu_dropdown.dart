@@ -35,7 +35,7 @@ class ProfileMenuDropdown extends StatelessWidget {
 
     return Container(
       alignment: Alignment.center,
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(0, 20, 20, 20),
       child: PopupMenuButton<String>(
         tooltip: 'Tap to open notifications',
         padding: EdgeInsets.zero,

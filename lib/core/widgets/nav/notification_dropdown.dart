@@ -26,7 +26,7 @@ class NotificationsDropdown extends StatelessWidget {
 
     return Container(
       alignment: Alignment.center,
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8.0),
       child: PopupMenuButton<String>(
         tooltip: 'Tap to open notifications',
         padding: EdgeInsets.zero,

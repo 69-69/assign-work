@@ -206,7 +206,6 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Icons.search,
               onPressed: onPressed,
             ),
-            SizedBox(width: 10),
           ],
           NotificationsDropdown(
             workspace: authState.workspace,
