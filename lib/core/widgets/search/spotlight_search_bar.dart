@@ -73,32 +73,43 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    var sWidth = context.screenWidth * (context.isMobile ? 0.94 : 0.7);
+    final sWidth = context.screenWidth * (context.isMobile ? 0.94 : 0.7);
+    final tileCount = filteredTiles.length > 4 ? 4 : filteredTiles.length;
 
-    return SizedBox(
-      width: sWidth,
-      child: Column(
-        children: [
-          if (_isSearchActive) ...[
-            _buildSearchBar(context),
-            (filteredTiles.isNotEmpty)
-                ? Expanded(child: _buildSearchResultsList(context))
-                : Card(
-                    color: kLightBlueColor,
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Center(
-                        child: Text(
-                          _controller.text.isEmpty
-                              ? "Enter to search"
-                              : "No results found",
-                        ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: SizedBox(
+        width: sWidth,
+        height: context.screenHeight * (tileCount + 2) * 0.1,
+        child: _buildBody(context),
+      ),
+    );
+  }
+
+  _buildBody(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_isSearchActive) ...[
+          _buildSearchBar(context),
+          (filteredTiles.isNotEmpty)
+              ? Expanded(child: _buildSearchResultsList(context))
+              : Card(
+                  color: kLightBlueColor.toAlpha(0.8),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Center(
+                      child: Text(
+                        _controller.text.isEmpty
+                            ? "Enter to search"
+                            : "No results found",
+                        style: TextStyle(color: kBgLightColor),
                       ),
                     ),
                   ),
-          ],
+                ),
         ],
-      ),
+      ],
     );
   }
 
@@ -111,7 +122,7 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
         margin: const EdgeInsets.all(2),
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
-          color: kLightBlueColor,
+          color: kLightBlueColor.toAlpha(0.8), // kLightBlueColor,
           borderRadius: BorderRadius.circular(15),
         ),
         child: _buildSearchField(),
@@ -132,15 +143,17 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
           child: CustomTextField(
             controller: _controller,
             autofocus: true,
+            textColor: kBgLightColor,
             inputDecoration: InputDecoration(
               isDense: true,
               hintText: "Workspace Search...",
+              hintStyle: TextStyle(color: kBgLightColor),
               border: InputBorder.none,
               focusedBorder: border,
               enabledBorder: border,
               prefixIcon: Icon(Icons.search, color: kPrimaryAccentColor),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
+                icon: const Icon(Icons.clear, color: kTextColor),
                 tooltip: "${isEmpty2 ? "Close" : "Clear"} search",
                 onPressed: () {
                   if (isEmpty2) {
@@ -166,7 +179,7 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
         final tile = filteredTiles[index];
         return Card(
           elevation: 30,
-          color: kLightBlueColor,
+          color: kLightBlueColor.toAlpha(0.8),
           margin: const EdgeInsets.symmetric(vertical: 3.0),
           child: ListTile(
             dense: true,
@@ -205,7 +218,11 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
 
   Widget _buildHighlightedText(String text, TextStyle? style) {
     final query = _controller.text;
-    if (query.isEmpty) return Text(text, style: style);
+    style = style?.copyWith(color: kBgLightColor);
+
+    if (query.isEmpty) {
+      return Text(text, style: style);
+    }
 
     final lowerText = text.toLowerAll;
     final lowerQuery = query.toLowerAll;

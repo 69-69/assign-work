@@ -126,7 +126,10 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           margin: EdgeInsets.only(left: 18.0),
           child: IconButton(
             alignment: Alignment.center,
-            icon: const Icon(Icons.menu, color: kWhiteColor),
+            icon: Icon(
+              _isDrawerOpen ? Icons.menu_open : Icons.menu,
+              color: kWhiteColor,
+            ),
             style: ElevatedButton.styleFrom(
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
@@ -163,7 +166,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           alignment: Alignment.topLeft,
           child: Container(
             width: _dynamicWidth,
-            margin: EdgeInsets.fromLTRB(20, 100, 0, 0),
+            margin: EdgeInsets.fromLTRB(20, 120, 0, 0),
             height: cxt.screenHeight,
             child: _buildCard(cxt),
           ),

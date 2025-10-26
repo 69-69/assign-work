@@ -149,6 +149,13 @@ class MaterialTheme {
         bodyColor: colorScheme.onSurface,
         displayColor: colorScheme.onSurface,
       ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colorScheme.onSurface, // text cursor
+        selectionColor: colorScheme.onSurface.withAlpha(
+          (0.2 * 255).toInt(),
+        ), // text selection highlight
+        selectionHandleColor: colorScheme.onSurface, // handle dots
+      ),
       tabBarTheme: TabBarThemeData(
         // indicator: BoxDecoration(color: colorScheme.surface),
         labelColor: colorScheme.onPrimaryContainer,

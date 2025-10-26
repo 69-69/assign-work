@@ -175,7 +175,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
     return GridView.builder(
       primary: false,
       itemCount: widget.tiles.length,
-      padding: EdgeInsets.fromLTRB(0, pad, pad, pad),
+      padding: EdgeInsets.fromLTRB(0, 10, pad, pad),
       physics: const RangeMaintainingScrollPhysics(),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: maxCrossAxisExtent,

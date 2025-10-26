@@ -111,7 +111,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
           ModalBarrier(color: kPrimaryColor.toAlpha(0.4), dismissible: false),
         },
         Align(
-          alignment: Alignment.center,
+          alignment: Alignment.topCenter,
           child: SpotlightSearchBar(
             key: _searchBarKey,
             tiles: widget.tiles,
@@ -276,9 +276,12 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
                       Expanded(
                         child: Text(
                           backTitle.toTitle,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
                           overflow: TextOverflow.fade,
                           style: TextStyle(
                             color: kWhiteColor,
+                            fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

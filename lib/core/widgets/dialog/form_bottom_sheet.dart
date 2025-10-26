@@ -47,6 +47,7 @@ class FormBottomSheet extends StatelessWidget {
         dense: true,
         title: _buildTitle(context),
         subtitle: _buildSubtitle(context),
+        contentPadding: EdgeInsets.zero,
       ),
       btnText: 'Close',
       onPress: () => Navigator.pop(context),

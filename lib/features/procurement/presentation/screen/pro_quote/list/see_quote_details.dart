@@ -41,6 +41,8 @@ extension RFQDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: FormBottomSheet(
+      initialChildSize: 0.92,
+      maxChildSize: 0.92,
       title: 'Compare Suppliers Quotes',
       subtitle: 'AI-powered cost-value analysis',
       body: _CompareTwoRFQ(quotes: quotes, suppliers: suppliers),

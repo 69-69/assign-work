@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final bool? enable;
   final bool autofocus;
   final Color? fillColor;
+  final Color? textColor;
   final bool obscureText;
   final String? label;
   final String? helperText;
@@ -36,6 +37,7 @@ class CustomTextField extends StatelessWidget {
     this.inputDecoration,
     this.enable,
     this.maxLength,
+    this.textColor,
     this.maxLines,
     this.minLines,
     this.focusNode,
@@ -82,6 +84,7 @@ class CustomTextField extends StatelessWidget {
             minLines: minLines,
             maxLength: maxLength,
             onChanged: onChanged,
+            textColor: textColor,
             inputDecoration: decoration,
             validator: validator2,
           )
@@ -101,7 +104,7 @@ class CustomTextField extends StatelessWidget {
             textInputAction: textInputAction,
             onFieldSubmitted: (v) => onFieldSubmitted?.call(v),
             style: TextStyle(
-              color: enable == false ? Colors.black : null,
+              color: enable == false ? Colors.black : textColor,
               overflow: TextOverflow.ellipsis,
             ),
             decoration: decoration,
@@ -134,6 +137,7 @@ class LowercaseTextField extends StatefulWidget {
   final int? maxLines;
   final int? minLines;
   final bool? enable;
+  final Color? textColor;
   final String? labelText;
   final String? helperText;
   final InputDecoration? inputDecoration;
@@ -153,6 +157,7 @@ class LowercaseTextField extends StatefulWidget {
     this.labelText,
     this.validator,
     this.onChanged,
+    this.textColor,
     this.maxLength,
     this.helperText,
     this.controller,
@@ -183,7 +188,7 @@ class _LowercaseTextFieldState extends State<LowercaseTextField> {
       keyboardType: TextInputType.text,
       textInputAction: widget.textInputAction,
       style: TextStyle(
-        color: widget.enable == false ? Colors.black : null,
+        color: widget.enable == false ? Colors.black : widget.textColor,
         overflow: TextOverflow.ellipsis,
       ),
       decoration: widget.inputDecoration?.copyWith(
