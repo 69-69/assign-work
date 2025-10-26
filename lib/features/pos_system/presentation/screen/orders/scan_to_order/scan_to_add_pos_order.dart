@@ -488,8 +488,8 @@ class _ScannedItemsState extends State<_ScannedItems> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you prefer to print out the receipt?'),
       title: "Receipt Option",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

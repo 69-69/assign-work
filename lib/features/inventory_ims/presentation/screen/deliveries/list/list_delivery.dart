@@ -209,8 +209,8 @@ class _IssueMultiDelete extends StatelessWidget {
     return context.confirmAction<bool>(
       const Text('Are you sure you want to delete the selected deliveries?'),
       title: "Confirm Delete",
-      onAccept: "Delete",
-      onReject: "Cancel",
+      onAcceptLabel: "Delete",
+      onRejectLabel: "Cancel",
     );
   }
 

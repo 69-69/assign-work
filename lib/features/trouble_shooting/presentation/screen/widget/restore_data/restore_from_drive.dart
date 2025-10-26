@@ -35,7 +35,7 @@ class RestoreFromDrive extends StatelessWidget {
   // Widget to confirm restore dialog
   Future<void> _confirmRestoreDialog(BuildContext context) async {
     final isConfirmed = await context.confirmUserActionDialog(
-      onAccept: "Restore",
+      onAcceptLabel: "Restore",
       msg: "Do you want to proceed with restoring the data?",
     );
 

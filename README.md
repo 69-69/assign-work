@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "Implementing notifications dropdown"
+git commit -m "updated refresh workspace button"
 git branch -M main
 git push -u origin main
 

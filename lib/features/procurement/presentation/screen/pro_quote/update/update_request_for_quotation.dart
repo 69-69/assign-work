@@ -325,8 +325,8 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the request for quotation: RFQ?'),
       title: "Print RFQ",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted) {

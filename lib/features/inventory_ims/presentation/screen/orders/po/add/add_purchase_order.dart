@@ -396,8 +396,8 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the purchase order: PO?'),
       title: "Print Purchase Order",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

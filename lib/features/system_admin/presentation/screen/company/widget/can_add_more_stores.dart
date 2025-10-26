@@ -36,7 +36,7 @@ extension CompanyStoreBranches on BuildContext {
   Future<void> onSwitchStore(String storeNumber, {String location = ''}) async {
     // Confirm the action
     final isConfirmed = await confirmUserActionDialog(
-      onAccept: 'Switch Branch (Store)',
+      onAcceptLabel: 'Switch Branch (Store)',
     );
 
     if (mounted && isConfirmed) {
@@ -104,8 +104,8 @@ extension CompanyStoreBranches on BuildContext {
       Text(
         'You cannot add more branches (stores). Please extend your subscription license to add more stores.\nKindly contact support for more information.',
       ),
-      onAccept: 'Done',
-      onReject: 'Cancel',
+      onAcceptLabel: 'Done',
+      onRejectLabel: 'Cancel',
       title: 'Can\'t Add More',
     );
   }

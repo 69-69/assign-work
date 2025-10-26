@@ -268,8 +268,8 @@ class _IssueMultiReceipts extends StatelessWidget {
     return context.confirmAction<bool>(
       const Text('Are you sure you want to delete the selected orders?'),
       title: "Confirm Delete",
-      onAccept: "Delete",
-      onReject: "Cancel",
+      onAcceptLabel: "Delete",
+      onRejectLabel: "Cancel",
     );
   }
 

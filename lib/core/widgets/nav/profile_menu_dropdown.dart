@@ -139,7 +139,8 @@ class ProfileMenuDropdown extends StatelessWidget {
         break;
       case 'refresh':
         final isConfirmed = await context.confirmUserActionDialog(
-          onAccept: 'Refresh Workspace',
+          onAcceptLabel: 'Refresh',
+          msg: 'Save your changes before refreshing the workspace.',
         );
         if (context.mounted && isConfirmed) {
           RefreshEntireApp.restartApp(context);
@@ -224,7 +225,7 @@ class ProfileMenuDropdown extends StatelessWidget {
 
   Future<void> _handleSignOut(BuildContext context) async {
     final isConfirmed = await context.confirmUserActionDialog(
-      onAccept: 'Sign Out',
+      onAcceptLabel: 'Sign Out',
     );
     if (context.mounted && isConfirmed) {
       final authBloc = BlocProvider.of<AuthBloc>(context);

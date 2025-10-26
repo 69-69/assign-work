@@ -4,6 +4,7 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/access_control/domain/repository/access_control_repository.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/index.dart';
+import 'package:assign_erp/features/refresh_entire_app.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -144,7 +145,8 @@ class _AppViewState extends State<_AppView> {
       debugShowCheckedModeBanner: false,
       debugShowMaterialGrid: false,
       theme: widget.theme,
-      builder: (_, child) => _authStateListener(child, _appRouter),
+      builder: (_, child) =>
+          RefreshEntireApp(child: _authStateListener(child, _appRouter)),
     );
   }
 

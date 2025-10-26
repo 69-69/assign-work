@@ -273,7 +273,7 @@ extension Custombutton on BuildContext {
   Future<bool> _confirmUpdateDialog() async => await confirmAction<bool>(
     const Text('Would you like to proceed?'),
     title: "Confirm Changes",
-    onAccept: "Save",
-    onReject: "Cancel",
+    onAcceptLabel: "Save",
+    onRejectLabel: "Cancel",
   );
 }

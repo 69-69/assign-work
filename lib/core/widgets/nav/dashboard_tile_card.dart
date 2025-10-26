@@ -362,8 +362,8 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
       await context.confirmAction<bool>(
         Text('Please use Agent Support/Chat for assistance.'),
         title: "Live Chat Support",
-        onAccept: "Ok",
-        onReject: "Cancel",
+        onAcceptLabel: "Ok",
+        onRejectLabel: "Cancel",
       );
       return true; // prompt was shown; further action should stop
     }

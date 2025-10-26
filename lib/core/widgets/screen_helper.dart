@@ -33,25 +33,27 @@ extension ScreenHelper on BuildContext {
   }
 
   /// Reusable icon button for critical actions like reload or sign out.
-  actionIconButton({
+  confirmableIconButton({
     required IconData icon,
-    required String confirmMessage,
+    required String confirmLabel,
     VoidCallback? onConfirmed,
     EdgeInsetsGeometry? padding,
     double? size,
+    String? message,
   }) {
+    Future<void> handlePress() async {
+      final confirmed = await _showConfirmationDialog(
+        confirmLabel: confirmLabel,
+        message: message,
+      );
+      if (confirmed) onConfirmed?.call();
+    }
+
     return Tooltip(
-      message: confirmMessage,
+      message: confirmLabel,
       child: MaterialButton(
-        onPressed: () async {
-          final isConfirmed = await confirmUserActionDialog(
-            onAccept: confirmMessage,
-          );
-          if (isConfirmed) {
-            onConfirmed?.call();
-          }
-        },
         color: kDangerColor,
+        onPressed: handlePress,
         padding: padding ?? const EdgeInsets.all(14),
         shape: const CircleBorder(),
         child: Icon(icon, color: kWhiteColor, size: size),
@@ -59,11 +61,22 @@ extension ScreenHelper on BuildContext {
     );
   }
 
+  Future<bool> _showConfirmationDialog({
+    required String confirmLabel,
+    String? message,
+  }) async {
+    return await confirmUserActionDialog(
+      onAcceptLabel: confirmLabel,
+      msg: message,
+    );
+  }
+
   /// Icon button for full app reload [reloadAppIconButton]
   reloadAppIconButton({VoidCallback? onPressed}) {
-    return actionIconButton(
+    return confirmableIconButton(
       icon: Icons.refresh,
-      confirmMessage: 'Refresh Workspace',
+      confirmLabel: 'Refresh',
+      message: 'Save your changes before refreshing the workspace.',
       onConfirmed: onPressed,
       padding: const EdgeInsets.all(1),
       size: 18,
@@ -72,9 +85,9 @@ extension ScreenHelper on BuildContext {
 
   /// Icon button for Authorized Device IDs [resetAuthorizedDevicesIdsButton]
   resetAuthorizedDevicesIdsButton({VoidCallback? onPressed}) {
-    return actionIconButton(
+    return confirmableIconButton(
       icon: Icons.reset_tv,
-      confirmMessage: 'Remove IDs',
+      confirmLabel: 'Remove IDs',
       onConfirmed: onPressed,
       padding: EdgeInsets.all(15),
       size: 18,
@@ -83,9 +96,9 @@ extension ScreenHelper on BuildContext {
 
   /// Icon button for sign out [SignOutIconButton]
   signOutIconButton({VoidCallback? onPressed}) {
-    return actionIconButton(
+    return confirmableIconButton(
       icon: Icons.logout,
-      confirmMessage: 'Sign Out',
+      confirmLabel: 'Sign Out',
       onConfirmed: onPressed,
     );
   }
@@ -94,7 +107,9 @@ extension ScreenHelper on BuildContext {
   FilledButton signOutButton({VoidCallback? onPressed}) {
     return FilledButton(
       onPressed: () async {
-        final isConfirmed = await confirmUserActionDialog(onAccept: 'Sign Out');
+        final isConfirmed = await confirmUserActionDialog(
+          onAcceptLabel: 'Sign Out',
+        );
         if (isConfirmed) {
           onPressed?.call();
         }
@@ -108,13 +123,13 @@ extension ScreenHelper on BuildContext {
   }
 
   Future<bool> confirmUserActionDialog({
-    String onAccept = 'Delete',
+    String onAcceptLabel = 'Delete',
     String? msg,
   }) async => await confirmAction<bool>(
     Text(msg ?? 'Would you like to proceed?'),
-    title: "Confirm $onAccept",
-    onAccept: onAccept,
-    onReject: "Cancel",
+    title: "Confirm $onAcceptLabel",
+    onAcceptLabel: onAcceptLabel,
+    onRejectLabel: "Cancel",
   );
 
   /// Order-Numbers Mis-Match Warning

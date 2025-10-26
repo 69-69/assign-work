@@ -123,8 +123,8 @@ class _AddDeliveryBodyState extends State<_AddDeliveryBody> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the Invoice & Way-bill?'),
       title: "Invoice & Way-Bill",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

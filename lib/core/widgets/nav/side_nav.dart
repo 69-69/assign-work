@@ -126,6 +126,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           margin: EdgeInsets.only(left: 18.0),
           child: IconButton(
             alignment: Alignment.center,
+            tooltip: '${_isDrawerOpen ? 'Close' : 'Open'} sidebar',
             icon: Icon(
               _isDrawerOpen ? Icons.menu_open : Icons.menu,
               color: kWhiteColor,
@@ -347,7 +348,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       ),
       onPressed: () async {
         final isConfirmed = await context.confirmUserActionDialog(
-          onAccept: 'Sign Out',
+          onAcceptLabel: 'Sign Out',
         );
         if (context.mounted && isConfirmed) {
           _handleSignOut(context);

@@ -3,7 +3,6 @@ import 'package:assign_erp/core/network/data_sources/local/cache_db_adaptor.dart
 import 'package:assign_erp/features/access_control/domain/repository/access_control_repository.dart';
 import 'package:assign_erp/features/app.dart';
 import 'package:assign_erp/features/auth/domain/repository/auth_repository.dart';
-import 'package:assign_erp/features/refresh_entire_app.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -55,6 +54,15 @@ Future<void> main({bool testing = false}) async {
   // Run the app: App()
   // Reload App via this Custom ReloadApp(child: App())
   runApp(
+    App(
+      fireStore: firestore,
+      authRepo: authRepository,
+      routeLogger: routeLogger,
+      accessControlRepo: accessControlRepo,
+    ),
+  );
+
+  /*runApp(
     RefreshEntireApp(
       child: App(
         fireStore: firestore,
@@ -63,7 +71,7 @@ Future<void> main({bool testing = false}) async {
         accessControlRepo: accessControlRepo,
       ),
     ),
-  );
+  );*/
 }
 
 Future<void> initializeApp() async {

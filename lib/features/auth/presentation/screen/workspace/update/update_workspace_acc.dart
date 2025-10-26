@@ -205,7 +205,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         deleteIcon: const Icon(size: 16, Icons.clear, color: kTextColor),
         onDeleted: () async {
           final isConfirmed = await context.confirmUserActionDialog(
-            onAccept: 'Remove IDs',
+            onAcceptLabel: 'Remove IDs',
           );
           if (isConfirmed) _revokeAuthorizedDeviceId(did: deviceId);
         },

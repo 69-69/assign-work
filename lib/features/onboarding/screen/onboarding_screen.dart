@@ -46,8 +46,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen>
           final isContinue = await context.confirmAction<bool>(
             const Text('Initial onboarding complete. Continue to sign in?'),
             title: 'Proceed to Sign In',
-            onAccept: 'Continue',
-            onReject: 'Cancel',
+            onAcceptLabel: 'Continue',
+            onRejectLabel: 'Cancel',
           );
 
           if (isContinue) {

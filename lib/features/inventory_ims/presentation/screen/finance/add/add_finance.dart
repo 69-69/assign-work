@@ -503,8 +503,8 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you prefer to print the Proforma Invoice?'),
       title: "Proforma Invoice",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

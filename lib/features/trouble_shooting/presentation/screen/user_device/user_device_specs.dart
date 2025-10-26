@@ -160,8 +160,8 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
       onPressed: () async {
         final isConfirmed = await context.confirmAction<bool>(
           const Text('Do you want to proceed with resetting the device info?'),
-          onAccept: "Reset ID",
-          onReject: "Cancel",
+          onAcceptLabel: "Reset ID",
+          onRejectLabel: "Cancel",
         );
 
         if (isConfirmed) {
@@ -185,8 +185,8 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
       onPressed: () async {
         final isConfirmed = await context.confirmAction<bool>(
           const Text('Do you want to proceed with resetting the app and data?'),
-          onAccept: "Factory Reset",
-          onReject: "Cancel",
+          onAcceptLabel: "Factory Reset",
+          onRejectLabel: "Cancel",
         );
 
         if (isConfirmed) {
@@ -213,8 +213,8 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
           const Text(
             'Do you want to proceed with unzipping and restoring the data?',
           ),
-          onAccept: "Continue",
-          onReject: "Cancel",
+          onAcceptLabel: "Continue",
+          onRejectLabel: "Cancel",
         );
 
         if (context.mounted && isConfirmed) {

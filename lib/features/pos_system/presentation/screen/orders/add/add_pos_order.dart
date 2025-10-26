@@ -433,8 +433,8 @@ class _AddOrderFormState extends State<_AddOrderForm> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you prefer to print out receipt?'),
       title: "Receipt Option",
-      onAccept: "Print",
-      onReject: "Cancel",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

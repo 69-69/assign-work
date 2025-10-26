@@ -7,8 +7,8 @@ extension PromptUserFor on BuildContext {
   Future<T> confirmAction<T>(
     Widget message, {
     String title = 'Confirm',
-    String onAccept = "Yes",
-    String onReject = "No",
+    String onAcceptLabel = "Yes",
+    String onRejectLabel = "No",
     String? anyAction,
     Color? barrierColor,
     bool barrierDismissible = true,
@@ -21,8 +21,8 @@ extension PromptUserFor on BuildContext {
         context,
         title,
         message,
-        onAccept,
-        onReject,
+        onAcceptLabel,
+        onRejectLabel,
         anyAction: anyAction,
       ),
     );

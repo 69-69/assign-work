@@ -80,8 +80,8 @@ class _BackUpState extends State<BackUp> {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to continue with the BackUp?'),
       title: title,
-      onAccept: "Backup",
-      onReject: "Cancel",
+      onAcceptLabel: "Backup",
+      onRejectLabel: "Cancel",
     );
 
     if (mounted && isConfirmed) {

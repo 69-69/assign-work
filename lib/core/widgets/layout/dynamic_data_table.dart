@@ -1064,8 +1064,8 @@ class _ExportButton extends StatelessWidget {
     return await context.confirmAction<dynamic>(
       Text('Export data to Excel or PDF?'),
       title: 'Confirm Export',
-      onAccept: 'Excel',
-      onReject: 'PDF',
+      onAcceptLabel: 'Excel',
+      onRejectLabel: 'PDF',
       anyAction: 'Cancel',
     );
   }
