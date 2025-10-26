@@ -15,6 +15,10 @@ var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
 
 class RequestForQuote extends Equatable {
   final String id;
+
+  /// [prId] FOREIGN KEY: Purchase Requisition ID - Used to link RFQ to PR
+  final String prId;
+
   final String storeNumber;
   final String rfqNumber;
   final String supplierId;
@@ -51,6 +55,7 @@ class RequestForQuote extends Equatable {
 
   RequestForQuote({
     this.id = '',
+    this.prId = '',
     required this.title,
     this.rfqNumber = '',
     required this.storeNumber,
@@ -80,6 +85,7 @@ class RequestForQuote extends Equatable {
   factory RequestForQuote.fromMap(Map<String, dynamic> map, {String? docId}) {
     return RequestForQuote(
       id: docId ?? map['id'] ?? '',
+      prId: map['prId'] ?? '', // Foreign key
       title: map['title'] ?? '',
       department: map['department'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
@@ -110,6 +116,7 @@ class RequestForQuote extends Equatable {
 
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'prId': prId,
     'title': title,
     'department': department,
     'storeNumber': storeNumber,
@@ -173,6 +180,7 @@ class RequestForQuote extends Equatable {
   /// Used as a fallback when no matching RFQ is found.
   static final empty = RequestForQuote(
     id: '',
+    prId: '',
     title: '',
     storeNumber: '',
     supplierId: '',
@@ -205,6 +213,7 @@ class RequestForQuote extends Equatable {
   }
 
   bool filterByAny(String filter) =>
+      prId.contains(filter) ||
       storeNumber.contains(filter) ||
       rfqNumber.contains(filter) ||
       title.contains(filter) ||
@@ -280,6 +289,7 @@ class RequestForQuote extends Equatable {
 
   RequestForQuote copyWith({
     String? id,
+    String? prId,
     String? title,
     String? department,
     String? storeNumber,
@@ -310,6 +320,7 @@ class RequestForQuote extends Equatable {
   }) {
     return RequestForQuote(
       id: id ?? this.id,
+      prId: prId ?? this.prId,
       title: title ?? this.title,
       department: department ?? this.department,
       storeNumber: storeNumber ?? this.storeNumber,
@@ -343,6 +354,7 @@ class RequestForQuote extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    prId,
     title,
     storeNumber,
     rfqNumber,

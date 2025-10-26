@@ -310,7 +310,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
           ? null
           : Text(
               (tile.description ?? '').toSentence,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.start,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: kWhiteColor),
             ),

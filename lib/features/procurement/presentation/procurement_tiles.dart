@@ -99,7 +99,7 @@ extension ProcurementTiles on dynamic {
         'param': {},
         'access': _getValue(ProcurementPermission.manageGRN),
         'description':
-            'Record and manage the receipt of goods from suppliers. This allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
+            'Record and manage the receipt of goods from suppliers.\nThis allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
       },
       {
         'label': 'suppliers - management',

@@ -108,6 +108,7 @@ class _RefreshEntireAppState extends State<RefreshEntireApp> {
         const ModalBarrier(dismissible: false, color: Colors.black54),
         Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(appLogoWithBG, width: 64, semanticLabel: appName),
             const SizedBox(height: 5),

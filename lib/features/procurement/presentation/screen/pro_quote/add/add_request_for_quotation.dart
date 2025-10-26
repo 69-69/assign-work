@@ -82,6 +82,7 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   }
 
   RequestForQuote get _newQuote => RequestForQuote(
+    prId: '', // FOREIGN KEY
     rfqNumber: _newRFQNumber,
     status: _selectedRFQStatus ?? '',
     department: _department,

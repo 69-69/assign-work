@@ -229,8 +229,9 @@ extension SanitizeExtensions on String? {
 
     // If the string is empty, return it as is
     if (checkedString.isEmpty) return '';
+    final words = checkedString.toLowerAll;
 
-    return checkedString[0].toUpperAll + checkedString.substring(1).toLowerAll;
+    return words[0].toUpperAll + words.substring(1).toLowerAll;
   }
 
   /// Capitalizes the first letter of each word in the string (title case)

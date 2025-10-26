@@ -5,8 +5,16 @@ Under-Review: After submission, the requisition goes through a review.
 Approved: If the requisition is approved, it triggers the creation of an RFQ or PO.
 Fulfilled: The order is fulfilled and the requisition is considered completed.
 Cancelled: If it’s canceled at any point before approval or fulfillment.*/
+/// [PurchaseRequisition] Workflow Example ([Purchase Requisition] → RFQ → PO):
+/// 1. User creates the requisition.
+/// 2. User submits the requisition for approval.
+/// 3. After submission, the requisition goes through a review.
+/// 4. If the requisition is approved, it triggers the creation of an RFQ or PO.
+/// 5. The order is fulfilled and the requisition is considered completed.
+/// 6. If it’s canceled at any point before approval or fulfillment.
+///
 class PurchaseRequisition {
-  final String requisitionNumber;
+  final String prNumber; // Purchase Requisition number
   final String requestedBy; // Employee or department name/ID
   final DateTime requestDate;
   final String priority; // 'urgent' or 'normal'
@@ -15,15 +23,9 @@ class PurchaseRequisition {
   final List<RequisitionLineItem> lineItems;
   final List<String> attachments; // File paths or URLs
   final String status; // e.g., 'pending', 'approved', 'rejected'
-  /// Workflow Example (Purchase Requisition → RFQ → PO):
-  // Reference to RFQ after Requisition is created and approved
-  final String? linkedRFQId;
-
-  // Reference to PO after RFQ is Processed
-  final String? linkedPOId;
 
   PurchaseRequisition({
-    required this.requisitionNumber,
+    required this.prNumber,
     required this.requestedBy,
     required this.requestDate,
     required this.priority,
@@ -32,14 +34,12 @@ class PurchaseRequisition {
     required this.lineItems,
     required this.attachments,
     required this.status,
-    this.linkedRFQId,
-    this.linkedPOId,
   });
 
   // Optional: add fromJson / toJson for serialization
   factory PurchaseRequisition.fromJson(Map<String, dynamic> json) {
     return PurchaseRequisition(
-      requisitionNumber: json['requisitionNumber'],
+      prNumber: json['prNumber'],
       requestedBy: json['requestedBy'],
       requestDate: DateTime.parse(json['requestDate']),
       priority: json['priority'],
@@ -50,13 +50,11 @@ class PurchaseRequisition {
           .toList(),
       attachments: List<String>.from(json['attachments'] ?? []),
       status: json['status'],
-      linkedRFQId: json['linkedRFQId'],
-      linkedPOId: json['linkedPOId'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'requisitionNumber': requisitionNumber,
+    'prNumber': prNumber,
     'requestedBy': requestedBy,
     'requestDate': requestDate.toIso8601String(),
     'priority': priority,
@@ -65,8 +63,6 @@ class PurchaseRequisition {
     'lineItems': lineItems.map((item) => item.toJson()).toList(),
     'attachments': attachments,
     'status': status,
-    'linkedRFQId': linkedRFQId,
-    'linkedPOId': linkedPOId,
   };
 }
 
@@ -99,7 +95,7 @@ class RequisitionLineItem {
 }
 
 final requisition = PurchaseRequisition(
-  requisitionNumber: 'REQ-2025-001',
+  prNumber: 'REQ-2025-001',
   requestedBy: 'IT Department',
   requestDate: DateTime.now(),
   priority: 'urgent',
@@ -119,6 +115,4 @@ final requisition = PurchaseRequisition(
   ],
   attachments: ['specs.pdf', 'memo_it_request.docx'],
   status: 'pending',
-  linkedRFQId: null, // RFQ ID linked here
-  linkedPOId: null,
 );

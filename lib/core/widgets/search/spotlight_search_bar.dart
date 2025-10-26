@@ -25,6 +25,8 @@ class SpotlightSearchBar extends StatefulWidget {
 }
 
 class SpotlightSearchBarState extends State<SpotlightSearchBar> {
+  late double maxCrossAxisExtent;
+  bool _isListView = false;
   bool _isSearchActive = false;
   List<DashboardTile> filteredTiles = [];
   final TextEditingController _controller = TextEditingController();
@@ -66,6 +68,19 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateMaxCrossAxisExtent();
+  }
+
+  void _updateMaxCrossAxisExtent() {
+    var screenW = context.screenWidth;
+    maxCrossAxisExtent = (context.isMiniMobile
+        ? screenW
+        : (context.isPortraitMode ? screenW / 2 : screenW / 6));
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -93,7 +108,11 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
         if (_isSearchActive) ...[
           _buildSearchBar(context),
           (filteredTiles.isNotEmpty)
-              ? Expanded(child: _buildSearchResultsList(context))
+              ? Expanded(
+                  child: _isListView
+                      ? _buildSearchResultsList(context)
+                      : _buildSearchResultsGrid(context),
+                )
               : Card(
                   color: kLightBlueColor.toAlpha(0.8),
                   child: Padding(
@@ -151,18 +170,8 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
               border: InputBorder.none,
               focusedBorder: border,
               enabledBorder: border,
-              prefixIcon: Icon(Icons.search, color: kPrimaryAccentColor),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear, color: kTextColor),
-                tooltip: "${isEmpty2 ? "Close" : "Clear"} search",
-                onPressed: () {
-                  if (isEmpty2) {
-                    _triggerSearchBar(); // Close the search bar if there's no text
-                  } else {
-                    setState(() => _controller.clear());
-                  }
-                },
-              ),
+              prefixIcon: Icon(Icons.search, color: kPrimaryColor),
+              suffixIcon: _switchDisplay(isEmpty2),
             ),
             keyboardType: TextInputType.none,
             onChanged: _onSearchChanged,
@@ -172,47 +181,213 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     );
   }
 
+  Wrap _switchDisplay(bool isEmpty2) {
+    return Wrap(
+      runSpacing: 10,
+      children: [
+        IconButton(
+          icon: Icon(
+            _isListView ? Icons.view_list : Icons.grid_view,
+            color: kPrimaryColor,
+          ),
+          tooltip: "Switch to ${_isListView ? "Grid" : "List"} view",
+          onPressed: () {
+            setState(() => _isListView = !_isListView);
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.clear, color: kTextColor),
+          tooltip: "${isEmpty2 ? "Close" : "Clear"} search",
+          onPressed: () {
+            if (isEmpty2) {
+              _triggerSearchBar(); // Close the search bar if there's no text
+            } else {
+              setState(() => _controller.clear());
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  /// GridView Builder for tiles
+  GridView _buildSearchResultsGrid(BuildContext context) {
+    return GridView.builder(
+      primary: false,
+      itemCount: widget.tiles.length,
+      padding: const EdgeInsets.all(4.0),
+      physics: const RangeMaintainingScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: maxCrossAxisExtent,
+        // mainAxisExtent: maxCrossAxisExtent,
+        // Spacing between rows
+        mainAxisSpacing: 6,
+        // Spacing between columns
+        crossAxisSpacing: 6,
+        // Ratio between the width and height of grid items
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (cxt, index) {
+        final tile = widget.tiles[index];
+
+        return InkWell(
+          onTap: () {
+            final canAccess = _canAccess(tile.access, cxt);
+            if (!canAccess) {
+              cxt.showAlertOverlay(
+                "You don't have permission to use this feature",
+                bgColor: kWarningColor,
+                label: "OK",
+              );
+              return;
+            }
+            if (tile.param.entries.isEmpty) {
+              cxt.goNamed(tile.action);
+            } else {
+              cxt.goNamed(
+                tile.action,
+                extra: tile.param,
+                pathParameters: tile.param,
+              );
+            }
+            _triggerSearchBar();
+          },
+          child: _buildGridCard(index, tile, context),
+        );
+      },
+    );
+  }
+
+  /// ListView Builder for tiles
   Widget _buildSearchResultsList(BuildContext cxt) {
     return ListView.builder(
       itemCount: filteredTiles.length,
       itemBuilder: (context, index) {
         final tile = filteredTiles[index];
-        return Card(
-          elevation: 30,
-          color: kLightBlueColor.toAlpha(0.8),
-          margin: const EdgeInsets.symmetric(vertical: 3.0),
-          child: ListTile(
-            dense: true,
-            title: _buildHighlightedText(tile.label, cxt.textTheme.titleMedium),
-            subtitle: _buildHighlightedText(
-              tile.description ?? '',
-              cxt.textTheme.bodyMedium,
-            ),
-            leading: Icon(tile.icon, color: kPrimaryAccentColor),
-            onTap: () {
-              final canAccess = _canAccess(tile.access, cxt);
-              if (!canAccess) {
-                cxt.showAlertOverlay(
-                  "You don't have permission to use this feature",
-                  bgColor: kWarningColor,
-                  label: "OK",
-                );
-                return;
-              }
-              if (tile.param.entries.isEmpty) {
-                cxt.goNamed(tile.action);
-              } else {
-                cxt.goNamed(
-                  tile.action,
-                  extra: tile.param,
-                  pathParameters: tile.param,
-                );
-              }
-              _triggerSearchBar();
-            },
-          ),
-        );
+        return _buildListCard(tile, cxt);
       },
+    );
+  }
+
+  Widget _buildGridCard(int index, DashboardTile tile, BuildContext context) {
+    final ranColor = randomBgColors[index]; // kLightBlueColor
+
+    return AnimatedContainer(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(20.0),
+      duration: kAnimateDuration,
+      decoration: BoxDecoration(
+        color: ranColor,
+        borderRadius: BorderRadius.circular(kBorderRadius),
+        border: Border.all(color: ranColor.toAlpha(0.2), width: 4),
+      ),
+      child: _buildGridTile(tile, context),
+    );
+  }
+
+  GridTile _buildGridTile(DashboardTile tile, BuildContext context) {
+    return GridTile(
+      header: Text(
+        tile.label.toUpperAll,
+        textAlign: TextAlign.center,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: kWhiteColor),
+      ),
+      footer: context.isMobile
+          ? null
+          : Text(
+              (tile.description ?? '').toSentence,
+              textAlign: TextAlign.start,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: kWhiteColor),
+            ),
+      child: _buildGridRow(tile, context),
+    );
+  }
+
+  _buildGridRow(DashboardTile tile, BuildContext context) {
+    final parts = tile.label.split(' - ');
+    final title = parts.first;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: TextButton.icon(
+            onPressed: null,
+            icon: Expanded(
+              child: Icon(
+                tile.icon,
+                color: kLightBlueColor,
+                size: 50,
+                semanticLabel: title,
+              ),
+            ),
+            label: context.isMobile
+                ? const SizedBox.shrink()
+                : Text(
+                    title.toUpperAll,
+                    textAlign: TextAlign.center,
+                    style: context.textTheme.titleMedium?.copyWith(
+                      overflow: TextOverflow.ellipsis,
+                      color: kLightBlueColor,
+                    ),
+                  ),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              alignment: Alignment.center,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Card _buildListCard(DashboardTile tile, BuildContext cxt) {
+    return Card(
+      elevation: 30,
+      color: kLightBlueColor.toAlpha(0.8),
+      margin: const EdgeInsets.symmetric(vertical: 3.0),
+      child: ListTile(
+        dense: true,
+        title: _buildHighlightedText(tile.label, cxt.textTheme.titleMedium),
+        subtitle: _buildHighlightedText(
+          tile.description ?? '',
+          cxt.textTheme.bodyMedium,
+        ),
+        leading: Card.filled(
+          color: kPrimaryLightColor,
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: EdgeInsets.all(5.0),
+            child: Icon(tile.icon, color: kWhiteColor),
+          ),
+        ),
+
+        onTap: () {
+          final canAccess = _canAccess(tile.access, cxt);
+          if (!canAccess) {
+            cxt.showAlertOverlay(
+              "You don't have permission to use this feature",
+              bgColor: kWarningColor,
+              label: "OK",
+            );
+            return;
+          }
+          if (tile.param.entries.isEmpty) {
+            cxt.goNamed(tile.action);
+          } else {
+            cxt.goNamed(
+              tile.action,
+              extra: tile.param,
+              pathParameters: tile.param,
+            );
+          }
+          _triggerSearchBar();
+        },
+      ),
     );
   }
 
