@@ -108,7 +108,11 @@ class _CustomScaffoldState extends State<CustomScaffold> {
       children: [
         _buildBody(),
         if (_isSearchActive) ...{
-          ModalBarrier(color: kPrimaryColor.toAlpha(0.4), dismissible: false),
+          ModalBarrier(
+            color: kPrimaryColor.toAlpha(0.4),
+            semanticsLabel: 'Close Search',
+            onDismiss: () => _onSearchChanged(false),
+          ),
         },
         Align(
           alignment: Alignment.topCenter,

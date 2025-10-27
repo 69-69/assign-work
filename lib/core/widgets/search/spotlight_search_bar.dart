@@ -25,9 +25,9 @@ class SpotlightSearchBar extends StatefulWidget {
 }
 
 class SpotlightSearchBarState extends State<SpotlightSearchBar> {
-  late double maxCrossAxisExtent;
-  bool _isListView = false;
+  bool _isGridView = false;
   bool _isSearchActive = false;
+  late double maxCrossAxisExtent;
   List<DashboardTile> filteredTiles = [];
   final TextEditingController _controller = TextEditingController();
 
@@ -109,9 +109,20 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
           _buildSearchBar(context),
           (filteredTiles.isNotEmpty)
               ? Expanded(
-                  child: _isListView
-                      ? _buildSearchResultsList(context)
-                      : _buildSearchResultsGrid(context),
+                  child: _isGridView
+                      ? _GridViewResults(
+                          filteredTiles: filteredTiles,
+                          query: _controller.text,
+                          canAccess: _canAccess,
+                          triggerSearchBar: _triggerSearchBar,
+                          maxCrossAxisExtent: maxCrossAxisExtent,
+                        )
+                      : _ListViewResults(
+                          filteredTiles: filteredTiles,
+                          query: _controller.text,
+                          canAccess: _canAccess,
+                          triggerSearchBar: _triggerSearchBar,
+                        ),
                 )
               : Card(
                   color: kLightBlueColor.toAlpha(0.8),
@@ -187,12 +198,12 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
       children: [
         IconButton(
           icon: Icon(
-            _isListView ? Icons.view_list : Icons.grid_view,
-            color: kPrimaryColor,
+            _isGridView ? Icons.grid_view : Icons.view_list,
+            color: kPrimaryAccentColor,
           ),
-          tooltip: "Switch to ${_isListView ? "Grid" : "List"} view",
+          tooltip: "Switch to ${_isGridView ? "List" : "Grid"} view",
           onPressed: () {
-            setState(() => _isListView = !_isListView);
+            setState(() => _isGridView = !_isGridView);
           },
         ),
         IconButton(
@@ -209,12 +220,34 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
       ],
     );
   }
+}
+
+/// [_GridViewResults] GridView Builder for tiles
+class _GridViewResults extends StatelessWidget {
+  final String query;
+  final double maxCrossAxisExtent;
+  final void Function() triggerSearchBar;
+  final List<DashboardTile> filteredTiles;
+  final bool Function(String access, BuildContext cxt) canAccess;
+
+  const _GridViewResults({
+    required this.query,
+    required this.canAccess,
+    required this.filteredTiles,
+    required this.triggerSearchBar,
+    required this.maxCrossAxisExtent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildSearchResultsGrid(context);
+  }
 
   /// GridView Builder for tiles
   GridView _buildSearchResultsGrid(BuildContext context) {
     return GridView.builder(
       primary: false,
-      itemCount: widget.tiles.length,
+      itemCount: filteredTiles.length,
       padding: const EdgeInsets.all(4.0),
       physics: const RangeMaintainingScrollPhysics(),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
@@ -228,12 +261,12 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
         childAspectRatio: 1,
       ),
       itemBuilder: (cxt, index) {
-        final tile = widget.tiles[index];
+        final tile = filteredTiles[index];
 
         return InkWell(
           onTap: () {
-            final canAccess = _canAccess(tile.access, cxt);
-            if (!canAccess) {
+            final hasPerm = canAccess(tile.access, cxt);
+            if (!hasPerm) {
               cxt.showAlertOverlay(
                 "You don't have permission to use this feature",
                 bgColor: kWarningColor,
@@ -250,21 +283,10 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
                 pathParameters: tile.param,
               );
             }
-            _triggerSearchBar();
+            triggerSearchBar();
           },
           child: _buildGridCard(index, tile, context),
         );
-      },
-    );
-  }
-
-  /// ListView Builder for tiles
-  Widget _buildSearchResultsList(BuildContext cxt) {
-    return ListView.builder(
-      itemCount: filteredTiles.length,
-      itemBuilder: (context, index) {
-        final tile = filteredTiles[index];
-        return _buildListCard(tile, cxt);
       },
     );
   }
@@ -277,98 +299,117 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
       padding: const EdgeInsets.all(20.0),
       duration: kAnimateDuration,
       decoration: BoxDecoration(
-        color: ranColor,
+        color: ranColor.toAlpha(0.8),
         borderRadius: BorderRadius.circular(kBorderRadius),
-        border: Border.all(color: ranColor.toAlpha(0.2), width: 4),
       ),
       child: _buildGridTile(tile, context),
     );
   }
 
-  GridTile _buildGridTile(DashboardTile tile, BuildContext context) {
-    return GridTile(
-      header: Text(
-        tile.label.toUpperAll,
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: kWhiteColor),
-      ),
-      footer: context.isMobile
-          ? null
-          : Text(
-              (tile.description ?? '').toSentence,
-              textAlign: TextAlign.start,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: kWhiteColor),
-            ),
-      child: _buildGridRow(tile, context),
-    );
-  }
-
-  _buildGridRow(DashboardTile tile, BuildContext context) {
+  _buildGridTile(DashboardTile tile, BuildContext context) {
     final parts = tile.label.split(' - ');
     final title = parts.first;
 
-    return Row(
+    return GridTile(
+      header: _HighlightedText(
+        text: tile.label,
+        query: query,
+        isUppercase: true,
+        style: context.textTheme.titleSmall?.copyWith(
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      footer: Tooltip(
+        message: (tile.description ?? '').toSentence,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        child: _HighlightedText(
+          text: tile.description ?? '',
+          query: query,
+          style: context.textTheme.bodyMedium?.copyWith(
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+      child: Icon(
+        tile.icon,
+        color: kLightBlueColor,
+        size: 80,
+        semanticLabel: title,
+      ),
+    );
+    Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
-          child: TextButton.icon(
-            onPressed: null,
-            icon: Expanded(
-              child: Icon(
-                tile.icon,
-                color: kLightBlueColor,
-                size: 50,
-                semanticLabel: title,
-              ),
-            ),
-            label: context.isMobile
-                ? const SizedBox.shrink()
-                : Text(
-                    title.toUpperAll,
-                    textAlign: TextAlign.center,
-                    style: context.textTheme.titleMedium?.copyWith(
-                      overflow: TextOverflow.ellipsis,
-                      color: kLightBlueColor,
-                    ),
-                  ),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              alignment: Alignment.center,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
+          child: _HighlightedText(
+            text: tile.label,
+            query: query,
+            isUppercase: true,
+            style: context.textTheme.titleSmall,
+          ),
+        ),
+        Icon(tile.icon, color: kLightBlueColor, size: 80, semanticLabel: title),
+        Expanded(
+          child: _HighlightedText(
+            text: tile.description ?? '',
+            query: query,
+            style: context.textTheme.bodyMedium,
           ),
         ),
       ],
     );
   }
+}
 
-  Card _buildListCard(DashboardTile tile, BuildContext cxt) {
+/// [_ListViewResults] ListView Builder for tiles
+class _ListViewResults extends StatelessWidget {
+  final String query;
+  final void Function() triggerSearchBar;
+  final List<DashboardTile> filteredTiles;
+  final bool Function(String access, BuildContext cxt) canAccess;
+
+  const _ListViewResults({
+    required this.query,
+    required this.canAccess,
+    required this.filteredTiles,
+    required this.triggerSearchBar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: filteredTiles.length,
+      itemBuilder: (context, index) {
+        final tile = filteredTiles[index];
+        return _buildListCard(context, tile, index);
+      },
+    );
+  }
+
+  Card _buildListCard(BuildContext cxt, DashboardTile tile, int index) {
+    final ranColor = randomBgColors[index]; // kLightBlueColor
+
     return Card(
       elevation: 30,
-      color: kLightBlueColor.toAlpha(0.8),
+      color: ranColor.toAlpha(0.8),
       margin: const EdgeInsets.symmetric(vertical: 3.0),
       child: ListTile(
         dense: true,
-        title: _buildHighlightedText(tile.label, cxt.textTheme.titleMedium),
-        subtitle: _buildHighlightedText(
-          tile.description ?? '',
-          cxt.textTheme.bodyMedium,
+        title: _HighlightedText(
+          query: query,
+          text: tile.label,
+          isUppercase: true,
+          style: cxt.textTheme.titleSmall,
         ),
-        leading: Card.filled(
-          color: kPrimaryLightColor,
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: EdgeInsets.all(5.0),
-            child: Icon(tile.icon, color: kWhiteColor),
-          ),
+        subtitle: _HighlightedText(
+          query: query,
+          text: tile.description ?? '',
+          style: cxt.textTheme.bodyMedium,
         ),
-
+        leading: Icon(tile.icon, color: kLightBlueColor),
         onTap: () {
-          final canAccess = _canAccess(tile.access, cxt);
-          if (!canAccess) {
+          final hasPerm = canAccess(tile.access, cxt);
+          if (!hasPerm) {
             cxt.showAlertOverlay(
               "You don't have permission to use this feature",
               bgColor: kWarningColor,
@@ -385,22 +426,43 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
               pathParameters: tile.param,
             );
           }
-          _triggerSearchBar();
+          triggerSearchBar();
         },
       ),
     );
   }
+}
 
-  Widget _buildHighlightedText(String text, TextStyle? style) {
-    final query = _controller.text;
-    style = style?.copyWith(color: kBgLightColor);
+class _HighlightedText extends StatelessWidget {
+  final String text;
+  final String query;
+  final TextStyle? style;
+  final bool isUppercase;
+
+  const _HighlightedText({
+    this.style,
+    required this.text,
+    required this.query,
+    this.isUppercase = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final styleCopy = style?.copyWith(
+      fontSize: 13,
+      color: kLightGrayColor,
+      overflow: TextOverflow.ellipsis,
+    );
+
+    // Optionally convert text to uppercase if required
+    String displayText = isUppercase ? text.toUpperAll : text.toSentence;
 
     if (query.isEmpty) {
-      return Text(text, style: style);
+      return Text(displayText, style: styleCopy);
     }
 
-    final lowerText = text.toLowerAll;
-    final lowerQuery = query.toLowerAll;
+    final lowerText = displayText.toLowerCase();
+    final lowerQuery = query.toLowerCase();
 
     final spans = <TextSpan>[];
     int start = 0;
@@ -408,30 +470,33 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     while (true) {
       final index = lowerText.indexOf(lowerQuery, start);
       if (index == -1) {
-        spans.add(TextSpan(text: text.toTitle.substring(start), style: style));
+        spans.add(
+          TextSpan(text: displayText.substring(start), style: styleCopy),
+        );
         break;
       }
 
       if (index > start) {
         spans.add(
-          TextSpan(text: text.toSentence.substring(start, index), style: style),
+          TextSpan(text: displayText.substring(start, index), style: styleCopy),
         );
       }
 
       spans.add(
         TextSpan(
-          text: text.toTitle.substring(index, index + query.length),
-          style: style?.copyWith(
+          text: displayText.substring(index, index + query.length),
+          // Highlight color
+          style: styleCopy?.copyWith(
+            color: kSuccessColor,
             fontWeight: FontWeight.bold,
-            color: kPrimaryAccentColor, // Highlight color
           ),
         ),
-      );
+      ); //469-564-1299 - Celina montessori
 
       start = index + query.length;
     }
 
-    return RichText(text: TextSpan(children: spans));
+    return RichText(maxLines: 3, text: TextSpan(children: spans));
   }
 }
 

@@ -231,7 +231,21 @@ extension SanitizeExtensions on String? {
     if (checkedString.isEmpty) return '';
     final words = checkedString.toLowerAll;
 
-    return words[0].toUpperAll + words.substring(1).toLowerAll;
+    // return words[0].toUpperAll + words.substring(1).toLowerAll;
+    // Split the string into sentences by period, exclamation mark, or question mark
+    List<String> sentences = words.split(RegExp(r'([.!?])'));
+
+    // Iterate through each sentence part
+    for (int i = 0; i < sentences.length; i++) {
+      // Trim whitespace and ensure the first character is uppercase
+      sentences[i] = sentences[i].trim();
+      if (sentences[i].isNotEmpty) {
+        sentences[i] = sentences[i][0].toUpperAll + sentences[i].substring(1);
+      }
+    }
+
+    // Join & Return the sentences back together
+    return sentences.join('. ');
   }
 
   /// Capitalizes the first letter of each word in the string (title case)
