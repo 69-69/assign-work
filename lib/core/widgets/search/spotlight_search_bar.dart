@@ -337,7 +337,7 @@ class _GridViewResults extends StatelessWidget {
         semanticLabel: title,
       ),
     );
-    Column(
+    /*Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
@@ -357,7 +357,7 @@ class _GridViewResults extends StatelessWidget {
           ),
         ),
       ],
-    );
+    );*/
   }
 }
 

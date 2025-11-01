@@ -10,30 +10,29 @@ class FormBottomSheet extends StatelessWidget {
   final bool isDetails;
   final String title;
   final Widget body;
+  final bool isExpanded;
   final String? subtitle;
   final Color? subTitleColor;
-  final double? initialChildSize;
-  final double? maxChildSize;
   final Function()? onPrint;
 
   const FormBottomSheet({
     super.key,
     this.isDetails = false,
+    this.isExpanded = false,
     required this.title,
     required this.body,
     this.subtitle,
     this.subTitleColor,
-    this.initialChildSize,
-    this.maxChildSize,
     this.onPrint,
   });
 
   @override
   Widget build(BuildContext context) {
+    final size = isExpanded ? 0.92 : 0.98;
     return CustomBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
-      initialChildSize: initialChildSize ?? 0.98,
-      maxChildSize: maxChildSize ?? 0.98,
+      initialChildSize: size,
+      maxChildSize: size,
       header: isDetails
           ? _buildViewDetailsHeader(context)
           : _buildHeader(context),

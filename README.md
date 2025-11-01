@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "modified spotlight search"
+git commit -m "Mionor updates"
 git branch -M main
 git push -u origin main
 

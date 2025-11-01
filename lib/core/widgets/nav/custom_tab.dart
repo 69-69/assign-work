@@ -336,10 +336,8 @@ class _VerticalTabBars extends StatelessWidget {
       children: [
         // Toggle button for NavigationRail visibility
         IconButton(
-          icon: Icon(
-            isNavRailVisible ? Icons.chevron_right : Icons.chevron_left,
-          ),
-          tooltip: '${isNavRailVisible ? 'Expand' : 'Collapse'} Sidebar',
+          icon: Icon(isNavRailVisible ? Icons.menu : Icons.menu_open),
+          tooltip: '${isNavRailVisible ? 'Open' : 'Close'} Sidebar',
           onPressed: toggleNavRail,
         ),
         Expanded(child: _buildSideNavRail(context)),
