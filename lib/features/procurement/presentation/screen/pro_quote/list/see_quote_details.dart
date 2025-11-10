@@ -82,6 +82,7 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
   double _firstPanelRatio = 0.5;
   final double _minRatio = 0.2;
   final double _maxRatio = 0.8;
+  bool isHover = false;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +90,7 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const dragHandleWidth = 20.0;
+        const dragHandleWidth = 18.0;
         // Reduce the total width by the drag handle width
         final totalWidth =
             constraints.maxWidth - (isTwoQuotes ? dragHandleWidth : 0);
@@ -100,9 +101,12 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
         return Row(
           children: [
             SizedBox(width: firstPanelWidth, child: _buildQuote(context, 0)),
-            SizedBox(
+            Container(
               width: dragHandleWidth,
-              height: context.screenHeight * 0.8,
+              height: context.screenHeight * 0.78,
+              color: isHover
+                  ? context.outlineColor.toAlpha(0.3)
+                  : kTransparentColor,
               child: _buildDragHandle(),
             ),
             SizedBox(width: secondPanelWidth, child: _buildQuote(context, 1)),
@@ -120,11 +124,18 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
         setState(() {
           _firstPanelRatio += details.delta.dx / context.size!.width;
           _firstPanelRatio = _firstPanelRatio.clamp(_minRatio, _maxRatio);
+          isHover = true;
         });
       },
+      onHorizontalDragEnd: (_) => setState(() => isHover = false),
       child: MouseRegion(
         cursor: SystemMouseCursors.resizeLeftRight,
-        child: Icon(Icons.drag_indicator, size: 20, color: kGrayBlueColor),
+        child: Icon(
+          Icons.drag_indicator,
+          size: 18,
+          color: kGrayBlueColor,
+          semanticLabel: 'Resize',
+        ),
       ),
     );
   }
