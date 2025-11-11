@@ -12,7 +12,7 @@ import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_o
 import 'package:assign_erp/features/inventory_ims/data/models/delivery_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/delivery/delivery_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/add/add_delivery.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/create/create_delivery.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/deliveries/update/update_delivery.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

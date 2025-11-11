@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/orders/add/add_pos_order.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/orders/create/create_pos_order.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/orders/scan_to_order/scan_to_add_pos_order.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/search_pos_product/search_pos_products.dart';
 import 'package:flutter/material.dart';

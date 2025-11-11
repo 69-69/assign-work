@@ -56,7 +56,7 @@ extension RFQDetails on BuildContext {
         () async =>
             await RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
       ),
-      onSuccess: (_) => cxt.showAlertOverlay('RFQ successfully created'),
+      onSuccess: (_) => cxt.showAlertOverlay('RFQ printout successful'),
       onError: (e) =>
           cxt.showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
     );
@@ -83,6 +83,7 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
   final double _minRatio = 0.2;
   final double _maxRatio = 0.8;
   bool isHover = false;
+  final _dragHandleWidth = 16.0;
 
   @override
   Widget build(BuildContext context) {
@@ -90,26 +91,33 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const dragHandleWidth = 18.0;
         // Reduce the total width by the drag handle width
         final totalWidth =
-            constraints.maxWidth - (isTwoQuotes ? dragHandleWidth : 0);
+            constraints.maxWidth - (isTwoQuotes ? _dragHandleWidth : 0);
 
         final firstPanelWidth = totalWidth * _firstPanelRatio;
         final secondPanelWidth = totalWidth * (1 - _firstPanelRatio);
 
         return Row(
           children: [
-            SizedBox(width: firstPanelWidth, child: _buildQuote(context, 0)),
             Container(
-              width: dragHandleWidth,
+              padding: isHover ? EdgeInsets.only(right: 4) : null,
+              width: firstPanelWidth,
+              child: _buildQuote(context, 0),
+            ),
+            Container(
+              width: _dragHandleWidth,
               height: context.screenHeight * 0.78,
               color: isHover
                   ? context.outlineColor.toAlpha(0.3)
                   : kTransparentColor,
               child: _buildDragHandle(),
             ),
-            SizedBox(width: secondPanelWidth, child: _buildQuote(context, 1)),
+            Container(
+              padding: isHover ? EdgeInsets.only(left: 4) : null,
+              width: secondPanelWidth,
+              child: _buildQuote(context, 1),
+            ),
           ],
         );
       },
@@ -132,8 +140,8 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
         cursor: SystemMouseCursors.resizeLeftRight,
         child: Icon(
           Icons.drag_indicator,
-          size: 18,
-          color: kGrayBlueColor,
+          size: _dragHandleWidth,
+          color: isHover ? kBgLightColor : kGrayBlueColor,
           semanticLabel: 'Resize',
         ),
       ),
@@ -217,6 +225,35 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
   }
 }
 
+Widget _buildInfoRow(
+  BuildContext context, {
+  Color? textColor,
+  String title = '',
+  String value = '',
+  String separator = ': ',
+}) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 2.0),
+    child: RichText(
+      text: TextSpan(
+        text: '$title$separator',
+        style: context.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: textColor ?? context.secondaryColor,
+        ),
+        children: [
+          TextSpan(
+            text: value,
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _RFQInfoPage extends StatelessWidget {
   final String _supplier;
   final RequestForQuote? _quote;
@@ -232,25 +269,11 @@ class _RFQInfoPage extends StatelessWidget {
 
   List<RFQLineItem> get _items => _quote?.lineItems ?? [];
 
-  double get _subtotal => _quote?.subTotal ?? 0.0;
-
-  double get _totalTax => _quote?.taxAmount ?? 0.0;
-
-  double get _totalDiscount => _quote?.discountAmount ?? 0.0;
-
-  double get _grandTotal => _quote?.netTotal ?? 0.0;
-
   TaxMode? get _taxMode => _quote?.taxMode;
 
   bool get _isPerLineTax => (_taxMode?.isPerLineTax ?? false);
 
   String? get _currencySign => getCurrencySign(_quote?.currency ?? ghanaCedis);
-
-  String? get _updatedBy =>
-      _quote!.updatedBy.isNullOrEmpty ? 'N/A' : _quote.updatedBy;
-
-  String? get _createdBy =>
-      _quote!.createdBy.isNullOrEmpty ? 'N/A' : _quote.createdBy;
 
   @override
   Widget build(BuildContext context) {
@@ -260,11 +283,14 @@ class _RFQInfoPage extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_buildBody(context), _buildFooter(context)],
+      children: [
+        _buildBody(context),
+        _Footer(quote: _quote),
+      ],
     );
   }
 
-  _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -288,53 +314,35 @@ class _RFQInfoPage extends StatelessWidget {
         /// Item Rows: generate index too
         /// ...items.map((item, index) => _buildItemRow(item, index)),
         ..._items.asMap().entries.map(
-          (entry) => _buildItemRow(entry.value, entry.key),
+          (item) => _buildItemRow(item.value, item.key),
         ),
 
         HorizontalDivider(),
         const SizedBox(height: 12),
 
         AdaptiveLayout(
-          children: [_buildLeftSummary(context), _buildRightSummary(context)],
+          children: [
+            _LeftSummary(
+              quote: _quote,
+              sign: _currencySign,
+              textColor: _textColor,
+              isPerLineTax: _isPerLineTax,
+            ),
+            _RightSummary(
+              quote: _quote,
+              sign: _currencySign,
+              textColor: _textColor,
+            ),
+          ],
         ),
         const SizedBox(height: 20),
       ],
     );
   }
 
-  _buildInfoRow(
-    BuildContext context, {
-    String title = '',
-    String value = '',
-    String separator = ': ',
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 2.0),
-      child: RichText(
-        text: TextSpan(
-          text: '$title$separator',
-          style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: _textColor ?? context.secondaryColor,
-          ),
-          children: [
-            TextSpan(
-              text: value,
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Expanded _buildItem(String text, {int? flex, bool isBold = true}) => Expanded(
-    flex: flex ?? 1,
+  Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
     child: Text(
       text,
-      textAlign: flex == null ? TextAlign.center : TextAlign.start,
       style: TextStyle(
         overflow: TextOverflow.ellipsis,
         fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -343,6 +351,20 @@ class _RFQInfoPage extends StatelessWidget {
   );
 
   Widget _buildHeader(BuildContext context) {
+    // Build the list of header entries first
+    final headerItems = <(String, String)>[
+      ('RFQ #', _quote?.rfqNumber ?? 'N/A'),
+      ('Store ID', _quote?.storeNumber.toUpperAll ?? 'N/A'),
+      ('Status', _quote?.status.toSentence ?? 'N/A'),
+      if (_quote?.department.isNotEmpty ?? false) ...{
+        ('Department', _quote!.department.toTitle),
+      },
+      if (_quote?.taxMode.getValue.isNotEmpty ?? false) ...{
+        ('Tax Mode', (_taxMode?.getValue.separateWord).toTitle),
+      },
+      ('Vendor', _supplier.toUpperAll),
+    ];
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,144 +375,167 @@ class _RFQInfoPage extends StatelessWidget {
           style: context.textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
-        _buildInfoRow(
-          context,
-          title: 'RFQ #',
-          value: _quote?.rfqNumber ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          title: 'Store ID',
-          value: _quote?.storeNumber.toUpperAll ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          title: 'Status',
-          value: _quote?.status.toSentence ?? 'N/A',
-        ),
-        if (_quote?.department.isNotEmpty ?? false)
-          _buildInfoRow(
+        ...headerItems.map(
+          (item) => _buildInfoRow(
             context,
-            title: 'Department',
-            value: _quote!.department.toTitle,
+            textColor: _textColor,
+            title: item.$1,
+            value: item.$2,
           ),
-        if (_quote?.taxMode.getValue.isNotEmpty ?? false)
-          _buildInfoRow(
-            context,
-            title: 'Tax Mode',
-            value: (_taxMode?.getValue.separateWord).toTitle,
-          ),
-        _buildInfoRow(context, title: 'Vendor', value: _supplier.toUpperAll),
+        ),
       ],
     );
   }
 
   Widget _buildItemTableHeader(BuildContext context) {
+    final headerItems = [
+      '#',
+      'Item',
+      'Qty',
+      'Unit Price',
+      'Discount',
+      if (_isPerLineTax) ...[
+        // 'Tax Rate %',
+        'Tax Amount',
+        'Tax Codes',
+      ],
+      'Line Total',
+    ];
+
     return Container(
       color: context.primaryContainer,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildItem('#', flex: 1),
-          _buildItem('Item', flex: 2),
-          _buildItem('Qty'),
-          _buildItem('Unit Price'),
-          _buildItem('Discount'),
-          if (_isPerLineTax) ...[
-            // _buildItem('Tax Rate %'),
-            _buildItem('Tax Amount'),
-            _buildItem('Tax Codes'),
-          ],
-          _buildItem('Line Total'),
-        ],
+        children: headerItems.map((item) => _buildItem(item)).toList(),
       ),
     );
   }
 
   Widget _buildItemRow(RFQLineItem item, int index) {
+    List rowItems = [
+      '${index + 1}',
+      (item.itemName.toTitle),
+      '${item.quantity}',
+      '$_currencySign${item.unitPrice.toCurrency}',
+      '$_currencySign${item.discountAmount.toCurrency}',
+      if (_isPerLineTax) ...[
+        '$_currencySign${item.taxAmount.toCurrency}',
+        item.taxNames.toUpperAll,
+      ],
+      '$_currencySign${item.perLineTotal.toCurrency}',
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildItem('${index + 1}', flex: 1, isBold: false),
-          _buildItem(item.itemName.toTitle, flex: 2, isBold: false),
-          _buildItem('${item.quantity}', isBold: false),
-
-          _buildItem(
-            '$_currencySign${item.unitPrice.toCurrency}',
-            isBold: false,
-          ),
-          _buildItem(
-            '-$_currencySign${item.discountAmount.toCurrency}',
-            isBold: false,
-          ),
-
-          if (_isPerLineTax) ...[
-            _buildItem(
-              '$_currencySign${item.taxAmount.toCurrency}',
-              isBold: false,
-            ),
-            _buildItem(item.taxNames.toUpperAll, isBold: false),
-          ],
-          _buildItem(
-            '$_currencySign${item.perLineTotal.toCurrency}',
-            isBold: false,
-          ),
-        ],
+        children: rowItems
+            .map((item) => _buildItem(item, isBold: false))
+            .toList(),
       ),
     );
   }
+}
+
+class _LeftSummary extends StatelessWidget {
+  final RequestForQuote? quote;
+  final Color? textColor;
+  final String? sign;
+  final bool isPerLineTax;
+
+  const _LeftSummary({
+    this.quote,
+    required this.sign,
+    required this.textColor,
+    required this.isPerLineTax,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildLeftSummary(context);
+  }
+
+  // Helper for optional multiline sections (adds spacing automatically)
+  List<Widget> buildOptionalSection(
+    BuildContext context,
+    String title,
+    String? value,
+  ) {
+    return (value == null || value.isEmpty)
+        ? []
+        : [
+            const SizedBox(height: 8),
+            _buildInfoRow(
+              context,
+              separator: ':\n',
+              title: title,
+              value: value.toSentence,
+            ),
+          ];
+  }
 
   Widget _buildLeftSummary(BuildContext context) {
+    final summaryItems = <(String, String)>[
+      ('Deadline', quote!.getDeadlineDate),
+      ('Delivery', quote!.getDeliveryDate),
+    ];
+
+    if (!isPerLineTax) {
+      summaryItems.add((
+        'Applied Taxes',
+        quote!.lineItems.first.taxNames.toUpperAll,
+      ));
+    }
+
     return Align(
       alignment: Alignment.centerLeft,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow(
-            context,
-            title: 'Deadline',
-            value: _quote!.getDeadlineDate,
+          ...summaryItems.map(
+            (item) => _buildInfoRow(
+              context,
+              textColor: textColor,
+              title: item.$1,
+              value: item.$2,
+            ),
           ),
-          _buildInfoRow(
+          ...buildOptionalSection(
             context,
-            title: 'Delivery',
-
-            value: _quote.getDeliveryDate,
+            'Delivery Address',
+            quote!.deliveryAddress,
           ),
-          if (!_isPerLineTax) ...{
-            _buildInfoRow(
-              context,
-              title: 'Applied Taxes',
-
-              value: _quote.lineItems.first.taxNames.toUpperAll,
-            ),
-          },
-          if (_quote.deliveryAddress?.isNotEmpty ?? false) ...[
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              separator: ':\n',
-              title: 'Delivery Address',
-
-              value: _quote.deliveryAddress.toSentence,
-            ),
-          ],
-          if (_quote.notes?.isNotEmpty ?? false) ...[
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              separator: ':\n',
-              title: 'Additional Notes',
-              value: _quote.notes.toSentence,
-            ),
-          ],
+          ...buildOptionalSection(context, 'Notes', quote!.notes),
         ],
       ),
     );
+  }
+}
+
+class _RightSummary extends StatelessWidget {
+  final RequestForQuote? quote;
+  final Color? textColor;
+  final String? sign;
+
+  const _RightSummary({
+    this.quote,
+    required this.sign,
+    required this.textColor,
+  });
+
+  double get _grandTotal => quote?.netTotal ?? 0.0;
+
+  get summaryItems => <(String, String)>[
+    ('Subtotal', '$sign${(quote?.subTotal ?? 0.0).toCurrency}'),
+    ('Discount', '-$sign${(quote?.discountAmount ?? 0.0).toCurrency}'),
+    ('Tax', '$sign${(quote?.taxAmount ?? 0.0).toCurrency}'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildRightSummary(context);
   }
 
   Widget _buildRightSummary(BuildContext context) {
@@ -500,29 +545,39 @@ class _RFQInfoPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _buildInfoRow(
-            context,
-            title: 'Subtotal',
-            value: '$_currencySign${_subtotal.toCurrency}',
-          ),
-          _buildInfoRow(
-            context,
-            title: 'Discount',
-            value: '-$_currencySign${_totalDiscount.toCurrency}',
-          ),
-          _buildInfoRow(
-            context,
-            title: 'Tax',
-            value: '$_currencySign${_totalTax.toCurrency}',
+          ...summaryItems.map(
+            (item) => _buildInfoRow(
+              context,
+              textColor: textColor,
+              title: item.$1,
+              value: item.$2,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Grand Total: $_currencySign${_grandTotal.toCurrency}',
+            'Grand Total: $sign${_grandTotal.toCurrency}',
             style: context.textTheme.titleLarge?.copyWith(color: kDangerColor),
           ),
         ],
       ),
     );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  final RequestForQuote? quote;
+
+  const _Footer({this.quote});
+
+  String? get _updatedBy =>
+      quote!.updatedBy.isNullOrEmpty ? 'N/A' : quote?.updatedBy;
+
+  String? get _createdBy =>
+      quote!.createdBy.isNullOrEmpty ? 'N/A' : quote?.createdBy;
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildFooter(context);
   }
 
   Container _buildFooter(BuildContext context) {
@@ -533,15 +588,21 @@ class _RFQInfoPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildInfoRow(
-            context,
-            title: 'Created',
-            value: '${_quote?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildInfoRow(
+              context,
+              title: 'Created',
+              value: '${quote?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
+            ),
           ),
-          _buildInfoRow(
-            context,
-            title: 'Last Updated',
-            value: '${_quote!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
+          Align(
+            alignment: Alignment.centerRight,
+            child: _buildInfoRow(
+              context,
+              title: 'Updated',
+              value: '${quote!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
+            ),
           ),
         ],
       ),

@@ -7,7 +7,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/orders/misc_order_
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/misc_order_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/misc/list/list_miscellaneous_orders.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/add/add_purchase_order.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/po/create/create_purchase_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:assign_erp/core/network/data_sources/models/print_theme_config.dart';
+import 'package:assign_erp/core/network/data_sources/models/printout_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/purchase_order_model.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/print/po_pdf_builder.dart';

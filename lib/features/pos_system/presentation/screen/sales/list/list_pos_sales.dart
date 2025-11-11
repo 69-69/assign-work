@@ -11,7 +11,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/pos_system/data/models/pos_sale_model.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/pos_bloc.dart';
 import 'package:assign_erp/features/pos_system/presentation/bloc/sales/pos_sale_bloc.dart';
-import 'package:assign_erp/features/pos_system/presentation/screen/sales/add/add_pos_sale.dart';
+import 'package:assign_erp/features/pos_system/presentation/screen/sales/create/create_pos_sale.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/sales/update/update_pos_sale.dart';
 import 'package:assign_erp/features/pos_system/presentation/screen/widget/pos_report_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

@@ -8,7 +8,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/how_to/how_to_bloc.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/user_guide_bloc.dart';
-import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/add/add_user_guide.dart';
+import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/create/create_user_guide.dart';
 import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/widgets/body.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

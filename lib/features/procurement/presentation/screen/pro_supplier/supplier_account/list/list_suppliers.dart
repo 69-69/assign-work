@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_vendor/suppliers_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/add/add_suppliers.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/create/create_suppliers.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/list/see_supplier_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/update/update_supplier.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

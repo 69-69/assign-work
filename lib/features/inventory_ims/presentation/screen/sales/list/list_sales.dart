@@ -11,7 +11,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/sale_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/sales/sale_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/sales/add/add_sale.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/sales/create/create_sale.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/sales/update/update_sale.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_report_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

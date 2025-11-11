@@ -249,12 +249,14 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
     if (drawer != null) return null;
     if (backButton != null) return backButton;
     final routePath = BreadcrumbService.currentPath(context);
-    final backTitle = routePath.isEmpty
+    final breadcrumbs = BreadcrumbService.generateBreadcrumbs(
+      routePath,
+      optFallback: 'Back',
+    );
+
+    final backTitle = routePath.isEmpty || breadcrumbs.isNotEmpty
         ? 'Back'
-        : BreadcrumbService.generateBreadcrumbs(
-            routePath,
-            optFallback: 'Back',
-          ).last.label;
+        : breadcrumbs.last.label;
 
     return Container(
       alignment: Alignment.center,

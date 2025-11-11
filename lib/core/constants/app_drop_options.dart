@@ -297,7 +297,7 @@ const deliveryStatus = [
   'delayed',
 ];
 
-/// Request For Quotation & Purchase Requisition Statuses
+/// Request For Quotation Statuses
 const _rFqPrStatus = [
   'draft',
   'submitted',
@@ -305,6 +305,7 @@ const _rFqPrStatus = [
   'closed',
   'under-review',
   'awarded',
+  'approved',
   'rejected',
   'cancelled',
 ];

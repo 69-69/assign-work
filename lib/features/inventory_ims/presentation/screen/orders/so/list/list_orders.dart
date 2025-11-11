@@ -11,7 +11,7 @@ import 'package:assign_erp/features/customer_crm/data/data_sources/remote/get_cu
 import 'package:assign_erp/features/inventory_ims/data/models/orders/order_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/add/add_order.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/create/create_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/update/update_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/sales_doc_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

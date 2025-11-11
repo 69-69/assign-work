@@ -36,13 +36,42 @@ extension SupplierDetails on BuildContext {
       request: Future.delayed(
         kRProgressDelay,
         () async => null,
-        // await RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
+        // @TODO Implement printout
+        //  await RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
       ),
-      onSuccess: (_) => cxt.showAlertOverlay('RFQ successfully created'),
+      onSuccess: (_) => cxt.showAlertOverlay('RFQ printout successful'),
       onError: (e) =>
           cxt.showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
     );
   }
+}
+
+Widget _buildInfoRow(
+  BuildContext context, {
+  String title = '',
+  String value = '',
+  String separator = ': ',
+}) {
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 2.0),
+    child: RichText(
+      text: TextSpan(
+        text: '$title$separator',
+        style: context.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: context.secondaryColor,
+        ),
+        children: [
+          TextSpan(
+            text: value,
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _SupplierInfoPage extends StatelessWidget {
@@ -52,12 +81,14 @@ class _SupplierInfoPage extends StatelessWidget {
 
   List<SupplierContactPerson> get _contactPersons =>
       _supplier?.contactPersons ?? [];
-
-  String? get _updatedBy =>
-      _supplier!.updatedBy.isNullOrEmpty ? 'N/A' : _supplier.updatedBy;
-
-  String? get _createdBy =>
-      _supplier!.createdBy.isNullOrEmpty ? 'N/A' : _supplier.createdBy;
+  List<String> get _headerItems => [
+    'Name',
+    'Email',
+    'Phone',
+    'Department',
+    'Position',
+    'Date',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +98,14 @@ class _SupplierInfoPage extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_buildBody(context), _buildFooter(context)],
+      children: [
+        _buildBody(context),
+        _Footer(supplier: _supplier),
+      ],
     );
   }
 
-  _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -101,46 +135,19 @@ class _SupplierInfoPage extends StatelessWidget {
         const SizedBox(height: 12),
 
         AdaptiveLayout(
-          children: [_buildLeftSummary(context), _buildRightSummary(context)],
+          children: [
+            _LeftSummary(supplier: _supplier),
+            _RightSummary(supplier: _supplier),
+          ],
         ),
         const SizedBox(height: 20),
       ],
     );
   }
 
-  _buildInfoRow(
-    BuildContext context, {
-    String title = '',
-    String value = '',
-    String separator = ': ',
-  }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 2.0),
-      child: RichText(
-        text: TextSpan(
-          text: '$title$separator',
-          style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: context.secondaryColor,
-          ),
-          children: [
-            TextSpan(
-              text: value,
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Expanded _buildItem(String text, {int? flex, bool isBold = true}) => Expanded(
-    flex: flex ?? 1,
+  Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
     child: Text(
       text,
-      textAlign: flex == null ? TextAlign.center : TextAlign.start,
       style: TextStyle(
         overflow: TextOverflow.ellipsis,
         fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -192,58 +199,81 @@ class _SupplierInfoPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildItem('Name', flex: 1),
-          _buildItem('Email'),
-          _buildItem('Phone'),
-          _buildItem('Department'),
-          _buildItem('Position'),
-          _buildItem('Date', flex: 1),
-        ],
+        children: _headerItems.map((item) => _buildItem(item)).toList(),
       ),
     );
   }
 
   Widget _buildItemRow(SupplierContactPerson person, int index) {
+    final rowItems = [
+      person.name.toTitle,
+      person.email.toLowerAll,
+      person.phone,
+      person.department.toTitle,
+      person.position.toTitle,
+      person.getCreatedAt,
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildItem(person.name.toTitle, flex: 1, isBold: false),
-          _buildItem(person.email.toLowerAll, isBold: false),
-
-          _buildItem(person.phone, isBold: false),
-          _buildItem(person.department.toTitle, isBold: false),
-          _buildItem(person.position.toTitle, isBold: false),
-          _buildItem(person.getCreatedAt, flex: 1, isBold: false),
-        ],
+        children: rowItems
+            .map((item) => _buildItem(item, isBold: false))
+            .toList(),
       ),
     );
   }
+}
 
-  Widget _buildLeftSummary(BuildContext context) {
+class _LeftSummary extends StatelessWidget {
+  final Supplier? supplier;
+
+  const _LeftSummary({this.supplier});
+
+  /// List of title-value pairs to render in the summary.
+  List<(String, String)> get summaryItems {
+    final s = supplier;
+    if (s == null) return const [];
+
+    return [
+      ('Address', s.address.toSentence),
+      ('Bank Details', s.bankDetails.toSentence),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInfoRow(
-            context,
-            separator: ':\n',
-            title: 'Address',
-            value: _supplier!.address.toSentence,
-          ),
-          _buildInfoRow(
-            context,
-            separator: ':\n',
-            title: 'Bank Details',
-            value: _supplier.bankDetails.toSentence,
-          ),
-        ],
-      ),
+      child: supplier == null
+          ? Text("No supplier data available.")
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: summaryItems
+                  .map(
+                    (item) => _buildInfoRow(
+                      context,
+                      separator: ':\n',
+                      title: item.$1,
+                      value: item.$2,
+                    ),
+                  )
+                  .toList(),
+            ),
     );
+  }
+}
+
+class _RightSummary extends StatelessWidget {
+  final Supplier? supplier;
+
+  const _RightSummary({this.supplier});
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildRightSummary(context);
   }
 
   Widget _buildRightSummary(BuildContext context) {
@@ -257,7 +287,7 @@ class _SupplierInfoPage extends StatelessWidget {
             context,
             title: 'Products / Services',
             separator: ':\n',
-            value: _supplier!.items.splitMapJoin(
+            value: supplier!.items.splitMapJoin(
               ',',
               onMatch: (m) => '\n',
               onNonMatch: (m) => m.toTitle.trim(),
@@ -266,6 +296,23 @@ class _SupplierInfoPage extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  final Supplier? supplier;
+
+  const _Footer({this.supplier});
+
+  String? get _updatedBy =>
+      supplier!.updatedBy.isNullOrEmpty ? 'N/A' : supplier?.updatedBy;
+
+  String? get _createdBy =>
+      supplier!.createdBy.isNullOrEmpty ? 'N/A' : supplier?.createdBy;
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildFooter(context);
   }
 
   Container _buildFooter(BuildContext context) {
@@ -276,15 +323,23 @@ class _SupplierInfoPage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildInfoRow(
-            context,
-            title: 'Created',
-            value: '${_supplier?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _buildInfoRow(
+              context,
+              title: 'Created',
+              value:
+                  '${supplier?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
+            ),
           ),
-          _buildInfoRow(
-            context,
-            title: 'Last Updated',
-            value: '${_supplier?.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
+          Align(
+            alignment: Alignment.centerRight,
+            child: _buildInfoRow(
+              context,
+              title: 'Updated',
+              value:
+                  '${supplier!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
+            ),
           ),
         ],
       ),

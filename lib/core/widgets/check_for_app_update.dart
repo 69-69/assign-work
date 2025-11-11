@@ -19,14 +19,16 @@ class CheckForAppUpdate extends StatelessWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: const EdgeInsets.fromLTRB(8.0, 2.0, 0, 2.0),
         color: Colors.orange.shade50,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Update installed',
+              'Updated',
               style: context.textTheme.bodyMedium?.copyWith(
                 color: kDangerColor,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
             ),

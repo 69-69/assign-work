@@ -3,7 +3,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/create_acc/customer_acc_bloc.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/customer_bloc.dart';
-import 'package:assign_erp/features/customer_crm/presentation/screen/customers/add/add_customer.dart';
+import 'package:assign_erp/features/customer_crm/presentation/screen/customers/create/create_customer.dart';
 import 'package:assign_erp/features/customer_crm/presentation/screen/customers/update/update_customer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

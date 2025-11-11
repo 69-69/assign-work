@@ -6,7 +6,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/add/add_store_locations.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/create/create_store_locations.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/can_add_more_stores.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

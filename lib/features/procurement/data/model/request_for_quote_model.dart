@@ -68,9 +68,9 @@ class RequestForQuote extends Equatable {
     this.paymentTerm = '',
     required this.department,
     this.notes,
-    this.validityDate = '',
     this.currency = ghanaCedis,
     this.deliveryAddress = '',
+    this.validityDate = '',
     DateTime? deadline,
     DateTime? deliveryDate,
     required this.createdBy,
@@ -102,11 +102,11 @@ class RequestForQuote extends Equatable {
       taxMode: TaxModeHelper.fromString(map['taxMode'] ?? TaxMode.perLineTax),
       paymentTerm: map['paymentTerm'] ?? '',
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
-      deadline: toDateTimeFn(map['deadline']),
-      deliveryDate: toDateTimeFn(map['deliveryDate']),
-      validityDate: map['validityDate'] ?? '',
       currency: map['currency'] ?? '',
       deliveryAddress: map['deliveryAddress'],
+      validityDate: map['validityDate'] ?? '',
+      deadline: toDateTimeFn(map['deadline']),
+      deliveryDate: toDateTimeFn(map['deliveryDate']),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
       updatedBy: map['updatedBy'] ?? '',
@@ -145,6 +145,7 @@ class RequestForQuote extends Equatable {
     newMap['deliveryDate'] = deliveryDate?.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
+
     return newMap;
   }
 
@@ -154,6 +155,7 @@ class RequestForQuote extends Equatable {
     newMap['deliveryDate'] = deliveryDate?.millisecondsSinceEpoch;
     newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
     newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+
     return {'id': id, 'data': newMap};
   }
 

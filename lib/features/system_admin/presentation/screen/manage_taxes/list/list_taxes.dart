@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/add/add_tax.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/create/create_tax.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

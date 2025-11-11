@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class FormBottomSheet extends StatelessWidget {
   final bool isDetails;
   final String title;
+  final String? tooltip;
   final Widget body;
   final bool isExpanded;
   final String? subtitle;
@@ -22,6 +23,7 @@ class FormBottomSheet extends StatelessWidget {
     required this.title,
     required this.body,
     this.subtitle,
+    this.tooltip,
     this.subTitleColor,
     this.onPrint,
   });
@@ -67,7 +69,7 @@ class FormBottomSheet extends StatelessWidget {
           context.elevatedButton(
             'Print',
             bgColor: kWarningColor,
-            tooltip: 'Print out the RFQ',
+            tooltip: tooltip ?? 'Print out',
             onPressed: onPrint,
           ),
           IconButton(

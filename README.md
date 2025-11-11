@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "Mionor updates for quote comparison resize"
+git commit -m "Working on PR Model"
 git branch -M main
 git push -u origin main
 

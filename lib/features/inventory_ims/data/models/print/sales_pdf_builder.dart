@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/network/data_sources/models/print_theme_config.dart';
+import 'package:assign_erp/core/network/data_sources/models/printout_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;

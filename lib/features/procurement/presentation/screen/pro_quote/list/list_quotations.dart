@@ -11,7 +11,7 @@ import 'package:assign_erp/features/procurement/data/model/request_for_quote_mod
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_quote/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/add/add_request_for_quotation.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/create/create_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/list/see_quote_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/widget/rfq_printer.dart';

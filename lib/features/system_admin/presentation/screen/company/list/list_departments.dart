@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/department_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/add/add_department.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/create/create_department.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

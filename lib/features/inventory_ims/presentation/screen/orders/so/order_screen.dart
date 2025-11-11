@@ -6,7 +6,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/order_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/orders/order_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/add/add_order.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/create/create_order.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/orders/so/list/list_orders.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
