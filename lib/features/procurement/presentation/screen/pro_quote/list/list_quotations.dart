@@ -1,11 +1,14 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
@@ -14,15 +17,15 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/create/create_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/list/see_quote_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/update/update_request_for_quotation.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/widget/rfq_printer.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// LIST Request For Quotations
 class ListQuotations extends StatefulWidget {
-  final bool isAward;
-  const ListQuotations({super.key, this.isAward = false});
+  final bool isAwarded;
+  const ListQuotations({super.key, this.isAwarded = false});
 
   @override
   State<ListQuotations> createState() => _ListQuotationsState();
@@ -35,7 +38,10 @@ class _ListQuotationsState extends State<ListQuotations> {
   final List<RequestForQuote> _quotesWithTaxes = [];
   final List<Supplier> _suppliers = [];
 
-  bool get _isAward => widget.isAward;
+  bool get _isAwarded => widget.isAwarded;
+
+  ProRequestForQuoteBloc get _readBloc =>
+      context.read<ProRequestForQuoteBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +55,13 @@ class _ListQuotationsState extends State<ListQuotations> {
           ProcurementsLoaded<RequestForQuote>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Request For Quote',
-                    onPressed: () => context.openAddRequestForQuote(),
+                    'Create Request For Quote',
+                    onPressed: () => context.openRFQForm(),
                   )
                 : _buildCard(context, results),
           ProcurementError<RequestForQuote>(error: final error) =>
             context.buildError(error),
-          _ => const SizedBox.shrink(),
+          _ => const SizedBox.shrink(), // Default case
         };
       },
     );
@@ -64,7 +70,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   ({List<List<String>> rows, List<List<String>>? childrenRow}) _filterQuotes(
     List<RequestForQuote> quotes,
   ) {
-    if (_isAward) {
+    if (_isAwarded) {
       final todayQuotes = RequestForQuote.filterAwardedRFQ(
         quotes,
       ).map((o) => o.itemAsList).toList();
@@ -176,21 +182,19 @@ class _ListQuotationsState extends State<ListQuotations> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         context.actionInfoButton(
-          'Refresh ${_isAward ? 'Award' : 'Request'} For Quotes',
+          'Refresh ${_isAwarded ? 'Awarded' : 'Request For'} Quotes',
           label: 'Quotations',
           count: quotes.length,
           // Dispatch an event to refresh data
           onPressed: () {
             // Refresh Request For Quotation Data
-            context.read<ProRequestForQuoteBloc>().add(
-              RefreshProcurements<RequestForQuote>(),
-            );
+            _readBloc.add(RefreshProcurements<RequestForQuote>());
           },
         ),
         const SizedBox(width: 20),
         context.elevatedButton(
           'Create Quote',
-          onPressed: () => context.openAddRequestForQuote(),
+          onPressed: () => context.openRFQForm(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,
         ),
@@ -208,7 +212,7 @@ class _ListQuotationsState extends State<ListQuotations> {
         if (_selectedIds.length > 1) ...[
           const SizedBox(width: 20),
           context.elevatedButton(
-            'Delete Selected',
+            'Delete',
             txtColor: kWhiteColor,
             bgColor: kDangerColor,
             tooltip: 'Delete selected quotes',
@@ -216,7 +220,7 @@ class _ListQuotationsState extends State<ListQuotations> {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 /// Delete all selected Quotations from Quote-DB
-                context.read<ProRequestForQuoteBloc>().add(
+                _readBloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
               }
@@ -287,7 +291,16 @@ class _ListQuotationsState extends State<ListQuotations> {
     final supplier = await _getSupplier(quote.supplierId);
 
     if (mounted) {
-      await context.openRFQDetails(quote: quoteWithTaxes, supplier: supplier);
+      // Log that details were viewed
+      if (AuditTracker.shouldLog(id: quote.id, type: DocType.rfq)) {
+        _readBloc.add(_updateHistory(quote, action: AuditAction.viewed));
+      }
+      // User opens RFQ details screen
+      await context.openRFQDetails(
+        quote: quoteWithTaxes,
+        supplier: supplier,
+        bloc: _readBloc,
+      );
     }
   }
 
@@ -313,8 +326,11 @@ class _ListQuotationsState extends State<ListQuotations> {
         final supplier = await _getSupplier(quote.supplierId);
         if (supplier == null) return;
 
+        if (mounted) {
+          _readBloc.add(_updateHistory(quote, action: AuditAction.printed));
+        }
         // Perform action after loading
-        RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+        await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
       });
 
   Future<void> _onEditTap(List<RequestForQuote> quotes, String id) async {
@@ -330,11 +346,31 @@ class _ListQuotationsState extends State<ListQuotations> {
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      /// Remove Quotation from Quote-DB
-      context.read<ProRequestForQuoteBloc>().add(
-        DeleteProcurement<String>(documentId: quote.id),
-      );
+      final bloc = _readBloc;
+
+      bloc
+        ..add(_updateHistory(quote))
+        ..add(DeleteProcurement<String>(documentId: quote.id));
     }
+  }
+
+  /// Audit Log Entry (Tracking actions)
+  AuditProcurement<RequestForQuote> _updateHistory(
+    RequestForQuote quote, {
+    AuditAction action = AuditAction.deleted,
+  }) {
+    return AuditProcurement<RequestForQuote>(
+      documentId: quote.id,
+      log: {
+        'history': [
+          ...quote.history.map((e) => e.toMap()), // keep old logs
+          AuditLog(
+            action: action,
+            performedBy: context.employee!.employeeId,
+          ).toMap(), // new log
+        ],
+      },
+    );
   }
 }
 

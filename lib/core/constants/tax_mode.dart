@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
 /// [TaxMode] Determines whether tax is applied on each line item (each item) or on the total (overall)
 enum TaxMode {
@@ -11,7 +11,8 @@ enum TaxMode {
 }
 
 extension TaxApplicationMode on TaxMode {
-  String get getValue => getEnumName<TaxMode>(this);
+  /// [getValue] Get the label for the specific enum value.
+  String get getValue => EnumHelper<TaxMode>(this).getValue;
 
   bool get isPerLineTax => this == TaxMode.perLineTax;
   bool get isHeaderTax => this == TaxMode.headerTax;
@@ -19,8 +20,6 @@ extension TaxApplicationMode on TaxMode {
 
 class TaxModeHelper {
   /// Get Tax Mode from String value [fromString].
-  static TaxMode fromString(String mode) => TaxMode.values.firstWhere(
-    (e) => e.getValue == mode,
-    orElse: () => TaxMode.perLineTax,
-  );
+  static TaxMode fromString(String mode) =>
+      EnumHelper.fromString<TaxMode>(TaxMode.values, mode);
 }

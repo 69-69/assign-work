@@ -7,7 +7,7 @@ class EmployeeBloc extends SetupBloc<Employee> {
     : super(
         collectionPath: employeesDBCollectionPath,
         fromFirestore: (data, id) => Employee.fromMap(data, id: id),
-        toFirestore: (info) => info.toMap(),
-        toCache: (info) => info.toCache(),
+        toFirestore: (emp) => emp.toMap(),
+        toCache: (emp) => emp.toCache(),
       );
 }

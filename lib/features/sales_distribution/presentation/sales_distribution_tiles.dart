@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/sales_distribution/data/permission/sales_distribution_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -444,4 +444,4 @@ Let me know if you'd like:
 }
 
 // Get name from enum
-String _getValue(e) => getEnumName<SalesDistributionPermission>(e);
+String _getValue(e) => EnumHelper<SalesDistributionPermission>(e).getValue;

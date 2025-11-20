@@ -89,13 +89,17 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
   @override
   Widget build(BuildContext context) {
     final sWidth = context.screenWidth * (context.isMobile ? 0.94 : 0.7);
-    final tileCount = filteredTiles.length > 4 ? 4 : filteredTiles.length;
+    final tileCount = filteredTiles.length <= 1 ? 1 : filteredTiles.length;
+
+    final rowHeight = 130.0;
+    final availableHeight = context.screenHeight * 0.5;
+    final maxVisibleRows = (availableHeight ~/ rowHeight).clamp(1, tileCount);
 
     return SingleChildScrollView(
       padding: EdgeInsets.zero,
       child: SizedBox(
         width: sWidth,
-        height: context.screenHeight * (tileCount + 2) * 0.1,
+        height: maxVisibleRows * rowHeight,
         child: _buildBody(context),
       ),
     );
@@ -302,11 +306,11 @@ class _GridViewResults extends StatelessWidget {
         color: ranColor.toAlpha(0.8),
         borderRadius: BorderRadius.circular(kBorderRadius),
       ),
-      child: _buildGridTile(tile, context),
+      child: _buildGridTile(context, tile, ranColor),
     );
   }
 
-  _buildGridTile(DashboardTile tile, BuildContext context) {
+  _buildGridTile(BuildContext context, DashboardTile tile, Color ranColor) {
     final parts = tile.label.split(' - ');
     final title = parts.first;
 
@@ -327,13 +331,14 @@ class _GridViewResults extends StatelessWidget {
           query: query,
           style: context.textTheme.bodyMedium?.copyWith(
             overflow: TextOverflow.ellipsis,
+            // backgroundColor: kBgLightColor.toAlpha(0.7),
           ),
         ),
       ),
       child: Icon(
         tile.icon,
-        color: kLightBlueColor,
         size: 80,
+        color: kLightBlueColor.toAlpha(0.6),
         semanticLabel: title,
       ),
     );
@@ -461,8 +466,8 @@ class _HighlightedText extends StatelessWidget {
       return Text(displayText, style: styleCopy);
     }
 
-    final lowerText = displayText.toLowerCase();
-    final lowerQuery = query.toLowerCase();
+    final lowerText = displayText.toLowerAll;
+    final lowerQuery = query.toLowerAll;
 
     final spans = <TextSpan>[];
     int start = 0;
@@ -489,6 +494,7 @@ class _HighlightedText extends StatelessWidget {
           style: styleCopy?.copyWith(
             color: kSuccessColor,
             fontWeight: FontWeight.bold,
+            // backgroundColor: kBgLightColor.toAlpha(0.7),
           ),
         ),
       ); //469-564-1299 - Celina montessori

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:flutter/services.dart';
 
 class DeviceIdentifier {
@@ -9,7 +9,7 @@ class DeviceIdentifier {
       final String? macAddress = await platform.invokeMethod('getMacAddress');
       return macAddress;
     } on PlatformException catch (e) {
-      debugPrint("Failed to get MAC address: '${e.message}'.");
+      prettyPrint("Failed to get MAC address", "${e.message}");
       return null;
     }
   }

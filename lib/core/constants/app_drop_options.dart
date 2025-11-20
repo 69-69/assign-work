@@ -257,8 +257,8 @@ const invoiceType = [
   'receipt',
 ];
 
-const itemCategory = [
-  'Select category',
+const sizeCategory = [
+  'Select size',
   'small',
   'medium',
   'large',

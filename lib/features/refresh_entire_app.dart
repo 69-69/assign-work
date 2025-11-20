@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -47,14 +48,14 @@ class RefreshEntireApp extends StatefulWidget {
     final state = context.findAncestorStateOfType<_RefreshEntireAppState>();
 
     if (state == null) {
-      debugPrint('⚠️ No RefreshEntireApp found in widget tree.');
+      prettyPrint('restartApp', 'No RefreshEntireApp found in widget tree.');
       _notifyState(context, msg: 'Failed to refresh workspace.');
       return;
     }
 
     await state.restartApp();
 
-    debugPrint('🔄 Tenant Workspace successfully refreshed');
+    prettyPrint('restartApp', '🔄 Tenant Workspace successfully refreshed');
 
     if (!context.mounted) return;
 

@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -90,4 +90,4 @@ extension SetupTiles on dynamic {
 }
 
 // Get name from enum
-String _getValue(e) => getEnumName<SetupPermission>(e);
+String _getValue(e) => EnumHelper<SetupPermission>(e).getValue;

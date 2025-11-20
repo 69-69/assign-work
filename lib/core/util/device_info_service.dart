@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/device_info_cache.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 
 /*import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -61,7 +61,7 @@ class DeviceInfoService {
     } catch (e) {
       // Fallback on any exception
       newId = fallbackId;
-      debugPrint('Failed to retrieve platform device info: $e');
+      prettyPrint('Failed to retrieve platform device info', '$e');
       infoMap = {'error': 'Failed to retrieve device info'};
     }
     // Cache the device info if no error occurred

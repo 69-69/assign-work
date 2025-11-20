@@ -1,8 +1,6 @@
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 class WorkspaceChatGroup {
   final String workspaceId;
   final List<LiveChatOverview> summary;
@@ -11,6 +9,8 @@ class WorkspaceChatGroup {
 }
 
 class LiveChatMessage extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String senderId;
   final String senderRole;
@@ -58,6 +58,8 @@ class LiveChatMessage extends Equatable {
 }
 
 class LiveChatOverview {
+  static get _today => DateTime.now();
+
   final String? userName;
   final String lastMessage;
   final DateTime? updatedAt;

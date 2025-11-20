@@ -1,7 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/system_admin/presentation/setup_tiles.dart';
 import 'package:flutter/material.dart';
 
@@ -120,7 +120,7 @@ extension LicenseTiles on BuildContext {
 }
 
 // Get name from enum
-String _getValue(e) => getEnumName<SubscriptionLicenses>(e);
+String _getValue(e) => EnumHelper<SubscriptionLicenses>(e).getValue;
 
 /*extension LicenseTiles on dynamic {
   Map<SubscriptionLicenses, List<DashboardTile>> get _licensePackages {

@@ -6,5 +6,5 @@ import 'package:flutter/foundation.dart';
 void prettyPrint(String label, dynamic value) {
   const encoder = JsonEncoder.withIndent('  ');
   final prettyString = encoder.convert(value);
-  debugPrint('📌 $label:\n$prettyString');
+  debugPrint('📌 DEBUG-$label:\n$prettyString');
 }

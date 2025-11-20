@@ -184,6 +184,8 @@ class _AddTaxFormState extends State<_AddTaxForm> {
         label: 'Additional Notes',
         type: TextInputType.multiline,
         isTextArea: true,
+        isAutoGrow: true,
+        minLines: null,
         helperText: 'Optional: Additional notes',
       ),
       FieldGroupConfig(

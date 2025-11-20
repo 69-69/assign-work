@@ -3,10 +3,10 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /// Role-Based Access-Control [Employee]
 class Employee extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
 
   /// [employeeId] employee/staff Unique ID for Employee's Tag or Card

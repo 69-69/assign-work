@@ -1,7 +1,7 @@
 //-------------------------------
 // 🔥 Firestore Collections types
 //-------------------------------
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
 enum CollectionType { global, workspace, chats, stores, clients }
 
@@ -10,8 +10,11 @@ enum CollectionType { global, workspace, chats, stores, clients }
 * print(type.label); // Output: global
 * */
 extension CollectionTypeExtension on CollectionType {
+  /// [getValue] Get the label for the specific enum value.
+  String get getValue => EnumHelper<CollectionType>(this).getValue;
+  /*
   String get getValue => getEnumName<CollectionType>(this);
-  /*String get label {
+  String get label {
     return switch (this) {
       CollectionType.global => 'global', // Global collections
       CollectionType.chats => 'chats', // Chat conversations

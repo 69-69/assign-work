@@ -5,10 +5,10 @@ import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /// Role-Based Access-Control [Workspace]
 class Workspace extends Equatable {
+  static get _today => DateTime.now();
+
   final String id; // Unique identifier for the workspace
   final String username;
 

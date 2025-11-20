@@ -2,9 +2,9 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now(); /*.millisecondsSinceEpoch.toString()*/
-
 class Delivery extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String storeNumber;
   final String orderNumber;

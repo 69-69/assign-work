@@ -2,33 +2,30 @@
 // ⚙️ Account Status Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
-enum AccountStatus { enabled, disabled }
+enum AccountStatus { disabled, enabled }
 
 /* USAGE:
 * final status = AccountStatus.enabled;
 * print(status.label); // Output: enable
 * */
-extension AccountStatusExtension on AccountStatus {
-  String get getValue => getEnumName<AccountStatus>(this);
+extension AuditActionExtension on AccountStatus {
+  /// [getValue] Get the label for the specific enum value.
+  String get getValue => EnumHelper<AccountStatus>(this).getValue;
 }
 
 class AccountStatusHelper {
-  /// Get Account Status from String value [fromString].
+  /// [fromString] Converts String/Label to enum value.
   static AccountStatus fromString(String? value) =>
-      AccountStatus.values.firstWhere(
-        (e) => e.getValue == value,
-        orElse: () => AccountStatus.disabled,
-      );
+      EnumHelper.fromString<AccountStatus>(AccountStatus.values, value);
 
-  /// [toStringList] Convert enum list to a list of strings
-  static List<String> toStringList([bool includeLabel = true]) {
-    final list = AccountStatus.values.map((e) => e.getValue).toList();
-    return includeLabel ? ['account status', ...list] : list;
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'account status' : '';
+    return EnumHelper.toStringList<AccountStatus>(AccountStatus.values, label);
   }
 }
-
 // ---------------------------
 // 🔐 Authentication & Temporary Passcode
 // ---------------------------
@@ -43,5 +40,18 @@ class AccountStatusHelper {
 const kTemporaryPasscodePrefix = 'TEMP-';
 const int kTemporaryPasscodeLength = 5;
 
-/// 🏬 Default (Main) Tenant's organization store/shop ID for multi-stores locations
+/*
+// 🏬 Default (Main) Tenant's organization store/shop ID for multi-stores locations
 // final mainStoreNumber = 'STO-Main-${DateTime.now().year}';
+/// Converts String/Label string back to enum [fromString].
+  static AccountStatus fromString(String? value) =>
+      AccountStatus.values.firstWhere(
+        (e) => e.getValue == value,
+        orElse: () => AccountStatus.disabled,
+      );
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeLabel = true]) {
+    final list = AccountStatus.values.map((e) => e.getValue).toList();
+    return includeLabel ? ['account status', ...list] : list;
+  }*/

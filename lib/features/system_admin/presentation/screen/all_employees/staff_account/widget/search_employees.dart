@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 
 /// Search Employees [SearchEmployees]
 class SearchEmployees extends StatefulWidget {
+  final String? labelText;
   final String? initialValue;
   final Function(String, String, String) onChanged;
 
   const SearchEmployees({
     super.key,
+    this.labelText,
     this.initialValue,
     required this.onChanged,
   });
@@ -22,6 +24,8 @@ class SearchEmployees extends StatefulWidget {
 class _SearchEmployeesState extends State<SearchEmployees> {
   String? _initialValue;
   Employee? _employee;
+
+  get _labelText => (widget.labelText ?? 'Select employee').toSentence;
 
   @override
   void initState() {
@@ -44,13 +48,13 @@ class _SearchEmployeesState extends State<SearchEmployees> {
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<Employee>(
       selectedItem: _employee,
-      labelText: 'Select Employee...',
+      labelText: _labelText,
       asyncItems: (String filter, loadProps) async =>
           await _loadEmployees(filter: filter),
       filterFn: (emp, filter) => _filterEmployee(filter, emp),
       itemAsString: (emp) => emp.itemAsString,
       onChanged: (emp) => widget.onChanged(emp!.id, emp.fullName, emp.role),
-      validator: (emp) => emp == null ? 'Select employee' : null,
+      validator: (emp) => emp == null ? _labelText : null,
     );
   }
 

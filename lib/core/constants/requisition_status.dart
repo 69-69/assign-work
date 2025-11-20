@@ -1,31 +1,41 @@
-// ---------------------------
-// ⚙️ Account Status Definitions
-// ---------------------------
+// -------------------------------------------
+// ⚙️ Purchase Requisition Status Definitions
+// --------------------------------------------
 
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
-// Purchase Requisition
-enum RequisitionStatus { pending, approved, rejected, cancelled }
+/// [RequisitionStatus] Current workflow status of the Purchase Requisition
+enum RequisitionStatus {
+  draft,
+  pending,
+  approved,
+  rejected,
+  cancelled,
+  convertedToRFQ,
+}
 
 /* USAGE:
-* final status = RequisitionStatus.pending;
-* print(status.label); // Output: pending
+* final status = RequisitionStatus.draft;
+* print(status.label); // Output: draft
 * */
-extension PriorityExtension on RequisitionStatus {
-  String get getValue => getEnumName<RequisitionStatus>(this);
+extension TaxContextExtension on RequisitionStatus {
+  /// [getValue] Get the label for the specific enum value (e.g. "convertedToRFQ")
+  String get getValue => EnumHelper<RequisitionStatus>(this).getValue;
+
+  /// Returns a user-friendly label (e.g. "converted To RFQ")
+  String get getLabel => EnumHelper<RequisitionStatus>(this).getLabel;
 }
 
 class PRStatusHelper {
-  /// Get Account Status from String value [fromString].
+  /// [fromString] Converts String/Label to enum value.
   static RequisitionStatus fromString(String? value) =>
-      RequisitionStatus.values.firstWhere(
-        (e) => e.getValue == value,
-        orElse: () => RequisitionStatus.pending,
-      );
+      EnumHelper.fromString<RequisitionStatus>(RequisitionStatus.values, value);
 
-  /// [toStringList] Convert enum list to a list of strings
-  static List<String> toStringList([bool includeLabel = true]) {
-    final list = RequisitionStatus.values.map((e) => e.getValue).toList();
-    return includeLabel ? ['pending', ...list] : list;
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final list = EnumHelper.toStringList<RequisitionStatus>(
+      RequisitionStatus.values,
+    );
+    return includeHeader ? ['PR status', ...list] : list;
   }
 }

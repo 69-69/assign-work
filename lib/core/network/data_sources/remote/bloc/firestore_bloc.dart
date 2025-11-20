@@ -72,7 +72,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
 
   Future<void> _onRefreshItems(
     RefreshItems<T> event,
-    Emitter<FirestoreState> emit,
+    Emitter<FirestoreState<T>> emit,
   ) async {
     emit(LoadingItems<T>());
     try {

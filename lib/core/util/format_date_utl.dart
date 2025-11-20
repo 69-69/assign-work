@@ -2,9 +2,9 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-final _today = DateTime.now();
-
 extension ConvertDateTime on dynamic {
+  static get _today => DateTime.now();
+
   ({String filename, String id}) get generateBackupFileName {
     final formattedDate = DateFormat('yyyy-MM-dd').format(_today);
     return (filename: '$this-$formattedDate', id: _today.toISOString);
@@ -98,6 +98,8 @@ extension ConvertDateTime on dynamic {
 }
 
 extension TotalDaysFromDate on DateTime? {
+  static get _today => DateTime.now();
+
   /// To calculate the number of days from the current date to a specific future date [toDays]
   int get toDays {
     if (this == null) {
@@ -124,8 +126,10 @@ extension DateFromTotalDays on int {
 }
 
 DateTime toDateTimeFn(dateTime) {
+  final today = DateTime.now();
+
   if ('$dateTime'.trim().isNullOrEmpty) {
-    return _today;
+    return today;
   }
   // If is int else string
   if (dateTime is DateTime) return dateTime;
@@ -135,8 +139,8 @@ DateTime toDateTimeFn(dateTime) {
     try {
       return DateTime.parse(dateTime);
     } catch (_) {
-      return DateTime.now(); // fallback on parse error
+      return today; // fallback on parse error
     }
   }
-  return _today;
+  return today;
 }

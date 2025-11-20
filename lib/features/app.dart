@@ -62,6 +62,9 @@ class App extends StatelessWidget {
       _bloc<ProRequestForQuoteBloc>(
         () => ProRequestForQuoteBloc(firestore: _fireStore),
       ),
+      _bloc<ProPurchaseRequisiteBloc>(
+        () => ProPurchaseRequisiteBloc(firestore: _fireStore),
+      ),
       _bloc<CustomerAccountBloc>(
         () => CustomerAccountBloc(firestore: _fireStore),
       ),

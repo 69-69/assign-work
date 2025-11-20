@@ -67,7 +67,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
 
   Future<void> _onRefreshCustomers(
     RefreshCustomers<T> event,
-    Emitter<CustomerState> emit,
+    Emitter<CustomerState<T>> emit,
   ) async {
     emit(LoadingCustomers<T>());
     try {

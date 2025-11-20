@@ -8,7 +8,10 @@ import 'package:device_info_plus/device_info_plus.dart';
 PackageInfo packageInfo = await PackageInfo.fromPlatform();*/
 
 extension SizeConfig on BuildContext {
-  MediaQueryData get mediaQueryData => MediaQuery.of(this);
+  /// Safely get MediaQueryData, with fallback if null
+  MediaQueryData get mediaQueryData =>
+      MediaQuery.maybeOf(this) ?? const MediaQueryData();
+  // MediaQueryData get mediaQueryData => MediaQuery.of(this);
 
   double get bottomInsetPadding => mediaQueryData.viewInsets.bottom;
 
@@ -39,18 +42,29 @@ extension SizeConfig on BuildContext {
   /// Get screen width [screenWidth]
   double get screenWidth => mediaSize.width;
 
-  /// Get screen width by provided size [screenWidth]
-  /// USAGE: context.dynamicWidth(0.5);
-  double dynamicWidth(double size) =>
-      isMobile ? mediaSize.width : mediaSize.width * size;
+  /// Responsive width
+  ///
+  /// - On mobile: returns fraction of full width
+  /// - On tablet (portrait): treat like mobile
+  /// - On tablet (landscape) & desktop: returns fraction of width scaled by `scaleFactor`
+  double dynamicWidth(double fraction, {double scaleFactor = 1}) {
+    if (isMobile || (isTablet && isPortraitMode)) {
+      return screenWidth * fraction;
+    }
+    // tablet landscape & desktop
+    return screenWidth * fraction * scaleFactor;
+  }
+
+  /// Responsive height
+  double dynamicHeight(double fraction, {double scaleFactor = 1}) {
+    if (isMobile || (isTablet && isPortraitMode)) {
+      return screenHeight * fraction;
+    }
+    return screenHeight * fraction * scaleFactor;
+  }
 
   /// Get screen height [screenHeight]
   double get screenHeight => mediaSize.height;
-
-  /// Get screen height by provided size [screenHeight]
-  /// USAGE: context.dynamicHeight(0.5);
-  double dynamicHeight(double size) =>
-      isMobile ? mediaSize.height : mediaSize.height * size;
 
   /// Large screens >=1100 (desktop, TV) [isDesktop]
   bool get isDesktop => screenWidth >= 1100;
@@ -79,9 +93,22 @@ extension SizeConfig on BuildContext {
   /// Screen/Device Orientation is in portrait mode (Shortest Screen/Device width) [isPortraitMode]
   bool get isPortraitMode => orientation == Orientation.portrait;
 
-  /// Get magnitudes of the Screen/Device width and the height [mediaLongSize]
-  double get isMediaLongSize => mediaSize.longestSide;
+  /// Get magnitudes of the Screen/Device width and the height [mediaLongestSide]
+  double get mediaLongestSide => mediaSize.longestSide;
 
-  /// Get magnitudes of the Screen/Device width and the height [mediaShortSize]
-  double get isMediaShortSize => mediaSize.shortestSide;
+  /// Get magnitudes of the Screen/Device width and the height [mediaShortestSide]
+  double get mediaShortestSide => mediaSize.shortestSide;
 }
+
+/*/// Get screen width by provided size [screenWidth]
+  /// USAGE: context.dynamicWidth(0.5);
+  double dynamicWidth2(double fraction) =>
+      isMobile || (isTablet && isPortraitMode)
+      ? mediaSize.width
+      : mediaSize.width * fraction;
+  /// Get screen height by provided size [screenHeight]
+  /// USAGE: context.dynamicHeight(0.5);
+  double dynamicHeight2(double fraction) =>
+      isMobile || (isTablet && isPortraitMode)
+          ? mediaSize.height
+          : mediaSize.height * fraction;*/

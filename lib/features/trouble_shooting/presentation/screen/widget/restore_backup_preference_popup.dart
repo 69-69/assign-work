@@ -16,7 +16,7 @@ class RestoreBackupPreference extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomBottomSheet(
+    return CustomDraggableBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       initialChildSize: 0.90,
       maxChildSize: 0.90,

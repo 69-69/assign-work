@@ -71,7 +71,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
 
   Future<void> _onRefreshSetups(
     RefreshSetups<T> event,
-    Emitter<SetupState> emit,
+    Emitter<SetupState<T>> emit,
   ) async {
     emit(LoadingSetup<T>());
     try {

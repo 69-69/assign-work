@@ -1,7 +1,10 @@
 // WORKSPACE ROLE or ACCOUNT TYPE
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
 enum WorkspaceRole {
+  /// Workspace Role for UnAuthorized/unknown/fake users [unknown].
+  unknown,
+
   /// Workspace Role for creating first-time Agent Workspaces [onboarding].
   onboarding,
 
@@ -13,14 +16,11 @@ enum WorkspaceRole {
 
   /// Workspace Role for developers to troubleshoot, manage tenants workspaces & subscriptions [developer].
   developer,
-
-  /// Workspace Role for UnAuthorized/unknown/fake users [unknown].
-  unknown,
 }
 
 extension WorkspaceRoleExtension on WorkspaceRole {
   /// USAGE: `WorkspaceRole.onboarding.label`
-  String get getValue => getEnumName<WorkspaceRole>(this);
+  String get getValue => EnumHelper<WorkspaceRole>(this).getValue;
 
   /// [assign] Determines the role for a "New Workspace Setup" based on the
   /// currently signed-in user's role (cached workspace role).
@@ -48,22 +48,17 @@ extension WorkspaceRoleExtension on WorkspaceRole {
 
 /// [WorkspaceRoleHelper] Utility class for WorkspaceRole operations
 class WorkspaceRoleHelper {
-  /// [WorkspaceRole] Convert string to WorkspaceRole enum
-  static WorkspaceRole fromString(String? role) {
-    return WorkspaceRole.values.firstWhere(
-      (e) => e.getValue == role,
-      orElse: () => WorkspaceRole.unknown,
-    );
-  }
+  /// [fromString] Converts String/Label to enum value.
+  static WorkspaceRole fromString(String? role) =>
+      EnumHelper.fromString<WorkspaceRole>(WorkspaceRole.values, role);
 
-  /// [toStringList] Convert enum list to a list of strings
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeLabel = true]) {
-    final list = WorkspaceRole.values.map((e) => e.getValue).toList();
+    final list = EnumHelper.toStringList<WorkspaceRole>(WorkspaceRole.values);
     return includeLabel ? ['workspace role', ...list] : list;
   }
 
   /// Check if role exists in the enum
-  static bool exists(String role) {
-    return WorkspaceRole.values.any((e) => e.getValue == role);
-  }
+  static bool exists(String role) =>
+      EnumHelper.isValid<WorkspaceRole>(WorkspaceRole.values, role, false);
 }

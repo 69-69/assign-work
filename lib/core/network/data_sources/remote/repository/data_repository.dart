@@ -448,7 +448,7 @@ class DataRepository extends FirestoreRepository {
       _toList(snapshot);
       // Emit updated data to stream
       _emitDataToStream(reEmit: true);
-    }, onError: (e) => debugPrint('Data-Repository Error: $e'));
+    }, onError: (e) => prettyPrint('Data-Repository Error', '$e'));
   }
 
   /// Dispose or cancel Subscription [cancelDataSubscription]

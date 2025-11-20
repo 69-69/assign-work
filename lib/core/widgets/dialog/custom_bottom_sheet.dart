@@ -25,6 +25,7 @@ extension ShowBottomSheet<T> on BuildContext {
     required Widget child,
     bool isExpand = true,
     bool showZoomIcon = true,
+    BoxConstraints? constraints,
   }) {
     // Initialize zoom level
     final ValueNotifier<double> zoomLevel = ValueNotifier<double>(
@@ -35,9 +36,11 @@ extension ShowBottomSheet<T> on BuildContext {
       context: this,
       isScrollControlled: true,
       backgroundColor: kTransparentColor,
-      constraints: BoxConstraints(maxWidth: screenWidth),
-      builder: (context) =>
-          _buildZoom(zoomLevel, child, showZoomIcon: showZoomIcon),
+      constraints: constraints ?? BoxConstraints(maxWidth: screenWidth),
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context),
+        child: _buildZoom(zoomLevel, child, showZoomIcon: showZoomIcon),
+      ),
     );
   }
 
@@ -89,7 +92,6 @@ extension ShowBottomSheet<T> on BuildContext {
         ),
         icon:
             Icon(
-              size: 30,
               semanticLabel: 'zoom',
               color: context.surfaceColor,
               value > 1.0 ? Icons.zoom_out_map : Icons.zoom_in_map,
@@ -103,7 +105,7 @@ extension ShowBottomSheet<T> on BuildContext {
   }
 }
 
-class CustomBottomSheet extends StatelessWidget {
+class CustomDraggableBottomSheet extends StatelessWidget {
   final double? initialChildSize, maxChildSize;
   final Widget child;
   final Widget? header;
@@ -112,7 +114,7 @@ class CustomBottomSheet extends StatelessWidget {
   final bool isScrollable;
   final Color? sheetBgColor;
 
-  const CustomBottomSheet({
+  const CustomDraggableBottomSheet({
     super.key,
     required this.child,
     this.onPress,
@@ -136,8 +138,10 @@ class CustomBottomSheet extends StatelessWidget {
           initialChildSize: initialCSize,
           minChildSize: 0.2,
           maxChildSize: maxCSize,
-          builder: (cxt, controller) =>
-              isScrollable ? _buildBody(controller, cxt) : child,
+          builder: (cxt, controller) => MediaQuery(
+            data: MediaQuery.of(context),
+            child: isScrollable ? _buildBody(controller, cxt) : child,
+          ),
         ),
       );
     }

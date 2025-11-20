@@ -4,9 +4,9 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 class Department extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
 

@@ -149,7 +149,7 @@ final Map<String, SubscriptionDetail> subscriptionDetails = {
 
   Widget buildDetails() {
     final subscription =
-        subscriptionDetails[getLicenseByString(subscriptionName.toLowerCase())];
+        subscriptionDetails[getLicenseByString(subscriptionName.toLowerAll)];
 
     if (subscription != null) {
       final description = subscription.description;

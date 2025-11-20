@@ -4,10 +4,10 @@ import 'package:assign_erp/features/trouble_shooting/data/models/license_model.d
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /// Subscription-Based Access-Control [Subscription]
 class Subscription extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
   final double fee;

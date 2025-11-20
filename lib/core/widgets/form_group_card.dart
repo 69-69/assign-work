@@ -18,7 +18,7 @@ class FormGroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 1.0,
+      elevation: 2.0,
       color: bgColor ?? context.onSecondaryColor, // context.scaffoldBgColor
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(

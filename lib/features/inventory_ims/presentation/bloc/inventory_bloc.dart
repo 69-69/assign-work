@@ -68,7 +68,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
 
   Future<void> _onRefreshInventories(
     RefreshInventories<T> event,
-    Emitter<InventoryState> emit,
+    Emitter<InventoryState<T>> emit,
   ) async {
     emit(LoadingInventory<T>());
     try {

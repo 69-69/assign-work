@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 class CustomScrollBar extends StatefulWidget {
   final Widget child;
+  final bool? primary;
   final Axis? scrollDirection;
   final EdgeInsetsGeometry? padding;
   final ScrollController controller;
@@ -16,8 +17,9 @@ class CustomScrollBar extends StatefulWidget {
     super.key,
     required this.child,
     required this.controller,
-    this.scrollDirection,
+    this.primary,
     this.padding,
+    this.scrollDirection,
     this.isAlwaysShown = false, // always show the scrollbar
     this.showScrollUpButton = true, // show scroll to top button
   });
@@ -73,6 +75,7 @@ class _CustomScrollBarState extends State<CustomScrollBar> {
             controller: _scrollController,
             thumbVisibility: widget.isAlwaysShown,
             child: SingleChildScrollView(
+              primary: widget.primary,
               controller: _scrollController,
               scrollDirection: scrollDir,
               padding:

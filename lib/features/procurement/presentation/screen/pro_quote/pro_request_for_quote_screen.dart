@@ -34,7 +34,7 @@ class ProRequestForQuoteScreen extends StatelessWidget {
         {'label': 'Request For Quote', 'icon': Icons.miscellaneous_services},
         {'label': 'Awarded RFQ', 'icon': Icons.card_giftcard},
       ],
-      children: [ListQuotations(), ListQuotations(isAward: true)],
+      children: [ListQuotations(), ListQuotations(isAwarded: true)],
     );
   }
 }

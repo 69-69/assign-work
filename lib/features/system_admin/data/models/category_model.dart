@@ -2,9 +2,9 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 class Category extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
   final String createdBy;
@@ -62,7 +62,13 @@ class Category extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => name.isEmpty;
+  /// A singleton instance representing an empty/default Category.
+  /// Used as a fallback when no matching Category is found.
+  static final Category empty = Category(name: '', createdBy: '');
+
+  /// Returns true if this instance is the singleton [empty] Category.
+  /// Use this to check if the Category is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, Category.empty);
 
   bool get isNotEmpty => !isEmpty;
 

@@ -1,8 +1,8 @@
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
 class GetCompany {
   static Company? internalCache;
@@ -34,7 +34,7 @@ class GetCompany {
       }
     } catch (e) {
       // Handle potential errors
-      debugPrint('Error occurred: $e');
+      prettyPrint('Error occurred', '$e');
       return Company.notFound; // Or handle the error appropriately
     }
   }

@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 class UserGuide extends Equatable {
+  static get _today => DateTime.now();
+
   UserGuide({
     this.id = '',
     required this.url,

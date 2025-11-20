@@ -22,7 +22,6 @@ extension SupplierDetails on BuildContext {
       showZoomIcon: false,
       child: FormBottomSheet(
         isDetails: true,
-        isExpanded: true,
         title: supplier.name.toTitle,
         subtitle: supplier.businessType.toUpperAll,
         body: _SupplierInfoPage(supplier: supplier),

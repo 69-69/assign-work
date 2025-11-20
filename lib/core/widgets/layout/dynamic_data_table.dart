@@ -452,7 +452,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: context.screenWidth),
       child: IntrinsicWidth(
-        // Optional: lets DataTable grow naturally
+        // IntrinsicWidth: lets DataTable grow naturally
         child: DataTable(
           // columnSpacing: context.screenWidth / widget.headers.length,
           showCheckboxColumn: false,

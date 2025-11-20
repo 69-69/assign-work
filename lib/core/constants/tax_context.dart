@@ -2,7 +2,7 @@
 // 🌐 TaxAutoApplyContext: Defines where autoApply tax should be applied
 // ---------------------------
 
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
 /// [TaxContext] - Defines where tax should be applied based on the context
 enum TaxContext {
@@ -27,19 +27,12 @@ enum TaxContext {
 }
 
 extension TaxContextExtension on TaxContext {
-  String get getValue => getEnumName<TaxContext>(this);
+  /// [getValue] Get the label for the specific enum value.
+  String get getValue => EnumHelper<TaxContext>(this).getValue;
 }
 
 /// [TaxContextHelper] Utility class for working with TaxContext enum
 class TaxContextHelper {
-  /// [fromString] Convert string to TaxContext enum
-  static TaxContext fromString(String value) {
-    return TaxContext.values.firstWhere(
-      (e) => e.getValue == value,
-      orElse: () => TaxContext.all,
-    );
-  }
-
   /// [parseList] Parse a list of dynamic (string or enum) values into a `List<TaxContext>`
   static List<TaxContext> parseList(dynamic data) {
     if (data is! List) return [];
@@ -53,9 +46,13 @@ class TaxContextHelper {
 
   /// [isAutoAppliedTo] Check if tax is auto-applied to a given string value
   static bool isAutoAppliedTo(String value) =>
-      TaxContext.values.any((e) => e.getValue.contains(value));
+      EnumHelper.isValid<TaxContext>(TaxContext.values, value);
 
-  /// [toStringList] Convert a list of TaxContext enums to a list of strings (e.g., for Firestore)
+  /// [fromString] Converts String/Label to enum value.
+  static TaxContext fromString(String? value) =>
+      EnumHelper.fromString<TaxContext>(TaxContext.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList(List<TaxContext> contexts) =>
-      contexts.map((e) => e.getValue).toList();
+      EnumHelper.toStringList<TaxContext>(contexts);
 }

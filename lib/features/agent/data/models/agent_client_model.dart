@@ -2,10 +2,10 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /// Agent's Clients(Subscribers) [AgentClient]
 class AgentClient extends Equatable {
+  static get _today => DateTime.now();
+
   final String clientWorkspaceId;
   final List<String> commission;
   final DateTime assignedAt;

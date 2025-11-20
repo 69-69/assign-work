@@ -6,10 +6,18 @@ class HorizontalDivider extends StatelessWidget {
   const HorizontalDivider({
     super.key,
     this.width,
-    this.thickness = 1,
     this.color,
     this.space,
+    this.orText,
+    this.thickness = 1,
+    this.isORSeparator = false,
   });
+
+  /// [orText] Text to be displayed in the OR separator
+  final String? orText;
+
+  /// [isORSeparator] Whether to display the OR separator
+  final bool isORSeparator;
 
   /// [thickness] Width of the line in double [default: 1]
   final double thickness;
@@ -21,19 +29,35 @@ class HorizontalDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isORSeparator) {
+      return _buildORSeparator();
+    }
     final cl = color ?? context.onPrimaryContainer.toAlpha(0.2);
 
     return width != null ? _line(cl, context) : _divider(cl);
   }
 
-  _divider(Color color) =>
+  Divider _divider(Color color) =>
       Divider(color: color, thickness: thickness, height: space);
 
-  _line(Color color, BuildContext context) => Container(
+  Container _line(Color color, BuildContext context) => Container(
     color: color,
     height: thickness,
     margin: EdgeInsets.zero,
     padding: EdgeInsets.zero,
     width: context.screenWidth / (width ?? 1.0),
   );
+
+  Row _buildORSeparator() {
+    return Row(
+      children: <Widget>[
+        const Expanded(child: Divider(thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Text(orText ?? 'OR'),
+        ),
+        const Expanded(child: Divider(thickness: 1)),
+      ],
+    );
+  }
 }

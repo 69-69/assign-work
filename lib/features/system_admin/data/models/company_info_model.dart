@@ -2,9 +2,9 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 class Company extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
   final String email;

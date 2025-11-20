@@ -47,7 +47,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   }
 
   Future<void> _initialize() async {
-    on<RefreshTenants<T>>(_onRefreshClients);
+    on<RefreshTenants<T>>(_onRefreshTenants);
     on<LoadTenants<T>>(_onLoadTenants);
     on<LoadTenantById<T>>(_onLoadTenantById);
     on<UpdateTenant>(_onUpdateTenant);
@@ -60,9 +60,9 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     on<_TenantError<T>>(_onTenantError);
   }
 
-  Future<void> _onRefreshClients(
+  Future<void> _onRefreshTenants(
     RefreshTenants<T> event,
-    Emitter<TenantState> emit,
+    Emitter<TenantState<T>> emit,
   ) async {
     emit(LoadingTenants<T>());
     try {

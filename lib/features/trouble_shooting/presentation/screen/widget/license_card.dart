@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/entitlement/entitlement_selector.dart';
 import 'package:assign_erp/core/widgets/entitlement/entitlement_tab_view.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
@@ -16,9 +16,9 @@ final _tabContent = [
     displayName: licenseDisplayName,
     licenses: subscriptionLicenses,
     restrictedAccess: [
-      getEnumName(SubscriptionLicenses.dev),
-      getEnumName(SubscriptionLicenses.agent),
-      getEnumName(SubscriptionLicenses.onboarding),
+      EnumHelper(SubscriptionLicenses.dev).getValue,
+      EnumHelper(SubscriptionLicenses.agent).getValue,
+      EnumHelper(SubscriptionLicenses.onboarding).getValue,
     ],
   ),
   LicenseTabContent(

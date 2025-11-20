@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/calculate_extras.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -124,7 +125,7 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
   double _strToDouble(String s) => double.tryParse(s) ?? 0.0;
 
   void _generateSONumber() async {
-    await 'order'.getShortUID(
+    await DocType.order.getShortUID(
       onChanged: (s) => setState(() => _newSONumber = s),
     );
   }
@@ -300,7 +301,7 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
             /// hence, generate new Customer-ID
             if (name.contains(autoID)) {
-              await 'customer'.getShortUID(
+              await DocType.customer.getShortUID(
                 onChanged: (s) => setState(() => _selectedCustomerId = s),
               );
             } else {

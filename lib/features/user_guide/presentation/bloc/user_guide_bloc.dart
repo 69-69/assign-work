@@ -67,7 +67,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
 
   Future<void> _onRefreshGuides(
     RefreshGuides<T> event,
-    Emitter<GuideState> emit,
+    Emitter<GuideState<T>> emit,
   ) async {
     emit(LoadingGuides<T>());
     try {

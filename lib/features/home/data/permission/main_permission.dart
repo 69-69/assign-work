@@ -1,8 +1,8 @@
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
 enum MainPermission {
   unknown, // For unspecified permissions
 }
 
 bool isUnknownPermission(String p) =>
-    p == getEnumName<MainPermission>(MainPermission.unknown);
+    p == EnumHelper<MainPermission>(MainPermission.unknown).getValue;

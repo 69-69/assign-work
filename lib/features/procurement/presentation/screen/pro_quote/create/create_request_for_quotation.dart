@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -13,54 +14,107 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
+import 'package:assign_erp/features/procurement/data/model/pr_to_rfq_converter_model.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_quote/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/widget/form_inputs.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/widget/rfq_printer.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateRequestForQuoteForm on BuildContext {
-  Future<void> openAddRequestForQuote({RequestForQuote? serverQuote}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: FormBottomSheet(
-          title: 'Create Request For Quotes',
-          body: _AddRequestForQuoteForm(serverQuote: serverQuote),
-        ),
+extension RFQFormExtensions on BuildContext {
+  /// [openRequestForQuoteForm] Opens the Request For Quote Form
+  Future<void> openRFQForm() => _openRFQSheet(
+    title: '[Purchase Requisition] → RFQ',
+    body: const _PRToRFQStartForm(),
+  );
+
+  Future<void> openCreateRFQForm({PRToRFQConverter? initialPRData}) =>
+      _openRFQSheet(
+        size: 0.94,
+        title: 'Create Request For Quote',
+        body: _CreateRFQForm(initialPRData: initialPRData),
       );
+
+  Future<void> _openRFQSheet({
+    required String title,
+    required Widget body,
+    double? size,
+  }) async {
+    return openBottomSheet(
+      isExpand: false,
+      child: FormBottomSheet(initialSize: size, title: title, body: body),
+    );
+  }
 }
 
-class _AddRequestForQuoteForm extends StatefulWidget {
-  final RequestForQuote? serverQuote;
-
-  const _AddRequestForQuoteForm({this.serverQuote});
+class _PRToRFQStartForm extends StatelessWidget {
+  const _PRToRFQStartForm();
 
   @override
-  State<_AddRequestForQuoteForm> createState() =>
-      _AddRequestForQuoteFormState();
+  Widget build(BuildContext context) {
+    return FormGroupCard(
+      title: '[Purchase Requisition] → RFQ',
+      children: [
+        FindApprovedPurchaseRequisition(
+          onValueChanged: (PRToRFQConverter approvedPR) {
+            if (approvedPR.isNotEmpty) {
+              _openRFQ(context, approvedPR);
+            }
+          },
+          onPressed: () => _openRFQ(context),
+        ),
+      ],
+    );
+  }
+
+  void _openRFQ(BuildContext context, [PRToRFQConverter? data]) {
+    if (!context.mounted) return;
+    // never close the bottom sheet before showing it - it will trigger error
+    context.openCreateRFQForm(initialPRData: data);
+  }
 }
 
-class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
+/// Create Request For Quote Form [_CreateRFQForm]
+class _CreateRFQForm extends StatefulWidget {
+  final PRToRFQConverter? initialPRData;
+
+  const _CreateRFQForm({this.initialPRData});
+
+  @override
+  State<_CreateRFQForm> createState() => _CreateRFQFormState();
+}
+
+class _CreateRFQFormState extends State<_CreateRFQForm> {
   final _formKey = GlobalKey<FormState>();
 
   String _newRFQNumber = '';
+  String _rfqTitle = '';
   String _currency = '';
-  String _department = '';
+  String _requestedBy = '';
+  String _departmentCode = '';
   String _selectedSupplierId = '';
   String _selectedSupplierRepId = '';
   String? _selectedRFQStatus;
   DateTime? _selectedDeadlineDate;
   DateTime? _selectedDeliveryDate;
-  final _titleController = TextEditingController();
 
   // Add a list to manage line items
   final List<RFQLineItem> _lineItems = [];
   final Map<String, dynamic> _addressAndNotes = {};
 
+  PRToRFQConverter? get _initialPRData => widget.initialPRData;
+  // Disable FormFields if PR is not empty
+  bool get _isDisabled => _initialPRData?.lineItems != null;
+
   bool get isFormValid => _formKey.currentState!.validate();
+
+  String get _currentEmployeeId => context.employee!.employeeId;
+
+  ProRequestForQuoteBloc get _readBloc =>
+      context.read<ProRequestForQuoteBloc>();
 
   @override
   void initState() {
@@ -68,13 +122,8 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     _generateRFQNumber();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   void _generateRFQNumber() async {
-    await 'rfq'.getShortUID(
+    await DocType.rfq.getShortUID(
       onChanged: (s) {
         if (mounted) setState(() => _newRFQNumber = s);
       },
@@ -82,14 +131,16 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   }
 
   RequestForQuote get _newQuote => RequestForQuote(
-    prId: '', // FOREIGN KEY
+    /// [prNumber] FOREIGN KEY (purchase requisition) else its new RFQ
+    prNumber: _initialPRData?.prNumber ?? 'N/A',
+    title: _rfqTitle,
+    requestedBy: _initialPRData?.requestedBy ?? _requestedBy,
     rfqNumber: _newRFQNumber,
     status: _selectedRFQStatus ?? '',
-    department: _department,
+    departmentCode: _initialPRData?.departmentCode ?? _departmentCode,
     supplierId: _selectedSupplierId,
     supplierRepId: _selectedSupplierRepId,
     currency: _currency,
-    title: _titleController.text,
     deadline: _selectedDeadlineDate,
     deliveryDate: _selectedDeliveryDate,
     storeNumber: context.employee!.storeNumber,
@@ -97,6 +148,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     deliveryAddress: _addressAndNotes['deliveryAddress'],
     lineItems: List.from(_lineItems),
     createdBy: context.employee!.fullName,
+    history: [
+      AuditLog(action: AuditAction.created, performedBy: _currentEmployeeId),
+    ],
   );
 
   void _onSubmit() {
@@ -107,9 +161,8 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
       );
       return;
     }
-    final bloc = context.read<ProRequestForQuoteBloc>();
 
-    bloc.add(AddProcurement<RequestForQuote>(data: _newQuote));
+    _readBloc.add(AddProcurement<RequestForQuote>(data: _newQuote));
 
     _confirmPrintoutDialog().then((_) => _resetForm());
   }
@@ -117,19 +170,20 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
   void _resetForm() {
     if (mounted) {
       _formKey.currentState?.reset();
-      _titleController.clear();
-      _generateRFQNumber(); // get a new RFQ number
+      _lineItems.clear();
+      _addressAndNotes.clear();
 
       setState(() {
+        _rfqTitle = '';
         _currency = '';
-        _department = '';
+        _requestedBy = '';
+        _departmentCode = '';
         _selectedSupplierId = '';
         _selectedRFQStatus = null;
         _selectedDeadlineDate = null;
         _selectedDeliveryDate = null;
-        _lineItems.clear();
-        _addressAndNotes.clear();
       });
+      _generateRFQNumber(); // get a new RFQ number
     }
   }
 
@@ -150,11 +204,30 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
         FormGroupCard(
           title: 'Request for Quotes',
           children: [
-            TitleAndDepartments(
-              controller: _titleController,
-              onChanged: (t) => setState(() {}),
+            DynamicTextFields(
+              initialData: [{}],
+              fieldsConfig: [
+                FieldGroupConfig(
+                  key: 'title',
+                  label: 'Title or subject',
+                  type: TextInputType.text,
+                  minLines: 1,
+                ),
+              ],
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (isFormValid) setState(() {});
+
+                _rfqTitle = data.first['title'];
+              },
+            ),
+            RequestedByAndDepartments(
+              initialRequestedBy: _initialPRData?.requestedBy,
+              initialDepartment: _initialPRData?.departmentCode,
+              onRequestedBy: (id, code, name) =>
+                  setState(() => _requestedBy = name),
               onDepartmentChange: (id, code, name) =>
-                  setState(() => _department = name),
+                  setState(() => _departmentCode = code),
+              isDisabled: _initialPRData != null,
             ),
             SuppliersAndRFQStatusDropdown(
               initialSupplier: _selectedSupplierId,
@@ -163,8 +236,9 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
                 if (isFormValid) setState(() => _selectedSupplierId = id);
               },
               onContactPersonChanged: (id) {
-                prettyPrint('label-steve', id.toString());
-                if (isFormValid) setState(() => _selectedSupplierRepId = id);
+                if (isFormValid) {
+                  setState(() => _selectedSupplierRepId = id);
+                }
               },
             ),
           ],
@@ -174,20 +248,11 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
           children: [
             DynamicTextFields(
               title: 'Products / Services',
-              initialData: [{}],
-              showButton: true,
-              fieldsConfig: [
-                FieldGroupConfig(
-                  key: 'itemName',
-                  label: 'Item Name',
-                  type: TextInputType.text,
-                ),
-                FieldGroupConfig(
-                  key: 'quantity',
-                  label: 'Quantity',
-                  type: TextInputType.number,
-                ),
-              ],
+              showButton: !_isDisabled,
+              fieldsConfig: _itemsFieldsConfig,
+              initialData:
+                  _initialPRData?.lineItems.map((e) => e.toMap()).toList() ??
+                  [{}],
               onChanged: (List<Map<String, dynamic>> data) {
                 if (isFormValid) setState(() {});
 
@@ -227,7 +292,8 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
                   label: 'Delivery address (if any)...',
                   type: TextInputType.multiline,
                   isTextArea: true,
-                  minLines: 3,
+                  isAutoGrow: true,
+                  minLines: null,
                   validator: (_) => null,
                 ),
                 FieldGroupConfig(
@@ -235,7 +301,8 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
                   label: 'Additional Notes (if any)...',
                   type: TextInputType.multiline,
                   isTextArea: true,
-                  minLines: 3,
+                  isAutoGrow: true,
+                  minLines: null,
                   validator: (_) => null,
                 ),
               ],
@@ -310,322 +377,84 @@ class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
     final supplier = await _getSupplier(_newQuote.supplierId);
     if (supplier.isEmpty) return;
 
+    // Log that details were printed
+    if (mounted &&
+        AuditTracker.shouldLog(
+          id: '${_newQuote.id}::$_currentEmployeeId',
+          type: DocType.rfq,
+          action: AuditAction.printed,
+        )) {
+      _updateHistory();
+    }
     await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
   });
-}
 
-/*
-class _AddRequestForQuoteFormState extends State<_AddRequestForQuoteForm> {
-  final _formKey = GlobalKey<FormState>();
-
-  String _newRFQNumber = '';
-  String _selectedSupplierId = '';
-  String? _selectedRFQStatus;
-  DateTime? _selectedDeadlineDate;
-  DateTime? _selectedDeliveryDate;
-  final _remarksController = TextEditingController();
-
-  // Add a list to manage line items
-  final List<RFQLineItem> _lineItems = [];
-  RequestForQuotation? get _serverQuote => widget.serverQuote;
-
-  @override
-  void initState() {
-    super.initState();
-    if (_serverQuote != null) {
-      _newRFQNumber = _serverQuote!.rfqNumber;
-      _selectedSupplierId = _serverQuote!.supplierId;
-      _selectedRFQStatus = _serverQuote?.status;
-      _selectedDeadlineDate = _serverQuote?.deadline;
-      _selectedDeliveryDate = _serverQuote?.deliveryDate;
-      _remarksController.text = _serverQuote?.remarks ?? '';
-      _lineItems.addAll(_serverQuote!.lineItems);
-    } else {
-      _generateRFQNumber();
-    }
-  }
-
-  @override
-  void dispose() {
-    _remarksController.dispose();
-    super.dispose();
-  }
-
-  void _generateRFQNumber() async {
-    await 'rfq'.getShortUID(
-      onChanged: (s) => setState(() => _newRFQNumber = s),
+  /// Audit Log Entry (Tracking actions)
+  void _updateHistory([AuditAction action = AuditAction.printed]) {
+    final up = AuditProcurement<RequestForQuote>(
+      documentId: _newQuote.id,
+      log: {
+        'history': [
+          ..._newQuote.history.map((e) => e.toMap()), // keep old logs
+          AuditLog(
+            action: action,
+            performedBy: _currentEmployeeId,
+          ).toMap(), // new log
+        ],
+      },
     );
+    _readBloc.add(up);
   }
 
-  RequestForQuotation get _newQuote => RequestForQuotation(
-    rfqNumber: _newRFQNumber,
-    status: _selectedRFQStatus ?? '',
-    supplierId: _selectedSupplierId,
-    lineItems: List.from(_lineItems),
-    deadline: _selectedDeadlineDate,
-    deliveryDate: _selectedDeliveryDate,
-    remarks: _remarksController.text,
-    storeNumber: context.employee!.storeNumber,
-    createdBy: context.employee!.fullName,
-  );
+  final _textFields = <(String, String, TextInputType)>[
+    ('itemName', 'Item name', TextInputType.text),
+    ('quantity', 'Quantity', TextInputType.number),
+  ];
 
-  void _onSubmit() {
-    if (_formKey.currentState!.validate() && _newQuote.isNotEmpty) {
-      final bloc = context.read<RequestForQuotationBloc>();
-
-      if (_serverQuote != null) {
-        bloc.add(
-          UpdateInventory<RequestForQuotation>(
-            documentId: _serverQuote!.id,
-            data: _newQuote,
-          ),
-        );
-      } else {
-        bloc.add(AddInventory<RequestForQuotation>(data: _newQuote));
-      }
-
-      _confirmPrintoutDialog().then((_) {
-        if (_serverQuote == null) _resetForm();
-      });
-    }
-  }
-
-  void _resetForm() {
-    _formKey.currentState?.reset(); // reset validators
-    _remarksController.clear();
-    _generateRFQNumber(); // get a new RFQ number
-
-    setState(() {
-      _selectedSupplierId = '';
-      _selectedRFQStatus = null;
-      _selectedDeadlineDate = null;
-      _selectedDeliveryDate = null;
-      _lineItems.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
-    );
-  }
-
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        _buildRFQNumber(),
-        const SizedBox(height: 10.0),
-        SuppliersAndRFQStatusDropdown(
-          serverSupplier: _serverQuote?.supplierId ?? '',
-          serverStatus: _serverQuote?.status,
-          onSupplierChanged: (id, name) =>
-              setState(() => _selectedSupplierId = id),
-          onStatusChanged: (s) => setState(() => _selectedRFQStatus = s),
-        ),
-        const SizedBox(height: 20.0),
-        DeadlineAndDeliveryDateInput(
-          labelDelivery: "Delivery date",
-          labelDeadline: "Deadline date",
-          serverDeadlineDate: _serverQuote?.getDeadlineDate,
-          serverDeliveryDate: _serverQuote?.getDeliveryDate,
-          onDeliveryChanged: (date) =>
-              setState(() => _selectedDeliveryDate = date),
-          onDeadlineChanged: (date) =>
-              setState(() => _selectedDeadlineDate = date),
-        ),
-        const SizedBox(height: 10.0),
-        HorizontalDivider(thickness: 4.0),
-
-        DynamicTextFields(
-          title: 'Line Items (Products/Services)',
-          fieldsConfig: [
-            FieldConfig(key: 'itemName', type: TextInputType.text),
-            FieldConfig(key: 'quantity', type: TextInputType.number),
-          ],
-          initialData:
-              _serverQuote?.lineItems
-                  .map(
-                    (e) => e.toMap().map(
-                      (key, value) => MapEntry(key, value.toString()),
-                    ),
-                  )
-                  .toList() ??
-              [],
-          onChanged: (List<Map<String, String>> data) {
-            if (_formKey.currentState!.validate()) setState(() {});
-            prettyPrint('Data', data);
-
-            // Create a new line item
-            _lineItems
-              ..clear() // Clear previous entries to prevent duplication
-              ..addAll(data.map((e) => RFQLineItem.fromMap(e)));
-          },
-        ),
-        HorizontalDivider(thickness: 4.0),
-        const SizedBox(height: 10.0),
-        RemarksTextField(
-          controller: _remarksController,
-          onChanged: (t) => setState(() {}),
-        ),
-        const SizedBox(height: 20.0),
-        context.confirmableActionButton(
-          label: _serverQuote == null ? 'Create Quote' : 'Update Quote',
-          onPressed: _onSubmit,
-        ),
-        const SizedBox(height: 20.0),
-      ],
-    );
-  }
-
-  _buildRFQNumber() => Align(
-    alignment: Alignment.topLeft,
-    child: FittedBox(
-      child: context.actionInfoButton(
-        'Refresh RFQ Number',
-        count: _newRFQNumber,
-        bgColor: kPrimaryColor,
-        isTotal: false,
-        onPressed: _generateRFQNumber,
+  get _itemsFieldsConfig => [
+    ..._textFields.map(
+      (e) => FieldGroupConfig(
+        key: e.$1,
+        label: e.$2,
+        type: e.$3,
+        isDisabled: _isDisabled,
       ),
     ),
-  );
-
-  Future<void> _confirmPrintoutDialog() async {
-    final isConfirmed = await context.confirmAction<bool>(
-      const Text('Would you like to print the request for quotation: RFQ?'),
-      title: "Print RFQ",
-      onAccept: "Print",
-      onReject: "Cancel",
-    );
-
-    if (mounted && isConfirmed) {
-      // Show progress dialog while loading data
-      await context.progressBarDialog(
-        request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('PO successfully created'),
-        onError: (error) => context.showAlertOverlay(
-          'PO printout failed',
-          bgColor: kDangerColor,
-        ),
-      );
-    }
-  }
-
-  Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_newQuote.isEmpty) return;
-
-    // Simulate loading supplier and company info
-    final sup = await GetSuppliers.bySupplierId(_newQuote.supplierId);
-    if (sup.isNotEmpty) {
-      // Perform action after loading
-      PrintRequestForQuotation(quote: _newQuote, supplier: sup).onPrintRFQ();
-    }
-  });
-}*/
-
-/*  bool isMultipleItems = false;
-
-  final ScrollController _scrollController = ScrollController();
-
-  final _productNameController = TextEditingController();
-  final _quantityController = TextEditingController();
-  // Add Multiple Line of Items
-  void _addQuoteToList() {
-    final isValid =
-        _productNameController.text.isNotEmpty &&
-        (int.tryParse(_quantityController.text) ?? 0) > 0;
-
-    if (_formKey.currentState!.validate() || isValid) {
-      setState(() => isMultipleItems = true);
-
-      // Create a new line item from the current inputs
-      final newLineItem = RFQLineItem(
-        productName: _productNameController.text,
-        quantity: int.tryParse(_quantityController.text) ?? 0,
-      );
-
-      _lineItems.add(newLineItem);
-      context.showAlertOverlay('Line item added to quote list');
-      _clearFields();
-    }
-  }
-
-  void _clearFields() {
-    _productNameController.clear();
-    _quantityController.clear();
-  }
-
-  void _removeOrder(RFQLineItem quote) {
-    setState(() => _lineItems.remove(quote));
-  }
-
-  // Horizontal scrollable row of chips representing the List of batch of Request For Quotation
-  Widget _buildRFQPreviewChips() {
-    return CustomScrollBar(
-      padding: EdgeInsets.zero,
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      child: _quoteData.isEmpty
-          ? const SizedBox.shrink()
-          : Row(
-              children: _lineItems.map((i) {
-                return Card(
-                  elevation: 6,
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Chip(
-                    padding: EdgeInsets.zero,
-                    label: RichText(
-                      text: TextSpan(
-                        text: i.productName.toTitleCase,
-                        children: [
-                          TextSpan(
-                            text: ' (+${i.quantity})'.toTitleCase,
-                            style: TextStyle(color: kDangerColor),
-                          ),
-                        ],
-                        style: context.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    deleteButtonTooltipMessage: 'Remove ${i.productName}',
-                    deleteIcon: const Icon(
-                      size: 16,
-                      Icons.clear,
-                      color: kGrayColor,
-                    ),
-                    onDeleted: () => _removeOrder(i),
-                  ),
-                );
-              }).toList(),
-            ),
-    );
-  }
-
-
-ProductNameTextField(
-          controller: _productNameController,
-          onChanged: (t) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 20.0),
-        QuantityTextField(
-          controller: _quantityController,
-          onChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 10.0),
-        if (isMultipleItems && _lineItems.isNotEmpty) ...[
-          SizedBox(height: 50, child: _buildRFQPreviewChips()),
-        ],
-        context.elevatedIconBtn(
-          Icons.add,
-          onPressed: _addQuoteToList,
-          label: 'Add Item',
-        ),*/
+    FieldGroupConfig(
+      key: 'category',
+      label: 'Item Group (e.g. Office Supplies, IT)',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return ItemCategoryDropdown(
+          isDisabled: _isDisabled,
+          initialValue: initialData,
+          onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'unitOfMeasure',
+      label: 'Unit of Measure (e.g. box, kg)',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return UnitOfMeasureDropdown(
+          isDisabled: _isDisabled,
+          initialValue: initialData,
+          onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'notes',
+      label: 'Additional Notes (if any)...',
+      isDisabled: _isDisabled,
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      validator: (_) => null,
+    ),
+  ];
+}

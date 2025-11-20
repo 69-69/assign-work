@@ -2,29 +2,38 @@
 // ⚙️ Account Status Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
-// Priority
-enum ERPPriority { urgent, normal }
+/// [ERPPriority] Priority levels for PR, RFQ, PO, SO, etc.
+enum ERPPriority {
+  // Standard approval and fulfillment timeline.
+  normal,
+  // Fast-track approval, procurement might prioritize it.
+  urgent,
+  // Immediate attention, possibly overrides normal approval hierarchy.
+  critical,
+}
 
 /* USAGE:
 * final priority = ERPPriority.urgent;
 * print(priority.label); // Output: urgent
 * */
-extension PriorityExtension on ERPPriority {
-  String get getValue => getEnumName<ERPPriority>(this);
+extension TaxContextExtension on ERPPriority {
+  /// [getValue] Get the label for the specific enum value.
+  String get getValue => EnumHelper<ERPPriority>(this).getValue;
+
+  /// Returns a user-friendly label
+  String get getLabel => EnumHelper<ERPPriority>(this).getLabel;
 }
 
 class PriorityHelper {
-  /// Get Account Status from String value [fromString].
-  static ERPPriority fromString(String? value) => ERPPriority.values.firstWhere(
-    (e) => e.getValue == value,
-    orElse: () => ERPPriority.normal,
-  );
+  /// [fromString] Converts String/Label to enum value.
+  static ERPPriority fromString(String? value) =>
+      EnumHelper.fromString<ERPPriority>(ERPPriority.values, value);
 
-  /// [toStringList] Convert enum list to a list of strings
-  static List<String> toStringList([bool includeLabel = true]) {
-    final list = ERPPriority.values.map((e) => e.getValue).toList();
-    return includeLabel ? ['priority', ...list] : list;
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final list = EnumHelper.toStringList<ERPPriority>(ERPPriority.values);
+    return includeHeader ? ['priority', ...list] : list;
   }
 }

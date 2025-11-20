@@ -4,10 +4,10 @@ import 'package:assign_erp/features/system_admin/data/models/permission_model.da
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /// Role-Based Access-Control [Role]
 class Role extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
   final Set<Permission> permissions;

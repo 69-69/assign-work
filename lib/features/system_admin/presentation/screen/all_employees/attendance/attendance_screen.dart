@@ -2,7 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
-import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/history_view.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/attendance_model.dart';
@@ -64,7 +64,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       rows: attendances.map((d) => d.itemAsList()).toList(),
       editLabel: 'View Areas',
       editIcon: Icons.explore_outlined,
-      onEditTap: (row) async => _onViewTap(cxt, attendances, row.first),
+      onEditTap: (row) async => _onViewAreasTap(cxt, attendances, row.first),
       onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row.first),
       onChecked: (bool? isChecked, row) {
         setState(() => _updateSelectedIds(isChecked, row.first));
@@ -109,7 +109,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       children: [
         if (_selectedIds.length > 1) ...[
           context.elevatedButton(
-            'Delete Selected',
+            'Delete',
             txtColor: kWhiteColor,
             bgColor: kDangerColor,
             tooltip: 'Delete selected attendance',
@@ -131,7 +131,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Attendance _findAttendance(List<Attendance> attendances, String userId) =>
       Attendance.findById(attendances, userId);
 
-  Future<void> _onViewTap(
+  Future<void> _onViewAreasTap(
     BuildContext cxt,
     List<Attendance> attendances,
     String userId,
@@ -139,16 +139,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     Attendance attendance = _findAttendance(attendances, userId);
 
     /// Show Areas viewed by employee
-    await cxt.confirmDone(
-      attendance.areasViewed.isEmpty
-          ? Text('No areas viewed yet!')
-          : _dataTable(attendance),
+    await context.showInlineHistorySheet<String>(
       title: 'Areas Viewed by ${attendance.name.toTitle}',
-      onDone: 'Done',
+      columnLabels: const ['Area', 'Time'],
+      items: attendance.areasViewed,
+      rowBuilder: (entry) {
+        final parts = entry.split('@');
+        final area = parts.first.trim();
+        final time = parts.length > 1 ? parts.last : 'N/A';
+
+        return DataRow(
+          cells: [DataCell(Text(area.toTitle)), DataCell(Text(time.timeOnly))],
+        );
+      },
     );
   }
 
-  Widget _dataTable(Attendance attendance) {
+  /*Widget _dataTable(Attendance attendance) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
@@ -178,7 +185,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return DataColumn(
       label: Text(str, style: TextStyle(fontWeight: FontWeight.bold)),
     );
-  }
+  }*/
 
   Future<void> _onDeleteTap(
     BuildContext cxt,

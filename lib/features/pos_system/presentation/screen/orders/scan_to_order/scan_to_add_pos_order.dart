@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -101,8 +102,8 @@ class ScanToAddOrder extends StatelessWidget {
     );
   }
 
-  CustomBottomSheet _customBottomSheet(BuildContext context) {
-    return CustomBottomSheet(
+  CustomDraggableBottomSheet _customBottomSheet(BuildContext context) {
+    return CustomDraggableBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       initialChildSize: 0.90,
       maxChildSize: 0.90,
@@ -225,8 +226,8 @@ class _ScannedItemsState extends State<_ScannedItems> {
   }
 
   Future<void> _initializeOrderDetails() async {
-    _newOrderNumber = (await 'pOrder'.getShortStr());
-    _customerId = (await 'customer'.getShortStr());
+    _newOrderNumber = (await DocType.pOrder.getShortStr());
+    _customerId = (await DocType.customer.getShortStr());
   }
 
   void _updateOrder(int index, int quantity) {

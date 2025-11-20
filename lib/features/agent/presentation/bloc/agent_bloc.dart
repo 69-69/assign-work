@@ -55,7 +55,7 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
 
   /*Future<void> _onRefreshClients(
     RefreshClients<T> event,
-    Emitter<AgentState> emit,
+    Emitter<AgentState<T>> emit,
   ) async {
     emit(LoadingClients<T>());
     try {
@@ -79,7 +79,7 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
 
   Future<void> _onRefreshClients(
     RefreshClients<T> event,
-    Emitter<AgentState> emit,
+    Emitter<AgentState<T>> emit,
   ) async {
     emit(LoadingClients<T>());
 

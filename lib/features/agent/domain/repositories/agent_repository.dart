@@ -239,7 +239,7 @@ class AgentRepository extends FirestoreRepository {
         // _emitDataToStream();
       },
       onError: (e) {
-        debugPrint('Data-Repository Error: $e');
+        prettyPrint('Data-Repository Error', '$e');
         completer?.completeError(e); // Optional: report error
       },
     );

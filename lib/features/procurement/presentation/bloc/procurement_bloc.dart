@@ -27,7 +27,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   final CollectionType? collectionType;
 
   // Set up the stream subscription
-  late StreamSubscription<List<CacheData>> _getDataStreamObserver;
+  StreamSubscription<List<CacheData>>? _getDataStreamObserver;
 
   ProcurementBloc({
     required FirebaseFirestore firestore,
@@ -45,7 +45,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     _initialize();
 
     _procurementRepository.dataStream.listen(
-      (cacheData) => add(_ProcurementLoaded<T>(_toList(cacheData))),
+      (cacheData) => add(_ProcurementsLoaded<T>(_toList(cacheData))),
     );
   }
 
@@ -60,17 +60,18 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     on<AddProcurement<T>>(_onAddInventory);
     on<AddProcurement<List<T>>>(_onAddMultiInventory);
     on<UpdateProcurement>(_onUpdateInventory);
+    on<AuditProcurement>(_onAuditLog);
     on<DeleteProcurement<String>>(_onDeleteInventory);
     on<DeleteProcurement<List<String>>>(_onMultiDeleteInventory);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_ProcurementLoaded<T>>(_onInventoryLoaded);
-    on<_SingleProcurementLoaded<T>>(_onSingleInventoryLoaded);
+    on<_ProcurementsLoaded<T>>(_onInventoryLoaded);
+    on<_ProcurementLoaded<T>>(_onSingleInventoryLoaded);
     on<_ProcurementLoadError>(_onInventoryLoadError);
   }
 
   Future<void> _onRefreshProcurements(
     RefreshProcurements<T> event,
-    Emitter<ProcurementState> emit,
+    Emitter<ProcurementState<T>> emit,
   ) async {
     emit(LoadingProcurement<T>());
     try {
@@ -128,7 +129,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
-      _getDataStreamObserver.cancel();
+      _getDataStreamObserver?.cancel();
     }
   }
 
@@ -145,7 +146,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       if (localDataList.isNotEmpty) {
         final data = _toList(localDataList);
 
-        add(_ProcurementLoaded<T>(data));
+        add(_ProcurementsLoaded<T>(data));
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
@@ -166,7 +167,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
 
       if (localData != null) {
         final data = fromFirestore(localData.data, localData.id);
-        add(_SingleProcurementLoaded<T>(data));
+        add(_ProcurementLoaded<T>(data));
       } else {
         emit(ProcurementError<T>('Document not found'));
       }
@@ -283,6 +284,22 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
+  /// Use to add/update audit log [_onAuditLog]
+  Future<void> _onAuditLog(
+    AuditProcurement event,
+    Emitter<ProcurementState<T>> emit,
+  ) async {
+    try {
+      await _procurementRepository.updateData(
+        event.documentId,
+        data: {'data': event.log},
+        isPartial: true, // true if not a full model update
+      );
+    } catch (e) {
+      emit(ProcurementError<T>(e.toString()));
+    }
+  }
+
   Future<void> _onDeleteInventory(
     DeleteProcurement<String> event,
     Emitter<ProcurementState<T>> emit,
@@ -329,14 +346,14 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   }
 
   void _onInventoryLoaded(
-    _ProcurementLoaded<T> event,
+    _ProcurementsLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementsLoaded<T>(event.data));
   }
 
   void _onSingleInventoryLoaded(
-    _SingleProcurementLoaded<T> event,
+    _ProcurementLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementLoaded<T>(event.data));

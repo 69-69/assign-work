@@ -161,6 +161,8 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         label: 'Description',
         type: TextInputType.multiline,
         isTextArea: true,
+        isAutoGrow: true,
+        minLines: null,
         helperText: 'Short description of the department\'s role',
       ),
     ];

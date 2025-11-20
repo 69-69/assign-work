@@ -6,9 +6,6 @@ import 'package:flutter/services.dart';
 
 enum UIDType { numeric, alphanumeric }
 
-/// Utility function to get the name from an Enum [getEnumName]
-String getEnumName<T extends Enum>(T e) => e.name;
-
 /// Check if a MAP is empty or null [isNullEmpty]
 extension SanitizeMap on Map? {
   bool get isNullEmpty => this == null || this!.isEmpty;
@@ -182,7 +179,8 @@ extension SanitizeExtensions on String? {
   /// Helper method to check for null or empty strings
   String get _isNullEmpty => isNullOrEmpty ? '' : this!;
 
-  /// Create username from email address
+  /// [emailToUsername] Create username from email address
+  /// e.g., username@domain.com => username234
   String get emailToUsername {
     final checkedString = _isNullEmpty;
 
@@ -196,7 +194,8 @@ extension SanitizeExtensions on String? {
     return '${baseUsername}_$randomSuffix';
   }
 
-  /// Convert lowerCamelCase to two separate words
+  /// [separateWord] Convert lowerCamelCase to two separate words
+  /// e.g., 'thisIsAString' => 'this Is A String'
   String get separateWord {
     // If the string is empty, no need to process further
     if (_isNullEmpty.isEmpty) return '';
@@ -210,7 +209,28 @@ extension SanitizeExtensions on String? {
     );
   }
 
-  /// This will put the first letter in UpperCase
+  /// [combineWord] Convert "separate words" back to lowerCamelCase
+  /// e.g., 'this Is A String' => 'thisIsAString'
+  String get combineWord {
+    final value = _isNullEmpty; // has word or ''
+    // Trim and handle empty/null strings
+    if (value.isEmpty) return '';
+
+    // If no spaces, return as-is
+    if (!value.contains(' ')) return value;
+
+    // Split by spaces
+    final parts = value.split(' ');
+
+    // Keep first word lowercase, capitalize the rest
+    return parts.first.toLowerCase() +
+        parts.skip(1).map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        }).join();
+  }
+
+  /// [toUpperFirst] This will put the first letter in UpperCase
   String get toUpperFirst {
     final checkedString = _isNullEmpty;
 

@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/calculate_extras.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -100,7 +101,7 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
   double _strToDouble(String s) => double.tryParse(s) ?? 0.0;
 
   void _generatePONumber() async {
-    await 'purchase'.getShortUID(
+    await DocType.purchase.getShortUID(
       onChanged: (s) => setState(() => _newPONumber = s),
     );
   }

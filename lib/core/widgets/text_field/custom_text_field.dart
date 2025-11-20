@@ -1,17 +1,25 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:flutter/material.dart';
 
 /// Form text field [CustomTextField]
-class CustomTextField extends StatelessWidget {
-  final int? maxLength;
+///
+class CustomTextField extends StatefulWidget {
+  final bool? enable;
+  final String? label;
   final int? maxLines;
   final int? minLines;
-  final bool? enable;
+  final int? maxLength;
   final bool autofocus;
+
+  /// [isAutoGrow] Auto-Wrap + Grow text field
+  final bool isAutoGrow;
+
+  /// [maxHeight] Max height of the Auto-Grow text field
+  final double maxHeight;
   final Color? fillColor;
   final Color? textColor;
   final bool obscureText;
-  final String? label;
   final String? helperText;
   final String? initialValue;
   final FocusNode? focusNode;
@@ -19,224 +27,94 @@ class CustomTextField extends StatelessWidget {
   final Iterable<String>? autofillHints;
   final InputDecoration? inputDecoration;
   final void Function(String)? onChanged;
+  final TextInputAction? textInputAction;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
-  final TextInputAction? textInputAction;
 
   const CustomTextField({
     super.key,
     required this.keyboardType,
     this.label,
-    this.initialValue,
-    this.helperText,
-    this.controller,
-    this.validator,
-    this.onChanged,
-    this.onFieldSubmitted,
-    this.inputDecoration,
     this.enable,
-    this.maxLength,
-    this.textColor,
     this.maxLines,
     this.minLines,
     this.focusNode,
     this.fillColor,
-    this.autofillHints,
-    this.obscureText = false,
-    this.textInputAction,
-    this.autofocus = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final helpText = helperText != null ? '($helperText)' : '';
-
-    var decoration =
-        inputDecoration ??
-        InputDecoration(
-          filled: enable == false,
-          fillColor: fillColor ?? Colors.grey.shade300,
-          labelText: '$label $helpText',
-          // helperText: helperText,
-        );
-
-    var validator2 =
-        validator ??
-        (value) {
-          if (value == null || value.isEmpty) {
-            var s = label ?? inputDecoration?.labelText;
-            return 'Please enter $s';
-          }
-          if (isInputTypeNumber(keyboardType) &&
-              double.tryParse(value) == null) {
-            return 'Please enter a valid number';
-          }
-          return null;
-        };
-
-    return isInputTypeText(keyboardType)
-        ? LowercaseTextField(
-            enable: enable,
-            focusNode: focusNode,
-            controller: controller,
-            maxLines: maxLines,
-            minLines: minLines,
-            maxLength: maxLength,
-            onChanged: onChanged,
-            textColor: textColor,
-            inputDecoration: decoration,
-            validator: validator2,
-          )
-        : TextFormField(
-            autofocus: autofocus,
-            controller: controller,
-            initialValue: initialValue,
-            focusNode: focusNode,
-            enabled: enable,
-            maxLines: maxLines,
-            minLines: minLines,
-            maxLength: maxLength,
-            keyboardType: keyboardType,
-            obscureText: obscureText,
-            autofillHints: autofillHints,
-            onChanged: onChanged,
-            textInputAction: textInputAction,
-            onFieldSubmitted: (v) => onFieldSubmitted?.call(v),
-            style: TextStyle(
-              color: enable == false ? Colors.black : textColor,
-              overflow: TextOverflow.ellipsis,
-            ),
-            decoration: decoration,
-            validator: validator2,
-          );
-  }
-
-  bool isInputTypeNumber(TextInputType i) {
-    final textTypes = {
-      TextInputType.number,
-      TextInputType.phone,
-      TextInputType.numberWithOptions,
-    };
-    return textTypes.contains(i);
-  }
-
-  bool isInputTypeText(TextInputType i) {
-    final textTypes = {
-      TextInputType.text,
-      TextInputType.name,
-      TextInputType.streetAddress,
-    };
-    return textTypes.contains(i);
-  }
-}
-
-class LowercaseTextField extends StatefulWidget {
-  final int? maxLength;
-  final bool autofocus;
-  final int? maxLines;
-  final int? minLines;
-  final bool? enable;
-  final Color? textColor;
-  final String? labelText;
-  final String? helperText;
-  final InputDecoration? inputDecoration;
-  final TextEditingController? controller;
-  final String? Function(String?)? validator;
-  final void Function(String)? onChanged;
-  final void Function(String)? onFieldSubmitted;
-  final FocusNode? focusNode;
-  final TextInputAction? textInputAction;
-
-  const LowercaseTextField({
-    super.key,
-    this.enable,
-    this.maxLines,
-    this.minLines,
-    this.focusNode,
-    this.labelText,
     this.validator,
     this.onChanged,
     this.textColor,
     this.maxLength,
-    this.helperText,
     this.controller,
+    this.helperText,
+    this.initialValue,
+    this.autofillHints,
     this.textInputAction,
     this.inputDecoration,
+    this.maxHeight = 100,
     this.onFieldSubmitted,
     this.autofocus = false,
+    this.isAutoGrow = false,
+    this.obscureText = false,
   });
 
   @override
-  State<LowercaseTextField> createState() => _LowercaseTextFieldState();
+  State<CustomTextField> createState() => _CustomTextFieldState();
 }
 
-class _LowercaseTextFieldState extends State<LowercaseTextField> {
-  TextEditingController? get _controller => widget.controller;
+class _CustomTextFieldState extends State<CustomTextField> {
+  late final TextEditingController _internalController;
+  late final TextEditingController _controller;
+  final ScrollController _scrollController = ScrollController();
   bool capsLockOn = false;
 
   @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      autofocus: widget.autofocus,
-      controller: _controller,
-      enabled: widget.enable,
-      focusNode: widget.focusNode,
-      maxLines: widget.maxLines,
-      minLines: widget.minLines,
-      maxLength: widget.maxLength,
-      keyboardType: TextInputType.text,
-      textInputAction: widget.textInputAction,
-      style: TextStyle(
-        color: widget.enable == false ? Colors.black : widget.textColor,
-        overflow: TextOverflow.ellipsis,
-      ),
-      decoration: widget.inputDecoration?.copyWith(
-        errorText: capsLockOn ? 'Caps Lock is on!' : null,
-      ),
-      inputFormatters: const [
-        // Allow letters and spaces only
-        // FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-        // Allow letters only
-        // FilteringTextInputFormatter.allow(RegExp('[a-zA-Z]')),
-        // Allow only lowercase letters
-        // FilteringTextInputFormatter.allow(RegExp('[a-z]')),
-      ],
-      onFieldSubmitted: (value) {
-        _actionTriggered(value);
+  void initState() {
+    super.initState();
+    // Create internal controller only if the user did NOT pass one
+    // _internalController = widget.controller ?? TextEditingController();
+    _internalController = TextEditingController(text: widget.initialValue);
+    _controller = widget.controller ?? _internalController;
 
-        // Call the onChanged callback passed from the parent widget
-        widget.onFieldSubmitted?.call(value);
-      },
-      onChanged: (value) {
-        _actionTriggered(value);
+    if (widget.isAutoGrow) {
+      _controller.addListener(_scrollToEnd);
+    }
+  }
 
-        // Call the onChanged callback passed from the parent widget
-        widget.onChanged?.call(value);
-      },
-      /*onChanged: (value) {
-        widget.onChanged?.call(value);
+  @override
+  void dispose() {
+    if (widget.isAutoGrow) {
+      _controller.removeListener(_scrollToEnd);
+      _scrollController.dispose();
+    }
 
-        setState(() {
-          capsLockOn = _isCapsLockOn(value);
-          // Convert text to lowercase
-          _controller?.value = _controller!.value.copyWith(
-            text: value.toLowerCase(),
-            // Maintain cursor position
-            selection: TextSelection.collapsed(offset: value.length),
-          );
-        });
-      },*/
-      validator: widget.validator,
-    );
+    // IMPORTANT: Dispose ONLY internal controller.
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
+  }
+
+  void _scrollToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        // Whenever text changes, it scroll's or jump to the bottom
+        // _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _actionTriggered(String value) {
     setState(() => capsLockOn = _isCapsLockOn(value));
 
     // Only update the controller's text if it's different
-    if (_controller?.text != value.toLowerAll) {
-      _controller?.value = _controller!.value.copyWith(
+    if (_controller.text != value.toLowerAll) {
+      _controller.value = _controller.value.copyWith(
         text: value.toLowerAll,
         selection: TextSelection.collapsed(offset: value.length),
       );
@@ -249,9 +127,297 @@ class _LowercaseTextFieldState extends State<LowercaseTextField> {
     return hasUpperCase && !hasLowerCase;
   }
 
-  /*@override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }*/
+  @override
+  Widget build(BuildContext context) {
+    return widget.isAutoGrow ? _buildAutoGrowTextField() : _buildTextField();
+  }
+
+  ConstrainedBox _buildAutoGrowTextField() {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: widget.maxHeight),
+      child: Scrollbar(
+        controller: _scrollController,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: _buildTextField(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField() {
+    return isInputTypeText() ? _buildLowercaseField() : _buildStandardField();
+  }
+
+  _StandardTextField _buildStandardField() {
+    final (valid, decoration) = _inputDecoration();
+
+    return _StandardTextField(
+      validator: valid,
+      enable: widget.enable,
+      decoration: decoration,
+      controller: _controller,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
+      focusNode: widget.focusNode,
+      maxLength: widget.maxLength,
+      onChanged: widget.onChanged,
+      textColor: widget.textColor,
+      autofocus: widget.autofocus,
+      obscureText: widget.obscureText,
+      initialValue: widget.initialValue,
+      keyboardType: widget.keyboardType,
+      autofillHints: widget.autofillHints,
+      textInputAction: widget.textInputAction,
+      onFieldSubmitted: widget.onFieldSubmitted,
+      // label: widget.label,
+      // fillColor: widget.fillColor,
+      // helperText: widget.helperText,
+      // initialValue: widget.initialValue,
+    );
+  }
+
+  _LowercaseTextField _buildLowercaseField() {
+    final (valid, decoration) = _inputDecoration();
+
+    return _LowercaseTextField(
+      validator: valid,
+      enable: widget.enable,
+      capsLockOn: capsLockOn,
+      controller: _controller,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
+      focusNode: widget.focusNode,
+      maxLength: widget.maxLength,
+      textColor: widget.textColor,
+      inputDecoration: decoration,
+      autofocus: widget.autofocus,
+      onChanged: widget.onChanged,
+      onActionTriggered: _actionTriggered,
+      textInputAction: widget.textInputAction,
+      onFieldSubmitted: widget.onFieldSubmitted,
+    );
+  }
+
+  (String? Function(String?), InputDecoration?) _inputDecoration() {
+    final helpText = widget.helperText != null ? '($widget.helperText)' : '';
+
+    var decoration =
+        widget.inputDecoration ??
+        InputDecoration(
+          filled: widget.enable == false,
+          fillColor: widget.fillColor ?? Colors.grey.shade300,
+          labelText: '${widget.label} $helpText',
+          // helperText: helperText,
+        );
+
+    var valid =
+        widget.validator ??
+        (value) {
+          if (value == null || value.isEmpty) {
+            var s = widget.label ?? widget.inputDecoration?.labelText;
+            return 'Please enter $s';
+          }
+          if (isInputTypeNumber() && double.tryParse(value) == null) {
+            return 'Please enter a valid number';
+          }
+          return null;
+        };
+
+    return (valid, decoration);
+  }
+
+  bool isInputTypeNumber() {
+    final textTypes = {
+      TextInputType.number,
+      TextInputType.phone,
+      TextInputType.numberWithOptions,
+    };
+    return textTypes.contains(widget.keyboardType);
+  }
+
+  bool isInputTypeText() {
+    final textTypes = {
+      TextInputType.text,
+      TextInputType.name,
+      TextInputType.streetAddress,
+    };
+    return textTypes.contains(widget.keyboardType);
+  }
+}
+
+class _StandardTextField extends StatelessWidget {
+  final bool? enable;
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
+  final bool autofocus;
+  final Color? textColor;
+  final bool obscureText;
+  final FocusNode? focusNode;
+  final String? initialValue;
+  final TextInputType keyboardType;
+  final InputDecoration? decoration;
+  final Iterable<String>? autofillHints;
+  final TextInputAction? textInputAction;
+  final void Function(String)? onChanged;
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
+  // final Color? fillColor;
+  // final String? label;
+  // final String? helperText;
+
+  const _StandardTextField({
+    required this.keyboardType,
+    this.enable,
+    this.maxLines,
+    this.minLines,
+    this.maxLength,
+    this.textColor,
+    this.validator,
+    this.onChanged,
+    this.focusNode,
+    this.controller,
+    this.decoration,
+    this.initialValue,
+    this.autofillHints,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.obscureText = false,
+    this.autofocus = false,
+    // this.label,
+    // this.fillColor,
+    // this.helperText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      autofocus: autofocus,
+      controller: controller,
+      initialValue: initialValue,
+      focusNode: focusNode,
+      enabled: enable,
+      maxLines: maxLines,
+      minLines: minLines,
+      maxLength: maxLength,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      autofillHints: autofillHints,
+      onChanged: onChanged,
+      textInputAction: textInputAction,
+      onFieldSubmitted: (v) => onFieldSubmitted?.call(v),
+      style: TextStyle(
+        color: enable == false ? context.onSurfaceColor : textColor,
+        overflow: TextOverflow.ellipsis,
+      ),
+      decoration: decoration,
+      validator: validator,
+    );
+  }
+}
+
+class _LowercaseTextField extends StatelessWidget {
+  final bool? enable;
+  final int? maxLines;
+  final int? minLines;
+  final bool autofocus;
+  final int? maxLength;
+  final bool capsLockOn;
+  final Color? textColor;
+  final FocusNode? focusNode;
+  final void Function(String)? onChanged;
+  final InputDecoration? inputDecoration;
+  final TextInputAction? textInputAction;
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
+  final void Function(String)? onActionTriggered;
+  // final String? labelText;
+  // final String? helperText;
+
+  const _LowercaseTextField({
+    this.enable,
+    this.maxLines,
+    this.minLines,
+    this.maxLength,
+    this.focusNode,
+    this.validator,
+    this.onChanged,
+    this.textColor,
+    this.controller,
+    this.textInputAction,
+    this.inputDecoration,
+    this.onFieldSubmitted,
+    this.onActionTriggered,
+    this.autofocus = false,
+    this.capsLockOn = false,
+    // this.labelText,
+    // this.helperText,
+  });
+
+  TextEditingController? get _controller => controller;
+  bool get _capsLockOn => capsLockOn;
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildTextField(context);
+  }
+
+  TextFormField _buildTextField(BuildContext context) {
+    return TextFormField(
+      autofocus: autofocus,
+      controller: _controller,
+      enabled: enable,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      minLines: minLines,
+      maxLength: maxLength,
+      keyboardType: TextInputType.text,
+      textInputAction: textInputAction,
+      style: TextStyle(
+        color: enable == false ? context.onSurfaceColor : textColor,
+        overflow: TextOverflow.ellipsis,
+      ),
+      decoration: inputDecoration?.copyWith(
+        errorText: _capsLockOn ? 'Caps Lock is on!' : null,
+      ),
+      inputFormatters: const [
+        // Allow letters and spaces only
+        // FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+        // Allow letters only
+        // FilteringTextInputFormatter.allow(RegExp('[a-zA-Z]')),
+        // Allow only lowercase letters
+        // FilteringTextInputFormatter.allow(RegExp('[a-z]')),
+      ],
+      onFieldSubmitted: (v) {
+        onActionTriggered?.call(v);
+        onFieldSubmitted?.call(
+          v,
+        ); // Call the onChanged callback passed from the parent widget
+      },
+      onChanged: (v) {
+        onActionTriggered?.call(v);
+        onChanged?.call(
+          v,
+        ); // Call the onChanged callback passed from the parent widget
+      },
+      validator: validator,
+    );
+  }
+
+  /*onChanged: (value) {
+      onChanged?.call(value);
+
+      setState(() {
+        capsLockOn = _isCapsLockOn(value);
+        // Convert text to lowercase
+        _controller?.value = _controller!.value.copyWith(
+          text: value.toLowerAll,
+          // Maintain cursor position
+          selection: TextSelection.collapsed(offset: value.length),
+        );
+      });
+    },*/
 }

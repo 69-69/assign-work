@@ -2,29 +2,27 @@
 // ⚙️ Hosting Type Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 
-enum HostingType { cloud, onPremise, hybrid }
+enum HostingType { onPremise, cloud, hybrid }
 
 /* USAGE:
 * final type = HostingType.cloud;
 * print(type.label); // Output: cloud
 * */
 extension HostingTypeExtension on HostingType {
-  String get getValue => getEnumName<HostingType>(this);
+  /// [getValue] Get the label for the specific enum value (e.g. "onPremise").
+  String get getValue => EnumHelper<HostingType>(this).getValue;
 }
 
 class HostingTypeHelper {
-  static HostingType fromString(String value) {
-    return HostingType.values.firstWhere(
-      (e) => e.getValue == value,
-      orElse: () => HostingType.onPremise,
-    );
-  }
+  /// [fromString] Converts String/Label to enum value.
+  static HostingType fromString(String? value) =>
+      EnumHelper.fromString<HostingType>(HostingType.values, value);
 
-  /// [toStringList] Convert enum list to a list of strings
-  static List<String> toStringList([bool includeLabel = true]) {
-    final list = HostingType.values.map((e) => e.getValue).toList();
-    return includeLabel ? ['hosting type', ...list] : list;
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'hosting type' : '';
+    return EnumHelper.toStringList<HostingType>(HostingType.values, label);
   }
 }

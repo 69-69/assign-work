@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/trouble_shooting/data/permission/trouble_shoot_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -39,7 +39,7 @@ extension TroubleShootTiles on dynamic {
 }
 
 // Get name from enum
-String _getValue(e) => getEnumName<TroubleShootPermission>(e);
+String _getValue(e) => EnumHelper<TroubleShootPermission>(e).getValue;
 
 // Get name from enum
 // String _getValue(e) => getEnumName<TroubleShootPermission>(e);

@@ -1,5 +1,6 @@
 import 'package:assign_erp/config/routes/route_logger.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_db_adaptor.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/access_control/domain/repository/access_control_repository.dart';
 import 'package:assign_erp/features/app.dart';
 import 'package:assign_erp/features/auth/domain/repository/auth_repository.dart';
@@ -78,5 +79,5 @@ Future<void> initializeApp() async {
   FirebaseApp app = await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  debugPrint('Initialized-default-app $app');
+  prettyPrint('Initialized-default-app', '$app');
 }

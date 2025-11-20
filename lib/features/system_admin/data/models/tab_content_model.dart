@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 import 'package:flutter/material.dart';
 
@@ -15,5 +15,5 @@ class TabContent<T extends Enum> {
     T? accessEnum,
     required this.displayName,
     required this.permissions,
-  }) : access = accessEnum != null ? getEnumName<T>(accessEnum) : null;
+  }) : access = accessEnum != null ? EnumHelper<T>(accessEnum).getValue : null;
 }

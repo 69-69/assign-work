@@ -1,25 +1,27 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/firestore_bloc.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/short_id_bloc.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/short_id_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-extension GenerateUID on String {
+extension GenerateUID on DocType {
   static final _dbCollectionPaths = {
-    'work': workspaceAccDBCollectionPath,
-    'item': itemsDBCollectionPath,
-    'order': ordersDBCollectionPath,
-    'purchase': purchaseOrdersDBCollectionPath,
-    'misc': miscOrdersDBCollectionPath,
-    'rfq': requestPriceQuoteDBCollectionPath,
-    'sale': salesDBCollectionPath,
-    'delivery': deliveryDBCollectionPath,
-    'invoice': invoiceDBCollectionPath,
-    'customer': customersDBCollectionPath,
-    'pOrder': posOrdersDBCollectionPath,
-    'pSale': posSalesDBCollectionPath,
-    'employee': employeesDBCollectionPath,
+    DocType.work: workspaceAccDBCollectionPath,
+    DocType.item: itemsDBCollectionPath,
+    DocType.order: ordersDBCollectionPath,
+    DocType.purchase: purchaseOrdersDBCollectionPath,
+    DocType.misc: miscOrdersDBCollectionPath,
+    DocType.rfq: requestPriceQuoteDBCollectionPath,
+    DocType.prs: purchaseRequisitionDBCollectionPath,
+    DocType.sale: salesDBCollectionPath,
+    DocType.delivery: deliveryDBCollectionPath,
+    DocType.invoice: invoiceDBCollectionPath,
+    DocType.customer: customersDBCollectionPath,
+    DocType.pOrder: posOrdersDBCollectionPath,
+    DocType.pSale: posSalesDBCollectionPath,
+    DocType.employee: employeesDBCollectionPath,
   };
 
   String get _dbCollectionPath => _dbCollectionPaths[this] ?? 'unknownPath';
@@ -44,7 +46,9 @@ extension GenerateUID on String {
     final newId = await _checkReturn();
 
     if (newId.isNotEmpty) {
-      final prefix = isNotEmpty ? substring(0, 3).toUpperAll : '';
+      final prefix = getValue.isNotEmpty
+          ? getValue.substring(0, 3).toUpperAll
+          : '';
       final formattedId = '$prefix-$newId';
 
       if (onChanged != null) {
@@ -75,7 +79,9 @@ extension GenerateUID on String {
 
     return result;
   }*/
+}
 
+extension FirestoreExtension on String {
   /// Generates a unique department code based on the provided name and existing codes [generateUniqueCode].
   /// @param name The name of the department.
   /// @param existingCodes (Optional) A list of existing department codes.

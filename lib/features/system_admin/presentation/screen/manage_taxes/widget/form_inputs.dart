@@ -22,9 +22,7 @@ class AutoApplyTaxOnDropdown extends StatelessWidget {
       labelText: 'Auto apply tax on...',
       asyncItems: (String filter, loadProps) async {
         return TaxContext.values
-            .where(
-              (i) => i.getValue.toLowerCase().contains(filter.toLowerCase()),
-            )
+            .where((i) => i.getValue.toLowerAll.contains(filter.toLowerAll))
             .toList();
       },
       itemAsString: (item) => item.getValue.separateWord.toTitle,

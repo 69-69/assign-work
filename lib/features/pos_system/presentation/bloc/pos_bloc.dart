@@ -70,7 +70,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
 
   Future<void> _onRefreshPOSs(
     RefreshPOSs<T> event,
-    Emitter<POSState> emit,
+    Emitter<POSState<T>> emit,
   ) async {
     emit(LoadingPOS<T>());
     try {

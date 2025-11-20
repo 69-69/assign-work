@@ -11,7 +11,7 @@ class FormBottomSheet extends StatelessWidget {
   final String title;
   final String? tooltip;
   final Widget body;
-  final bool isExpanded;
+  final double? initialSize;
   final String? subtitle;
   final Color? subTitleColor;
   final Function()? onPrint;
@@ -19,7 +19,7 @@ class FormBottomSheet extends StatelessWidget {
   const FormBottomSheet({
     super.key,
     this.isDetails = false,
-    this.isExpanded = false,
+    this.initialSize,
     required this.title,
     required this.body,
     this.subtitle,
@@ -30,10 +30,10 @@ class FormBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = isExpanded ? 0.92 : 0.98;
-    return CustomBottomSheet(
+    final size = isDetails ? 0.92 : 0.98;
+    return CustomDraggableBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
-      initialChildSize: size,
+      initialChildSize: initialSize ?? size,
       maxChildSize: size,
       header: isDetails
           ? _buildViewDetailsHeader(context)
@@ -66,12 +66,14 @@ class FormBottomSheet extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8.0,
         children: [
-          context.elevatedButton(
-            'Print',
-            bgColor: kWarningColor,
-            tooltip: tooltip ?? 'Print out',
-            onPressed: onPrint,
-          ),
+          if (onPrint != null) ...{
+            context.elevatedButton(
+              'Print',
+              bgColor: kWarningColor,
+              tooltip: tooltip ?? 'Print out',
+              onPressed: onPrint,
+            ),
+          },
           IconButton(
             icon: Icon(Icons.close),
             tooltip: 'Close',

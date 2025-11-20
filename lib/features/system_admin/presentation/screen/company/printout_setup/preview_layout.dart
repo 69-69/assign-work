@@ -21,7 +21,7 @@ class _Layout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomBottomSheet(
+    return CustomDraggableBottomSheet(
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       sheetBgColor: kTextColor, // kCupertinoModalBarrierColor.toAlpha(0.4)),
       initialChildSize: 0.90,

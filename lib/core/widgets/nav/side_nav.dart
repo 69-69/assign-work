@@ -3,6 +3,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/hosting_type.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -243,7 +244,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           label: 'Dashboard',
           action: RouteNames.homeDashboard,
           description: 'Access to dashboard',
-          access: getEnumName<MainPermission>(MainPermission.unknown),
+          access: EnumHelper<MainPermission>(MainPermission.unknown).getValue,
         ),
       );
     }

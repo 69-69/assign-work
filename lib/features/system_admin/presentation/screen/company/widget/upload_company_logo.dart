@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/local/setup_printout_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -133,7 +134,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
   // Delete file from Device Directory
   Future<void> _deleteImage() async {
     if (_imageFile != null) {
-      debugPrint('Error saving image: ...');
+      prettyPrint('deleteImage', 'Error saving image: ...');
       try {
         if (await _imageFile!.exists()) {
           await _imageFile!.delete();

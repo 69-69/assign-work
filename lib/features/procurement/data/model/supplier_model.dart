@@ -2,8 +2,6 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-var _today = DateTime.now();
-
 /*class ProductSupplier {
   final String productId;
   final String supplierId; // foreign key to Procurement's Supplier
@@ -14,6 +12,8 @@ var _today = DateTime.now();
 }*/
 
 class Supplier extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
 
   /// [name] Supplier Company Name
@@ -95,7 +95,7 @@ class Supplier extends Equatable {
     'businessType': businessType,
     'bankDetails': bankDetails,
     'taxDetails': taxDetails,
-    'contactPersons': contactPersons.map((item) => item.toMap()).toList(),
+    'contactPersons': contactPersons.map((i) => i.toMap()).toList(),
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
@@ -265,6 +265,8 @@ class Supplier extends Equatable {
 
 /// RFQ Line Items
 class SupplierContactPerson extends Equatable {
+  static get _today => DateTime.now();
+
   final String id;
   final String name;
   final String email;

@@ -44,7 +44,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
   Future<void> _handleCardSelection(int index, String label) async {
     setState(() => _selectedCardIndex = index);
 
-    // final settings = _setupPrintOut.copyWith(layout: label.toLowerCase());
+    // final settings = _setupPrintOut.copyWith(layout: label.toLowerAll);
     await _saveCardSelection(label);
   }
 

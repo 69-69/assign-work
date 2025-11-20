@@ -89,7 +89,18 @@ class UpdateProcurement<T> extends ProcurementEvent<T> {
   const UpdateProcurement({required this.documentId, this.data, this.mapData});
 
   @override
-  List<Object?> get props => [data, documentId];
+  List<Object?> get props => [data, mapData, documentId];
+}
+
+/// Add/Update Audit Log (History) for Procurement [AuditProcurement]
+class AuditProcurement<T> extends ProcurementEvent<T> {
+  final Map<String, dynamic>? log;
+  final String documentId;
+
+  const AuditProcurement({required this.documentId, this.log});
+
+  @override
+  List<Object?> get props => [log, documentId];
 }
 
 class DeleteProcurement<T> extends ProcurementEvent<T> {
@@ -102,10 +113,10 @@ class DeleteProcurement<T> extends ProcurementEvent<T> {
 }
 
 /// Internal events for state updates
-class _ProcurementLoaded<T> extends ProcurementEvent<T> {
+class _ProcurementsLoaded<T> extends ProcurementEvent<T> {
   final List<T> data;
 
-  const _ProcurementLoaded(this.data);
+  const _ProcurementsLoaded(this.data);
 
   @override
   List<Object?> get props => [data];
@@ -120,10 +131,10 @@ class _ShortIDLoaded<T> extends ProcurementEvent<T> {
   List<Object?> get props => [shortID];
 }
 
-class _SingleProcurementLoaded<T> extends ProcurementEvent<T> {
+class _ProcurementLoaded<T> extends ProcurementEvent<T> {
   final T data;
 
-  const _SingleProcurementLoaded(this.data);
+  const _ProcurementLoaded(this.data);
 
   @override
   List<Object?> get props => [data];

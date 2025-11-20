@@ -16,6 +16,7 @@ class GetProductCategory {
   ) async {
     return await bloc.stream.firstWhere(
           (state) => state is SetupsLoaded<Category>,
+          orElse: () => SetupsLoaded<Category>([]),
         )
         as SetupsLoaded<Category>;
   }

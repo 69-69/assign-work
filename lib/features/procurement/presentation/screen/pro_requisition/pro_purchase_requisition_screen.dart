@@ -1,9 +1,11 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/orders/purchase_order_model.dart';
+import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_requisition/pro_purchase_requisite_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_requisition/list/list_purchase_requisitions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,11 +18,29 @@ class ProPurchaseRequisitionScreen extends StatelessWidget {
     return BlocProvider<ProPurchaseRequisiteBloc>(
       create: (context) =>
           ProPurchaseRequisiteBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetProcurements<PurchaseOrder>()),
+            ..add(GetProcurements<PurchaseRequisition>()),
       child: CustomScaffold(
-        title: purchaseOrderScreenTitle.toUpperAll,
-        body: Center(child: Text('Procurement Purchase Requisition')),
+        title: purchaseRequisiteScreenTitle.toUpperAll,
+        body: _buildBody(),
       ),
+    );
+  }
+
+  CustomTab _buildBody() {
+    return CustomTab(
+      length: 2,
+      openThisTab: 0,
+      tabs: [
+        {
+          'label': 'Purchase Requisitions',
+          'icon': Icons.miscellaneous_services,
+        },
+        {'label': 'Approved PRs', 'icon': Icons.card_giftcard},
+      ],
+      children: [
+        ListPurchaseRequisitions(),
+        ListPurchaseRequisitions(isApproved: true),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/result_data.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -91,8 +92,9 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
           );
 
           if (restoreResult is Success<String>) {
-            debugPrint(
-              'Local backup restored successfully ${restoreResult.data}',
+            prettyPrint(
+              'Local backup restored successfully',
+              restoreResult.data.toString(),
             );
             return;
           }

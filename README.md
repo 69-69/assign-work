@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "Working on PR Model"
+git commit -m "+ Purchase Requisition, PR to RFQ, AuditLog, Printing Config"
 git branch -M main
 git push -u origin main
 

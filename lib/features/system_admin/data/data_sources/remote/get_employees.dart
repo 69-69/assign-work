@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
@@ -43,5 +44,28 @@ class GetEmployees {
             as SetupsLoaded<Employee>;
 
     return allData.data;
+  }
+
+  /// Get by EmployeeId [byEmployeeId]
+  static Future<Employee> byEmployeeId(String empId) async {
+    final employeeBloc = EmployeeBloc(firestore: FirebaseFirestore.instance);
+
+    employeeBloc.add(GetSetupById<Employee>(documentId: empId));
+
+    try {
+      final state = await employeeBloc.stream.firstWhere(
+        (state) => state is SetupsLoaded<Employee>,
+        orElse: () => SetupsLoaded<Employee>([]),
+      );
+
+      if (state is SetupsLoaded<Employee>) {
+        final data = state.data;
+        return data.isNotEmpty ? data.first : Employee.empty;
+      }
+    } catch (e) {
+      prettyPrint('Error fetching Employee', '$e');
+    }
+
+    return Employee.empty;
   }
 }

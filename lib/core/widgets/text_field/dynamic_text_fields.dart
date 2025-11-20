@@ -147,6 +147,9 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         );
 
     return CustomTextField(
+      isAutoGrow: config.isAutoGrow,
+      maxHeight: config.maxHeight,
+      enable: !config.isDisabled,
       controller: group.controllers[key],
       keyboardType: inputType,
       onChanged: (_) => _notifyParent(),
@@ -298,6 +301,15 @@ class FieldGroupConfig {
   final InputDecoration? inputDecoration;
   final FieldWidgetType widgetType;
 
+  /// [isDisabled] Enable/Disable text field
+  final bool isDisabled;
+
+  /// [isAutoGrow] Auto-Wrap + Grow text field
+  final bool isAutoGrow;
+
+  /// [maxHeight] Max height of the Auto-Grow text field
+  final double maxHeight;
+
   /// Optional custom widget builder
   final Widget Function({
     required dynamic initialData,
@@ -315,6 +327,9 @@ class FieldGroupConfig {
     this.helperText,
     this.inputDecoration,
     this.hideField = false,
+    this.isDisabled = false,
+    this.isAutoGrow = false,
+    this.maxHeight = 100,
     this.customBuilder,
     this.widgetType = FieldWidgetType.textField,
   });
@@ -356,51 +371,3 @@ class FieldGroup {
     return data;
   }
 }
-
-/*
-  List<Widget> _groupByTwo2(List<Widget> fields) {
-    final rows = <Widget>[];
-    final total = fields.length;
-
-    for (var i = 0; i < total; i += 2) {
-      final isLast = i == total - 2;
-      final isOdd = total % 2 != 0;
-
-      rows.add(
-        AdaptiveLayout(
-          children: [
-            if (isLast && isOdd) ...[
-              fields[i], // Make last field full-width
-            ] else ...[
-              fields[i],
-              if (i + 1 < total) fields[i + 1],
-            ],
-          ],
-        ),
-      );
-
-      // Only add horizontal divider to the last, If new group is added
-      if (i == total - 2 && _fieldGroups.length > 1) {
-        rows.add(const HorizontalDivider());
-      }
-    }
-
-    return rows;
-  }
-
-
-List<Widget> _groupByTwo2(List<CustomTextField> fields) {
-    final rows = <Widget>[];
-    for (var i = 0; i < fields.length; i += 2) {
-      rows.add(
-        AdaptiveLayout(
-          children: [
-            fields[i],
-            if (i + 1 < fields.length) fields[i + 1],
-            if (i + 1 >= fields.length) const Spacer(), // Fill gap if odd
-          ],
-        ),
-      );
-    }
-    return rows;
-  }*/

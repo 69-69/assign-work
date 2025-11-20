@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_repository.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -129,7 +130,7 @@ class LiveChatRepository extends FirestoreRepository {
         ) {
           final List<CacheData> data = _toList(snapshot);
           _updateCacheWithData(data);
-        }, onError: (e) => debugPrint('Chat Error: $e'));
+        }, onError: (e) => prettyPrint('Chat Error', '$e'));
   }
 
   Future<void> sendChat(

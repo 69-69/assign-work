@@ -1,13 +1,118 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/constants/item_category.dart';
+import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/features/procurement/data/model/pr_to_rfq_converter_model.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_requisition/widget/search_purchase_requisitions.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
 import 'package:flutter/material.dart';
+
+/// [FindApprovedPurchaseRequisition]
+class FindApprovedPurchaseRequisition extends StatelessWidget {
+  final ValueChanged? onChanged;
+  final void Function()? onPressed;
+  final void Function(PRToRFQConverter) onValueChanged;
+
+  const FindApprovedPurchaseRequisition({
+    super.key,
+    this.onChanged,
+    this.onPressed,
+    required this.onValueChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SearchPurchaseRequisitions(
+          onChanged: onChanged,
+          onValueChanged: (map) =>
+              onValueChanged.call(PRToRFQConverter.fromMap(map)),
+        ),
+        SizedBox(
+          width: double.infinity,
+          child: context.outlinedButton(
+            'Create New Quote',
+            onPressed: onPressed,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// PO unit of measure [UnitOfMeasureDropdown]
+class UnitOfMeasureDropdown extends StatelessWidget {
+  final bool isDisabled;
+  final String? initialValue;
+  final void Function(String? s) onChanged;
+
+  const UnitOfMeasureDropdown({
+    super.key,
+    required this.onChanged,
+    this.isDisabled = false,
+    this.initialValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final strList = UOMHelper.toStringList();
+
+    return IgnorePointer(
+      ignoring: isDisabled,
+      child: StaticDropdown<String>(
+        key: key,
+        label: strList.first,
+        initialValue: initialValue,
+        items: strList,
+        getValue: (uom) => uom,
+        getDisplayText: (uom) => uom,
+        onChanged: (String? v) => onChanged(v),
+      ),
+    );
+  }
+}
+
+/// Purchase Requisition Item Category [ItemCategoryDropdown]
+class ItemCategoryDropdown extends StatelessWidget {
+  final bool isDisabled;
+  final String? initialValue;
+  final void Function(String? s) onChanged;
+
+  const ItemCategoryDropdown({
+    super.key,
+    required this.onChanged,
+    this.isDisabled = false,
+    this.initialValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final strList = ItemCategoryHelper.toStringList();
+
+    return IgnorePointer(
+      ignoring: isDisabled,
+      child: StaticDropdown<String>(
+        key: key,
+        label: strList.first,
+        initialValue: initialValue,
+        items: strList,
+        getValue: (priority) => priority,
+        getDisplayText: (priority) => priority,
+        onChanged: (String? v) => onChanged(v),
+      ),
+    );
+  }
+}
 
 /// Suppliers & RFQStatus Dropdown TextField [SuppliersAndRFQStatusDropdown]
 class SuppliersAndRFQStatusDropdown extends StatelessWidget {
@@ -322,51 +427,41 @@ class NotesTextField extends StatelessWidget {
   }
 }
 
-/// [TitleAndDepartments]
-class TitleAndDepartments extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
+/// [RequestedByAndDepartments]
+class RequestedByAndDepartments extends StatelessWidget {
+  final bool isDisabled;
   final String? initialDepartment;
+  final String? initialRequestedBy;
+  final void Function(String, String, String) onRequestedBy;
   final void Function(String, String, String) onDepartmentChange;
 
-  const TitleAndDepartments({
+  const RequestedByAndDepartments({
     super.key,
-    this.controller,
-    this.onChanged,
+    this.isDisabled = false,
     this.initialDepartment,
+    this.initialRequestedBy,
+    required this.onRequestedBy,
     required this.onDepartmentChange,
   });
 
   @override
   Widget build(BuildContext context) {
+    return IgnorePointer(ignoring: isDisabled, child: _buildBody());
+  }
+
+  AdaptiveLayout _buildBody() {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        CustomTextField(
-          controller: controller,
-          onChanged: onChanged,
-          inputDecoration: InputDecoration(
-            labelText: 'Title or subject...',
-            helperText: 'e.g., RFQ for Office Supplies',
-          ),
-          keyboardType: TextInputType.none,
-          validator: (s) => null,
+        SearchEmployees(
+          labelText: 'requested by',
+          initialValue: initialRequestedBy,
+          onChanged: onRequestedBy,
         ),
         SearchDepartments(
           initialValue: initialDepartment,
           onChanged: (id, code, name) => onDepartmentChange(id, code, name),
         ),
-        /*StaticDropdown<String>(
-          key: key,
-          items: departmentsList,
-          label: 'internal departments',
-          inLabel: false,
-          helperText: 'e.g., HR, IT, Accounting',
-          initialValue: initialDepartment,
-          getValue: (department) => department,
-          getDisplayText: (department) => department,
-          onChanged: (String? v) => onDepartmentChange(v),
-        ),*/
       ],
     );
   }

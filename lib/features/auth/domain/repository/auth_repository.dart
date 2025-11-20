@@ -10,6 +10,8 @@ import 'package:assign_erp/core/network/data_sources/remote/repository/firestore
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_repository.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/device_info_service.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
@@ -28,7 +30,6 @@ import 'package:assign_erp/features/system_admin/data/models/employee_model.dart
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 
 // User? authUser = FirebaseAuth.instance.currentUser;
 final _today = DateTime.now();
@@ -217,7 +218,7 @@ class AuthRepository extends FirestoreRepository {
       return Success(data: doc);
     } catch (e) {
       var e2 = "An error occurred while validating workspace sign-in.";
-      _handleAuthException(e2);
+      _handleAuthException(e, message: e2);
 
       return Failure(message: e2);
     }
@@ -247,6 +248,7 @@ class AuthRepository extends FirestoreRepository {
   }) async {
     try {
       final result = await _validateWorkspaceAccess(email);
+
       if (result is Failure) {
         return (workspace: null, message: (result as Failure).message);
       }
@@ -422,7 +424,7 @@ class AuthRepository extends FirestoreRepository {
       }
 
       final docRef = _genericCollection(
-        workspaceRole: getEnumName<WorkspaceRole>(cacheWorkspace.role),
+        workspaceRole: EnumHelper<WorkspaceRole>(cacheWorkspace.role).getValue,
         workspaceId: cacheWorkspace.id,
       ).doc(cacheEmployee.id);
 
@@ -672,7 +674,9 @@ class AuthRepository extends FirestoreRepository {
     required ({String id, String name}) role,
   }) async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+    final workspaceRole = EnumHelper<WorkspaceRole>(
+      assignWorkspaceRole,
+    ).getValue;
 
     // Add a new document to the collection and get its reference
     final DocumentReference docRef = _genericCollection(
@@ -683,7 +687,7 @@ class AuthRepository extends FirestoreRepository {
     // Extract the document ID
 
     final byWho = await getEmployee();
-    final empId = (await 'employee'.getShortStr());
+    final empId = (await DocType.employee.getShortStr());
 
     // Create an Employee instance with the document ID
     final employee = Employee(
@@ -716,7 +720,9 @@ class AuthRepository extends FirestoreRepository {
   /// @return `Future<({String id, String name})>`
   Future<({String id, String name})> _businessOwnerDefaultPermissions() async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+    final workspaceRole = EnumHelper<WorkspaceRole>(
+      assignWorkspaceRole,
+    ).getValue;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -740,7 +746,9 @@ class AuthRepository extends FirestoreRepository {
   /// @return `Future<String>`
   Future<String> _businessOwnerDefaultDepartment() async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+    final workspaceRole = EnumHelper<WorkspaceRole>(
+      assignWorkspaceRole,
+    ).getValue;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -770,7 +778,9 @@ class AuthRepository extends FirestoreRepository {
     required String company,
   }) async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = getEnumName<WorkspaceRole>(assignWorkspaceRole);
+    final workspaceRole = EnumHelper<WorkspaceRole>(
+      assignWorkspaceRole,
+    ).getValue;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -922,7 +932,7 @@ class AuthRepository extends FirestoreRepository {
     }
 
     final workId = cacheWorkspace.id;
-    final workRole = getEnumName<WorkspaceRole>(cacheWorkspace.role);
+    final workRole = EnumHelper<WorkspaceRole>(cacheWorkspace.role).getValue;
 
     final querySnap = await _genericCollection(
       workspaceId: workId,
@@ -990,11 +1000,11 @@ class AuthRepository extends FirestoreRepository {
     } on FirebaseAuthException catch (e) {
       // Use the utility method to get the error message
       final errorMessage = getFirebaseAuthErrorMessage(e);
-      debugPrint(errorMessage);
+      prettyPrint('signInUser', errorMessage);
       return null; // Return null if sign-in fails
     } catch (e) {
       // Handle any other errors
-      debugPrint('An unexpected error occurred: $e');
+      prettyPrint('An unexpected error occurred', '$e');
       return null; // Return null if an unexpected error occurs
     }
   }
@@ -1120,7 +1130,7 @@ class AuthRepository extends FirestoreRepository {
     if (cacheWork == null) return;
 
     final workId = cacheWork.id;
-    final workRole = getEnumName<WorkspaceRole>(cacheWork.role);
+    final workRole = EnumHelper<WorkspaceRole>(cacheWork.role).getValue;
 
     await _logAuthSession(
       cacheEmp?.employeeId ?? cacheWork.id,

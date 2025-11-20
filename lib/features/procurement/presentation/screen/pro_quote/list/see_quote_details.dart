@@ -1,18 +1,22 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/history_view.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/rfq_printer.dart';
+import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_quote/widget/rfq_printer.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -22,16 +26,16 @@ extension RFQDetails on BuildContext {
   Future openRFQDetails({
     required Supplier supplier,
     required RequestForQuote quote,
+    required ProcurementBloc bloc,
   }) async => await openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
     child: FormBottomSheet(
       isDetails: true,
-      isExpanded: true,
-      title: quote.title.toTitle,
+      title: 'Request for Quotation (RFQ)',
       subtitle: quote.rfqNumber.toUpperAll,
       body: _RFQInfoPage(quote: quote, supplier: supplier.name),
-      onPrint: () async => await _printRFQ(this, quote, supplier),
+      onPrint: () async => await _printRFQ(supplier, bloc, quote),
     ),
   );
 
@@ -42,23 +46,42 @@ extension RFQDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: FormBottomSheet(
-      isExpanded: true,
+      isDetails: true,
       title: 'Compare Suppliers Quotes',
       subtitle: 'AI-powered cost-value analysis',
       body: _CompareTwoRFQ(quotes: quotes, suppliers: suppliers),
     ),
   );
 
-  _printRFQ(BuildContext cxt, quote, supplier) async {
-    await cxt.progressBarDialog(
-      request: Future.delayed(
-        kRProgressDelay,
-        () async =>
-            await RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
-      ),
-      onSuccess: (_) => cxt.showAlertOverlay('RFQ printout successful'),
+  _printRFQ(
+    Supplier supplier,
+    ProcurementBloc bloc,
+    RequestForQuote quote,
+  ) async {
+    await progressBarDialog(
+      request: Future.delayed(kRProgressDelay, () async {
+        await RFQPrinter(quote: quote, supplier: supplier).printRFQ();
+        bloc.add(_updateHistory(quote));
+      }),
+      onSuccess: (_) => showAlertOverlay('RFQ printout successful'),
       onError: (e) =>
-          cxt.showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
+          showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
+    );
+  }
+
+  /// Audit Log Entry (Tracking actions)
+  AuditProcurement<RequestForQuote> _updateHistory(quote) {
+    return AuditProcurement<RequestForQuote>(
+      documentId: quote.id,
+      log: {
+        'history': [
+          ...quote.history.map((e) => e.toMap()), // keep old logs
+          AuditLog(
+            action: AuditAction.printed,
+            performedBy: employee!.employeeId,
+          ).toMap(), // new log
+        ],
+      },
     );
   }
 }
@@ -91,36 +114,89 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Reduce the total width by the drag handle width
-        final totalWidth =
-            constraints.maxWidth - (isTwoQuotes ? _dragHandleWidth : 0);
-
-        final firstPanelWidth = totalWidth * _firstPanelRatio;
-        final secondPanelWidth = totalWidth * (1 - _firstPanelRatio);
-
-        return Row(
-          children: [
-            Container(
-              padding: isHover ? EdgeInsets.only(right: 4) : null,
-              width: firstPanelWidth,
-              child: _buildQuote(context, 0),
-            ),
-            Container(
-              width: _dragHandleWidth,
-              height: context.screenHeight * 0.78,
-              color: isHover
-                  ? context.outlineColor.toAlpha(0.3)
-                  : kTransparentColor,
-              child: _buildDragHandle(),
-            ),
-            Container(
-              padding: isHover ? EdgeInsets.only(left: 4) : null,
-              width: secondPanelWidth,
-              child: _buildQuote(context, 1),
-            ),
-          ],
+        final isSmall = _isSmallLayout(context);
+        final totalWidth = _calculateTotalWidth(constraints, isTwoQuotes);
+        final (firstPanelWidth, secondPanelWidth) = _calculatePanelWidths(
+          isSmall,
+          totalWidth,
+          constraints,
         );
+
+        final children = _buildPanels(
+          context,
+          isSmall,
+          firstPanelWidth,
+          secondPanelWidth,
+        );
+
+        return isSmall ? Column(children: children) : Row(children: children);
       },
+    );
+  }
+
+  bool _isSmallLayout(BuildContext context) {
+    return context.isMobile || (context.isTablet && context.isPortraitMode);
+  }
+
+  double _calculateTotalWidth(BoxConstraints constraints, bool isTwoQuotes) {
+    return constraints.maxWidth - (isTwoQuotes ? _dragHandleWidth : 0);
+  }
+
+  (double, double) _calculatePanelWidths(
+    bool isSmall,
+    double totalWidth,
+    BoxConstraints constraints,
+  ) {
+    if (isSmall) {
+      return (constraints.maxWidth, constraints.maxWidth);
+    }
+    return (totalWidth * _firstPanelRatio, totalWidth * (1 - _firstPanelRatio));
+  }
+
+  List<Widget> _buildPanels(
+    BuildContext context,
+    bool isSmall,
+    double firstPanelWidth,
+    double secondPanelWidth,
+  ) {
+    return [
+      _buildPanel(
+        context: context,
+        width: firstPanelWidth,
+        index: 0,
+        padding: isHover ? const EdgeInsets.only(right: 4) : null,
+      ),
+      isSmall
+          ? SizedBox(height: _dragHandleWidth)
+          : _buildDragHandleContainer(context),
+      _buildPanel(
+        context: context,
+        width: secondPanelWidth,
+        index: 1,
+        padding: isHover ? const EdgeInsets.only(left: 4) : null,
+      ),
+    ];
+  }
+
+  Widget _buildPanel({
+    required BuildContext context,
+    required double width,
+    required int index,
+    EdgeInsets? padding,
+  }) {
+    return Container(
+      padding: padding,
+      width: width,
+      child: _buildQuote(context, index),
+    );
+  }
+
+  Widget _buildDragHandleContainer(BuildContext context) {
+    return Container(
+      width: _dragHandleWidth,
+      height: context.screenHeight * 0.78,
+      color: isHover ? context.outlineColor.toAlpha(0.2) : kTransparentColor,
+      child: _buildDragHandle(),
     );
   }
 
@@ -141,7 +217,7 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
         child: Icon(
           Icons.drag_indicator,
           size: _dragHandleWidth,
-          color: isHover ? kBgLightColor : kGrayBlueColor,
+          color: context.onSurfaceColor,
           semanticLabel: 'Resize',
         ),
       ),
@@ -225,6 +301,7 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
   }
 }
 
+/// Helper to build info row
 Widget _buildInfoRow(
   BuildContext context, {
   Color? textColor,
@@ -294,10 +371,18 @@ class _RFQInfoPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context),
+        AdaptiveLayout(
+          children: [
+            _buildHeader(context),
 
-        /// Table Headers
-        Align(
+            Align(
+              alignment: Alignment.topRight,
+              child: _buildHistoryButton(context),
+            ),
+          ],
+        ),
+
+        /* Align(
           alignment: Alignment.center,
           child: Text(
             'Line Items (${_items.length})',
@@ -308,18 +393,34 @@ class _RFQInfoPage extends StatelessWidget {
         ),
         HorizontalDivider(),
 
-        /// Table Headers
+        Table Headers
         _buildItemTableHeader(context),
 
-        /// Item Rows: generate index too
-        /// ...items.map((item, index) => _buildItemRow(item, index)),
         ..._items.asMap().entries.map(
-          (item) => _buildItemRow(item.value, item.key),
+              (item) => _buildItemRow(item.value, item.key),
+        ),
+        HorizontalDivider(),
+         */
+        InlineHistoryTable<RFQLineItem>(
+          title: 'Line Items (${_items.length})',
+          // headingRowColor: context.primaryContainer,
+          columnLabels: RFQLineItem.dataTableHeader,
+          items: _items, // list of Quotes
+          rowBuilder: (entry) {
+            return DataRow(
+              cells: entry.itemAsList
+                  .map((cell) => DataCell(Text(cell.toSentence)))
+                  .toList(),
+            );
+          },
+          sortAccessors: [
+            (entry) => entry.itemName,
+            (entry) => entry.quantity,
+            (entry) => entry.unitPrice,
+          ],
         ),
 
-        HorizontalDivider(),
         const SizedBox(height: 12),
-
         AdaptiveLayout(
           children: [
             _LeftSummary(
@@ -340,24 +441,14 @@ class _RFQInfoPage extends StatelessWidget {
     );
   }
 
-  Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
-    child: Text(
-      text,
-      style: TextStyle(
-        overflow: TextOverflow.ellipsis,
-        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-      ),
-    ),
-  );
-
   Widget _buildHeader(BuildContext context) {
     // Build the list of header entries first
     final headerItems = <(String, String)>[
-      ('RFQ #', _quote?.rfqNumber ?? 'N/A'),
+      ('RFQ#', _quote?.rfqNumber ?? 'N/A'),
       ('Store ID', _quote?.storeNumber.toUpperAll ?? 'N/A'),
       ('Status', _quote?.status.toSentence ?? 'N/A'),
-      if (_quote?.department.isNotEmpty ?? false) ...{
-        ('Department', _quote!.department.toTitle),
+      if (_quote?.departmentCode.isNotEmpty ?? false) ...{
+        ('Department', _quote!.departmentCode.toTitle),
       },
       if (_quote?.taxMode.getValue.isNotEmpty ?? false) ...{
         ('Tax Mode', (_taxMode?.getValue.separateWord).toTitle),
@@ -371,7 +462,7 @@ class _RFQInfoPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Request for Quotation (RFQ)',
+          _quote?.title.toTitle ?? 'Request for Quotation',
           style: context.textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
@@ -387,7 +478,16 @@ class _RFQInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildItemTableHeader(BuildContext context) {
+  /* Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
+    child: Text(
+      text,
+      style: TextStyle(
+        overflow: TextOverflow.ellipsis,
+        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+      ),
+    ),
+  );
+   Widget _buildItemTableHeader(BuildContext context) {
     final headerItems = [
       '#',
       'Item',
@@ -434,6 +534,36 @@ class _RFQInfoPage extends StatelessWidget {
             .map((item) => _buildItem(item, isBold: false))
             .toList(),
       ),
+    );
+  }*/
+
+  Widget _buildHistoryButton(BuildContext context) {
+    return context.outlinedIconBtn(
+      Icon(Icons.explore_outlined, color: kPrimaryAccentColor),
+      borderColor: kPrimaryAccentColor,
+      onPressed: () async => await _onOpenHistory(context),
+      tooltip: 'View RFQ History',
+      label: Text(
+        'RFQ History',
+        style: const TextStyle(color: kPrimaryAccentColor),
+      ),
+    );
+  }
+
+  Future<void> _onOpenHistory(BuildContext cxt) async {
+    if (_quote == null) return;
+
+    await cxt.showInlineHistorySheet<AuditLog>(
+      title: 'Workflow History',
+      columnLabels: AuditLog.dataTableHeader,
+      items: _quote.history, // list of RFQ history
+      rowBuilder: (entry) {
+        return DataRow(
+          cells: entry.itemAsList
+              .map((cell) => DataCell(Text(cell.toSentence)))
+              .toList(),
+        );
+      },
     );
   }
 }
@@ -654,7 +784,7 @@ class _Footer extends StatelessWidget {
             style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
           ),
           pw.SizedBox(height: 10),
-          pw.Text('RFQ #: RFQ-2025-0098'),
+          pw.Text('RFQ#: RFQ-2025-0098'),
           pw.Text('Date: 2025-08-30'),
           pw.Text('Vendor: ABC Supplies Ltd.'),
           pw.SizedBox(height: 10),

@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -65,7 +66,7 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
       setState(() => _isEnabledCustomerId = !_isEnabledCustomerId);
 
   void _generateCustomerID() async {
-    await 'customer'.getShortUID(
+    await DocType.customer.getShortUID(
       onChanged: (s) => setState(() => _customerIdController.text = s),
     );
   }
