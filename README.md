@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "+ Purchase Requisition, PR to RFQ, AuditLog, Printing Config"
+git commit -m "SizeConfig"
 git branch -M main
 git push -u origin main
 

@@ -250,7 +250,7 @@ class DataRepository extends FirestoreRepository {
     await _cacheBox.flush(); // Flush cache to disk
     await deleteById(id); // Delete from remote Firestore-DB
 
-    prettyPrint('steve-cache-keys', _cacheBox.get(id)?.data.toString());
+    // prettyPrint('steve-cache-keys', _cacheBox.get(id)?.data.toString());
 
     _emitDataToStream(reEmit: true); // Update the stream with the latest data
   }

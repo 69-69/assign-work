@@ -17,7 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddSuppliers on BuildContext {
   Future openAddSuppliers({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Add Suppliers', body: _AddSuppliersForm()),
+    child: FormBottomSheet(title: 'Add Supplier', body: _AddSuppliersForm()),
   );
 }
 

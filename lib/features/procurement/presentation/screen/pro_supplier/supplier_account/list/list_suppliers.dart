@@ -31,7 +31,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
           ProcurementsLoaded<Supplier>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Add Suppliers',
+                    'Add Supplier',
                     onPressed: () => context.openAddSuppliers(),
                   )
                 : _buildBody(context, results),
@@ -71,7 +71,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
               context.read<SupplierBloc>().add(RefreshProcurements<Supplier>()),
         ),
         context.elevatedButton(
-          'Add Suppliers',
+          'Add Supplier',
           onPressed: () => context.openAddSuppliers(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,

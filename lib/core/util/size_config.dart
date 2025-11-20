@@ -49,7 +49,7 @@ extension SizeConfig on BuildContext {
   /// - On tablet (landscape) & desktop: returns fraction of width scaled by `scaleFactor`
   double dynamicWidth(double fraction, {double scaleFactor = 1}) {
     if (isMobile || (isTablet && isPortraitMode)) {
-      return screenWidth * fraction;
+      return screenWidth;
     }
     // tablet landscape & desktop
     return screenWidth * fraction * scaleFactor;
@@ -58,7 +58,7 @@ extension SizeConfig on BuildContext {
   /// Responsive height
   double dynamicHeight(double fraction, {double scaleFactor = 1}) {
     if (isMobile || (isTablet && isPortraitMode)) {
-      return screenHeight * fraction;
+      return screenHeight;
     }
     return screenHeight * fraction * scaleFactor;
   }
