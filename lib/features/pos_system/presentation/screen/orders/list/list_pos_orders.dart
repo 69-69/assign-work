@@ -62,7 +62,7 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
 
     return DynamicDataTable(
       omitAtIndex: 0,
-      anyWidget: _buildAnyWidget(orders),
+      toolbar: _buildToolbar(orders),
       headers: POSOrder.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
@@ -92,7 +92,7 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
     );
   }
 
-  _buildAnyWidget(List<POSOrder> orders) {
+  _buildToolbar(List<POSOrder> orders) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

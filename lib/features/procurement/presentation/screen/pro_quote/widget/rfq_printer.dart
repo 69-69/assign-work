@@ -54,12 +54,11 @@ class RFQPrinter {
 
     SupplierContactPerson? contactPerson = supplier.contactPersons
         .firstWhereOrNull((i) => i.id == quote.supplierRepId);
-    // prettyPrint('supplier.contactPersons', '$contactPerson');
 
     final rfq = _RFQPdfBuilder(
-      rfqNumber: quote.rfqNumber,
       items: lineItems,
       supplier: supplier,
+      rfqNumber: quote.rfqNumber,
       contactPerson: contactPerson,
       validityDate: quote.getDeadlineDate,
       deliveryDate: quote.getDeliveryDate,
@@ -83,18 +82,31 @@ class _RFQPdfBuilder {
     this.validityDate,
   });
 
-  final List<PrintItem> items;
   final String rfqNumber;
   final Supplier supplier;
-  final SupplierContactPerson? contactPerson;
   final String? deliveryDate;
   final String? validityDate;
+  final List<PrintItem> items;
   final String? altDeliveryAddress;
+  final SupplierContactPerson? contactPerson;
 
   String get _rfqTitle => 'Request For Quotation';
 
   late final PrintPDFConfig _pdfColors;
+
   late final IssuerCompany _company;
+
+  /// Body Font Size = 11 [_bodyFontSize]
+  late double _bodyFontSize;
+
+  /// Header Font Size = 13 [_headerFontSize]
+  late final double _headerFontSize;
+
+  /// Sub-header Font Size = 12 [_subHeaderFontSize]
+  late final double _subHeaderFontSize;
+
+  /// Table Font Size = 10 [_tableFontSize]
+  late final double _tableFontSize;
 
   /// Generate PDF-Doc [build]
   Future<Uint8List> build(PdfPageFormat pageFormat) async {
@@ -102,6 +114,10 @@ class _RFQPdfBuilder {
     final doc = pw.Document();
     _pdfColors = await PrintPDFConfig.create();
     _company = _pdfColors.company;
+    _bodyFontSize = _pdfColors.bodyFontSize;
+    _tableFontSize = _pdfColors.tableFontSize;
+    _headerFontSize = _pdfColors.bodyFontSize;
+    _subHeaderFontSize = _pdfColors.subHeaderFontSize;
 
     // Request For Quotation: Add page to the PDF
     await _addRfqPage(doc, pageFormat, _pdfColors.footerColor);
@@ -137,26 +153,27 @@ class _RFQPdfBuilder {
         footer: _buildPdfFooter,
         build: (context) => [
           pw.Divider(color: fColor, thickness: 0.3, height: 10),
-          pw.SizedBox(height: 20),
+          pw.SizedBox(height: 10),
           _buildItemTable(context),
           pw.Divider(color: fColor, thickness: 0.3, height: 20),
-          _invoiceToAndApprovedBy(context),
+          _invoiceToAndApprovedBy(),
           pw.SizedBox(height: 20),
-          _computerGenerated(),
+          // _computerGenerated(),
         ],
       ),
     );
   }
 
-  /// Computer Generate Notice [_computerGenerated]
+  /*/// Computer Generate Notice
   pw.Center _computerGenerated() => pw.Center(
     child: pw.Text(
-      'Electronic version - $_rfqTitle',
+      'Electronic Version - $_rfqTitle',
       textAlign: pw.TextAlign.center,
+      style: pw.TextStyle(fontSize: 11),
     ),
-  );
+  );*/
 
-  /// PDF-Doc Header [_buildPdfHeader]
+  /// PDF-Doc Header
   pw.Widget _buildPdfHeader(pw.Context context) {
     return pw.Expanded(
       child: pw.Column(
@@ -189,78 +206,60 @@ class _RFQPdfBuilder {
     );
   }
 
-  /// Company Logo [_buildCompanyLogo]
+  /// Company Logo
   _buildCompanyLogo() {
     return (_pdfColors.logo != null)
         ? pw.Container(
             alignment: pw.Alignment.topLeft,
             height: 40,
             padding: pw.EdgeInsets.zero,
+            margin: pw.EdgeInsets.zero,
             child: pw.Image(pw.MemoryImage(_pdfColors.logo!)),
             // _logo != null ? pw.SvgImage(svg: _logo!) : pw.PdfLogo(),
           )
         : pw.SizedBox.shrink();
   }
 
-  /// Supplier's info: name, email, phone, address [_supplierInfo]
+  /// Supplier's info: name, email, phone, address
   pw.Container _supplierInfo() {
+    final supList = [
+      'Supplier:',
+      supplier.name.toTitle,
+      supplier.address.toSentence,
+    ];
+
+    final supListSub = [
+      ('Tel', supplier.phone),
+      ('Email', supplier.email.toLowerAll),
+    ];
+
+    final contactList = [
+      'Contact Person: ',
+      '${contactPerson?.name ?? ''} - ${contactPerson?.position ?? ''}'.toTitle,
+    ];
+
+    final contactListSub = [
+      ('Phone', contactPerson?.phone ?? 'N/A'),
+      ('Email', contactPerson?.email.toLowerAll ?? 'N/A'),
+      ('Department', contactPerson?.department.toTitle ?? 'N/A'),
+    ];
+
     return pw.Container(
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
-        style: const pw.TextStyle(fontSize: 12),
+        style: pw.TextStyle(fontSize: _bodyFontSize),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            _buildText(
-              'Supplier:',
-              style: pw.TextStyle(
-                color: _pdfColors.headerColor,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            _buildText(
-              supplier.name.toTitle,
-              textAlign: pw.TextAlign.start,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13),
-            ),
-            pw.SizedBox(height: 2),
-            _buildText(
-              supplier.address.toSentence,
-              textAlign: pw.TextAlign.start,
-            ),
-            pw.SizedBox(height: 2),
-            _buildText('Tel: ${supplier.phone}', textAlign: pw.TextAlign.start),
-            pw.SizedBox(height: 2),
-            _buildText(
-              'Email:  ${supplier.email.toLowerAll}',
-              textAlign: pw.TextAlign.start,
-            ),
+            /// Supplier Info
+            ..._buildSection(supList),
+            ..._buildSubSection(supListSub),
             pw.SizedBox(height: 10),
-            pw.RichText(
-              softWrap: true,
-              textAlign: pw.TextAlign.start,
-              text: pw.TextSpan(
-                text: 'Contact Person: ',
-                style: pw.TextStyle(
-                  color: _pdfColors.footerColor,
-                  fontWeight: pw.FontWeight.bold,
-                  fontSize: 12,
-                ),
-                children: [
-                  _buildTextSpan(
-                    '\n${contactPerson?.name.toTitle ?? 'N/A'} - ${contactPerson?.position.toTitle ?? ''}\n',
-                  ),
-                  _buildTextSpan('Phone: ${contactPerson?.phone ?? 'N/A'}\n'),
-                  _buildTextSpan(
-                    'Email: ${contactPerson?.email.toLowerAll ?? 'N/A'}\n',
-                  ),
-                  _buildTextSpan(
-                    'Department: ${contactPerson?.department.toTitle ?? 'N/A'}\n',
-                  ),
-                ],
-              ),
-            ),
+
+            /// Supplier's Contact Person
+            ..._buildSection(contactList),
+            ..._buildSubSection(contactListSub),
           ],
         ),
       ),
@@ -269,36 +268,57 @@ class _RFQPdfBuilder {
 
   /// Ship-To info: name, email, phone, address [_buildShipToInfo]
   pw.Container _buildShipToInfo() {
+    final shipList = [
+      'Ship To:',
+      _company.name,
+      (altDeliveryAddress ?? _company.address).toSentence,
+    ];
+    final shipListSub = [
+      ('Tel', _company.phone),
+      ('Fax', _company.fax),
+      ('Email', _company.email),
+    ];
+
     return pw.Container(
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
-        style: const pw.TextStyle(fontSize: 12),
+        style: pw.TextStyle(
+          fontSize: _bodyFontSize,
+          fontWeight: pw.FontWeight.bold,
+        ),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            _buildText(
-              'Ship To:',
-              textAlign: pw.TextAlign.start,
-              style: pw.TextStyle(
-                color: _pdfColors.headerColor,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            _buildText(
-              _company.name,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13),
-            ),
-            pw.SizedBox(height: 2),
-            _buildText((altDeliveryAddress ?? _company.address).toSentence),
-            pw.SizedBox(height: 2),
-            _buildText('Tel: ${_company.phone}'),
-            pw.SizedBox(height: 2),
-            _buildText('Fax:  ${_company.fax}'),
-            pw.SizedBox(height: 2),
-            _buildText('Email:  ${_company.email}'),
+            ..._buildSection(shipList),
+            ..._buildSubSection(shipListSub),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper function to create the styled text (e.g. Supplier Name)
+  Iterable<pw.Text> _buildSection(List<dynamic> list) {
+    return list.map(
+      (i) => _buildText(
+        i,
+        textAlign: pw.TextAlign.start,
+        style: pw.TextStyle(
+          fontWeight: list.first == i ? pw.FontWeight.bold : null,
+          color: list.first == i ? _pdfColors.headerColor : null,
+        ),
+      ),
+    );
+  }
+
+  // Helper function to create rich text for sub items (e.g. Tel: 23242, Email: em@you.com)
+  Iterable<pw.RichText> _buildSubSection(List<dynamic> list) {
+    return list.map(
+      (i) => _buildRichText(
+        '${i.$1}: ',
+        i.$2,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
       ),
     );
   }
@@ -311,16 +331,20 @@ class _RFQPdfBuilder {
     return pw.Text(label, softWrap: true, textAlign: textAlign, style: style);
   }
 
-  pw.TextSpan _buildTextSpan(String label, {pw.TextStyle? style}) {
-    return pw.TextSpan(
-      text: label,
-      style:
-          style ??
-          pw.TextStyle(
-            fontWeight: pw.FontWeight.normal,
-            color: _pdfColors.blackColor,
-            // fontSize: 10,
+  pw.RichText _buildRichText(String title, String desc, {pw.TextStyle? style}) {
+    return pw.RichText(
+      softWrap: true,
+      textAlign: pw.TextAlign.start,
+      text: pw.TextSpan(
+        text: title,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+        children: [
+          pw.TextSpan(
+            text: desc,
+            style: style ?? pw.TextStyle(fontWeight: pw.FontWeight.normal),
           ),
+        ],
+      ),
     );
   }
 
@@ -335,13 +359,13 @@ class _RFQPdfBuilder {
           width: 100,
           child: pw.BarcodeWidget(
             barcode: pw.Barcode.pdf417(),
-            data: 'Request For Quote #: $rfqNumber',
+            data: '$_rfqTitle #: $rfqNumber',
             drawText: false,
           ),
         ),
         pw.Text(
-          'Page ${context.pageNumber}/${context.pagesCount}',
-          style: const pw.TextStyle(fontSize: 12, color: PdfColors.white),
+          'Electronic Version - Page ${context.pageNumber}/${context.pagesCount}',
+          style: pw.TextStyle(fontSize: _tableFontSize, color: PdfColors.white),
         ),
       ],
     );
@@ -368,104 +392,76 @@ class _RFQPdfBuilder {
 
   /// date & Request For Quotation Number [_buildDateAndReference]
   _buildDateAndReference() {
+    final topList = [
+      ('RFQ#', rfqNumber.toUpperAll),
+      ('Date', PrintItem.formatDate(DateTime.now())),
+      ('Delivery', deliveryDate),
+    ];
+
     return pw.Container(
       height: 70,
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
         textAlign: pw.TextAlign.end,
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+          fontSize: _bodyFontSize,
+        ),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
               _rfqTitle.toUpperAll,
-              style: pw.TextStyle(color: _pdfColors.headerColor, fontSize: 14),
-            ),
-            pw.SizedBox(height: 3.0),
-            pw.Text(rfqNumber),
-            pw.SizedBox(height: 3.0),
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'Date: ',
-                children: [
-                  pw.TextSpan(
-                    text: PrintItem.formatDate(DateTime.now()),
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
+              style: pw.TextStyle(
+                color: _pdfColors.headerColor,
+                fontSize: _headerFontSize,
               ),
             ),
-            pw.SizedBox(height: 4.0),
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                _buildText(
-                  'Delivery: ',
-                  style: pw.TextStyle(color: _pdfColors.headerColor),
-                ),
-                _buildText(
-                  deliveryDate ?? '',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                ),
-              ],
-            ),
+            ..._buildSubSection(topList),
           ],
         ),
       ),
     );
   }
 
-  /// Customer Name & Address [_buildCompanyInfo]
+  /// Customer Name & Address
   _buildCompanyInfo() {
+    final companyList = [
+      ('Tel', _company.phone),
+      ('Fax', _company.fax),
+      ('Email', _company.email),
+    ];
+
     return pw.Expanded(
       child: pw.Container(
         height: 70,
         alignment: pw.Alignment.topLeft,
         child: pw.DefaultTextStyle(
           softWrap: false,
-          style: const pw.TextStyle(fontSize: 12),
+          textAlign: pw.TextAlign.start,
+          style: pw.TextStyle(
+            fontWeight: pw.FontWeight.bold,
+            fontSize: _bodyFontSize,
+          ),
           child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               if (_pdfColors.logo != null) ...{_buildCompanyLogo()},
+              pw.SizedBox(width: 10),
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    _company.name,
-                    softWrap: true,
+                    _company.name.toTitle,
                     textAlign: pw.TextAlign.start,
                     style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 13,
+                      color: _pdfColors.headerColor,
+                      fontSize: _headerFontSize,
                     ),
                   ),
-                  pw.SizedBox(height: 3),
-                  pw.Text(
-                    _company.address,
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Tel: ${_company.phone}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Fax:  ${_company.fax}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Email:  ${_company.email}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
+                  ..._buildSection([_company.address]),
+                  ..._buildSubSection(companyList),
                 ],
               ),
             ],
@@ -479,8 +475,8 @@ class _RFQPdfBuilder {
   pw.Widget _buildItemTable(pw.Context context) {
     const tableHeaders = [
       '#',
-      'item description',
-      'quantity',
+      'item',
+      'Qty',
       'unit price',
       'discount',
       'tax amount',
@@ -488,10 +484,6 @@ class _RFQPdfBuilder {
       'line total',
     ];
 
-    return _buildTableLayout(tableHeaders);
-  }
-
-  pw.Table _buildTableLayout(List<String> tableHeaders) {
     return pw.TableHelper.fromTextArray(
       cellPadding: const pw.EdgeInsets.all(4),
       border: pw.TableBorder.all(color: _pdfColors.footerColor, width: 0.2),
@@ -513,12 +505,12 @@ class _RFQPdfBuilder {
       },
       headerStyle: pw.TextStyle(
         color: _pdfColors.baseTextColor,
-        fontSize: 10,
+        fontSize: _tableFontSize,
         fontWeight: pw.FontWeight.bold,
       ),
       cellStyle: pw.TextStyle(
         color: _pdfColors.blackColor,
-        fontSize: 10,
+        fontSize: _tableFontSize,
         fontWeight: pw.FontWeight.normal,
       ),
       rowDecoration: pw.BoxDecoration(
@@ -534,95 +526,73 @@ class _RFQPdfBuilder {
         items.length,
         (row) => List<String>.generate(
           tableHeaders.length,
+          // (col) => items[row].itemAsList.elementAt(col),
           (col) => items[row].getIndex(tableHeaders[col], row),
         ),
       ),
     );
   }
 
-  /// Send Invoice & And Approved-By Signature to [_invoiceToAndApprovedBy]
-  pw.Widget _invoiceToAndApprovedBy(pw.Context context) {
+  /// Send Invoice & Approved-By Signature
+  pw.Widget _invoiceToAndApprovedBy() {
     var hColor = _pdfColors.headerColor;
+    var fColor = _pdfColors.footerColor;
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.end,
       children: [
-        pw.Expanded(
-          child: pw.Container(
-            decoration: pw.BoxDecoration(
-              border: pw.Border.all(color: _pdfColors.footerColor),
-            ),
-            padding: const pw.EdgeInsets.all(10),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                _buildText(
-                  'Buyer Contact:',
-                  style: pw.TextStyle(
-                    color: hColor,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.SizedBox(height: 2),
-                _buildText(
-                  '${contactPerson?.name.toTitle ?? 'N/A'} - ${contactPerson?.position.toTitle ?? ''}',
-                  textAlign: pw.TextAlign.start,
-                ),
-                pw.SizedBox(height: 2),
-                pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  mainAxisAlignment: pw.MainAxisAlignment.start,
-                  children: [
-                    _buildText(
-                      'Deadline: ',
-                      textAlign: pw.TextAlign.start,
-                      style: pw.TextStyle(
-                        color: hColor,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                    _buildText(
-                      validityDate ?? '',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        pw.Expanded(child: _buildSignatureBlock()),
+        _buildInvoiceTo(hColor),
+        pw.Expanded(child: _buildSignatureBlock(fColor)),
       ],
     );
   }
 
-  /// Append Signature [_buildSignatureBlock]
-  pw.Container _buildSignatureBlock() {
-    var fColor = _pdfColors.footerColor;
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(2)),
-        border: pw.Border.all(color: fColor, width: 0.2),
-      ),
-      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-      alignment: pw.Alignment.bottomRight,
+  pw.Expanded _buildInvoiceTo(PdfColor hColor) {
+    return pw.Expanded(
       child: pw.DefaultTextStyle(
         softWrap: false,
-        style: pw.TextStyle(color: fColor, fontSize: 12),
+        style: pw.TextStyle(fontSize: _bodyFontSize),
         child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.end,
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text(kSignatureLine),
-            pw.SizedBox(height: 4),
             _buildText(
-              'Authorized Signatory',
+              'Buyer Contact:',
               style: pw.TextStyle(
-                color: fColor,
+                color: hColor,
+                fontSize: _bodyFontSize,
                 fontWeight: pw.FontWeight.bold,
               ),
             ),
+            pw.SizedBox(height: 2),
+            _buildText(
+              '${contactPerson?.name.toTitle ?? 'N/A'} - ${contactPerson?.position.toTitle ?? ''}',
+            ),
+            ..._buildSubSection([('Deadline: ', validityDate ?? '')]),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Append Signature
+  pw.DefaultTextStyle _buildSignatureBlock(PdfColor fColor) {
+    return pw.DefaultTextStyle(
+      softWrap: false,
+      style: pw.TextStyle(color: fColor, fontSize: _bodyFontSize),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.end,
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(kSignatureLine),
+          pw.SizedBox(height: 4),
+          _buildText(
+            'Authorized Signatory',
+            style: pw.TextStyle(
+              color: fColor,
+              fontSize: _bodyFontSize,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }

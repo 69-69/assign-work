@@ -49,8 +49,8 @@ class _ListSuppliersState extends State<ListSuppliers> {
       omitAtIndex: 0,
       maskAtIndex: 2,
       headers: Supplier.dataHeader,
-      anyWidgetAlignment: WrapAlignment.spaceBetween,
-      anyWidget: _buildAnyWidget(suppliers),
+      toolbarAlignment: WrapAlignment.spaceBetween,
+      toolbar: _buildToolbar(suppliers),
       rows: suppliers.map((d) => d.toListL()).toList(),
       onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.first),
       onEditTap: (row) async => _onEditTap(suppliers, row.first),
@@ -58,7 +58,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
     );
   }
 
-  _buildAnyWidget(List<Supplier> sales) {
+  _buildToolbar(List<Supplier> sales) {
     return Wrap(
       spacing: 10.0,
       alignment: WrapAlignment.spaceBetween,

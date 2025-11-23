@@ -43,9 +43,12 @@ class DynamicTextFields extends StatefulWidget {
 
 class _DynamicTextFieldsState extends State<DynamicTextFields> {
   final List<FieldGroup> _fieldGroups = [];
+
   String? get _fullWidthKey => widget.fullWidthKey;
 
   String? get _title => widget.title;
+
+  List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
 
   @override
   void initState() {
@@ -59,7 +62,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
       if (initialData.isNotNullNorEmpty) {
         for (final map in initialData!) {
-          _fieldGroups.add(FieldGroup(widget.fieldsConfig, initialValues: map));
+          _fieldGroups.add(FieldGroup(_fieldsConfig, initialValues: map));
         }
       } else {
         _addTextField(); // Default blank field group
@@ -83,7 +86,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       final group = entry.value;
 
       // Create list of TextFields for this group
-      final fields = widget.fieldsConfig
+      final fields = _fieldsConfig
           .map(
             (config) => config.hideField
                 ? const SizedBox.shrink()
@@ -103,19 +106,32 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   ) {
     final type = switch (config.widgetType) {
       FieldWidgetType.textField => _buildTextField(group, config, index),
-      FieldWidgetType.custom => _buildCustomWidget(config, group),
+      FieldWidgetType.custom => _buildCustomWidget(config, group, index),
     };
     return type;
   }
 
-  Widget _buildCustomWidget(FieldGroupConfig config, FieldGroup group) {
+  Widget _buildCustomWidget(
+    FieldGroupConfig config,
+    FieldGroup group,
+    int index,
+  ) {
     if (config.customBuilder != null) {
-      return config.customBuilder!(
-        initialData: group.otherValues[config.key],
-        onChanged: (value) {
-          group.otherValues[config.key] = value;
-          _notifyParent();
-        },
+      return Row(
+        children: [
+          Expanded(
+            child: config.customBuilder!(
+              initialData: group.otherValues[config.key],
+              onChanged: (value) {
+                group.otherValues[config.key] = value;
+                _notifyParent();
+              },
+            ),
+          ),
+          ?widget.showButton
+              ? _prefixCount(config.label.toTitle, index, alpha: 0.4)
+              : null,
+        ],
       );
     }
     return const SizedBox.shrink();
@@ -138,7 +154,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         InputDecoration(
           helperText: helperText,
           labelText: labelText,
-          suffixIcon: widget.showButton ? _prefixIcon(labelText, index) : null,
+          suffixIcon: widget.showButton ? _prefixCount(labelText, index) : null,
           suffixIconConstraints: const BoxConstraints(
             minHeight: 26,
             minWidth: 26,
@@ -161,46 +177,56 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     );
   }
 
-  Card _prefixIcon(String labelText, int index) {
+  Card _prefixCount(String labelText, int index, {double alpha = 0.2}) {
     return Card(
-      color: kGrayColor.toAlpha(0.2),
+      color: kGrayColor.toAlpha(alpha),
       elevation: 0,
       child: Tooltip(
         message: '$index: $labelText',
         child: Text(
           '$index',
           textAlign: TextAlign.center,
-          style: TextStyle(color: kTextColor, fontSize: 12),
+          style: TextStyle(color: kTextColor, fontSize: 11),
         ),
       ),
     );
   }
 
-  // Group fields in rows of 2
+  // Group fields in rows of 2.
+  // Also expand the last field if odd,
+  // and expand first if fullWidthKey is provided.
   List<Widget> _groupByTwo(List<Widget> fields) {
     final rows = <Widget>[];
     final total = fields.length;
     int i = 0;
 
     while (i < total) {
-      final bool isFirst = i == 0;
+      /*final bool isFirst = i == 0;
       final bool isLast = i == total - 1;
 
-      final bool isFullWidth =
-          (isFirst && widget.fieldsConfig[i].key == _fullWidthKey) ||
-          (_fullWidthKey == null && isLast && total.isOdd);
+      final bool isFullWidth = (isFirst && _fieldsConfig[i].key == _fullWidthKey); // last field expands if odd
 
       // Case 1: Full-width field (either first or fallback last)
-      if (isFullWidth) {
+      if (isFullWidth || (isLast && total.isOdd && _fullWidthKey == null)) {
+        rows.add(AdaptiveLayout(children: [fields[i]]));
+        i += 1;
+      }*/
+      final bool isLast = i == total - 1;
+
+      // Should this field be full width based on provided fullWidthKey
+      final bool isFullWidth = _fieldsConfig[i].key == _fullWidthKey;
+
+      // Case 1: Full-width field (based on key or fallback to LAST-FIELD if its odd)
+      if (isFullWidth || (isLast && total.isOdd && _fullWidthKey == null)) {
         rows.add(AdaptiveLayout(children: [fields[i]]));
         i += 1;
       }
-      // Case 2: Last field remaining, render it alone
+      // Case 2: LAST-FIELD remaining, render it alone (if its only a SINGLE-FIELD)
       else if (isLast) {
         rows.add(AdaptiveLayout(children: [fields[i]]));
         i += 1;
       }
-      // Case 3: Normal pair
+      // Case 3: Normal pair of fields
       else {
         rows.add(AdaptiveLayout(children: [fields[i], fields[i + 1]]));
         i += 2;
@@ -257,7 +283,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   // Add a new set of fields
   void _addTextField() {
-    setState(() => _fieldGroups.add(FieldGroup(widget.fieldsConfig)));
+    setState(() => _fieldGroups.add(FieldGroup(_fieldsConfig)));
     _notifyParent();
   }
 

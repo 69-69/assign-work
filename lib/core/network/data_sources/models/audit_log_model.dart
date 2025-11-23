@@ -125,8 +125,11 @@ class AuditLog {
 /// [AuditTracker] Prevent Duplicate Audit Logs Per Session
 /// ------------------------------------
 class AuditTracker {
-  // Maps action → Set of unique "type/id" keys
+  // Maps action → Set of unique "type/id::date" keys
   static final Map<AuditAction, Set<String>> _sessionMap = {};
+
+  // Get current date in YYYY-MM-DD format
+  static String get _getCurrentDate => DateTime.now().dateOnly;
 
   /// [shouldLog] Returns true if action should be logged for the given object type + id
   static bool shouldLog({
@@ -134,15 +137,19 @@ class AuditTracker {
     required DocType type,
     AuditAction action = AuditAction.viewed,
   }) {
-    final key = "${type.getValue}::$id"; // namespace to avoid collisions
+    final key =
+        "${type.getValue}::$id::$_getCurrentDate"; // namespace to avoid collisions
 
+    // Ensure that the action is initialized in the map
     _sessionMap.putIfAbsent(action, () => <String>{});
 
+    // If the key is already in the map, don't log again for this day
     if (_sessionMap[action]!.contains(key)) {
-      return false; // already logged in this session - hence don't log
+      return false; // Already logged for today
     }
 
+    // Otherwise, log the action
     _sessionMap[action]!.add(key);
-    return true; // not in session - hence allow logging
+    return true; // Not logged yet for today, so allow logging
   }
 }

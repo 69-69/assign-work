@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -38,14 +39,14 @@ extension ScaffoldSnackBar on BuildContext {
       ..showMaterialBanner()*/
 
     final banner = MaterialBanner(
-      content: Text(message, style: const TextStyle(color: Colors.white)),
-      leading: const Icon(Icons.info, color: Colors.white),
-      backgroundColor: Colors.green,
+      content: Text(message, style: const TextStyle(color: kWhiteColor)),
+      leading: const Icon(Icons.info, color: kWhiteColor),
+      backgroundColor: kDarkSuccessColor,
       actions: [
         TextButton(
           onPressed: () =>
               ScaffoldMessenger.of(this).hideCurrentMaterialBanner(),
-          child: const Text('DISMISS', style: TextStyle(color: Colors.white)),
+          child: const Text('DISMISS', style: TextStyle(color: kWhiteColor)),
         ),
       ],
     );
@@ -103,10 +104,10 @@ extension ScaffoldSnackBar on BuildContext {
         Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
 
     buildBody(BuildContext context) => Material(
-      color: Colors.transparent,
+      color: kTransparentColor,
       child: Container(
         decoration: BoxDecoration(
-          color: bgColor ?? Colors.green,
+          color: bgColor ?? kDarkSuccessColor,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
         padding: const EdgeInsets.all(8),
@@ -119,7 +120,7 @@ extension ScaffoldSnackBar on BuildContext {
                   child: context.copyPasteText(
                     child: Text(
                       message,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: kWhiteColor),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -132,7 +133,7 @@ extension ScaffoldSnackBar on BuildContext {
                     ),
                     child: Text(
                       label,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: kWhiteColor),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -189,14 +190,14 @@ extension ScaffoldSnackBar on BuildContext {
                 value: animationController.value,
                 strokeWidth: 3,
                 backgroundColor: Colors.white24,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor: const AlwaysStoppedAnimation<Color>(kWhiteColor),
               );
             },
           ),
         ),
         IconButton(
           tooltip: 'Close',
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: kWhiteColor),
           style: IconButton.styleFrom(backgroundColor: Colors.black26),
           onPressed: onPressed,
           iconSize: 20,
@@ -210,17 +211,22 @@ extension ScaffoldSnackBar on BuildContext {
     String message, {
     Color? bgColor,
     String? buttonLabel,
+    TextAlign? textAlign,
     VoidCallback? onPressed,
   }) {
     final snackBar = SnackBar(
       behavior: SnackBarBehavior.floating,
-      content: Text(message, style: const TextStyle(color: Colors.white)),
-      backgroundColor: bgColor ?? Colors.green,
+      content: Text(
+        message,
+        textAlign: textAlign,
+        style: TextStyle(color: kWhiteColor),
+      ),
+      backgroundColor: bgColor ?? kDarkSuccessColor,
       duration: const Duration(seconds: 4),
-      margin: EdgeInsets.only(bottom: screenHeight - 200),
+      margin: EdgeInsets.only(bottom: screenHeight - 230),
       action: SnackBarAction(
         label: buttonLabel ?? 'Close',
-        textColor: Colors.white,
+        textColor: kWhiteColor,
         onPressed:
             onPressed ??
             () {
@@ -270,13 +276,13 @@ class _ShowToastState extends State<ShowToast> {
   Widget build(BuildContext context) {
     return _isVisible
         ? Card(
-            color: widget.bgColor ?? Colors.green,
+            color: widget.bgColor ?? kDarkSuccessColor,
             elevation: 5.0,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 widget.message,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: kWhiteColor),
               ),
             ),
           )

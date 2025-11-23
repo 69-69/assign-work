@@ -88,7 +88,7 @@ class CustomDialog extends StatelessWidget {
             ),
       ),
       iconPadding: const EdgeInsets.only(right: 5, top: 5),
-      // backgroundColor: bgColor ?? context.scaffoldBgColor.toAlpha(0.8),
+      // backgroundColor: bgColor ?? context.bgAuthColor,
       title: title,
       content: body,
       actions: actions,
@@ -115,7 +115,7 @@ class CustomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // color: bgColor ?? context.scaffoldBgColor.toAlpha(0.8),
+      // color: bgColor ?? context.bgAuthColor,
       child: Padding(
         padding: EdgeInsets.fromLTRB(15, 10, 15, 20),
         child: Column(

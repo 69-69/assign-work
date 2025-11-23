@@ -63,7 +63,7 @@ class _ListStockLevelState extends State<ListStockLevel> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Item.dataTableHeader,
-      anyWidget: _buildAnyWidget(products),
+      toolbar: _buildToolbar(products),
       rows: stockLevelProducts.map((p) => p.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(products, isChecked, row.first),
@@ -89,7 +89,7 @@ class _ListStockLevelState extends State<ListStockLevel> {
     );
   }
 
-  _buildAnyWidget(List<Item> products) {
+  _buildToolbar(List<Item> products) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

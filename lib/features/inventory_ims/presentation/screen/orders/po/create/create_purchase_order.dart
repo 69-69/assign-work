@@ -281,8 +281,8 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
         ),
         const SizedBox(height: 20.0),
         PayTermsAndMethodDropdown(
-          onPayTermsChange: (t) => setState(() => _selectedPaymentTerms = t),
-          onPayMethodChange: (t) => setState(() => _selectedPaymentMethod = t),
+          onPayTermsChanged: (t) => setState(() => _selectedPaymentTerms = t),
+          onPayMethodChanged: (t) => setState(() => _selectedPaymentMethod = t),
         ),
         const SizedBox(height: 20.0),
         ListTile(

@@ -75,7 +75,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Workspace.dataTableHeader,
-      anyWidget: _buildAnyWidget(data.unExpired),
+      toolbar: _buildToolbar(data.unExpired),
       rows: data.unExpired.map((w) => w.itemAsList()).toList(),
       childrenRow: [...unKnownWorkspaces, ...expiredWorkspaces],
       onEditTap: (row) async => await _onEditTap(workspaces, row.first),
@@ -92,7 +92,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     );
   }
 
-  _buildAnyWidget(List<Workspace> tenants) {
+  _buildToolbar(List<Workspace> tenants) {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

@@ -57,14 +57,14 @@ class _ListCategoriesState extends State<ListCategories> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: Category.dataHeader,
-      anyWidget: _buildAnyWidget(categories),
+      toolbar: _buildToolbar(categories),
       rows: categories.map((d) => d.toListL()).toList(),
       onEditTap: (row) async => _onEditTap(categories, row.first),
       onDeleteTap: (row) async => _onDeleteTap(categories, row.first),
     );
   }
 
-  _buildAnyWidget(List<Category> sales) {
+  _buildToolbar(List<Category> sales) {
     return Wrap(
       spacing: 10.0,
       alignment: WrapAlignment.spaceBetween,

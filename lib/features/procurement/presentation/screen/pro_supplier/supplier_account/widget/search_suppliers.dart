@@ -98,15 +98,15 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
     );
 
     return StaticDropdown<SupplierContactPerson>(
-      initialValue: initial?.name,
       label: label,
       items: [
         SupplierContactPerson.empty(name: label),
         ...?_selectedContactPersons,
       ],
-      getValue: (person) => person.id,
+      initialValue: initial,
       getDisplayText: (person) => person.name,
-      onChanged: (id) {
+      onChanged: (person) {
+        final id = person?.id;
         if (id.isNotNullNorEmpty) {
           widget.onContactPersonChanged?.call(id!.trim());
         }

@@ -50,15 +50,15 @@ class _ListStaffsState extends State<ListStaffs> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Employee.dataTableHeader,
-      anyWidget: _buildAnyWidget(),
-      anyWidgetAlignment: WrapAlignment.start,
+      toolbar: _buildToolbar(),
+      toolbarAlignment: WrapAlignment.start,
       rows: employees.map((d) => d.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(employees, row.first, isChecked),
       onEditTap: (row) async => _onEditTap(employees, row.first),
       onDeleteTap: (row) async => _onDeleteTap(employees, row.first),
       optButtonIcon: Icons.lock,
-      optButtonLabel: 'Reset Passcode',
+      optButtonLabel: 'Reset',
       onOptButtonTap: (row) async {
         Employee employee = _findEmployee(row.first, employees);
         await context.openForgotPasscode(employee: employee);
@@ -78,7 +78,7 @@ class _ListStaffsState extends State<ListStaffs> {
     });
   }
 
-  _buildAnyWidget() {
+  _buildToolbar() {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

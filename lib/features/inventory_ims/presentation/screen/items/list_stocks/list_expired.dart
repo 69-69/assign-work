@@ -63,7 +63,7 @@ class _ListExpiredState extends State<ListExpired> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Item.dataTableHeader,
-      anyWidget: _buildAnyWidget(expiredItems),
+      toolbar: _buildToolbar(expiredItems),
       rows: expiredItems.map((p) => p.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(items, isChecked, row.first),
@@ -89,7 +89,7 @@ class _ListExpiredState extends State<ListExpired> {
     );
   }
 
-  _buildAnyWidget(List<Item> products) {
+  _buildToolbar(List<Item> products) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

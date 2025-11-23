@@ -134,7 +134,7 @@ class _UpdateDeliveryBodyState extends State<_UpdateDeliveryBody> {
         const SizedBox(height: 10.0),
         DeliveryStatusDropdown(
           initialStatus: _delivery.status,
-          onChange: (s) => _updateStatus(s),
+          onChanged: (s) => _updateStatus(s),
         ),
         HorizontalDivider(thickness: 8.0),
         _formBody(),

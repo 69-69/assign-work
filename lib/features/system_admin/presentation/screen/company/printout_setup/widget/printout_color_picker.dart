@@ -4,7 +4,7 @@ import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/preview_printout_colors.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/widget/preview_printout_colors.dart';
 import 'package:flutter/material.dart';
 
 // Define color palettes
@@ -32,16 +32,16 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSelectedColors();
+    _loadSavedColors();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadSelectedColors();
+    // _loadSelectedColors();
   }
 
-  void _loadSelectedColors() async {
+  void _loadSavedColors() async {
     final settings = await _printoutService.getSettings();
 
     if (settings != null) {
@@ -63,13 +63,11 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
     String selectedColorsString = colorsToString(colors);
 
     for (List<Color> palette in colorPalettes) {
-      // debugPrint('does: ${colorsToString(palette)}===$selectedColorsString');
       if (colorsToString(palette) == selectedColorsString) {
         return palette;
       }
     }
-    // Return null if no matching palette is found
-    return null;
+    return null; // If no match found
   }
 
   Future<void> _handleSelectedPalette(int index, String label) async {
@@ -97,19 +95,59 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: _buildBody(context),
+      child: _PaletteBody(
+        selectedPalette: _selectedPalette,
+        selectedPaletteIndex: _selectedPaletteIndex,
+        onSelectedPalette: (i) async =>
+            await _handleSelectedPalette(i, (i + 1).toString()),
+        resetColors: _buildResetColorsButton(),
+      ),
     );
   }
 
-  Column _buildBody(BuildContext context) {
+  RefreshButton _buildResetColorsButton() {
+    return RefreshButton(
+      tooltip: 'Reset Colors',
+      callback: () async {
+        final settings = await _printoutService.getSettings();
+        if (settings != null) {
+          await _printoutService.setSettings(
+            settings.copyWith(
+              paletteColor: [],
+              headerColor: '',
+              footerColor: '',
+            ),
+          );
+          _loadSavedColors(); // Refresh the state after resetting
+        }
+      },
+    );
+  }
+}
+
+class _PaletteBody extends StatelessWidget {
+  const _PaletteBody({
+    required this.selectedPaletteIndex,
+    required this.onSelectedPalette,
+    required this.selectedPalette,
+    required this.resetColors,
+  });
+
+  final int selectedPaletteIndex;
+  final List<Color> selectedPalette;
+  final Function(int) onSelectedPalette;
+  final RefreshButton resetColors;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildPaletteTitle(context),
         _buildPalette(),
         HorizontalDivider(thickness: 8.0),
-        if (_selectedPalette.isNotEmpty) ...{
-          PreviewPrintoutColors(paletteColors: _selectedPalette),
+        if (selectedPalette.isNotEmpty) ...{
+          PreviewPrintoutColors(paletteColors: selectedPalette),
         },
         const SizedBox(height: 50),
       ],
@@ -135,7 +173,7 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          _buildResetColorsButton(),
+          resetColors,
         ],
       ),
       subtitle: Text(
@@ -143,23 +181,6 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
         textAlign: TextAlign.center,
         style: context.textTheme.titleSmall,
       ),
-    );
-  }
-
-  RefreshButton _buildResetColorsButton() {
-    return RefreshButton(
-      tooltip: 'Reset Colors',
-      callback: () async {
-        final settings = (await _printoutService.getSettings())?.copyWith(
-          paletteColor: [],
-          headerColor: '',
-          footerColor: '',
-        );
-        if (settings != null) {
-          await _printoutService.setSettings(settings);
-        }
-        _loadSelectedColors();
-      },
     );
   }
 
@@ -176,11 +197,10 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
   }
 
   _buildCard(int index) {
-    // var width = (context.screenWidth / 2) / 3.3;
     final i = index + 1;
     final paletteColor = colorPalettes[index].first;
 
-    var isSelected = _selectedPaletteIndex == index;
+    var isSelected = selectedPaletteIndex == index;
     var fadeColor = paletteColor.toAlpha(0.6);
     return Card(
       elevation: 20,
@@ -189,7 +209,6 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
         tooltip: 'Palette $i',
         side: BorderSide(color: paletteColor),
         padding: EdgeInsets.zero,
-        // symmetric(horizontal: width / 3.6, vertical: width / 2.4),
         showCheckmark: true,
         color: WidgetStatePropertyAll(fadeColor),
         selected: isSelected,
@@ -197,39 +216,10 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
         label: Text('Palette $i', overflow: TextOverflow.ellipsis),
         onSelected: (b) {
           if (!isSelected) {
-            _handleSelectedPalette(index, '${index + 1}');
+            onSelectedPalette(index);
           }
         },
       ),
     );
   }
 }
-
-/*void _generatePdf() async {
-    final pdf = pw.Document();
-    final colors = convertToPdfColors(_selectedPalette);
-
-    pdf.addPage(
-      pw.Page(
-        build: (context) => pw.Column(
-          children: colors
-              .map((color) => pw.Container(
-                    width: 100,
-                    height: 100,
-                    color: color,
-                  ))
-              .toList(),
-        ),
-      ),
-    );
-
-    // Here you should implement saving or sharing the PDF
-    // For example:
-    // final outputFile = await savePdf(pdf);
-    // shareFile(outputFile);
-  }
-
-  ElevatedButton(
-          onPressed: () => _generatePdf(),
-          child: const Text('Generate PDF'),
-        ),*/

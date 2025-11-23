@@ -54,14 +54,14 @@ class _ListDepartmentsState extends State<ListDepartments> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Department.dataHeader,
-      anyWidget: _buildAnyWidget(departments),
+      toolbar: _buildToolbar(departments),
       rows: departments.map((d) => d.toListL()).toList(),
       onEditTap: (row) async => await _onEditTap(departments, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(departments, row.first),
     );
   }
 
-  _buildAnyWidget(List<Department> departments) {
+  _buildToolbar(List<Department> departments) {
     return Wrap(
       spacing: 10.0,
       alignment: WrapAlignment.spaceBetween,

@@ -175,7 +175,7 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
         const SizedBox(height: 10.0),
         POStatusDropdown(
           initialValue: _order.status,
-          onChange: (s) => _updateStatus(s),
+          onChanged: (s) => _updateStatus(s),
         ),
         HorizontalDivider(thickness: 8.0),
         _formBody(),
@@ -228,8 +228,8 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
         PayTermsAndMethodDropdown(
           initialPayTerms: _order.payTerms,
           initialPayMethod: _order.payMethod,
-          onPayTermsChange: (t) => setState(() => _selectedPayTerms = t),
-          onPayMethodChange: (t) => setState(() => _selectedPayMethod = t),
+          onPayTermsChanged: (t) => setState(() => _selectedPayTerms = t),
+          onPayMethodChanged: (t) => setState(() => _selectedPayMethod = t),
         ),
         const SizedBox(height: 20.0),
         ListTile(

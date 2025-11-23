@@ -89,6 +89,10 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   ProRequestForQuoteBloc get _readBloc =>
       context.read<ProRequestForQuoteBloc>();
 
+  AuditAction get _action => _selectedRFQStatus!.contains('approved')
+      ? AuditAction.approved
+      : AuditAction.updated;
+
   @override
   void initState() {
     super.initState();
@@ -106,30 +110,32 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     super.dispose();
   }
 
-  RequestForQuote get _updatedQuote => _serverQuote.copyWith(
-    taxMode: _taxModeToApply,
-    title: _rfqTitle,
-    notes: _addressAndNotes['notes'],
-    deliveryAddress: _addressAndNotes['deliveryAddress'],
-    requestedBy: _requestedBy ?? _serverQuote.requestedBy,
-    status: _selectedRFQStatus ?? _serverQuote.status,
-    currency: _currency ?? _serverQuote.currency,
-    departmentCode: _departmentCode ?? _serverQuote.departmentCode,
-    supplierId: _selectedSupplierId ?? _serverQuote.supplierId,
-    supplierRepId: _selectedSupplierRepId ?? _serverQuote.supplierRepId,
-    lineItems: List.from(_lineItems),
-    deadline: _selectedDeadlineDate ?? _serverQuote.deadline,
-    paymentTerm: _selectedPaymentTerm ?? _serverQuote.paymentTerm,
-    deliveryDate: _selectedDeliveryDate ?? _serverQuote.deliveryDate,
-    validityDate: _selectedValidityDate != null
-        ? '${_selectedValidityDate!.toDays} days'
-        : _serverQuote.validityDate,
-    updatedBy: context.employee!.fullName,
-    history: [
-      ..._serverQuote.history, // keep all old logs
-      AuditLog(action: AuditAction.updated, performedBy: _currentEmployeeId),
-    ],
-  );
+  RequestForQuote get _updatedQuote {
+    return _serverQuote.copyWith(
+      taxMode: _taxModeToApply,
+      title: _rfqTitle,
+      notes: _addressAndNotes['notes'],
+      deliveryAddress: _addressAndNotes['deliveryAddress'],
+      requestedBy: _requestedBy ?? _serverQuote.requestedBy,
+      status: _selectedRFQStatus ?? _serverQuote.status,
+      currency: _currency ?? _serverQuote.currency,
+      departmentCode: _departmentCode ?? _serverQuote.departmentCode,
+      supplierId: _selectedSupplierId ?? _serverQuote.supplierId,
+      supplierRepId: _selectedSupplierRepId ?? _serverQuote.supplierRepId,
+      lineItems: List.from(_lineItems),
+      deadline: _selectedDeadlineDate ?? _serverQuote.deadline,
+      paymentTerm: _selectedPaymentTerm ?? _serverQuote.paymentTerm,
+      deliveryDate: _selectedDeliveryDate ?? _serverQuote.deliveryDate,
+      validityDate: _selectedValidityDate != null
+          ? '${_selectedValidityDate!.toDays} days'
+          : _serverQuote.validityDate,
+      updatedBy: context.employee!.fullName,
+      history: [
+        ..._serverQuote.history, // keep all old logs
+        AuditLog(action: _action, performedBy: _currentEmployeeId),
+      ],
+    );
+  }
 
   void _onSubmit() {
     if (!isFormValid || _lineItems.isNullOrEmpty) {
@@ -473,7 +479,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         );
       },
     ),
-    FieldGroupConfig(
+    /*FieldGroupConfig(
       key: 'notes',
       label: 'Additional Notes (if any)...',
       type: TextInputType.multiline,
@@ -481,6 +487,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       isAutoGrow: true,
       minLines: null,
       validator: (_) => null,
-    ),
+    ),*/
   ];
 }

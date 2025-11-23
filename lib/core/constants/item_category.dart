@@ -47,7 +47,7 @@ class ItemCategoryHelper {
   static List<String> toStringList([bool includeHeader = true]) {
     final list = EnumHelper.toStringList<ItemCategory>(ItemCategory.values);
     return [
-      if (includeHeader) 'item category',
+      if (includeHeader) 'Item Category',
       ...list.map((a) => a.separateWord),
     ];
   }

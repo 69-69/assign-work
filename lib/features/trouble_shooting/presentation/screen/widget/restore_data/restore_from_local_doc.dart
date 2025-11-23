@@ -53,7 +53,6 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
     return StaticDropdown<String>(
       items: items,
       label: 'List of Local Backup Files',
-      getValue: (file) => file,
       getDisplayText: (file) => file,
       onChanged: (String? v) => setState(() {
         _selectedFilename = v?.toLowerAll;

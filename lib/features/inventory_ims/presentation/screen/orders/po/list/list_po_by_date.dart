@@ -70,7 +70,7 @@ class _ListPOByDateState extends State<ListPOByDate> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 3,
-      anyWidget: _buildAnyWidget(orders),
+      toolbar: _buildToolbar(orders),
       headers: PurchaseOrder.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
@@ -94,7 +94,7 @@ class _ListPOByDateState extends State<ListPOByDate> {
     );
   }
 
-  _buildAnyWidget(List<PurchaseOrder> orders) {
+  _buildToolbar(List<PurchaseOrder> orders) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

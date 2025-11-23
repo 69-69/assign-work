@@ -79,11 +79,11 @@ class OrderStatusAndTypesDropdown extends StatelessWidget {
       children: [
         OrdersTypesDropdown(
           initialValue: initialType,
-          onValueChange: onTypeChange,
+          onValueChanged: onTypeChange,
         ),
         OrdersStatusDropdown(
           initialValue: initialStatus,
-          onChange: onStatusChange,
+          onChanged: onStatusChange,
         ),
       ],
     );
@@ -162,9 +162,8 @@ class ValidityAndOrderSource extends StatelessWidget {
           items: orderSources,
           label: 'order source',
           initialValue: initialOrder,
-          getValue: (source) => source,
           getDisplayText: (source) => source,
-          onChanged: (String? v) => onSourceChanged(v),
+          onChanged: onSourceChanged,
         ),
         DatePicker(
           initialDate: initialValidity,
@@ -597,9 +596,8 @@ class PaymentStatusDropdown extends StatelessWidget {
       items: paymentStatus,
       label: 'payment status',
       initialValue: initialValue,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChanged(v),
+      onChanged: onChanged,
     );
   }
 }
@@ -622,7 +620,6 @@ class PaymentMethodDropdown extends StatelessWidget {
       items: paymentMethod,
       label: 'payment method',
       initialValue: initialValue,
-      getValue: (method) => method,
       getDisplayText: (method) => method,
       onChanged: (String? v) => onChanged(v),
     );
@@ -632,11 +629,11 @@ class PaymentMethodDropdown extends StatelessWidget {
 /// Orders Status [OrdersStatusDropdown]
 class OrdersStatusDropdown extends StatelessWidget {
   final String? initialValue;
-  final void Function(dynamic s) onChange;
+  final void Function(dynamic s) onChanged;
 
   const OrdersStatusDropdown({
     super.key,
-    required this.onChange,
+    required this.onChanged,
     this.initialValue,
   });
 
@@ -647,9 +644,8 @@ class OrdersStatusDropdown extends StatelessWidget {
       items: orderStatus,
       label: 'order status',
       initialValue: initialValue,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChange(v),
+      onChanged: onChanged,
     );
   }
 }
@@ -657,11 +653,11 @@ class OrdersStatusDropdown extends StatelessWidget {
 /// Orders Status [OrdersTypesDropdown]
 class OrdersTypesDropdown extends StatelessWidget {
   final String? initialValue;
-  final void Function(dynamic s) onValueChange;
+  final void Function(dynamic s) onValueChanged;
 
   const OrdersTypesDropdown({
     super.key,
-    required this.onValueChange,
+    required this.onValueChanged,
     this.initialValue,
   });
 
@@ -672,9 +668,8 @@ class OrdersTypesDropdown extends StatelessWidget {
       items: orderTypes,
       label: 'order type',
       initialValue: initialValue,
-      getValue: (type) => type,
       getDisplayText: (type) => type,
-      onChanged: (String? v) => onValueChange(v),
+      onChanged: onValueChanged,
     );
   }
 }

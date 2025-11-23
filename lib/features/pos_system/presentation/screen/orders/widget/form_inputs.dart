@@ -100,7 +100,7 @@ class SubTotalAndOrderStatus extends StatelessWidget {
         ),
         OrdersStatusDropdown(
           initialValue: initialStatus,
-          onChange: onStatusChange,
+          onChanged: onStatusChange,
         ),
       ],
     );
@@ -387,9 +387,8 @@ class PaymentMethodDropdown extends StatelessWidget {
       items: paymentMethod,
       label: 'payment method',
       initialValue: initialValue,
-      getValue: (method) => method,
       getDisplayText: (method) => method,
-      onChanged: (String? v) => onChanged(v),
+      onChanged: onChanged,
     );
   }
 }
@@ -397,11 +396,11 @@ class PaymentMethodDropdown extends StatelessWidget {
 /// Orders Status [OrdersStatusDropdown]
 class OrdersStatusDropdown extends StatelessWidget {
   final String? initialValue;
-  final void Function(dynamic s) onChange;
+  final void Function(dynamic s) onChanged;
 
   const OrdersStatusDropdown({
     super.key,
-    required this.onChange,
+    required this.onChanged,
     this.initialValue,
   });
 
@@ -412,9 +411,8 @@ class OrdersStatusDropdown extends StatelessWidget {
       items: orderStatus,
       label: 'order status',
       initialValue: initialValue,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChange(v),
+      onChanged: onChanged,
     );
   }
 }

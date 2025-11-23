@@ -65,7 +65,7 @@ class _ListFinanceState extends State<ListFinance> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 3,
-      anyWidget: _buildAnyWidget(orders),
+      toolbar: _buildToolbar(orders),
       headers: Orders.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
@@ -95,7 +95,7 @@ class _ListFinanceState extends State<ListFinance> {
     );
   }
 
-  _buildAnyWidget(List<Orders> orders) {
+  _buildToolbar(List<Orders> orders) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

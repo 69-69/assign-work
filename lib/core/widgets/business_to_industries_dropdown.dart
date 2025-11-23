@@ -69,7 +69,6 @@ class _BusinessToIndustriesDropdownState
       initialValue: _selectedBusinessType,
       label: 'Business Type',
       items: businessTypes,
-      getValue: (type) => type,
       getDisplayText: (type) => type,
       onChanged: (String? v) {
         if (v.isNotNullNorEmpty) {
@@ -98,7 +97,6 @@ class _BusinessToIndustriesDropdownState
       initialValue: _selectedIndustry,
       label: 'Industry',
       items: List.from(['Select Industry', ...industries]),
-      getValue: (industry) => industry,
       getDisplayText: (industry) => industry,
       onChanged: (String? v) {
         if (v.isNotNullNorEmpty) {

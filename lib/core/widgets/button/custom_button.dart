@@ -184,12 +184,14 @@ extension Custombutton on BuildContext {
       bgColor: bgColor,
       txtColor: txtColor,
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: borderColor ?? kOffWhiteColor),
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
+      style:
+          style ??
+          ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: borderColor ?? kOffWhiteColor),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
     );
   }
 
@@ -208,13 +210,15 @@ extension Custombutton on BuildContext {
       bgColor: bgColor,
       txtColor: txtColor,
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor ?? kOffWhiteColor,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: borderColor ?? kOffWhiteColor),
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
+      style:
+          style ??
+          ElevatedButton.styleFrom(
+            backgroundColor: bgColor ?? kOffWhiteColor,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: borderColor ?? kOffWhiteColor),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
     );
   }
 

@@ -67,7 +67,7 @@ class _ListProductsState extends State<ListProducts> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Item.dataTableHeader,
-      anyWidget: _buildAnyWidget(products),
+      toolbar: _buildToolbar(products),
       rows: inStockProducts.map((p) => p.itemAsList()).toList(),
       childrenRow: outOfStockProducts.map((p) => p.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -83,7 +83,7 @@ class _ListProductsState extends State<ListProducts> {
     );
   }
 
-  _buildAnyWidget(List<Item> products) {
+  _buildToolbar(List<Item> products) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

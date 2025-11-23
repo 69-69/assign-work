@@ -250,6 +250,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
               title: 'Products / Services',
               showButton: !_isDisabled,
               fieldsConfig: _itemsFieldsConfig,
+              fullWidthKey: 'itemName',
               initialData:
                   _initialPRData?.lineItems.map((e) => e.toMap()).toList() ??
                   [{}],
@@ -446,7 +447,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         );
       },
     ),
-    FieldGroupConfig(
+    /*FieldGroupConfig(
       key: 'notes',
       label: 'Additional Notes (if any)...',
       isDisabled: _isDisabled,
@@ -455,6 +456,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       isAutoGrow: true,
       minLines: null,
       validator: (_) => null,
-    ),
+    ),*/
   ];
 }

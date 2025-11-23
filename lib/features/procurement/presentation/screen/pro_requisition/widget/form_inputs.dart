@@ -3,6 +3,7 @@ import 'package:assign_erp/core/constants/item_category.dart';
 import 'package:assign_erp/core/constants/requisition_status.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
@@ -151,9 +152,8 @@ class PRStatusDropdown extends StatelessWidget {
       label: 'PR status',
       initialValue: initialValue,
       items: PRStatusHelper.toStringList(),
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChanged(v),
+      onChanged: onChanged,
     );
   }
 }
@@ -176,9 +176,8 @@ class PriorityDropdown extends StatelessWidget {
       label: 'priority',
       initialValue: initialValue,
       items: PriorityHelper.toStringList(),
-      getValue: (priority) => priority,
       getDisplayText: (priority) => priority,
-      onChanged: (String? v) => onChanged(v),
+      onChanged: onChanged,
     );
   }
 }
@@ -203,9 +202,8 @@ class ItemCategoryDropdown extends StatelessWidget {
       label: strList.first,
       initialValue: initialValue,
       items: strList,
-      getValue: (priority) => priority,
-      getDisplayText: (priority) => priority,
-      onChanged: (String? v) => onChanged(v),
+      getDisplayText: (priority) => priority.toTitle,
+      onChanged: onChanged,
     );
   }
 }
@@ -230,9 +228,8 @@ class UnitOfMeasureDropdown extends StatelessWidget {
       label: strList.first,
       initialValue: initialValue,
       items: strList,
-      getValue: (uom) => uom,
-      getDisplayText: (uom) => uom,
-      onChanged: (String? v) => onChanged(v),
+      getDisplayText: (uom) => uom.toTitle,
+      onChanged: onChanged,
     );
   }
 }

@@ -209,12 +209,11 @@ class TextToSpeechState extends State<TextToSpeech> {
         items: voiceNames,
         label: 'Voice Type',
         initialValue: selectedVoiceName,
-        getValue: (type) => type,
         getDisplayText: (type) => type,
-        onChanged: (String? value) {
-          if (value != null) {
+        onChanged: (String? v) {
+          if (v != null) {
             final selectedVoice = _voices.firstWhere(
-              (voice) => voice.name == value,
+              (voice) => voice.name == v,
               orElse: () => _currentVoice ?? TTSVoice(name: '', locale: ''),
             );
             if (selectedVoice.isNotEmpty) {

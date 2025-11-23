@@ -5,6 +5,17 @@ import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:flutter/material.dart';
 
+enum _PreviewType { header, footer }
+
+extension _PreviewTypeExtension on _PreviewType {
+  String get label => switch (this) {
+    _PreviewType.header => 'header',
+    _PreviewType.footer => 'footer',
+  };
+
+  String get title => label.toTitle;
+}
+
 class PreviewPrintoutColors extends StatefulWidget {
   const PreviewPrintoutColors({super.key, required this.paletteColors});
 
@@ -26,16 +37,16 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
   void initState() {
     super.initState();
 
-    _loadSelectedColors();
+    _loadSavedColors();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadSelectedColors();
+    // _loadSavedColors();
   }
 
-  void _loadSelectedColors() async {
+  void _loadSavedColors() async {
     final settings = await _printoutService.getSettings();
     if (settings != null) {
       setState(() {
@@ -51,59 +62,70 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
     return paletteColors.indexWhere((color) => color.toHex() == colorString);
   }
 
-  /// Printout Header Color [_handleHeaderPreviewSelection]
-  Future<void> _handleHeaderPreviewSelection(int index, String label) async {
-    setState(() => _selectedHeaderPreviewIndex = index);
-
-    // debugPrint('head: ${paletteColors[index].toHex()}');
-
-    await _saveSelectedHeaderPrev(index, label);
+  Future<void> _handleSelection(_PreviewType type, int index) async {
+    final preview = switch (type) {
+      _PreviewType.header => _selectedHeaderPreviewIndex = index,
+      _PreviewType.footer => _selectedFooterPreviewIndex = index,
+    };
+    setState(() => preview);
+    await _saveSelection(type, index);
   }
 
-  /// Printout Footer Color [_handleFooterPreviewSelection]
-  Future<void> _handleFooterPreviewSelection(int index, String label) async {
-    setState(() => _selectedFooterPreviewIndex = index);
+  Future<void> _saveSelection(_PreviewType type, int index) async {
+    final remote = await _printoutService.getSettings();
+    if (remote == null) return;
 
-    // debugPrint('foot: ${paletteColors[index].toHex()}');
+    final updater = switch (type) {
+      _PreviewType.header => remote.copyWith(
+        headerColor: paletteColors[index].toHex(),
+      ),
+      _PreviewType.footer => remote.copyWith(
+        footerColor: paletteColors[index].toHex(),
+      ),
+    };
 
-    await _saveSelectedFooterPrev(index, label);
-  }
-
-  Future<void> _saveSelectedHeaderPrev(int index, String label) async {
-    final settings = (await _printoutService.getSettings())?.copyWith(
-      headerColor: paletteColors[index].toHex(),
-    );
-    if (settings != null) {
-      await _printoutService.setSettings(settings);
-    }
+    // Apply only the matching update
+    await _printoutService.setSettings(updater);
+    // prettyPrint(label, '${paletteColors[index].toHex()}');
 
     if (mounted) {
-      context.showAlertOverlay('You Selected Header Preview option $label');
-    }
-  }
-
-  Future<void> _saveSelectedFooterPrev(int index, String label) async {
-    final settings = (await _printoutService.getSettings())?.copyWith(
-      footerColor: paletteColors[index].toHex(),
-    );
-    if (settings != null) {
-      await _printoutService.setSettings(settings);
-    }
-
-    if (mounted) {
-      context.showAlertOverlay('You Selected Footer Preview option $label');
+      context.showAlertOverlay(
+        'You selected ${type.title} option ${index + 1}'.toTitle,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    return _PreviewBody(
+      paletteColors: paletteColors,
+      selectedFooterIndex: _selectedFooterPreviewIndex,
+      selectedHeaderIndex: _selectedHeaderPreviewIndex,
+      onTapFooter: (i) async => await _handleSelection(_PreviewType.footer, i),
+      onTapHeader: (i) async => await _handleSelection(_PreviewType.header, i),
+    );
+  }
+}
+
+class _PreviewBody extends StatelessWidget {
+  const _PreviewBody({
+    required this.paletteColors,
+    this.selectedFooterIndex,
+    this.selectedHeaderIndex,
+    this.onTapFooter,
+    this.onTapHeader,
+  });
+
+  final int? selectedFooterIndex;
+  final int? selectedHeaderIndex;
+  final List<Color> paletteColors;
+  final Function(int)? onTapFooter;
+  final Function(int)? onTapHeader;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      // direction: Axis.vertical,
-      // mainAxisSize: MainAxisSize.min,
-      // alignment: WrapAlignment.center,
-      // runAlignment: WrapAlignment.center,
-      // crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _buildPreviewTitle(context),
         const SizedBox(height: 10),
@@ -111,12 +133,20 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
           padding: const EdgeInsets.only(top: 8.0),
           child: _buildText(context, 'Header Color:'.toUpperAll),
         ),
-        _buildHeader(context),
+        _previewCard(
+          'Header',
+          previewIndex: selectedHeaderIndex,
+          onTap: onTapHeader,
+        ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: _buildText(context, 'Footer Color:'.toUpperAll),
         ),
-        _buildFooter(context),
+        _previewCard(
+          'Footer',
+          previewIndex: selectedFooterIndex,
+          onTap: onTapFooter,
+        ),
       ],
     );
   }
@@ -125,7 +155,7 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
     return ListTile(
       dense: true,
       titleAlignment: ListTileTitleAlignment.center,
-      title: _buildText(context, 'Preview:', color: kDarkTextColor),
+      title: _buildText(context, 'Preview:', color: context.onSurfaceColor),
       subtitle: Text(
         'Choose one color for your print-out (PDFs)',
         textAlign: TextAlign.center,
@@ -149,25 +179,7 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
     );
   }
 
-  _buildHeader(BuildContext context) {
-    return _previewCard(
-      'Header',
-      previewIndex: _selectedHeaderPreviewIndex,
-      onTap: (i) async => await _handleHeaderPreviewSelection(i, '${i + 1}'),
-    );
-  }
-
-  _buildFooter(BuildContext context) {
-    return _previewCard(
-      'Footer',
-      previewIndex: _selectedFooterPreviewIndex,
-      onTap: (i) async => await _handleFooterPreviewSelection(i, '${i + 1}'),
-    );
-  }
-
   _previewCard(String label, {int? previewIndex, Function(int)? onTap}) {
-    // var width = (context.screenWidth / 2) / 4;
-
     return GridView.builder(
       primary: false,
       shrinkWrap: true,
@@ -189,14 +201,12 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
           child: ChoiceChip(
             tooltip: '$label ${index + 1}',
             padding: EdgeInsets.zero,
-            // symmetric(horizontal: width / 5, vertical: width / 8),
             showCheckmark: true,
             color: WidgetStatePropertyAll(fadeColor),
             selected: isSelected,
             backgroundColor: isSelected ? fadeColor : paletteColor,
             side: BorderSide(color: paletteColor),
             label: Text(
-              /*paletteColors[index].toHex(),*/
               '$label  ${index + 1}',
               overflow: TextOverflow.ellipsis,
             ),
@@ -209,25 +219,5 @@ class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
         );
       },
     );
-
-    /*return Container(
-      width: 100,
-      height: 50,
-      color: widget.paletteColors[index],
-      alignment: Alignment.center,
-      margin: const EdgeInsets.all(4),
-      child: RadioListTile.adaptive(
-        dense: true,
-        value: index,
-        fillColor: const WidgetStatePropertyAll(kLightColor),
-        groupValue: groupValue,
-        onChanged: (int? value) {
-          if (value != null) {
-            onTap?.call(value);
-          }
-        },
-        title: Text('${i}'),
-      ),
-    ).addNeumorphism(offset: const Offset(-1, -1));*/
   }
 }

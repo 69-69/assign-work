@@ -27,13 +27,17 @@ class SetupPrintOutAdapter extends TypeAdapter<SetupPrintOut> {
       companyPhone: fields[7] as String?,
       companyAddress: fields[8] as String?,
       companyFax: fields[9] as String?,
+      bodyFontSize: fields[10] as double?,
+      tableFontSize: fields[11] as double?,
+      subHeaderFontSize: fields[12] as double?,
+      headerFontSize: fields[13] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, SetupPrintOut obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.layout)
       ..writeByte(1)
@@ -53,7 +57,15 @@ class SetupPrintOutAdapter extends TypeAdapter<SetupPrintOut> {
       ..writeByte(8)
       ..write(obj.companyAddress)
       ..writeByte(9)
-      ..write(obj.companyFax);
+      ..write(obj.companyFax)
+      ..writeByte(10)
+      ..write(obj.bodyFontSize)
+      ..writeByte(11)
+      ..write(obj.tableFontSize)
+      ..writeByte(12)
+      ..write(obj.subHeaderFontSize)
+      ..writeByte(13)
+      ..write(obj.headerFontSize);
   }
 
   @override

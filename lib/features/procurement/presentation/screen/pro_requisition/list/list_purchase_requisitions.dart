@@ -89,7 +89,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
 
     return DynamicDataTable(
       omitAtIndex: 0,
-      anyWidget: _buildAnyWidget(requisitions),
+      toolbar: _buildToolbar(requisitions),
       headers: PurchaseRequisition.dataTableHeader,
       rows: data.rows,
       onViewDetailsTap: (row) async => _onViewDetails(requisitions, row.first),
@@ -148,7 +148,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     }
   }
 
-  _buildAnyWidget(List<PurchaseRequisition> requisitions) {
+  _buildToolbar(List<PurchaseRequisition> requisitions) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +217,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     final employee = await _getEmployee(requisite.requestedBy);
 
     if (mounted) {
-      // Log that details were viewed
+      // Log that User viewed details
       if (AuditTracker.shouldLog(id: requisite.id, type: DocType.rfq)) {
         _readBloc.add(_updateHistory(requisite, action: AuditAction.viewed));
       }

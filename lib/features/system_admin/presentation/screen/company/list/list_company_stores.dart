@@ -59,7 +59,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: CompanyStores.dataTableHeader,
-      anyWidget: _buildAnyWidget(stores),
+      toolbar: _buildToolbar(stores),
       rows: stores.map((d) => d.itemAsList()).toList(),
       onEditTap: (row) async => _onEditTap(stores, row.first),
       onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
@@ -75,7 +75,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
     );
   }
 
-  _buildAnyWidget(List<CompanyStores> sales) {
+  _buildToolbar(List<CompanyStores> sales) {
     return Wrap(
       spacing: 10.0,
       alignment: WrapAlignment.spaceBetween,

@@ -50,8 +50,8 @@ class _ListRolesState extends State<ListRoles> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Role.dataTableHeader,
-      anyWidget: _buildAnyWidget(),
-      anyWidgetAlignment: WrapAlignment.start,
+      toolbar: _buildToolbar(),
+      toolbarAlignment: WrapAlignment.start,
       rows: roles.map((d) => d.itemAsList()).toList(),
       onEditTap: (List<String> row) async => _onEditTap(roles, row.first),
       onDeleteTap: (List<String> row) async => _onDeleteTap(roles, row.first),
@@ -60,7 +60,7 @@ class _ListRolesState extends State<ListRoles> {
     );
   }
 
-  _buildAnyWidget() {
+  _buildToolbar() {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

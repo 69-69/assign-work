@@ -216,7 +216,7 @@ class _UpdateOrderBodyState extends State<_UpdateOrderBody> {
         const SizedBox(height: 10.0),
         OrdersStatusDropdown(
           initialValue: _order.status,
-          onChange: (s) => _updateStatus(s),
+          onChanged: (s) => _updateStatus(s),
         ),
         HorizontalDivider(thickness: 8.0),
         _formBody(),

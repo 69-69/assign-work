@@ -75,7 +75,7 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0),
           child: _InvoiceTypeAndValidityDropdown(
-            onInvoiceChange: (s) => setState(() => _selectedInvoiceType = s),
+            onInvoiceChanged: (s) => setState(() => _selectedInvoiceType = s),
             onDateChanged: (date) =>
                 setState(() => _selectedValidityDate = date),
           ),
@@ -153,11 +153,11 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
 
 /// Invoice Type & Validity [_InvoiceTypeAndValidityDropdown]
 class _InvoiceTypeAndValidityDropdown extends StatelessWidget {
-  final void Function(dynamic s) onInvoiceChange;
+  final void Function(dynamic s) onInvoiceChanged;
   final void Function(dynamic s) onDateChanged;
 
   const _InvoiceTypeAndValidityDropdown({
-    required this.onInvoiceChange,
+    required this.onInvoiceChanged,
     required this.onDateChanged,
   });
 
@@ -174,9 +174,8 @@ class _InvoiceTypeAndValidityDropdown extends StatelessWidget {
               key: key,
               items: invoiceType,
               label: 'invoice type',
-              getValue: (type) => type,
               getDisplayText: (type) => type,
-              onChanged: (String? v) => onInvoiceChange(v),
+              onChanged: onInvoiceChanged,
             ),
           ),
           const SizedBox(width: 20.0),

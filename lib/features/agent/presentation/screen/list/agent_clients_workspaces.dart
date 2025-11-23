@@ -66,7 +66,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: Workspace.dataTableHeader,
-      anyWidget: _buildAnyWidget(filters.unExpired),
+      toolbar: _buildToolbar(filters.unExpired),
       rows: filters.unExpired.map((w) => w.itemAsList()).toList(),
       childrenRow: filters.expired.map((w) => w.itemAsList()).toList(),
       optButtonIcon: Icons.support_agent,
@@ -78,7 +78,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
     );
   }
 
-  _buildAnyWidget(List<Workspace> tenants) {
+  _buildToolbar(List<Workspace> tenants) {
     return context.actionInfoButton(
       'Refresh Workspaces',
       label: 'Workspaces',

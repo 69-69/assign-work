@@ -52,8 +52,8 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
-      anyWidget: _buildAnyWidget(context),
-      anyWidgetAlignment: WrapAlignment.end,
+      toolbar: _buildToolbar(context),
+      toolbarAlignment: WrapAlignment.end,
       headers: Subscription.dataTableHeader,
       rows: subscriptions.map((d) => d.itemAsList()).toList(),
       onEditTap: (row) async => await _onEditTap(subscriptions, row.first),
@@ -63,7 +63,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
     );
   }
 
-  _buildAnyWidget(BuildContext context) {
+  _buildToolbar(BuildContext context) {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

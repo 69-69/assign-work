@@ -7,6 +7,7 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 /// Customer ID TextField [SupplierIDInput]
@@ -49,16 +50,20 @@ class POStatusCurrencyDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        POStatusDropdown(initialValue: initialStatus, onChange: onStatusChange),
+        POStatusDropdown(
+          initialValue: initialStatus,
+          onChanged: onStatusChange,
+        ),
         StaticDropdown<Map<String, String>>(
           key: key,
           items: currencyType,
           label: 'Select currency',
-          initialValue: initialCurrency,
-          getValue: (currency) => currency['code'] ?? '',
+          initialValue: currencyType.firstWhereOrNull(
+            (e) => e['code'] == initialCurrency,
+          ),
           getDisplayText: (currency) =>
               '${currency['code']} (${currency['symbol']})',
-          onChanged: (String? v) => onCurrencyChange(v),
+          onChanged: (v) => onCurrencyChange(v?['code']),
         ),
       ],
     );
@@ -68,16 +73,16 @@ class POStatusCurrencyDropdown extends StatelessWidget {
 /// Purchase Order Payment Terms & Method Dropdown [PayTermsAndMethodDropdown]
 class PayTermsAndMethodDropdown extends StatelessWidget {
   final String? initialPayTerms;
-  final void Function(dynamic s) onPayTermsChange;
+  final void Function(dynamic s) onPayTermsChanged;
   final String? initialPayMethod;
-  final void Function(dynamic s) onPayMethodChange;
+  final void Function(dynamic s) onPayMethodChanged;
 
   const PayTermsAndMethodDropdown({
     super.key,
     this.initialPayTerms,
     this.initialPayMethod,
-    required this.onPayTermsChange,
-    required this.onPayMethodChange,
+    required this.onPayTermsChanged,
+    required this.onPayMethodChanged,
   });
 
   @override
@@ -89,23 +94,23 @@ class PayTermsAndMethodDropdown extends StatelessWidget {
           key: key,
           items: paymentTerms,
           label: 'payment terms',
-          initialValue: initialPayTerms,
-          getValue: (term) => term['id'] ?? '',
+          initialValue: paymentTerms.firstWhereOrNull(
+            (e) => e['id'] == initialPayTerms,
+          ),
           getDisplayText: (term) => term['term'] ?? '',
-          onChanged: (String? v) => onPayTermsChange(v),
+          onChanged: (v) => onPayTermsChanged(v?['id']),
           buttonDecoration: const InputDecoration(
             helperText:
                 'Specifies the agreed-upon terms from RFQ negotiations.',
           ),
         ),
-        StaticDropdown(
+        StaticDropdown<String>(
           key: key,
           items: paymentMethod,
           label: 'payment method',
           initialValue: initialPayMethod,
-          getValue: (method) => method,
           getDisplayText: (method) => method,
-          onChanged: (String? v) => onPayMethodChange(v),
+          onChanged: onPayMethodChanged,
           buttonDecoration: const InputDecoration(
             helperText: 'Indicates how the supplier will be paid.',
           ),
@@ -457,11 +462,11 @@ class TaxPercentTextField extends StatelessWidget {
 /// Orders Status [POStatusDropdown]
 class POStatusDropdown extends StatelessWidget {
   final String? initialValue;
-  final void Function(dynamic s) onChange;
+  final void Function(dynamic s) onChanged;
 
   const POStatusDropdown({
     super.key,
-    required this.onChange,
+    required this.onChanged,
     this.initialValue,
   });
 
@@ -472,9 +477,8 @@ class POStatusDropdown extends StatelessWidget {
       label: 'order status',
       initialValue: initialValue,
       items: purchaseOrderStatus,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChange(v),
+      onChanged: onChanged,
     );
   }
 }

@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "SizeConfig"
+git commit -m "PR and RFQ full functional with Prinout"
 git branch -M main
 git push -u origin main
 

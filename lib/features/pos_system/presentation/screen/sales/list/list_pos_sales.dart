@@ -67,7 +67,7 @@ class _ListPOSSalesState extends State<ListPOSSales> {
       omitAtIndex: 0,
       maskAtIndex: 2,
       headers: POSSale.dataTableHeader,
-      anyWidget: _buildAnyWidget(sales),
+      toolbar: _buildToolbar(sales),
       rows: todaySales.map((s) => s.itemAsList()).toList(),
       childrenRow: pastSales.map((s) => s.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -96,7 +96,7 @@ class _ListPOSSalesState extends State<ListPOSSales> {
     );
   }
 
-  _buildAnyWidget(List<POSSale> sales) {
+  _buildToolbar(List<POSSale> sales) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

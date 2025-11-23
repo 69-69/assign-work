@@ -41,14 +41,14 @@ class _ListTaxesState extends State<ListTaxes> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: Tax.dataHeader,
-      anyWidget: _buildAnyWidget(taxes),
+      toolbar: _buildToolbar(taxes),
       rows: taxes.map((d) => d.toListT()).toList(),
       onEditTap: (row) async => await _onEditTap(taxes, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(taxes, row.first),
     );
   }
 
-  _buildAnyWidget(List<Tax> taxes) {
+  _buildToolbar(List<Tax> taxes) {
     return Wrap(
       spacing: 10.0,
       alignment: WrapAlignment.spaceBetween,

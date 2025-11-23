@@ -4,7 +4,8 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/preview_layout.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/widget/preview_layout.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/widget/printout_font_size.dart';
 import 'package:flutter/material.dart';
 
 class PrintoutLayouts extends StatefulWidget {
@@ -16,7 +17,6 @@ class PrintoutLayouts extends StatefulWidget {
 
 class _PrintoutLayoutsState extends State<PrintoutLayouts> {
   int _selectedCardIndex = 0;
-  // final SetupPrintOut _setupPrintOut = SetupPrintOut();
 
   // Assuming this list is defined somewhere in your code
   final List<String> printLayout = ['dense', 'loose'];
@@ -26,12 +26,11 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
   @override
   void initState() {
     super.initState();
-    _loadSelectedLayout();
+    _loadSavedLayout();
   }
 
-  _loadSelectedLayout() async {
+  _loadSavedLayout() async {
     final settings = await _printoutService.getSettings();
-    // debugPrint('layout:: ${settings?.layout}\ncompany-name: ${settings?.companyName}\npalette: ${settings?.paletteColor}\nhead: ${settings?.headerColor}\nfoot: ${settings?.footerColor}');
 
     if (settings != null) {
       setState(() {
@@ -43,8 +42,6 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 
   Future<void> _handleCardSelection(int index, String label) async {
     setState(() => _selectedCardIndex = index);
-
-    // final settings = _setupPrintOut.copyWith(layout: label.toLowerAll);
     await _saveCardSelection(label);
   }
 
@@ -63,10 +60,6 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildBody();
-  }
-
-  Widget _buildBody() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -80,8 +73,14 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
           ),
-          itemBuilder: (context, i) => _buildCard(i, printLayout[i]),
+          itemBuilder: (context, i) => _LayoutBody(
+            index: i,
+            title: printLayout[i],
+            selectedCardIndex: _selectedCardIndex,
+            onCardSelected: _handleCardSelection,
+          ),
         ),
+        PrintoutFontSizeScreen(),
         const SizedBox(height: 50),
       ],
     );
@@ -127,14 +126,28 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
         if (settings != null) {
           await _printoutService.setSettings(settings);
         }
-        _loadSelectedLayout();
+        _loadSavedLayout();
       },
     );
   }
+}
 
-  Widget _buildCard(int index, String label) {
+class _LayoutBody extends StatelessWidget {
+  const _LayoutBody({
+    required this.index,
+    required this.title,
+    required this.selectedCardIndex,
+    required this.onCardSelected,
+  });
+
+  final int index;
+  final String title;
+  final int selectedCardIndex;
+  final Future<void> Function(int, String) onCardSelected;
+
+  @override
+  Widget build(BuildContext context) {
     final assetName = index > 0 ? loosePrintLayout : densePrintLayout;
-    label = label.toLowerAll;
 
     return Card(
       margin: const EdgeInsets.all(10),
@@ -149,34 +162,40 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
             fit: BoxFit.contain,
           ),
         ),
-        child: RadioListTile.adaptive(
-          dense: true,
-          value: index,
-          groupValue: _selectedCardIndex,
-          fillColor: const WidgetStatePropertyAll(kWarningColor),
-          onChanged: (int? value) async {
-            if (value != null) {
-              await _handleCardSelection(value, label);
-            }
-          },
-          title: Text(
-            label,
-            overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleSmall?.copyWith(
-              color: kDangerColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          secondary: IconButton(
-            style: IconButton.styleFrom(
-              padding: EdgeInsets.zero,
-              backgroundColor: kWarningColor.toAlpha(0.5),
-            ),
-            onPressed: () =>
-                context.previewLayout(img: assetName, layoutName: label),
-            icon: const Icon(Icons.zoom_in, color: kWhiteColor),
-          ),
+        child: _buildRadioTile(context, assetName),
+      ),
+    );
+  }
+
+  RadioListTile<int> _buildRadioTile(BuildContext context, String assetName) {
+    final label = title.toLowerAll;
+
+    return RadioListTile.adaptive(
+      dense: true,
+      value: index,
+      groupValue: selectedCardIndex,
+      fillColor: const WidgetStatePropertyAll(kWarningColor),
+      onChanged: (int? v) async {
+        if (v != null) {
+          await onCardSelected(v, label);
+        }
+      },
+      title: Text(
+        label,
+        overflow: TextOverflow.ellipsis,
+        style: context.textTheme.titleSmall?.copyWith(
+          color: kDangerColor,
+          fontWeight: FontWeight.bold,
         ),
+      ),
+      secondary: IconButton(
+        style: IconButton.styleFrom(
+          padding: EdgeInsets.zero,
+          backgroundColor: kWarningColor.toAlpha(0.5),
+        ),
+        onPressed: () =>
+            context.previewLayout(img: assetName, layoutName: label),
+        icon: const Icon(Icons.zoom_in, color: kWhiteColor),
       ),
     );
   }

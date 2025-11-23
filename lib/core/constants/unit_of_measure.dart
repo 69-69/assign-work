@@ -47,6 +47,6 @@ class UOMHelper {
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final list = EnumHelper.toStringList<UnitOfMeasure>(UnitOfMeasure.values);
-    return includeHeader ? ['unit of measure', ...list] : list;
+    return includeHeader ? ['Unit of Measure', ...list] : list;
   }
 }

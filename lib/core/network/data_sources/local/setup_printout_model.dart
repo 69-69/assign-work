@@ -25,6 +25,14 @@ class SetupPrintOut extends HiveObject {
   final String? companyAddress;
   @HiveField(9)
   final String? companyFax;
+  @HiveField(10)
+  final double? bodyFontSize;
+  @HiveField(11)
+  final double? tableFontSize;
+  @HiveField(12)
+  final double? subHeaderFontSize;
+  @HiveField(13)
+  final double? headerFontSize;
 
   SetupPrintOut({
     this.layout = 'dense',
@@ -37,15 +45,19 @@ class SetupPrintOut extends HiveObject {
     this.companyPhone,
     this.companyAddress,
     this.companyFax,
+    this.bodyFontSize = 11.0,
+    this.tableFontSize = 10.0,
+    this.headerFontSize = 12.0,
+    this.subHeaderFontSize = 13.0,
   });
 
-  // Check for all empty fields
-  bool get isEmpty =>
-      layout == '' &&
-          (paletteColor.isEmpty || paletteColor.contains('[]')) &&
-          headerColor == '' &&
-          footerColor == '' &&
-          companyLogo == '';
+  /// A singleton instance representing an empty/default SetupPrintOut.
+  /// Used as a fallback when no matching SetupPrintOut is found.
+  static final empty = SetupPrintOut();
+
+  /// Returns true if this instance is the singleton [empty] SetupPrintOut.
+  /// Use this to check if the SetupPrintOut is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, SetupPrintOut.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -55,8 +67,8 @@ class SetupPrintOut extends HiveObject {
   // Check for empty colors fields
   bool get isColorsEmpty =>
       (paletteColor.isEmpty || paletteColor.contains('[]')) &&
-          headerColor == '' &&
-          footerColor == '';
+      headerColor == '' &&
+      footerColor == '';
 
   String get asString =>
       '$layout -> $paletteColor -> $headerColor -> $footerColor';
@@ -72,17 +84,34 @@ class SetupPrintOut extends HiveObject {
     String? companyPhone,
     String? companyAddress,
     String? companyFax,
-  }) =>
-      SetupPrintOut(
-        layout: layout ?? this.layout,
-        headerColor: headerColor ?? this.headerColor,
-        footerColor: footerColor ?? this.footerColor,
-        paletteColor: paletteColor ?? this.paletteColor,
-        companyLogo: companyLogo ?? this.companyLogo,
-        companyName: companyName ?? this.companyName,
-        companyEmail: companyEmail ?? this.companyEmail,
-        companyPhone: companyPhone ?? this.companyPhone,
-        companyAddress: companyAddress ?? this.companyAddress,
-        companyFax: companyFax ?? this.companyFax,
-      );
+    double? headerFontSize,
+    double? bodyFontSize,
+    double? subHeaderFontSize,
+    double? tableFontSize,
+  }) => SetupPrintOut(
+    layout: layout ?? this.layout,
+    headerColor: headerColor ?? this.headerColor,
+    footerColor: footerColor ?? this.footerColor,
+    paletteColor: paletteColor ?? this.paletteColor,
+    companyLogo: companyLogo ?? this.companyLogo,
+    companyName: companyName ?? this.companyName,
+    companyEmail: companyEmail ?? this.companyEmail,
+    companyPhone: companyPhone ?? this.companyPhone,
+    companyAddress: companyAddress ?? this.companyAddress,
+    companyFax: companyFax ?? this.companyFax,
+    headerFontSize: headerFontSize ?? this.headerFontSize,
+    bodyFontSize: bodyFontSize ?? this.bodyFontSize,
+    subHeaderFontSize: subHeaderFontSize ?? this.subHeaderFontSize,
+    tableFontSize: tableFontSize ?? this.tableFontSize,
+  );
 }
+
+/* // Check for all empty fields
+  bool get isEmpty =>
+      layout == '' &&
+      (paletteColor.isEmpty || paletteColor.contains('[]')) &&
+      headerColor == '' &&
+      footerColor == '' &&
+      companyLogo == '';
+
+  bool get isNotEmpty => !isEmpty;*/

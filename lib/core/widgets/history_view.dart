@@ -171,6 +171,17 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
     _items = List.from(widget.items);
   }
 
+  @override
+  void didUpdateWidget(covariant InlineHistoryTable<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.items != widget.items) {
+      _items = List.from(widget.items);
+      if (_sortColumnIndex != null) {
+        _sort(_sortColumnIndex!, _ascending);
+      }
+    }
+  }
+
   /// Handles sorting of the table by a given column index
   void _sort(int index, bool ascending) {
     if (widget.sortAccessors == null || index >= widget.sortAccessors!.length) {
@@ -230,14 +241,8 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
   /// Builds the PaginatedDataTable widget
   PaginatedDataTable _buildPaginatedDataTable() {
     return PaginatedDataTable(
-      header: widget.title == null
-          ? null
-          : Text(
-              widget.title ?? '',
-              textAlign: TextAlign.center,
-              style: context.textTheme.titleLarge,
-            ),
-      rowsPerPage: _calculateRowsPerPageHeight(), // number of rows per page
+      header: _buildTitle(),
+      rowsPerPage: _rowsPerPageHeight, // number of rows per page
       showCheckboxColumn: false,
       sortColumnIndex: _sortColumnIndex, // current sorted column
       sortAscending: _ascending, // current sort direction
@@ -254,14 +259,23 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
     );
   }
 
-  /// Calculates the number of rows per page based on available height [_calculateRowsPerPageHeight]
-  int _calculateRowsPerPageHeight() {
+  Text? _buildTitle() {
+    return widget.title == null
+        ? null
+        : Text(
+            widget.title ?? '',
+            textAlign: TextAlign.center,
+            style: context.textTheme.titleLarge,
+          );
+  }
+
+  /// Calculates the number of rows per page based on available height [_rowsPerPageHeight]
+  int get _rowsPerPageHeight {
     // Measure available height to determine rows per page
-    final availableHeight = context.screenHeight * 0.56;
-    final totalRows = _items.length;
     const rowHeight = 56.0; // default DataRow height
-    int rowsPerPage = (availableHeight ~/ rowHeight).clamp(1, totalRows);
-    return rowsPerPage;
+    final totalRows = _items.length;
+    final availableHeight = context.screenHeight * 0.5;
+    return (availableHeight ~/ rowHeight).clamp(1, totalRows);
   }
 
   /// Builds the table columns with optional sorting
@@ -273,9 +287,10 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
             widget.columnLabels[i],
             style: TextStyle(color: context.onSurfaceColor),
           ),
-          onSort: widget.sortAccessors == null
-              ? null
-              : (colIndex, asc) => _sort(colIndex, asc),
+          onSort:
+              (widget.sortAccessors != null && i < widget.sortAccessors!.length)
+              ? (colIndex, asc) => _sort(colIndex, asc)
+              : null,
         ),
     ];
   }

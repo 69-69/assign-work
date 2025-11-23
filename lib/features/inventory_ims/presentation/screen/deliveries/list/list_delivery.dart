@@ -68,7 +68,7 @@ class _ListDeliveriesState extends State<ListDeliveries> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: Delivery.dataHeader,
-      anyWidget: _buildAnyWidget(deliveries),
+      toolbar: _buildToolbar(deliveries),
       rows: pendingDeliveries.map((d) => d.itemAsList()).toList(),
       childrenRow: deliveredDeliveries.map((d) => d.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -97,7 +97,7 @@ class _ListDeliveriesState extends State<ListDeliveries> {
     );
   }
 
-  _buildAnyWidget(List<Delivery> deliveries) {
+  _buildToolbar(List<Delivery> deliveries) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

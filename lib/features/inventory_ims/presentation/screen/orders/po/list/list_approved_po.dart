@@ -62,7 +62,7 @@ class _ListApprovedPOState extends State<ListApprovedPO> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 3,
-      anyWidget: _buildAnyWidget(orders),
+      toolbar: _buildToolbar(orders),
       headers: PurchaseOrder.dataTableHeader,
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -85,7 +85,7 @@ class _ListApprovedPOState extends State<ListApprovedPO> {
     );
   }
 
-  _buildAnyWidget(List<PurchaseOrder> orders) {
+  _buildToolbar(List<PurchaseOrder> orders) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

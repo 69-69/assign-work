@@ -10,7 +10,7 @@ class PrintoutSetupCacheService {
     : dataBox = Hive.box<SetupPrintOut>(printoutSetupCache);
 
   Future<SetupPrintOut?> getSettings() async {
-    return dataBox.get(_settingsKey, defaultValue: SetupPrintOut());
+    return dataBox.get(_settingsKey, defaultValue: SetupPrintOut.empty);
   }
 
   Future<void> setSettings(SetupPrintOut settings) async {

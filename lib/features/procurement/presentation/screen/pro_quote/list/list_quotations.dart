@@ -95,7 +95,7 @@ class _ListQuotationsState extends State<ListQuotations> {
 
     return DynamicDataTable(
       omitAtIndex: 0,
-      anyWidget: _buildAnyWidget(quotes),
+      toolbar: _buildToolbar(quotes),
       headers: RequestForQuote.dataTableHeader,
       rows: data.rows,
       childrenRow: data.childrenRow,
@@ -175,7 +175,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     });
   }
 
-  _buildAnyWidget(List<RequestForQuote> quotes) {
+  _buildToolbar(List<RequestForQuote> quotes) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,7 +291,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     final supplier = await _getSupplier(quote.supplierId);
 
     if (mounted) {
-      // Log that details were viewed
+      // Log that User viewed details
       if (AuditTracker.shouldLog(id: quote.id, type: DocType.rfq)) {
         _readBloc.add(_updateHistory(quote, action: AuditAction.viewed));
       }

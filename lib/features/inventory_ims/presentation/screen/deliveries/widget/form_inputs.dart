@@ -60,11 +60,11 @@ class DeliveryStatusAndTypesDropdown extends StatelessWidget {
       children: [
         DeliveryTypeDropdown(
           initialType: initialType,
-          onValueChange: onTypeChange,
+          onValueChanged: onTypeChange,
         ),
         DeliveryStatusDropdown(
           initialStatus: initialStatus,
-          onChange: onStatusChange,
+          onChanged: onStatusChange,
         ),
       ],
     );
@@ -153,12 +153,12 @@ class DeliveryPhoneTextField extends StatelessWidget {
 
 /// Delivery Transportation [DeliveryTypeDropdown]
 class DeliveryTypeDropdown extends StatelessWidget {
-  final void Function(dynamic s) onValueChange;
+  final void Function(dynamic s) onValueChanged;
   final String? initialType;
 
   const DeliveryTypeDropdown({
     super.key,
-    required this.onValueChange,
+    required this.onValueChanged,
     this.initialType,
   });
 
@@ -169,21 +169,20 @@ class DeliveryTypeDropdown extends StatelessWidget {
       items: deliveryTypes,
       label: 'delivery type',
       initialValue: initialType,
-      getValue: (type) => type,
       getDisplayText: (type) => type,
-      onChanged: (String? v) => onValueChange(v),
+      onChanged: onValueChanged,
     );
   }
 }
 
 /// Delivery Status [DeliveryStatusDropdown]
 class DeliveryStatusDropdown extends StatelessWidget {
-  final void Function(dynamic s) onChange;
+  final void Function(dynamic s) onChanged;
   final String? initialStatus;
 
   const DeliveryStatusDropdown({
     super.key,
-    required this.onChange,
+    required this.onChanged,
     this.initialStatus,
   });
 
@@ -194,9 +193,8 @@ class DeliveryStatusDropdown extends StatelessWidget {
       items: deliveryStatus,
       label: 'delivery status',
       initialValue: initialStatus,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChange(v),
+      onChanged: onChanged,
     );
   }
 }

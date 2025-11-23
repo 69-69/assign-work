@@ -103,9 +103,8 @@ class SaleStatusDropdown extends StatelessWidget {
       items: saleStatus,
       label: 'sale status',
       initialValue: initialValue,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onStatusChange(v),
+      onChanged: onStatusChange,
     );
   }
 }
@@ -314,9 +313,8 @@ class PaymentMethodDropdown extends StatelessWidget {
       items: paymentMethod,
       label: 'payment method',
       initialValue: initialValue,
-      getValue: (method) => method,
       getDisplayText: (method) => method,
-      onChanged: (String? v) => onChanged(v),
+      onChanged: onChanged,
     );
   }
 }

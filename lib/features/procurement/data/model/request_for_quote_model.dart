@@ -570,9 +570,6 @@ class RFQLineItem extends ProLineItem {
   String getTaxName(Map<String, ResolveTaxCode> taxMap) =>
       _getTaxName(taxCodes, taxMap, '\n');
 
-  bool get isEmpty => itemName.isEmpty;
-  bool get isNotEmpty => !isEmpty;
-
   @override
   bool filterByAny(String filter) =>
       super.filterByAny(filter) ||

@@ -37,7 +37,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
   Widget _buildCard(BuildContext context) {
     return DynamicDataTable(
       maskAtIndex: 0,
-      anyWidget: _anyWidget(),
+      toolbar: _buildToolbar(),
       headers: ErrorLog.dataTableHeader,
       rows: _logs.map((l) => l.toListL()).toList(),
       onDeleteTap: (row) async => await _onDeleteTap(row.first),
@@ -57,7 +57,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
     );
   }
 
-  Widget _anyWidget() {
+  Widget _buildToolbar() {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

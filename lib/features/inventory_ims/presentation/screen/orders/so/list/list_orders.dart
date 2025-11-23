@@ -66,7 +66,7 @@ class _ListOrdersState extends State<ListOrders> {
       omitAtIndex: 0,
       maskAtIndex: 3,
       headers: Orders.dataTableHeader,
-      anyWidget: _buildAnyWidget(orders),
+      toolbar: _buildToolbar(orders),
       rows: todayOrders.map((o) => o.itemAsList()).toList(),
       childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -95,7 +95,7 @@ class _ListOrdersState extends State<ListOrders> {
     );
   }
 
-  _buildAnyWidget(List<Orders> orders) {
+  _buildToolbar(List<Orders> orders) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,

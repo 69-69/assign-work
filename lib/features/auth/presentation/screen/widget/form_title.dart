@@ -20,7 +20,7 @@ class FormTitle extends StatelessWidget {
         Expanded(
           child: _buildCard(
             context,
-            color: context.scaffoldBgColor.toAlpha(0.8),
+            color: context.bgAuthColor,
 
             child: ListTile(
               titleAlignment: ListTileTitleAlignment.center,

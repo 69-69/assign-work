@@ -23,9 +23,12 @@ const kGoldColor = Color(0xFFAA7706);
 const kSuccessColor = Color(0xFF44CA03);
 const kDarkSuccessColor = Color(0xFF3AAE02);
 const kDangerColor = Color(0xFFEE3737);
+const kModelColor = Color(0x33000000);
 const kDarkTextColor = Colors.black;
 const kDefaultPadding = 20.0;
 const kBorderRadius = 25.0;
+/*color: Color(0x33000000),
+  darkColor: Color(0x7A000000),*/
 // const kTitleTextColor = Color(0xFF30384D);
 
 extension ColorToInt on Color {
@@ -56,6 +59,7 @@ extension DefaultColors on BuildContext {
   Color get surfaceTintColor => colorScheme.surfaceTint;
   // switch between black/white
   Color get scaffoldBgColor => ofTheme.scaffoldBackgroundColor;
+  Color get bgAuthColor => scaffoldBgColor.toAlpha(0.8);
 }
 
 // list of random colors for the cards

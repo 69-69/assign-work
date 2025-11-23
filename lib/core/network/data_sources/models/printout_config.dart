@@ -21,6 +21,10 @@ class PrintPDFConfig {
   final PdfColor footerColor;
   final PdfColor baseTextColor;
   final IssuerCompany company;
+  final double bodyFontSize;
+  final double headerFontSize;
+  final double subHeaderFontSize;
+  final double tableFontSize;
 
   // this.baseColor = PdfColors.teal, // header
   // this.accentColor = PdfColors.blueGrey900, // footer
@@ -35,6 +39,10 @@ class PrintPDFConfig {
     required this.headerColor,
     required this.footerColor,
     required this.baseTextColor,
+    required this.bodyFontSize,
+    required this.headerFontSize,
+    required this.subHeaderFontSize,
+    required this.tableFontSize,
   });
 
   // Asynchronous factory constructor
@@ -57,6 +65,10 @@ class PrintPDFConfig {
     PdfColor headerColor = PdfColors.teal;
     PdfColor footerColor = PdfColors.blueGrey900;
     PdfColor baseTextColor = PdfColors.white;
+    double bodyFontSize = setup?.bodyFontSize ?? 11.0;
+    double tableFontSize = setup?.tableFontSize ?? 10.0;
+    double headerFontSize = setup?.headerFontSize ?? 13.0;
+    double subHeaderFontSize = setup?.subHeaderFontSize ?? 12.0;
 
     if (setup != null && !setup.isColorsEmpty) {
       company = IssuerCompany(
@@ -83,6 +95,10 @@ class PrintPDFConfig {
       headerColor: headerColor,
       footerColor: footerColor,
       baseTextColor: baseTextColor,
+      bodyFontSize: bodyFontSize,
+      tableFontSize: tableFontSize,
+      headerFontSize: headerFontSize,
+      subHeaderFontSize: subHeaderFontSize,
     );
   }
 }

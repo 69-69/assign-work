@@ -20,6 +20,7 @@ Future<void> main({bool testing = false}) async {
 
   // Init Local DB/Cache all Server Operation data
   await cacheDBAdaptor();
+
   // await PrintoutService.init();
 
   // Disable screen orientation to PORTRAIT-UP ONLY

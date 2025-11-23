@@ -57,9 +57,8 @@ class GuideCategoryDropdown extends StatelessWidget {
       items: categoryList,
       label: 'Select guide category',
       initialValue: serverCategory,
-      getValue: (category) => category,
       getDisplayText: (category) => category,
-      onChanged: (String? v) => onCategoryChange(v),
+      onChanged: onCategoryChange,
     );
   }
 }

@@ -60,11 +60,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Attendance.dataTableHeader,
-      anyWidget: _anyWidget(cxt),
+      toolbar: _buildToolbar(cxt),
       rows: attendances.map((d) => d.itemAsList()).toList(),
-      editLabel: 'View Areas',
-      editIcon: Icons.explore_outlined,
-      onEditTap: (row) async => _onViewAreasTap(cxt, attendances, row.first),
+      optButtonLabel: 'View',
+      optButtonIcon: Icons.explore_outlined,
+      onOptButtonTap: (row) async =>
+          _onViewAreasTap(cxt, attendances, row.first),
       onDeleteTap: (row) async => _onDeleteTap(cxt, attendances, row.first),
       onChecked: (bool? isChecked, row) {
         setState(() => _updateSelectedIds(isChecked, row.first));
@@ -101,7 +102,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  Widget _anyWidget(BuildContext cxt) {
+  Widget _buildToolbar(BuildContext cxt) {
     return Wrap(
       spacing: 10.0,
       runSpacing: 10.0,

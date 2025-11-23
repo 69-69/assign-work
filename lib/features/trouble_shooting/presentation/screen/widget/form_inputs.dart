@@ -104,9 +104,8 @@ class SubscriptionAndTotalDevicesDropdown extends StatelessWidget {
           label: 'total devices',
           initialValue: initialTotalDevices,
           items: List.generate(20, (i) => '$i'),
-          getValue: (total) => total,
           getDisplayText: (total) => total,
-          onChanged: (String? v) => onTotalDevicesChanged(v),
+          onChanged: onTotalDevicesChanged,
         ),
         SearchSubscription(
           initialValue: initialSub,

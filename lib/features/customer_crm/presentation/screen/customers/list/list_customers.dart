@@ -55,7 +55,7 @@ class _ListCustomersState extends State<ListCustomers> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Customer.dataTableHeader,
-      anyWidget: _buildAnyWidget(customers),
+      toolbar: _buildToolbar(customers),
       rows: todayCustomers.map((o) => o.itemAsList()).toList(),
       childrenRow: pastCustomers.map((o) => o.itemAsList()).toList(),
       onEditTap: (row) async => await _onEditTap(context, customers, row.first),
@@ -63,7 +63,7 @@ class _ListCustomersState extends State<ListCustomers> {
     );
   }
 
-  _buildAnyWidget(List<Customer> customers) {
+  _buildToolbar(List<Customer> customers) {
     return context.actionInfoButton(
       'Refresh Customers',
       label: 'Customers',

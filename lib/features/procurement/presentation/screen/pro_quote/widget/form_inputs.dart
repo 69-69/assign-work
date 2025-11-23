@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/item_category.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
@@ -13,6 +14,7 @@ import 'package:assign_erp/features/procurement/presentation/screen/pro_requisit
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 /// [FindApprovedPurchaseRequisition]
@@ -74,9 +76,8 @@ class UnitOfMeasureDropdown extends StatelessWidget {
         label: strList.first,
         initialValue: initialValue,
         items: strList,
-        getValue: (uom) => uom,
-        getDisplayText: (uom) => uom,
-        onChanged: (String? v) => onChanged(v),
+        getDisplayText: (uom) => uom.toTitle,
+        onChanged: onChanged,
       ),
     );
   }
@@ -106,9 +107,8 @@ class ItemCategoryDropdown extends StatelessWidget {
         label: strList.first,
         initialValue: initialValue,
         items: strList,
-        getValue: (priority) => priority,
-        getDisplayText: (priority) => priority,
-        onChanged: (String? v) => onChanged(v),
+        getDisplayText: (priority) => priority.toTitle,
+        onChanged: onChanged,
       ),
     );
   }
@@ -255,11 +255,12 @@ class CurrencyDropdown extends StatelessWidget {
       key: key,
       items: currencyType,
       label: 'Select currency',
-      initialValue: initialCurrency,
-      getValue: (currency) => currency['code'] ?? '',
+      initialValue: currencyType.firstWhereOrNull(
+        (c) => c['code'] == initialCurrency,
+      ),
       getDisplayText: (currency) =>
           '${currency['code']} (${currency['symbol']})',
-      onChanged: (String? v) => onCurrencyChanged(v),
+      onChanged: (v) => onCurrencyChanged(v?['code']),
     );
   }
 }
@@ -603,9 +604,8 @@ class RFQStatusDropdown extends StatelessWidget {
       label: 'Quote status',
       initialValue: initialValue,
       items: requestForQuoteStatus,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onChange(v),
+      onChanged: onChange,
     );
   }
 }
@@ -627,10 +627,11 @@ class PayTermsDropdown extends StatelessWidget {
       key: key,
       items: paymentTerms,
       label: 'Payment terms',
-      initialValue: initialValue,
-      getValue: (term) => term['id'] ?? '',
-      getDisplayText: (term) => term['term'] ?? '',
-      onChanged: (String? v) => onChange(v),
+      initialValue: paymentTerms.firstWhereOrNull(
+        (term) => term['id'] == initialValue,
+      ),
+      getDisplayText: (term) => term['term']!,
+      onChanged: (term) => onChange(term?['id']),
     );
   }
 }

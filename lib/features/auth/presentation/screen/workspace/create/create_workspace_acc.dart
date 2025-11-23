@@ -95,7 +95,7 @@ class CreateNewWorkspaceForm extends StatelessWidget {
         const SizedBox(height: 20),
         FormGroupCard(
           title: 'Business Info',
-          // bgColor: context.scaffoldBgColor.toAlpha(0.8),
+          // bgColor: context.bgAuthColor,
           children: [
             AdaptiveLayout(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

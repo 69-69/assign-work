@@ -9,7 +9,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-/// Printout for Purchase Requisition [PRPrinter]
+/// Printout for Purchase Requisition
 class PRPrinter {
   final Employee employee;
   final PurchaseRequisition requisite;
@@ -35,28 +35,28 @@ class PRPrinter {
 
     final pr = _PRPdfBuilder(
       items: lineItems,
-      status: req.getPRStatus,
-      priority: req.getPriority,
-      prNumber: req.prNumber,
-      departmentCode: req.departmentCode,
-      storeNumber: req.storeNumber,
       requestedBy: employee,
       purpose: req.purpose,
-      approvedBy: history.$1,
-      approvedDate: history.$2,
+      prNumber: req.prNumber,
+      status: req.getPRStatus,
+      priority: req.getPriority,
+      storeNumber: req.storeNumber,
       requestDate: req.getRequestDate,
       neededByDate: req.getNeededByDate,
+      departmentCode: req.departmentCode,
+      approvedBy: history.$1,
+      approvedDate: history.$2,
     );
 
     // Now you can use the `pr` object as needed, e.g., to print or display it
     return await pr.build(format);
   }
 
-  /// Get the last approved PR entry and the date it was approved [_prHistory]
+  /// Get the last approved PR entry and the date it was approved
   (String?, String?) _prHistory(PurchaseRequisition req) {
     // Find the most recent approved PR entry
     final lastApproved = req.history.lastWhere(
-      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
+      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel.toLowerAll,
       orElse: () => AuditLog.empty,
     );
 
@@ -67,7 +67,7 @@ class PRPrinter {
   }
 }
 
-/// Print Purchase Requisition Item [_PrintPRItem]
+/// Print Purchase Requisition Item
 class _PrintPRItem {
   const _PrintPRItem({
     required this.itemName,
@@ -135,7 +135,7 @@ class _PrintPRItem {
   ];
 }
 
-/// Purchase Requisition PDF Builder [PRPdfBuilder]
+/// Purchase Requisition PDF Builder
 class _PRPdfBuilder {
   _PRPdfBuilder({
     required this.status,
@@ -170,26 +170,37 @@ class _PRPdfBuilder {
   late final PrintPDFConfig _pdfColors;
   late final IssuerCompany _company;
 
+  /// Body Font Size = 11 [_bodyFontSize]
+  late double _bodyFontSize;
+
+  /// Header Font Size = 13 [_headerFontSize]
+  late final double _headerFontSize;
+
+  /// Sub-header Font Size = 12 [_subHeaderFontSize]
+  late final double _subHeaderFontSize;
+
+  /// Table Font Size = 10 [_tableFontSize]
+  late final double _tableFontSize;
+
   /// Generate PDF-Doc [build]
   Future<Uint8List> build(PdfPageFormat pageFormat) async {
     // Create a PDF document.
     final doc = pw.Document();
     _pdfColors = await PrintPDFConfig.create();
     _company = _pdfColors.company;
+    _bodyFontSize = _pdfColors.bodyFontSize;
+    _tableFontSize = _pdfColors.tableFontSize;
+    _headerFontSize = _pdfColors.bodyFontSize;
+    _subHeaderFontSize = _pdfColors.subHeaderFontSize;
 
     // Request For Quotation: Add page to the PDF
     await _addPRPage(doc, pageFormat, _pdfColors.footerColor);
 
     // Return the PDF file content
     return doc.save();
-
-    /*Load Assets Images
-    ({Uint8List logo, String bg}) img = await LoadPrintAsset.loadImg();
-    _logo = img.logo;
-    _bgShape = img.bg;*/
   }
 
-  /// PDF-Generator Theme [_buildTheme]
+  /// PDF-Generator Theme
   Future<pw.PageTheme> _buildTheme(PdfPageFormat pageFormat) async {
     return await FontManager.loadTheme(
       pageFormat,
@@ -198,7 +209,7 @@ class _PRPdfBuilder {
     );
   }
 
-  /// RFQ: First page to the PDF [_addPRPage]
+  /// RFQ: First page to the PDF
   _addPRPage(pw.Document doc, PdfPageFormat pageFormat, PdfColor fColor) async {
     doc.addPage(
       pw.MultiPage(
@@ -213,13 +224,13 @@ class _PRPdfBuilder {
           pw.Divider(color: fColor, thickness: 0.3, height: 20),
           _buildApprovedSignature(context),
           pw.SizedBox(height: 20),
-          _computerGenerated(),
+          // _computerGenerated(),
         ],
       ),
     );
   }
 
-  /// Purpose / Reason for PR [_buildPurpose]
+  /// Purpose / Reason for PR
   pw.Column _buildPurpose() {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -230,26 +241,20 @@ class _PRPdfBuilder {
           'Purpose / Reason:',
           textAlign: pw.TextAlign.start,
           style: pw.TextStyle(
-            fontSize: 10,
+            fontSize: _tableFontSize,
             color: _pdfColors.headerColor,
             fontWeight: pw.FontWeight.bold,
           ),
         ),
-        _buildText(purpose.toSentence, style: pw.TextStyle(fontSize: 10)),
+        _buildText(
+          purpose.toSentence,
+          style: pw.TextStyle(fontSize: _tableFontSize),
+        ),
       ],
     );
   }
 
-  /// Computer Generate Notice [_computerGenerated]
-  pw.Center _computerGenerated() => pw.Center(
-    child: pw.Text(
-      'Electronic version - $_prTitle',
-      textAlign: pw.TextAlign.center,
-      style: pw.TextStyle(fontSize: 11),
-    ),
-  );
-
-  /// PDF-Doc Header [_buildPdfHeader]
+  /// PDF-Doc Header
   pw.Widget _buildPdfHeader(pw.Context context) {
     return pw.Expanded(
       child: pw.Column(
@@ -282,61 +287,57 @@ class _PRPdfBuilder {
     );
   }
 
-  /// Company Logo [_buildCompanyLogo]
+  /// Company Logo
   _buildCompanyLogo() {
     return (_pdfColors.logo != null)
         ? pw.Container(
             alignment: pw.Alignment.topLeft,
             height: 40,
             padding: pw.EdgeInsets.zero,
+            margin: pw.EdgeInsets.zero,
             child: pw.Image(pw.MemoryImage(_pdfColors.logo!)),
             // _logo != null ? pw.SvgImage(svg: _logo!) : pw.PdfLogo(),
           )
         : pw.SizedBox.shrink();
   }
 
-  /// Requester Info: name, department, role [_requestByInfo]
+  /// Requester Info: name, department, role
   pw.Container _requestByInfo() {
+    final reqList = [
+      'Request By:',
+      requestedBy.fullName.toTitle,
+      requestedBy.departmentCode.toUpperAll,
+      requestedBy.role.toTitle,
+    ];
+
     return pw.Container(
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
-        style: const pw.TextStyle(fontSize: 12),
+        style: pw.TextStyle(fontSize: _bodyFontSize),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            _buildText(
-              'Request By:',
-              style: pw.TextStyle(
-                color: _pdfColors.headerColor,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-            _buildText(
-              requestedBy.fullName.toTitle,
-              textAlign: pw.TextAlign.start,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13),
-            ),
-            pw.SizedBox(height: 2),
-            _buildText(
-              requestedBy.departmentCode.toUpperAll,
-              textAlign: pw.TextAlign.start,
-            ),
-            pw.SizedBox(height: 2),
-            _buildText(requestedBy.role.toTitle, textAlign: pw.TextAlign.start),
-          ],
+          children: _buildSection(reqList).toList(),
         ),
       ),
     );
   }
 
-  /// PR Class: status, priority [_buildPRClass]
+  /// PR Class: status, priority
   pw.Container _buildPRClass() {
+    final classList = [
+      ('Priority', priority.toUpperAll),
+      ('Status', status.toTitle),
+    ];
+
     return pw.Container(
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+        style: pw.TextStyle(
+          fontSize: _bodyFontSize,
+          fontWeight: pw.FontWeight.bold,
+        ),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
@@ -345,32 +346,34 @@ class _PRPdfBuilder {
               textAlign: pw.TextAlign.start,
               style: pw.TextStyle(color: _pdfColors.headerColor),
             ),
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'Status: ',
-                children: [
-                  pw.TextSpan(
-                    text: status.toTitle,
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 2),
-
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'Priority: ',
-                children: [
-                  pw.TextSpan(
-                    text: priority.toUpperAll,
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
-              ),
-            ),
+            ..._buildSubSection(classList),
           ],
         ),
+      ),
+    );
+  }
+
+  // Helper function to create the styled text
+  Iterable<pw.Text> _buildSection(List<dynamic> list) {
+    return list.map(
+      (i) => _buildText(
+        i,
+        textAlign: pw.TextAlign.start,
+        style: pw.TextStyle(
+          fontWeight: list.first == i ? pw.FontWeight.bold : null,
+          color: list.first == i ? _pdfColors.headerColor : null,
+        ),
+      ),
+    );
+  }
+
+  // Helper function to create rich text for sub items (e.g. Tel, Email)
+  Iterable<pw.RichText> _buildSubSection(List<dynamic> list) {
+    return list.map(
+      (i) => _buildRichText(
+        '${i.$1}: ',
+        i.$2,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
       ),
     );
   }
@@ -383,7 +386,24 @@ class _PRPdfBuilder {
     return pw.Text(label, softWrap: true, textAlign: textAlign, style: style);
   }
 
-  /// PDF-Doc Footer [_buildPdfFooter]
+  pw.RichText _buildRichText(String title, String desc, {pw.TextStyle? style}) {
+    return pw.RichText(
+      softWrap: true,
+      textAlign: pw.TextAlign.start,
+      text: pw.TextSpan(
+        text: title,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+        children: [
+          pw.TextSpan(
+            text: desc,
+            style: style ?? pw.TextStyle(fontWeight: pw.FontWeight.normal),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// PDF-Doc Footer
   pw.Widget _buildPdfFooter(pw.Context context) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -394,25 +414,25 @@ class _PRPdfBuilder {
           width: 100,
           child: pw.BarcodeWidget(
             barcode: pw.Barcode.pdf417(),
-            data: 'Request For Quote #: $prNumber',
+            data: '$_prTitle #: $prNumber',
             drawText: false,
           ),
         ),
         pw.Text(
-          'Page ${context.pageNumber}/${context.pagesCount}',
-          style: const pw.TextStyle(fontSize: 12, color: PdfColors.white),
+          'Electronic Version - Page ${context.pageNumber}/${context.pagesCount}',
+          style: pw.TextStyle(fontSize: _tableFontSize, color: PdfColors.white),
         ),
       ],
     );
   }
 
-  /// PDF-Doc Footer background-Img [_buildFooterBg]
+  /// PDF-Doc Footer background-Img
   pw.FullPage _buildFooterBg() => pw.FullPage(
     ignoreMargins: true,
     child: pw.SvgImage(svg: _pdfColors.footerImg),
   );
 
-  /// Company's info: name, email, phone, address & PO Title & Number [_buildDocHeaderInfo]
+  /// Company's info: name, email, phone, address & PO Title & Number
   pw.Widget _buildDocHeaderInfo(pw.Context context) {
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -425,128 +445,79 @@ class _PRPdfBuilder {
     );
   }
 
-  /// PR number, Request & Needed date [_buildPRDates]
+  /// PR number, Request & Needed date
   _buildPRDates() {
+    final topList = [
+      ('Store ID', storeNumber.toUpperAll),
+      ('PR#', prNumber.toUpperAll),
+      ('Date', requestDate),
+      ('Needed By', neededByDate),
+    ];
+
     return pw.Container(
       height: 70,
       alignment: pw.Alignment.topRight,
       child: pw.DefaultTextStyle(
         softWrap: false,
         textAlign: pw.TextAlign.end,
-        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+        style: pw.TextStyle(
+          fontWeight: pw.FontWeight.bold,
+          fontSize: _bodyFontSize,
+        ),
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
             pw.Text(
               _prTitle.toUpperAll,
-              style: pw.TextStyle(color: _pdfColors.headerColor, fontSize: 14),
-            ),
-            pw.SizedBox(height: 3.0),
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'Store ID: ',
-                children: [
-                  pw.TextSpan(
-                    text: storeNumber.toUpperAll,
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
+              style: pw.TextStyle(
+                color: _pdfColors.headerColor,
+                fontSize: _headerFontSize,
               ),
             ),
-            pw.SizedBox(height: 3.0),
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'PR#: ',
-                children: [
-                  pw.TextSpan(
-                    text: prNumber.toUpperAll,
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 3.0),
-            pw.RichText(
-              text: pw.TextSpan(
-                text: 'Date: ',
-                children: [
-                  pw.TextSpan(
-                    text: requestDate,
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 4.0),
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              mainAxisAlignment: pw.MainAxisAlignment.end,
-              children: [
-                _buildText(
-                  'Needed By: ',
-                  style: pw.TextStyle(color: _pdfColors.headerColor),
-                ),
-                _buildText(
-                  neededByDate,
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.normal),
-                ),
-              ],
-            ),
+            ..._buildSubSection(topList),
           ],
         ),
       ),
     );
   }
 
-  /// Customer Name & Address [_buildCompanyInfo]
+  /// Customer Name & Address
   _buildCompanyInfo() {
+    final companyList = [
+      ('Tel', _company.phone),
+      ('Fax', _company.fax),
+      ('Email', _company.email),
+    ];
+
     return pw.Expanded(
       child: pw.Container(
         height: 70,
         alignment: pw.Alignment.topLeft,
         child: pw.DefaultTextStyle(
           softWrap: false,
-          style: const pw.TextStyle(fontSize: 12),
+          textAlign: pw.TextAlign.start,
+          style: pw.TextStyle(
+            fontWeight: pw.FontWeight.bold,
+            fontSize: _bodyFontSize,
+          ),
           child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               if (_pdfColors.logo != null) ...{_buildCompanyLogo()},
+              pw.SizedBox(width: 10),
               pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Text(
-                    _company.name,
-                    softWrap: true,
+                    _company.name.toTitle,
                     textAlign: pw.TextAlign.start,
                     style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 13,
+                      color: _pdfColors.headerColor,
+                      fontSize: _headerFontSize,
                     ),
                   ),
-                  pw.SizedBox(height: 3),
-                  pw.Text(
-                    _company.address,
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Tel: ${_company.phone}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Fax:  ${_company.fax}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
-                  pw.SizedBox(height: 2),
-                  pw.Text(
-                    'Email:  ${_company.email}',
-                    softWrap: true,
-                    textAlign: pw.TextAlign.start,
-                  ),
+                  ..._buildSection([_company.address]),
+                  ..._buildSubSection(companyList),
                 ],
               ),
             ],
@@ -556,7 +527,7 @@ class _PRPdfBuilder {
     );
   }
 
-  /// PDF PO Content: Table-labels & contents [_buildItemTable]
+  /// PDF PO Content: Table-labels & contents
   pw.Widget _buildItemTable(pw.Context context) {
     List<String> tableHeaders = _PrintPRItem.tableHeaders;
 
@@ -581,12 +552,12 @@ class _PRPdfBuilder {
       },
       headerStyle: pw.TextStyle(
         color: _pdfColors.baseTextColor,
-        fontSize: 10,
+        fontSize: _tableFontSize,
         fontWeight: pw.FontWeight.bold,
       ),
       cellStyle: pw.TextStyle(
         color: _pdfColors.blackColor,
-        fontSize: 10,
+        fontSize: _tableFontSize,
         fontWeight: pw.FontWeight.normal,
       ),
       rowDecoration: pw.BoxDecoration(
@@ -595,51 +566,30 @@ class _PRPdfBuilder {
         ),
       ),
       headers: tableHeaders,
-      /*List<String>.generate(
-        tableHeaders.length,
-        (col) => tableHeaders[col].toTitle,
-      ),*/
       data: _list(tableHeaders),
     );
   }
 
   List<List<String>> _list(List<String> tableHeaders) {
-    /*return List<List<String>>.generate(
-      items.length,
-      (row) => List<String>.generate(
-        tableHeaders.length,
-        (col) => items[row].itemAsList.elementAt(col),
-        // (col) => items[row].getIndex(tableHeaders[col], row),
-      ),
-    );*/
     final headerLength = tableHeaders.length;
 
     return items.map((i) => i.itemAsList.take(headerLength).toList()).toList();
   }
 
-  /// Approved & Signature [_buildApprovedSignature]
+  /// Approved & Signature
   pw.Widget _buildApprovedSignature(pw.Context context) {
     var hColor = _pdfColors.headerColor;
     var fColor = _pdfColors.footerColor;
 
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(2)),
-        border: pw.Border.all(color: fColor, width: 0.2),
-      ),
-      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-      alignment: pw.Alignment.bottomRight,
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.end,
-        children: [
-          _buildApprovedBy(hColor),
-          pw.Expanded(child: _buildSignatureBlock(fColor)),
-        ],
-      ),
+    return pw.Row(
+      children: [
+        _buildApprovedBy(hColor),
+        pw.Expanded(child: _buildSignatureBlock(fColor)),
+      ],
     );
   }
 
-  /// Approved By: name, date & Signature [_buildApprovedBy]
+  /// Approved By: name, date & Signature
   pw.Expanded _buildApprovedBy(PdfColor hColor) {
     return pw.Expanded(
       child: pw.Column(
@@ -649,7 +599,7 @@ class _PRPdfBuilder {
             'Approved By:',
             style: pw.TextStyle(
               color: hColor,
-              fontSize: 11,
+              fontSize: _bodyFontSize,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
@@ -657,24 +607,24 @@ class _PRPdfBuilder {
           _buildText(
             approvedBy?.toTitle ?? 'N/A',
             textAlign: pw.TextAlign.start,
-            style: pw.TextStyle(fontSize: 11),
+            style: pw.TextStyle(fontSize: _bodyFontSize),
           ),
           pw.SizedBox(height: 2),
           _buildText(
             approvedDate ?? 'N/A',
             textAlign: pw.TextAlign.start,
-            style: pw.TextStyle(fontSize: 11),
+            style: pw.TextStyle(fontSize: _bodyFontSize),
           ),
         ],
       ),
     );
   }
 
-  /// Append Signature [_buildSignatureBlock]
+  /// Append Signature
   pw.DefaultTextStyle _buildSignatureBlock(PdfColor fColor) {
     return pw.DefaultTextStyle(
       softWrap: false,
-      style: pw.TextStyle(color: fColor, fontSize: 11),
+      style: pw.TextStyle(color: fColor, fontSize: _bodyFontSize),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.end,
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -685,7 +635,7 @@ class _PRPdfBuilder {
             'Authorized Signatory',
             style: pw.TextStyle(
               color: fColor,
-              fontSize: 11,
+              fontSize: _bodyFontSize,
               fontWeight: pw.FontWeight.bold,
             ),
           ),

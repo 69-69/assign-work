@@ -274,9 +274,8 @@ class AccountStatusDropdown extends StatelessWidget {
       initialValue: initialValue,
       items: strList,
       label: strList.first,
-      getValue: (status) => status,
       getDisplayText: (status) => status,
-      onChanged: (String? v) => onStatusChanged(v),
+      onChanged: onStatusChanged,
     );
   }
 }

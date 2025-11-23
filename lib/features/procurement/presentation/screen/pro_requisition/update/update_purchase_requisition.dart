@@ -71,6 +71,10 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   ProPurchaseRequisiteBloc get _readBloc =>
       context.read<ProPurchaseRequisiteBloc>();
 
+  AuditAction get _action => _selectedPRStatus!.contains('approved')
+      ? AuditAction.approved
+      : AuditAction.updated;
+
   @override
   void initState() {
     super.initState();
@@ -99,7 +103,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     updatedBy: context.employee!.fullName,
     history: [
       ..._serverRequisite.history, // keep all old logs
-      AuditLog(action: AuditAction.updated, performedBy: _currentEmployeeId),
+      AuditLog(action: _action, performedBy: _currentEmployeeId),
     ],
   );
 
