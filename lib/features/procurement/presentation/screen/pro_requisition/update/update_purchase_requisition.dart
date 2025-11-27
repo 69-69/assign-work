@@ -51,35 +51,39 @@ class _PurchaseRequisite extends StatefulWidget {
 class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   final _formKey = GlobalKey<FormState>();
 
+  // Basic fields
   String? _requestedBy;
   String? _departmentCode;
-  String? _selectedPriority;
-  String? _selectedPRStatus;
-  DateTime? _selectedRequiredDate;
-  DateTime? _selectedRequestDate;
+  String? _priority;
+  String? _prStatus;
+  // Dates
+  DateTime? _expectedDate;
+  DateTime? _requestDate;
 
-  // Add a list to manage line items
+  /// Line Items & purpose/reason for PR
   final List<PRLineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
 
-  PurchaseRequisition get _serverRequisite => widget.requisite;
+  PurchaseRequisition get _serverPR => widget.requisite;
 
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
-  String get _currentEmployeeId => context.employee!.employeeId;
+  /// Current employee info
+  String get _employeeId => context.employee!.employeeId;
+  String get _employeeName => context.employee!.fullName;
 
-  ProPurchaseRequisiteBloc get _readBloc =>
+  ProPurchaseRequisiteBloc get _bloc =>
       context.read<ProPurchaseRequisiteBloc>();
 
-  AuditAction get _action => _selectedPRStatus!.contains('approved')
+  AuditAction get _action => _prStatus!.contains('approved')
       ? AuditAction.approved
       : AuditAction.updated;
 
   @override
   void initState() {
     super.initState();
-    _purposeForPR.addAll({'purpose': _serverRequisite.purpose});
-    _lineItems.addAll(_serverRequisite.lineItems);
+    _purposeForPR.addAll({'purpose': _serverPR.purpose});
+    _lineItems.addAll(_serverPR.lineItems);
   }
 
   @override
@@ -87,23 +91,22 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     super.dispose();
   }
 
-  PurchaseRequisition get _updatedRequisite => _serverRequisite.copyWith(
+  /// Construct Purchase Requisite object
+  PurchaseRequisition get _updatedPR => _serverPR.copyWith(
     priority: PriorityHelper.fromString(
-      _selectedPriority ?? _serverRequisite.priority.getValue,
+      _priority ?? _serverPR.priority.getValue,
     ),
-    status: PRStatusHelper.fromString(
-      _selectedPRStatus ?? _serverRequisite.status.getValue,
-    ),
-    requestedBy: _requestedBy ?? _serverRequisite.requestedBy,
-    departmentCode: _departmentCode ?? _serverRequisite.departmentCode,
-    neededByDate: _selectedRequiredDate ?? _serverRequisite.neededByDate,
-    requestDate: _selectedRequestDate ?? _serverRequisite.requestDate,
+    status: PRStatusHelper.fromString(_prStatus ?? _serverPR.status.getValue),
+    requestedBy: _requestedBy ?? _serverPR.requestedBy,
+    departmentCode: _departmentCode ?? _serverPR.departmentCode,
+    expectedDate: _expectedDate ?? _serverPR.expectedDate,
+    requestDate: _requestDate ?? _serverPR.requestDate,
     purpose: _purposeForPR['purpose'],
     lineItems: List.from(_lineItems),
-    updatedBy: context.employee!.fullName,
+    updatedBy: _employeeName,
     history: [
-      ..._serverRequisite.history, // keep all old logs
-      AuditLog(action: _action, performedBy: _currentEmployeeId),
+      ..._serverPR.history, // keep all old logs
+      AuditLog(action: _action, performedBy: _employeeId),
     ],
   );
 
@@ -116,11 +119,11 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       return;
     }
 
-    final bloc = _readBloc;
+    final bloc = _bloc;
     bloc.add(
       UpdateProcurement<PurchaseRequisition>(
-        documentId: _updatedRequisite.id,
-        data: _updatedRequisite,
+        documentId: _updatedPR.id,
+        data: _updatedPR,
       ),
     );
 
@@ -145,86 +148,19 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         FormGroupCard(
           title: 'Purchase Requisition',
           children: [
-            RequestedByAndDepartments(
-              initialDepartment: _serverRequisite.departmentCode,
-              initialRequestedBy: _serverRequisite.requestedBy,
-              onRequestedBy: (id, code, name) =>
-                  setState(() => _requestedBy = name),
-              onDepartmentChange: (id, code, name) =>
-                  setState(() => _departmentCode = code),
-            ),
-            PriorityAndPRStatusDropdown(
-              initialPriority: _serverRequisite.priority.getValue,
-              initialStatus: _serverRequisite.status.getValue,
-              onPriorityChanged: (s) => setState(() => _selectedPriority = s),
-              onStatusChanged: (s) => setState(() => _selectedPRStatus = s),
-            ),
+            _buildRequesterAndDepartment(),
+            _buildPriorityAndPRStatus(),
           ],
         ),
 
-        FormGroupCard(
-          children: [
-            DynamicTextFields(
-              title: 'Products / Services',
-              showButton: true,
-              fieldsConfig: _itemsFieldsConfig,
-              initialData: _serverRequisite.lineItems
-                  .map((e) => e.toMap())
-                  .toList(),
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
-                _lineItems
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => PRLineItem.fromMap(e)));
-              },
-            ),
-          ],
-        ),
+        FormGroupCard(children: [_buildLineItems()]),
 
         FormGroupCard(
           title: 'Request & Required Dates',
-          children: [
-            RequestAndRequiredDateInput(
-              labelRequest: "Required date",
-              labelRequired: "Required date",
-              initialRequiredDate: _serverRequisite.getNeededByDate,
-              initialRequestDate: _serverRequisite.getRequestDate,
-              onRequestChanged: (date) =>
-                  setState(() => _selectedRequestDate = date),
-              onRequiredChanged: (date) =>
-                  setState(() => _selectedRequiredDate = date),
-            ),
-          ],
+          children: [_buildDates()],
         ),
 
-        FormGroupCard(
-          children: [
-            DynamicTextFields(
-              title: 'PR Justification',
-              initialData: [
-                {'purpose': _serverRequisite.purpose},
-              ],
-              fieldsConfig: [
-                FieldGroupConfig(
-                  key: 'purpose',
-                  label: 'Purpose / Reason for PR',
-                  type: TextInputType.multiline,
-                  isTextArea: true,
-                  isAutoGrow: true,
-                  minLines: null,
-                ),
-              ],
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
-                _purposeForPR
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.first);
-              },
-            ),
-          ],
-        ),
+        FormGroupCard(children: [_buildJustification()]),
 
         context.confirmableActionButton(onPressed: _onSubmit),
         const SizedBox(height: 20.0),
@@ -232,11 +168,84 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     );
   }
 
-  Future _getEmployee(String empId) async {
-    final employee = await GetEmployees.byEmployeeId(empId);
-    return employee.isEmpty ? null : employee;
+  // -------------------------
+  // Section Builders
+  // -------------------------
+  RequestedByAndDepartments _buildRequesterAndDepartment() {
+    return RequestedByAndDepartments(
+      initialDepartment: _serverPR.departmentCode,
+      initialRequestedBy: _serverPR.requestedBy,
+      onRequestedBy: (id, code, name) => setState(() => _requestedBy = name),
+      onDepartmentChange: (id, code, name) =>
+          setState(() => _departmentCode = code),
+    );
   }
 
+  PriorityAndPRStatusDropdown _buildPriorityAndPRStatus() {
+    return PriorityAndPRStatusDropdown(
+      initialPriority: _serverPR.priority.getValue,
+      initialStatus: _serverPR.status.getValue,
+      onPriorityChanged: (s) => setState(() => _priority = s),
+      onStatusChanged: (s) => setState(() => _prStatus = s),
+    );
+  }
+
+  DynamicTextFields _buildLineItems() {
+    return DynamicTextFields(
+      title: 'Products / Services',
+      showButton: true,
+      fieldsConfig: _PRFormConfig.itemsFields(),
+      initialData: _serverPR.lineItems.map((e) => e.toMap()).toList(),
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _lineItems
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.map((e) => PRLineItem.fromMap(e)));
+      },
+    );
+  }
+
+  RequestAndExpectedDate _buildDates() {
+    return RequestAndExpectedDate(
+      labelRequest: "Request date",
+      labelExpected: "Expected date",
+      initialExpectedDate: _serverPR.getExpectedDate,
+      initialRequestDate: _serverPR.getRequestDate,
+      onRequestChanged: (date) => setState(() => _requestDate = date),
+      onExpectedChanged: (date) => setState(() => _expectedDate = date),
+    );
+  }
+
+  DynamicTextFields _buildJustification() {
+    return DynamicTextFields(
+      title: 'PR Justification',
+      initialData: [
+        {'purpose': _serverPR.purpose},
+      ],
+      fieldsConfig: [
+        FieldGroupConfig(
+          key: 'purpose',
+          label: 'Purpose / Reason for PR',
+          type: TextInputType.multiline,
+          isTextArea: true,
+          isAutoGrow: true,
+          minLines: null,
+        ),
+      ],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _purposeForPR
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.first);
+      },
+    );
+  }
+
+  // -------------------------
+  // Print & History Logic
+  // -------------------------
   Future<void> _confirmPrintoutDialog() async {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the request for quotation: PR?'),
@@ -264,75 +273,96 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_updatedRequisite.isEmpty) return;
+    if (_updatedPR.isEmpty) return;
 
-    final employee = await _getEmployee(_updatedRequisite.requestedBy);
+    final employee = await _PRFormConfig.getEmployee(_updatedPR.requestedBy);
     if (employee.isEmpty) return;
 
     _updateHistory();
-    await PRPrinter(requisite: _updatedRequisite, employee: employee).printPR();
+    await PRPrinter(requisite: _updatedPR, employee: employee).printPR();
   });
 
   /// Audit Log Entry (Tracking actions)
   void _updateHistory([AuditAction action = AuditAction.printed]) {
+    final up = _PRFormConfig.updateHistory(
+      action: action,
+      pr: _updatedPR,
+      empId: _employeeId,
+    );
+    _bloc.add(up);
+  }
+}
+
+class _PRFormConfig {
+  static Future getEmployee(String empId) async {
+    final employee = await GetEmployees.byEmployeeId(empId);
+    return employee.isEmpty ? null : employee;
+  }
+
+  /// Audit Log Entry (Tracking actions)
+  static AuditProcurement<PurchaseRequisition> updateHistory({
+    required String empId,
+    required AuditAction action,
+    required PurchaseRequisition pr,
+  }) {
     final up = AuditProcurement<PurchaseRequisition>(
-      documentId: _updatedRequisite.id,
+      documentId: pr.id,
       log: {
         'history': [
-          ..._updatedRequisite.history.map((e) => e.toMap()), // keep old logs
-          AuditLog(
-            action: action,
-            performedBy: _currentEmployeeId,
-          ).toMap(), // new log
+          ...pr.history.map((e) => e.toMap()), // keep old logs
+          AuditLog(action: action, performedBy: empId).toMap(), // new log
         ],
       },
     );
-    _readBloc.add(up);
+    return up;
   }
 
-  List<FieldGroupConfig> get _itemsFieldsConfig => [
-    FieldGroupConfig(
-      key: 'itemName',
-      label: 'Item Name',
-      type: TextInputType.text,
-    ),
-    FieldGroupConfig(
-      key: 'quantity',
-      label: 'Quantity',
-      type: TextInputType.number,
-    ),
-    FieldGroupConfig(
-      key: 'category',
-      label: 'Item Group (e.g. Office Supplies, IT)',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return ItemCategoryDropdown(
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'unitOfMeasure',
-      label: 'Unit of Measure (e.g. box, kg)',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return UnitOfMeasureDropdown(
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'notes',
-      label: 'Additional Notes (if any)...',
-      type: TextInputType.multiline,
-      isTextArea: true,
-      isAutoGrow: true,
-      minLines: null,
-      validator: (_) => null,
-    ),
-  ];
+  /// Products / Services
+  static List<FieldGroupConfig> itemsFields() {
+    return [
+      FieldGroupConfig(
+        key: 'itemName',
+        label: 'Item Name',
+        type: TextInputType.text,
+      ),
+      FieldGroupConfig(
+        key: 'quantity',
+        label: 'Quantity',
+        type: TextInputType.number,
+      ),
+      FieldGroupConfig(
+        key: 'category',
+        label: 'Item Group (e.g. Office Supplies, IT)',
+        type: TextInputType.text,
+        widgetType: FieldWidgetType.custom,
+        customBuilder: ({required initialData, required onChanged}) {
+          return ItemCategoryDropdown(
+            initialValue: initialData,
+            onChanged: (String? selected) => onChanged(selected),
+          );
+        },
+      ),
+      FieldGroupConfig(
+        key: 'unitOfMeasure',
+        label: 'Unit of Measure (e.g. box, kg)',
+        type: TextInputType.text,
+        widgetType: FieldWidgetType.custom,
+        customBuilder: ({required initialData, required onChanged}) {
+          return UnitOfMeasureDropdown(
+            initialValue: initialData,
+            onChanged: (String? selected) => onChanged(selected),
+          );
+        },
+      ),
+      FieldGroupConfig(
+        key: 'notes',
+        label: 'Additional Notes (if any)...',
+        type: TextInputType.multiline,
+        isTextArea: true,
+        isAutoGrow: true,
+        minLines: null,
+        validator: (_) => null,
+      ),
+    ];
+  }
 }

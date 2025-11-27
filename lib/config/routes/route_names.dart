@@ -73,6 +73,7 @@ abstract class RouteNames {
   static const proRequestForQuote = 'procurement_request_for_quote_screen';
   static const proPurchaseOrders = 'procurement_purchase_orders_screen';
   static const goodsReceiptNote = 'goods_receipt_note_screen';
+  static const serviceEntrySheet = 'goods_receipt_note_screen';
   static const supplierManagement = 'supplier_management_screen';
   static const supplierAccount = 'supplier_account_screen';
   static const procurementReports = 'procurement_reports_screen';

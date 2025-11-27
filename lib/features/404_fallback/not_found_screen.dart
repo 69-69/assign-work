@@ -1,6 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,9 @@ class NotFoundPage extends StatelessWidget {
               textScaler: TextScaler.linear(context.textScaleFactor),
             ),
             const SizedBox(height: 20),
-            FilledButton(
+            context.outlinedButton(
+              'Go Back',
+              tooltip: 'Back to initial screen',
               onPressed: () {
                 final authBloc = context.read<AuthBloc>();
                 if (authBloc.state.authStatus == AuthStatus.authenticated) {
@@ -39,7 +42,6 @@ class NotFoundPage extends StatelessWidget {
                   context.go(RouteNames.initialScreen);
                 }
               },
-              child: Text('Go Back'),
             ),
           ],
         ),

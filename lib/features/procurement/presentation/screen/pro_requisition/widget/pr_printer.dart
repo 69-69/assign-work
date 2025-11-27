@@ -42,7 +42,7 @@ class PRPrinter {
       priority: req.getPriority,
       storeNumber: req.storeNumber,
       requestDate: req.getRequestDate,
-      neededByDate: req.getNeededByDate,
+      expectedDate: req.getExpectedDate,
       departmentCode: req.departmentCode,
       approvedBy: history.$1,
       approvedDate: history.$2,
@@ -149,7 +149,7 @@ class _PRPdfBuilder {
     this.approvedBy,
     this.approvedDate,
     required this.requestDate,
-    required this.neededByDate,
+    required this.expectedDate,
   });
 
   final String status;
@@ -162,7 +162,7 @@ class _PRPdfBuilder {
   final String? approvedDate;
   final String requestDate;
   final Employee requestedBy;
-  final String neededByDate;
+  final String expectedDate;
   final List<_PrintPRItem> items;
 
   String get _prTitle => 'Purchase Requisition';
@@ -451,7 +451,7 @@ class _PRPdfBuilder {
       ('Store ID', storeNumber.toUpperAll),
       ('PR#', prNumber.toUpperAll),
       ('Date', requestDate),
-      ('Needed By', neededByDate),
+      ('Expected By', expectedDate),
     ];
 
     return pw.Container(

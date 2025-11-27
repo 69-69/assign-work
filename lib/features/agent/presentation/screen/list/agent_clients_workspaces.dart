@@ -70,7 +70,7 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
       rows: filters.unExpired.map((w) => w.itemAsList()).toList(),
       childrenRow: filters.expired.map((w) => w.itemAsList()).toList(),
       optButtonIcon: Icons.support_agent,
-      optButtonLabel: 'Client Chat',
+      optButtonLabel: 'Chat',
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
         pathParameters: {'clientWorkspaceId': row.first},

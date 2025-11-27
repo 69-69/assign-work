@@ -38,7 +38,7 @@ class WorkspaceRoleDropdown extends StatelessWidget {
       initialValue: initialValue,
       items: strList,
       label: strList.first,
-      getDisplayText: (role) => role,
+      getDisplayText: (role) => role.toTitle,
       onChanged: onRoleChanged,
     );
   }

@@ -18,7 +18,7 @@ enum ERPPriority {
 * final priority = ERPPriority.urgent;
 * print(priority.label); // Output: urgent
 * */
-extension TaxContextExtension on ERPPriority {
+extension ERPPriorityExtension on ERPPriority {
   /// [getValue] Get the label for the specific enum value.
   String get getValue => EnumHelper<ERPPriority>(this).getValue;
 

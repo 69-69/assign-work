@@ -30,7 +30,7 @@ enum ItemCategory {
 * final category = ItemCategory.officeSupplies;
 * print(category.label); // Output: officeSupplies
 * */
-extension TaxContextExtension on ItemCategory {
+extension ItemCategoryExtension on ItemCategory {
   /// [getValue] Get the label for the specific enum value (e.g. "officeSupplies").
   String get getValue => EnumHelper<ItemCategory>(this).getValue;
 

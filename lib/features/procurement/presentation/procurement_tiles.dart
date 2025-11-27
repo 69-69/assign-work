@@ -85,21 +85,36 @@ extension ProcurementTiles on dynamic {
             'manage quotation requests to suppliers for pricing and terms',
       },
       {
-        'label': 'purchase - order',
+        'label': 'purchase - orders',
         'icon': Icons.paypal,
         'action': RouteNames.proPurchaseOrders,
         'param': {},
         'access': _getValue(ProcurementPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
       },
+      // -------------------------
+      // GOODS RECEIPT
+      // -------------------------
       {
-        'label': 'goods receipt note',
+        'label': 'GRN: goods receipt note',
         'icon': Icons.receipt_long,
         'action': RouteNames.goodsReceiptNote,
         'param': {},
         'access': _getValue(ProcurementPermission.manageGRN),
         'description':
-            'Record and manage the receipt of goods from suppliers.\nThis allows for inventory updates, ensuring that received goods are properly tracked and accounted for.',
+            'Record the receipt of physical goods delivered by suppliers.\nUpdates inventory quantities and verifies items received.',
+      },
+      // -------------------------
+      // SERVICE ENTRY SHEET
+      // -------------------------
+      {
+        'label': 'SES: service entry sheet',
+        'icon': Icons.assignment_turned_in_outlined,
+        'action': RouteNames.serviceEntrySheet,
+        'param': {},
+        'access': _getValue(ProcurementPermission.manageSES),
+        'description':
+            'Confirm and approve completion of vendor-provided services.\nUsed for service POs—no inventory impact.',
       },
       {
         'label': 'suppliers - management',
@@ -183,7 +198,7 @@ Yes — **each of those modules** in your procurement system **requires its own 
 * Requested by (employee/department)
 * Request date
 * Priority (urgent, normal)
-* Needed by date
+* Expected date
 * Purpose of request
 * Line items:
 
@@ -333,6 +348,74 @@ Yes — **each of those modules** in your procurement system **requires its own 
 
 ---
 
+## ✅ **10. SES — Service Entry Sheet (for SERVICES)**
+
+* SES is used when services are delivered.
+* It confirms hours worked, tasks completed, milestones achieved, etc. It does NOT update inventory.
+
+Typical Business Fields:
+Header
+* SES ID / Number
+* SES Date
+* PO Number
+* Supplier
+* Created By
+* Approved By
+* Status (Draft, Submitted, Approved, Rejected)
+* Service Period (start → end)
+* Reference (work order, report, timesheet, milestone document)
+
+Line Items (one per service rendered)
+* PO Line Number
+* Service Code
+* Service Description
+* UOM (hours, days, milestone, task)
+* Ordered Quantity
+* Completed Quantity
+* Unit Price (from PO)
+* Total Amount
+
+Additional
+* Attachments (service report, timesheet, proof of work)
+* Notes / Comments
+
+---
+
+## ✅ **11. GRN — Goods Receipt Note (for GOODS) **
+* GRN is used when goods physically arrive. It confirms quantity received, updates inventory, and links to a Purchase Order.
+
+Typical Business Fields
+Header
+* GRN ID / Number
+* GRN Date
+* PO Number
+* Supplier
+* Warehouse / Location
+* Received By (user)
+* Status (Draft, Posted, Rejected)
+* Reference Document (Delivery Note, Packing List, etc.)
+
+Line Items (one per item received)
+* PO Line Number
+* Item Code / SKU
+* Description
+* UOM (goods UOM like pcs, box, kg…)
+* Ordered Quantity (from PO)
+* Received Quantity
+* Accepted Quantity
+* Rejected Quantity
+* Batch Number (optional)
+* Serial Numbers (optional)
+* Expiry Date (optional)
+
+Additional
+* Attachments (delivery note, photos)
+* Remarks
+
+*
+
+---
+
 ## 📝 Summary: Form Requirement Overview
 
 | Module                | Has Form?   | Key Fields?   | Form Type           |
@@ -340,6 +423,8 @@ Yes — **each of those modules** in your procurement system **requires its own 
 | Purchase Orders       | ✅           | Many          | Transaction form    |
 | Request for Quotation | ✅           | Many          | Transaction form    |
 | Purchase Requisition  | ✅           | Many          | Internal request    |
+| SES                   | ✅           | Many          | Service Entry Sheet |
+| GRN                   | ✅           | Many          | Goods Receipt Note  |
 | Supplier Management   | ✅           | Extensive     | Master data form    |
 | Supplier Evaluation   | ✅           | Focused       | Performance review  |
 | Contract Management   | ✅           | Extensive     | Legal/attachment    |

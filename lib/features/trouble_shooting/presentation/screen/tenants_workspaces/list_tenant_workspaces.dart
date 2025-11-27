@@ -84,7 +84,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
       onChecked: (bool? isChecked, List<String> row) =>
           _onChecked(workspaces, row.first, isChecked),
       optButtonIcon: Icons.support_agent,
-      optButtonLabel: 'Tenant Chat',
+      optButtonLabel: 'Chat',
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
         pathParameters: {'clientWorkspaceId': row.first},

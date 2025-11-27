@@ -41,8 +41,8 @@ class PurchaseRequisition extends Equatable {
   /// [requestDate] Business date when the requisition was initiated or intended
   final DateTime? requestDate;
 
-  /// [neededByDate] Target date by which the requested items/services are required
-  final DateTime? neededByDate;
+  /// [expectedDate] Target date by which the requested items/services are required
+  final DateTime? expectedDate;
 
   /// [createdAt] System timestamp when the PR was recorded in the system (audit trail)
   final DateTime createdAt;
@@ -66,7 +66,7 @@ class PurchaseRequisition extends Equatable {
     required this.requestedBy,
     DateTime?
     requestDate, // Business date when the requisition was initiated or intended
-    DateTime? neededByDate,
+    DateTime? expectedDate,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -76,7 +76,7 @@ class PurchaseRequisition extends Equatable {
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today,
        requestDate = requestDate ?? _today,
-       neededByDate = neededByDate ?? _today;
+       expectedDate = expectedDate ?? _today;
 
   // Optional: add fromJson / toJson for serialization
   factory PurchaseRequisition.fromMap(Map<String, dynamic> map, {String? id}) {
@@ -94,7 +94,7 @@ class PurchaseRequisition extends Equatable {
       attachments: List<String>.from(map['attachments'] ?? []),
       requestedBy: map['requestedBy'] ?? '',
       requestDate: toDateTimeFn(map['requestDate']),
-      neededByDate: toDateTimeFn(map['neededByDate']),
+      expectedDate: toDateTimeFn(map['expectedDate']),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
       updatedBy: map['updatedBy'] ?? '',
@@ -112,12 +112,12 @@ class PurchaseRequisition extends Equatable {
     'departmentCode': departmentCode,
     'status': getPRStatus,
     'priority': getPriority,
-    'requestedBy': requestedBy,
     'purpose': purpose,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'attachments': attachments,
+    'requestedBy': requestedBy,
     'requestDate': requestDate,
-    'neededByDate': neededByDate,
+    'expectedDate': expectedDate,
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
@@ -128,7 +128,7 @@ class PurchaseRequisition extends Equatable {
   Map<String, dynamic> toMap() {
     final newMap = _mapTemp();
     newMap['requestDate'] = requestDate?.toISOString;
-    newMap['neededByDate'] = neededByDate?.toISOString;
+    newMap['expectedDate'] = expectedDate?.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
 
@@ -138,7 +138,7 @@ class PurchaseRequisition extends Equatable {
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
     newMap['requestDate'] = requestDate?.millisecondsSinceEpoch;
-    newMap['neededByDate'] = neededByDate?.millisecondsSinceEpoch;
+    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
     newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
     newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
 
@@ -172,7 +172,7 @@ class PurchaseRequisition extends Equatable {
 
   String get getRequestDate => requestDate.dateOnly;
 
-  String get getNeededByDate => neededByDate.dateOnly;
+  String get getExpectedDate => expectedDate.dateOnly;
 
   String get getCreatedAt => createdAt.toStandardDT;
 
@@ -181,7 +181,7 @@ class PurchaseRequisition extends Equatable {
   bool get isReadyForApproval =>
       lineItems.isNotEmpty && departmentCode.isNotEmpty;
 
-  bool get isOverdue => neededByDate != null && neededByDate!.isBefore(_today);
+  bool get isOverdue => expectedDate != null && expectedDate!.isBefore(_today);
 
   bool filterByAny(String filter) => itemAsList.any(
     (item) =>
@@ -220,33 +220,31 @@ class PurchaseRequisition extends Equatable {
     List<String>? attachments,
     RequisitionStatus? status,
     DateTime? requestDate,
-    DateTime? neededByDate,
+    DateTime? expectedDate,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
     List<AuditLog>? history,
-  }) {
-    return PurchaseRequisition(
-      id: id ?? this.id,
-      prNumber: prNumber ?? this.prNumber,
-      storeNumber: storeNumber ?? this.storeNumber,
-      status: status ?? this.status,
-      priority: priority ?? this.priority,
-      purpose: purpose ?? this.purpose,
-      departmentCode: departmentCode ?? this.departmentCode,
-      requestedBy: requestedBy ?? this.requestedBy,
-      lineItems: lineItems ?? this.lineItems,
-      attachments: attachments ?? this.attachments,
-      requestDate: requestDate ?? this.requestDate,
-      neededByDate: neededByDate ?? this.neededByDate,
-      createdBy: createdBy ?? this.createdBy,
-      createdAt: createdAt ?? this.createdAt,
-      updatedBy: updatedBy ?? this.updatedBy,
-      updatedAt: updatedAt ?? this.updatedAt,
-      history: history ?? this.history,
-    );
-  }
+  }) => PurchaseRequisition(
+    id: id ?? this.id,
+    prNumber: prNumber ?? this.prNumber,
+    storeNumber: storeNumber ?? this.storeNumber,
+    status: status ?? this.status,
+    priority: priority ?? this.priority,
+    purpose: purpose ?? this.purpose,
+    departmentCode: departmentCode ?? this.departmentCode,
+    requestedBy: requestedBy ?? this.requestedBy,
+    lineItems: lineItems ?? this.lineItems,
+    attachments: attachments ?? this.attachments,
+    requestDate: requestDate ?? this.requestDate,
+    expectedDate: expectedDate ?? this.expectedDate,
+    createdBy: createdBy ?? this.createdBy,
+    createdAt: createdAt ?? this.createdAt,
+    updatedBy: updatedBy ?? this.updatedBy,
+    updatedAt: updatedAt ?? this.updatedAt,
+    history: history ?? this.history,
+  );
 
   @override
   List<Object?> get props => [
@@ -258,7 +256,7 @@ class PurchaseRequisition extends Equatable {
     status,
     lineItems,
     attachments,
-    neededByDate,
+    expectedDate,
     requestedBy,
     requestDate,
     createdBy,

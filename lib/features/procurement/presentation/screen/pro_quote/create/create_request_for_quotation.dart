@@ -90,31 +90,37 @@ class _CreateRFQForm extends StatefulWidget {
 class _CreateRFQFormState extends State<_CreateRFQForm> {
   final _formKey = GlobalKey<FormState>();
 
-  String _newRFQNumber = '';
+  // Basic fields
+  String _rfqNumber = '';
   String _rfqTitle = '';
   String _currency = '';
   String _requestedBy = '';
   String _departmentCode = '';
-  String _selectedSupplierId = '';
-  String _selectedSupplierRepId = '';
-  String? _selectedRFQStatus;
-  DateTime? _selectedDeadlineDate;
-  DateTime? _selectedDeliveryDate;
+  String _supplierId = '';
+  String _supplierRepId = '';
+  String? _rfqStatus;
+  // Dates
+  DateTime? _deadlineDate;
+  DateTime? _deliveryDate;
 
-  // Add a list to manage line items
+  /// Line Items & Additional Info
   final List<RFQLineItem> _lineItems = [];
-  final Map<String, dynamic> _addressAndNotes = {};
+  final Map<String, dynamic> _additionalInfo = {};
 
-  PRToRFQConverter? get _initialPRData => widget.initialPRData;
-  // Disable FormFields if PR is not empty
-  bool get _isDisabled => _initialPRData?.lineItems != null;
+  /// Initial PR data if converting PR → RFQ
+  PRToRFQConverter? get _initialPR => widget.initialPRData;
+
+  /// Disable form fields if this RFQ originated from a PR
+  bool get _isDisabled => _initialPR?.lineItems != null;
 
   bool get isFormValid => _formKey.currentState!.validate();
 
-  String get _currentEmployeeId => context.employee!.employeeId;
+  /// Current employee info
+  String get _employeeId => context.employee!.employeeId;
+  String get _employeeName => context.employee!.fullName;
+  String get _employeeStore => context.employee!.storeNumber;
 
-  ProRequestForQuoteBloc get _readBloc =>
-      context.read<ProRequestForQuoteBloc>();
+  ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
   @override
   void initState() {
@@ -125,36 +131,35 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   void _generateRFQNumber() async {
     await DocType.rfq.getShortUID(
       onChanged: (s) {
-        if (mounted) setState(() => _newRFQNumber = s);
+        if (mounted) setState(() => _rfqNumber = s);
       },
     );
   }
 
-  RequestForQuote get _newQuote => RequestForQuote(
+  /// Construct RequestForQuote object
+  RequestForQuote get _newRFQ => RequestForQuote(
     /// [prNumber] FOREIGN KEY (purchase requisition) else its new RFQ
-    prNumber: _initialPRData?.prNumber ?? 'N/A',
+    prNumber: _initialPR?.prNumber ?? 'N/A',
+    storeNumber: _employeeStore,
     title: _rfqTitle,
-    requestedBy: _initialPRData?.requestedBy ?? _requestedBy,
-    rfqNumber: _newRFQNumber,
-    status: _selectedRFQStatus ?? '',
-    departmentCode: _initialPRData?.departmentCode ?? _departmentCode,
-    supplierId: _selectedSupplierId,
-    supplierRepId: _selectedSupplierRepId,
+    requestedBy: _initialPR?.requestedBy ?? _requestedBy,
+    rfqNumber: _rfqNumber,
+    status: _rfqStatus ?? '',
+    departmentCode: _initialPR?.departmentCode ?? _departmentCode,
+    supplierId: _supplierId,
+    supplierRepId: _supplierRepId,
     currency: _currency,
-    deadline: _selectedDeadlineDate,
-    deliveryDate: _selectedDeliveryDate,
-    storeNumber: context.employee!.storeNumber,
-    notes: _addressAndNotes['notes'],
-    deliveryAddress: _addressAndNotes['deliveryAddress'],
+    deadline: _deadlineDate,
+    deliveryDate: _deliveryDate,
+    notes: _additionalInfo['notes'],
+    deliveryAddress: _additionalInfo['deliveryAddress'],
     lineItems: List.from(_lineItems),
-    createdBy: context.employee!.fullName,
-    history: [
-      AuditLog(action: AuditAction.created, performedBy: _currentEmployeeId),
-    ],
+    createdBy: _employeeName,
+    history: [AuditLog(action: AuditAction.created, performedBy: _employeeId)],
   );
 
   void _onSubmit() {
-    if (!isFormValid || _newQuote.isEmpty) {
+    if (!isFormValid || _newRFQ.isEmpty) {
       context.showAlertOverlay(
         'Please fill in all required fields',
         bgColor: kDangerColor,
@@ -162,7 +167,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       return;
     }
 
-    _readBloc.add(AddProcurement<RequestForQuote>(data: _newQuote));
+    _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
 
     _confirmPrintoutDialog().then((_) => _resetForm());
   }
@@ -171,19 +176,19 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     if (mounted) {
       _formKey.currentState?.reset();
       _lineItems.clear();
-      _addressAndNotes.clear();
+      _additionalInfo.clear();
 
       setState(() {
         _rfqTitle = '';
         _currency = '';
         _requestedBy = '';
         _departmentCode = '';
-        _selectedSupplierId = '';
-        _selectedRFQStatus = null;
-        _selectedDeadlineDate = null;
-        _selectedDeliveryDate = null;
+        _supplierId = '';
+        _rfqStatus = null;
+        _deadlineDate = null;
+        _deliveryDate = null;
       });
-      _generateRFQNumber(); // get a new RFQ number
+      _generateRFQNumber(); // fresh RFQ number
     }
   }
 
@@ -200,123 +205,24 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildRFQNumber(),
+        _RFQFormConfig.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
         FormGroupCard(
           title: 'Request for Quotes',
           children: [
-            DynamicTextFields(
-              initialData: [{}],
-              fieldsConfig: [
-                FieldGroupConfig(
-                  key: 'title',
-                  label: 'Title or subject',
-                  type: TextInputType.text,
-                  minLines: 1,
-                ),
-              ],
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
-                _rfqTitle = data.first['title'];
-              },
-            ),
-            RequestedByAndDepartments(
-              initialRequestedBy: _initialPRData?.requestedBy,
-              initialDepartment: _initialPRData?.departmentCode,
-              onRequestedBy: (id, code, name) =>
-                  setState(() => _requestedBy = name),
-              onDepartmentChange: (id, code, name) =>
-                  setState(() => _departmentCode = code),
-              isDisabled: _initialPRData != null,
-            ),
-            SuppliersAndRFQStatusDropdown(
-              initialSupplier: _selectedSupplierId,
-              onStatusChanged: (s) => setState(() => _selectedRFQStatus = s),
-              onSupplierChanged: (id, name) {
-                if (isFormValid) setState(() => _selectedSupplierId = id);
-              },
-              onContactPersonChanged: (id) {
-                if (isFormValid) {
-                  setState(() => _selectedSupplierRepId = id);
-                }
-              },
-            ),
+            _buildTitleField(),
+            _buildRequesterAndDepartment(),
+            _buildSupplierAndStatus(),
           ],
         ),
 
-        FormGroupCard(
-          children: [
-            DynamicTextFields(
-              title: 'Products / Services',
-              showButton: !_isDisabled,
-              fieldsConfig: _itemsFieldsConfig,
-              fullWidthKey: 'itemName',
-              initialData:
-                  _initialPRData?.lineItems.map((e) => e.toMap()).toList() ??
-                  [{}],
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
-                _lineItems
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => RFQLineItem.fromMap(e)));
-              },
-            ),
-          ],
-        ),
+        FormGroupCard(children: [_buildLineItems()]),
 
         FormGroupCard(
           title: 'Buyer Terms',
-          children: [
-            DeadlineAndDeliveryDateInput(
-              labelDelivery: "Delivery date",
-              labelDeadline: "Deadline date",
-              onDeliveryChanged: (date) =>
-                  setState(() => _selectedDeliveryDate = date),
-              onDeadlineChanged: (date) =>
-                  setState(() => _selectedDeadlineDate = date),
-            ),
-            CurrencyDropdown(
-              onCurrencyChanged: (s) => setState(() => _currency = s),
-            ),
-          ],
+          children: [_buildDates(), _buildCurrency()],
         ),
 
-        FormGroupCard(
-          children: [
-            DynamicTextFields(
-              title: 'Delivery Address and Notes',
-              initialData: [{}],
-              fieldsConfig: [
-                FieldGroupConfig(
-                  key: 'deliveryAddress',
-                  label: 'Delivery address (if any)...',
-                  type: TextInputType.multiline,
-                  isTextArea: true,
-                  isAutoGrow: true,
-                  minLines: null,
-                  validator: (_) => null,
-                ),
-                FieldGroupConfig(
-                  key: 'notes',
-                  label: 'Additional Notes (if any)...',
-                  type: TextInputType.multiline,
-                  isTextArea: true,
-                  isAutoGrow: true,
-                  minLines: null,
-                  validator: (_) => null,
-                ),
-              ],
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
-                _addressAndNotes
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.first);
-              },
-            ),
-          ],
-        ),
+        FormGroupCard(children: [_buildDeliveryAndNotes()]),
 
         context.confirmableActionButton(
           label: 'Create Quote',
@@ -327,29 +233,104 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     );
   }
 
-  _buildRFQNumber() => Align(
-    alignment: Alignment.topLeft,
-    child: FittedBox(
-      child: context.actionInfoButton(
-        'Refresh RFQ Number',
-        count: _newRFQNumber,
-        bgColor: kPrimaryColor,
-        isTotal: false,
-        onPressed: _generateRFQNumber,
-      ),
-    ),
-  );
+  // -------------------------
+  // Section Builders
+  // -------------------------
+  DynamicTextFields _buildDeliveryAndNotes() {
+    return DynamicTextFields(
+      title: 'Delivery Address and Notes',
+      initialData: [{}],
+      fieldsConfig: _RFQFormConfig.deliveryFields(),
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
 
-  Future<RequestForQuote> _applyTaxesToQuote(RequestForQuote quote) async {
-    final taxMap = await GetTaxes.loadAllTaxRates();
-    return quote.computeTaxAmounts(taxMap);
+        _additionalInfo
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.first);
+      },
+    );
   }
 
-  Future _getSupplier(String supplierId) async {
-    final supplier = await GetSuppliers.bySupplierId(supplierId);
-    return supplier.isEmpty ? null : supplier;
+  CurrencyDropdown _buildCurrency() {
+    return CurrencyDropdown(
+      onCurrencyChanged: (s) => setState(() => _currency = s),
+    );
   }
 
+  DeadlineAndDeliveryDateInput _buildDates() {
+    return DeadlineAndDeliveryDateInput(
+      labelDelivery: "Delivery date",
+      labelDeadline: "Deadline date",
+      onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
+      onDeadlineChanged: (date) => setState(() => _deadlineDate = date),
+    );
+  }
+
+  DynamicTextFields _buildLineItems() {
+    return DynamicTextFields(
+      title: 'Products / Services',
+      showButton: !_isDisabled,
+      fieldsConfig: _RFQFormConfig.itemsFields(_isDisabled),
+      fullWidthKey: 'itemName',
+      initialData: _initialPR?.lineItems.map((e) => e.toMap()).toList() ?? [{}],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _lineItems
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.map((e) => RFQLineItem.fromMap(e)));
+      },
+    );
+  }
+
+  SuppliersAndRFQStatusDropdown _buildSupplierAndStatus() {
+    return SuppliersAndRFQStatusDropdown(
+      initialSupplier: _supplierId,
+      onStatusChanged: (s) => setState(() => _rfqStatus = s),
+      onSupplierChanged: (id, name) {
+        if (isFormValid) setState(() => _supplierId = id);
+      },
+      onContactPersonChanged: (id) {
+        if (isFormValid) {
+          setState(() => _supplierRepId = id);
+        }
+      },
+    );
+  }
+
+  RequestedByAndDepartments _buildRequesterAndDepartment() {
+    return RequestedByAndDepartments(
+      initialRequestedBy: _initialPR?.requestedBy,
+      initialDepartment: _initialPR?.departmentCode,
+      onRequestedBy: (id, code, name) => setState(() => _requestedBy = name),
+      onDepartmentChange: (id, code, name) =>
+          setState(() => _departmentCode = code),
+      isDisabled: _initialPR != null,
+    );
+  }
+
+  DynamicTextFields _buildTitleField() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fieldsConfig: [
+        FieldGroupConfig(
+          key: 'title',
+          label: 'Title or subject',
+          type: TextInputType.text,
+          minLines: 1,
+        ),
+      ],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _rfqTitle = data.first['title'];
+      },
+    );
+  }
+
+  // -------------------------
+  // Print & History Logic
+  // -------------------------
   Future<void> _confirmPrintoutDialog() async {
     final isConfirmed = await context.confirmAction<bool>(
       const Text('Would you like to print the request for quotation: RFQ?'),
@@ -372,16 +353,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_newQuote.isEmpty) return;
+    if (_newRFQ.isEmpty) return;
 
-    final quoteWithTaxes = await _applyTaxesToQuote(_newQuote);
-    final supplier = await _getSupplier(_newQuote.supplierId);
+    final quoteWithTaxes = await _RFQFormConfig.applyTaxesToQuote(_newRFQ);
+    final supplier = await _RFQFormConfig.getSupplier(_newRFQ.supplierId);
     if (supplier.isEmpty) return;
 
     // Log that details were printed
     if (mounted &&
         AuditTracker.shouldLog(
-          id: '${_newQuote.id}::$_currentEmployeeId',
+          id: '${_newRFQ.id}::$_employeeId',
           type: DocType.rfq,
           action: AuditAction.printed,
         )) {
@@ -392,62 +373,102 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   /// Audit Log Entry (Tracking actions)
   void _updateHistory([AuditAction action = AuditAction.printed]) {
+    final up = _RFQFormConfig.updateHistory(
+      action: action,
+      quote: _newRFQ,
+      empId: _employeeId,
+    );
+    _bloc.add(up);
+  }
+}
+
+class _RFQFormConfig {
+  static Future<RequestForQuote> applyTaxesToQuote(
+    RequestForQuote quote,
+  ) async {
+    final taxMap = await GetTaxes.loadAllTaxRates();
+    return quote.computeTaxAmounts(taxMap);
+  }
+
+  static Future getSupplier(String supplierId) async {
+    final supplier = await GetSuppliers.bySupplierId(supplierId);
+    return supplier.isEmpty ? null : supplier;
+  }
+
+  /// RFQ Number
+  static Widget buildRFQNumber(
+    BuildContext context,
+    String count,
+    void Function()? onPressed,
+  ) => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh RFQ Number',
+        count: count,
+        bgColor: kPrimaryColor,
+        isTotal: false,
+        onPressed: onPressed,
+      ),
+    ),
+  );
+
+  /// Audit Log Entry (Tracking actions)
+  static AuditProcurement<RequestForQuote> updateHistory({
+    required String empId,
+    required AuditAction action,
+    required RequestForQuote quote,
+  }) {
     final up = AuditProcurement<RequestForQuote>(
-      documentId: _newQuote.id,
+      documentId: quote.id,
       log: {
         'history': [
-          ..._newQuote.history.map((e) => e.toMap()), // keep old logs
-          AuditLog(
-            action: action,
-            performedBy: _currentEmployeeId,
-          ).toMap(), // new log
+          ...quote.history.map((e) => e.toMap()), // keep old logs
+          AuditLog(action: action, performedBy: empId).toMap(), // new log
         ],
       },
     );
-    _readBloc.add(up);
+    return up;
   }
 
-  final _textFields = <(String, String, TextInputType)>[
-    ('itemName', 'Item name', TextInputType.text),
-    ('quantity', 'Quantity', TextInputType.number),
-  ];
-
-  get _itemsFieldsConfig => [
-    ..._textFields.map(
-      (e) => FieldGroupConfig(
-        key: e.$1,
-        label: e.$2,
-        type: e.$3,
-        isDisabled: _isDisabled,
+  /// Products / Services
+  static List<FieldGroupConfig> itemsFields(bool isDisabled) {
+    return [
+      ..._textFields.map(
+        (e) => FieldGroupConfig(
+          key: e.$1,
+          label: e.$2,
+          type: e.$3,
+          isDisabled: isDisabled,
+        ),
       ),
-    ),
-    FieldGroupConfig(
-      key: 'category',
-      label: 'Item Group (e.g. Office Supplies, IT)',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return ItemCategoryDropdown(
-          isDisabled: _isDisabled,
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'unitOfMeasure',
-      label: 'Unit of Measure (e.g. box, kg)',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return UnitOfMeasureDropdown(
-          isDisabled: _isDisabled,
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
-        );
-      },
-    ),
-    /*FieldGroupConfig(
+      FieldGroupConfig(
+        key: 'category',
+        label: 'Item Group (e.g. Office Supplies, IT)',
+        type: TextInputType.text,
+        widgetType: FieldWidgetType.custom,
+        customBuilder: ({required initialData, required onChanged}) {
+          return ItemCategoryDropdown(
+            isDisabled: isDisabled,
+            initialValue: initialData,
+            onChanged: (String? selected) => onChanged(selected),
+          );
+        },
+      ),
+      FieldGroupConfig(
+        key: 'unitOfMeasure',
+        label: 'Unit of Measure (e.g. box, kg)',
+        type: TextInputType.text,
+        widgetType: FieldWidgetType.custom,
+        customBuilder: ({required initialData, required onChanged}) {
+          return UnitOfMeasureDropdown(
+            isDisabled: isDisabled,
+            initialValue: initialData,
+            onChanged: (String? selected) => onChanged(selected),
+          );
+        },
+      ),
+      /*FieldGroupConfig(
       key: 'notes',
       label: 'Additional Notes (if any)...',
       isDisabled: _isDisabled,
@@ -457,5 +478,36 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       minLines: null,
       validator: (_) => null,
     ),*/
-  ];
+    ];
+  }
+
+  /// Delivery Address and Notes
+  static List<FieldGroupConfig> deliveryFields() {
+    return [
+      FieldGroupConfig(
+        key: 'deliveryAddress',
+        label: 'Delivery address (if any)...',
+        type: TextInputType.multiline,
+        isTextArea: true,
+        isAutoGrow: true,
+        minLines: null,
+        validator: (_) => null,
+      ),
+      FieldGroupConfig(
+        key: 'notes',
+        label: 'Additional Notes (if any)...',
+        type: TextInputType.multiline,
+        isTextArea: true,
+        isAutoGrow: true,
+        minLines: null,
+        validator: (_) => null,
+      ),
+    ];
+  }
+
+  static List<(String, String, TextInputType)> get _textFields =>
+      <(String, String, TextInputType)>[
+        ('itemName', 'Item name', TextInputType.text),
+        ('quantity', 'Quantity', TextInputType.number),
+      ];
 }

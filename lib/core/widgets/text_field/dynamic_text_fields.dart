@@ -129,7 +129,10 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
             ),
           ),
           ?widget.showButton
-              ? _prefixCount(config.label.toTitle, index, alpha: 0.4)
+              ? SizedBox(
+                  width: 24,
+                  child: _prefixCount(config.label.toTitle, index),
+                )
               : null,
         ],
       );

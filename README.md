@@ -7,7 +7,7 @@
 
 git init
 git add .
-git commit -m "PR and RFQ full functional with Prinout"
+git commit -m "Working on POs"
 git branch -M main
 git push -u origin main
 

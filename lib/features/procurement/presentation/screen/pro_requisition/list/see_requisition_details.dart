@@ -312,7 +312,7 @@ class _LeftSummary extends StatelessWidget {
 
   get _summaryItems => <(String, String)>[
     ('Request Date', '${requisite?.getRequestDate}'),
-    ('Required Date', '${requisite?.getNeededByDate}'),
+    ('Expected Date', '${requisite?.getExpectedDate}'),
   ];
 
   @override

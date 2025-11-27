@@ -18,7 +18,7 @@ enum RequisitionStatus {
 * final status = RequisitionStatus.draft;
 * print(status.label); // Output: draft
 * */
-extension TaxContextExtension on RequisitionStatus {
+extension RequisitionStatusExtension on RequisitionStatus {
   /// [getValue] Get the label for the specific enum value (e.g. "convertedToRFQ")
   String get getValue => EnumHelper<RequisitionStatus>(this).getValue;
 

@@ -10,7 +10,7 @@ enum AccountStatus { disabled, enabled }
 * final status = AccountStatus.enabled;
 * print(status.label); // Output: enable
 * */
-extension AuditActionExtension on AccountStatus {
+extension AccountStatusExtension on AccountStatus {
   /// [getValue] Get the label for the specific enum value.
   String get getValue => EnumHelper<AccountStatus>(this).getValue;
 }

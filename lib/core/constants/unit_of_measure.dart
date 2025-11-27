@@ -6,25 +6,61 @@ import 'package:assign_erp/core/util/enum_helper.dart';
 
 /// [UnitOfMeasure] Unit of Measure for Products/Services
 enum UnitOfMeasure {
+  // General
   unknown,
+  unit,
+
+  // Goods UOMs
   pieces,
+  each,
+  carton,
   box,
   pack,
   set,
-  kilogram,
+  pair,
+  dozen,
+  bundle,
+  pallet,
+  bag,
+  bottle,
+  can,
+  tube,
+  roll,
+  sheet,
+
+  // Weight
   gram,
+  kilogram,
+  ton,
+  metricTon,
+
+  // Volume
   liter,
   milliliter,
+  gallon,
+  quart,
+  pint,
+
+  // Length & Area & Volume
   meter,
   centimeter,
   foot,
-  roll,
-  sheet,
-  bottle,
-  can,
+  yard,
+  squareMeter,
+  cubicMeter,
+
+  // Services UOMs
   hour,
   day,
+  week,
+  month,
+  shift,
+  visit,
+  job,
+  milestone,
+  task,
   service,
+  percent,
 }
 
 /* USAGE:

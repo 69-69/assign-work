@@ -88,24 +88,24 @@ class PriorityAndPRStatusDropdown extends StatelessWidget {
   }
 }
 
-/// Request & Required(Needed) Date TextField [RequestAndRequiredDateInput]
-class RequestAndRequiredDateInput extends StatelessWidget {
-  const RequestAndRequiredDateInput({
+/// Request & Required(Needed) Date TextField [RequestAndExpectedDate]
+class RequestAndExpectedDate extends StatelessWidget {
+  const RequestAndExpectedDate({
     super.key,
     this.labelRequest,
-    this.labelRequired,
+    this.labelExpected,
     required this.onRequestChanged,
-    required this.onRequiredChanged,
+    required this.onExpectedChanged,
     this.initialRequestDate,
-    this.initialRequiredDate,
+    this.initialExpectedDate,
   });
 
   final String? initialRequestDate;
-  final String? initialRequiredDate;
+  final String? initialExpectedDate;
   final String? labelRequest;
-  final String? labelRequired;
+  final String? labelExpected;
   final Function(DateTime) onRequestChanged;
-  final Function(DateTime) onRequiredChanged;
+  final Function(DateTime) onExpectedChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -123,10 +123,10 @@ class RequestAndRequiredDateInput extends StatelessWidget {
         ),
         DatePicker(
           inLabel: false,
-          initialDate: initialRequiredDate,
-          label: labelRequired,
+          initialDate: initialExpectedDate,
+          label: labelExpected,
           restorationId: 'Required date',
-          selectedDate: onRequiredChanged,
+          selectedDate: onExpectedChanged,
           helperText: 'When the requisition is needed.',
         ),
       ],

@@ -106,7 +106,7 @@ Yes — **each of those modules** in your procurement system **requires its own 
 * Requested by (employee/department)
 * Request date
 * Priority (urgent, normal)
-* Needed by date
+* Expected date
 * Purpose of request
 * Line items:
 

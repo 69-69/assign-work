@@ -34,6 +34,13 @@ enum ProcurementPermission {
   deleteGRN,
   approveGRN,
   rejectGRN,
+  // SES = service entry sheet
+  manageSES,
+  createSES,
+  updateSES,
+  deleteSES,
+  approveSES,
+  rejectSES,
   // Suppliers Management
   manageSuppliers,
   createSuppliers,
@@ -275,6 +282,47 @@ final List<AccessControl> _goodsReceiptNotePermissions = [
   ),
 ];
 
+final List<AccessControl> _serviceEntrySheetPermissions = [
+  AccessControl(
+    module: "service entry sheet",
+    title: "Manage service entry sheet",
+    description: "Allow users to create, edit, and delete service entry sheet.",
+    access: ProcurementPermission.manageSES,
+  ),
+  AccessControl(
+    module: "service entry sheet",
+    title: "Create service entry sheet",
+    description:
+        "Allow users to process new service entry sheet at any location.",
+    access: ProcurementPermission.createSES,
+  ),
+  AccessControl(
+    module: "service entry sheet",
+    title: "Edit service entry sheet",
+    description:
+        "Allow users to modify details of an existing service entry sheet.",
+    access: ProcurementPermission.updateSES,
+  ),
+  AccessControl(
+    module: "service entry sheet",
+    title: "Delete service entry sheet",
+    description: "Allow users to permanently remove a service entry sheet.",
+    access: ProcurementPermission.deleteSES,
+  ),
+  AccessControl(
+    module: "service entry sheet",
+    title: "Approve service entry sheet",
+    description: "Allow users to approve service entry sheet.",
+    access: ProcurementPermission.approveSES,
+  ),
+  AccessControl(
+    module: "service entry sheet",
+    title: "Reject service entry sheet",
+    description: "Allow users to reject service entry sheet.",
+    access: ProcurementPermission.rejectSES,
+  ),
+];
+
 final List<AccessControl> _metricsPermissions = [
   AccessControl(
     module: "pro metrics",
@@ -313,6 +361,7 @@ final List<AccessControl> procurementPermission = [
   ..._requestForQuotePermissions,
   ..._purchaseOrderPermissions,
   ..._goodsReceiptNotePermissions,
+  ..._serviceEntrySheetPermissions,
   ..._supplierManagementPermissions,
   ..._metricsPermissions,
   ..._secretPermissions,
