@@ -1,5 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/custom_radio_title.dart';
+import 'package:assign_erp/core/widgets/custom_switch_list.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -47,6 +49,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
 
   String get _displayName =>
       '${widget.displayName.toTitle} ${widget.entitlementType}';
+
   String get _subTitle => widget.entitlementType.isEmpty ? 'license' : 'role';
 
   get _keywords => widget.restrictedAccess;
@@ -129,37 +132,36 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
       children: [
         const SizedBox(height: 16),
         Text(
-          "$_displayName ${selectedLength > 0 ? "($selectedLength)" : ""}", // ad selected length
+          "$_displayName ${selectedLength > 0 ? "($selectedLength)" : ""}",
+          // ad selected length
           textAlign: TextAlign.center,
           style: context.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 10),
-        _EntitlementRadioTile(
-          title: "Allow all $_displayName for this $_subTitle",
-          value: AccessMode.allowAll,
+        CustomRadioList<AccessMode>(
           groupValue: _mode,
           onChanged: (value) {
+            if (value == null) return;
             setState(() {
-              _mode = value!;
-              _updateAllEntitlements(true);
+              _mode = value;
+              _updateAllEntitlements(value == AccessMode.allowAll);
               widget.onSelected(_getSelectedValues(), '');
             });
           },
+          options: [
+            CustomRadioModel<AccessMode>(
+              value: AccessMode.allowAll,
+              title: Text("Allow all $_displayName for this $_subTitle"),
+            ),
+            CustomRadioModel<AccessMode>(
+              value: AccessMode.select,
+              title: Text("Select specific $_displayName for this $_subTitle"),
+            ),
+          ],
         ),
-        _EntitlementRadioTile(
-          title: "Select specific $_displayName for this $_subTitle",
-          value: AccessMode.select,
-          groupValue: _mode,
-          onChanged: (value) {
-            setState(() {
-              _mode = value!;
-              _updateAllEntitlements(false);
-              widget.onSelected(_getSelectedValues(), '');
-            });
-          },
-        ),
+
         const SizedBox(height: 10),
         FilterEntitlements(controller: _searchController, title: _subTitle),
         const SizedBox(height: 10),
@@ -180,9 +182,6 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
             // Section Header
             _ModuleName(name: entry.key, sectionColor: widget.sectionColor),
 
-            /*..._licenses.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;*/
             ...entry.value.map((AccessControl item) {
               final index = _entitlements.indexOf(item);
 
@@ -274,7 +273,7 @@ class _ModuleName extends StatelessWidget {
         textAlign: TextAlign.center,
         style: context.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: sectionColor ?? context.ofTheme.colorScheme.primary,
+          color: sectionColor ?? context.mainPrimaryColor,
         ),
       ),
     );
@@ -294,46 +293,10 @@ class _SwitchListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile.adaptive(
-      dense: true,
-      title: Text(
-        item.title,
-        style: context.textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        item.description,
-        style: context.textTheme.bodySmall?.copyWith(
-          color: Colors.grey.shade700,
-        ),
-      ),
-      value: isSelected,
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _EntitlementRadioTile extends StatelessWidget {
-  final String title;
-  final AccessMode value;
-  final AccessMode groupValue;
-  final ValueChanged<AccessMode?> onChanged;
-
-  const _EntitlementRadioTile({
-    required this.title,
-    required this.value,
-    required this.onChanged,
-    required this.groupValue,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RadioListTile<AccessMode>.adaptive(
-      dense: true,
-      value: value,
-      groupValue: groupValue,
-      title: Text(title),
+    return CustomSwitchList(
+      title: item.title,
+      subtitle: item.description,
+      isSelected: isSelected,
       onChanged: onChanged,
     );
   }
@@ -367,122 +330,27 @@ class FilterEntitlements extends StatelessWidget {
   }
 }
 
-/*
+/*class _EntitlementRadioTile extends StatelessWidget {
+  final String title;
+  final AccessMode value;
+  final AccessMode groupValue;
+  final ValueChanged<AccessMode?> onChanged;
 
-class KeepAliveEntitlementSelector extends StatefulWidget {
-  final EntitlementSelector child;
-
-  const KeepAliveEntitlementSelector({super.key, required this.child});
-
-  @override
-  State<KeepAliveEntitlementSelector> createState() =>
-      _KeepAliveEntitlementSelectorState();
-}
-
-class _KeepAliveEntitlementSelectorState
-    extends State<KeepAliveEntitlementSelector>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-}
-
- ==============
-
-
-class _AssignPermissionsToRoleState extends State<AssignPermissionsToRole> {
-  get _permissionDetails => widget.permissionDetails;
-
-  PermissionMode _mode = PermissionMode.allowAll;
-  late List<bool> _permissions;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initially allow all
-    _permissions = List.filled(widget.permissionDetails.length, true);
-  }
-
-  void _updatePermissions(bool enableAll) {
-    setState(() {
-      for (int i = 0; i < _permissions.length; i++) {
-        _permissions[i] = enableAll;
-      }
-    });
-  }
+  const _EntitlementRadioTile({
+    required this.title,
+    required this.value,
+    required this.onChanged,
+    required this.groupValue,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-
-        /// Radio Buttons
-        PermissionRadioTile(
-          value: PermissionMode.allowAll,
-          groupValue: _mode,
-          title: "Allow all Point of Sale permissions for this role",
-          onChanged: (value) => setState(() {
-            _mode = value!;
-            _updatePermissions(true);
-          }),
-        ),
-        PermissionRadioTile(
-          value: PermissionMode.select,
-          groupValue: _mode,
-          title: "Select Point of Sale permissions for this role",
-          onChanged: (value) => setState(() => _mode = value!),
-        ),
-        const SizedBox(height: 16),
-
-        /// Permissions toggles
-        Expanded(
-          child: ListView.builder(
-            itemCount: widget.permissionDetails.length,
-            itemBuilder: (context, index) {
-              return SwitchListTile(
-                dense: true,
-                title: Text(
-                  _permissionDetails[index]['title']!,
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                subtitle: Text(_permissionDetails[index]['subtitle']!),
-                value: _permissions[index],
-                onChanged: _mode == PermissionMode.select
-                    ? (value) => setState(() => _permissions[index] = value)
-                    : null,
-              );
-            },
-          ),
-        ),
-      ],
+    return RadioListTile<AccessMode>.adaptive(
+      dense: true,
+      value: value,
+      groupValue: groupValue,
+      title: Text(title),
+      onChanged: onChanged,
     );
   }
-}
-
-final List<Map<String, String>> _permissionDetails = [
-  {
-    "title": "Manage orders at all locations",
-    "subtitle": "View and edit orders made and fulfilled at all locations.",
-  },
-  {
-    "title": "Manage sales attribution for orders",
-    "subtitle":
-    "Add, edit, or remove staff attributed to sales on completed.",
-  },
-  {
-    "title": "Edit customer details",
-    "subtitle": "Edit contact, address, note, tags, and options.orders.",
-  },
-  {
-    "title": "Manage a customer's store credit",
-    "subtitle": "Add or remove store credit from a customer's account.",
-  },
-];*/
+}*/

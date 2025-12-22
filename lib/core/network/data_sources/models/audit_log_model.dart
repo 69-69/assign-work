@@ -7,9 +7,12 @@ import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 
-/// [AuditAction] Tracks key workflow actions taken in the system
+/// [AuditAction] Tracks key workflow actions taken in the ERP system
 enum AuditAction {
   unknown,
+  draft,
+  amended,
+  pending,
   viewed,
   created,
   submitted,
@@ -19,16 +22,25 @@ enum AuditAction {
   cancelled,
   assigned,
   sent,
+  issued,
   commented,
   attached,
   delivered,
   received,
   completed,
   deleted,
+  opened,
+  closed,
   reopened,
   printed,
-  convertedToPO, // Converted Purchase Order
-  convertedToRFQ, // Converted Request For Quote
+  underReview,
+  acknowledged,
+  partlyFulfilled,
+  fulfilled,
+  invoiced,
+  paid,
+  convertedToRFQ, // Converted to Request For Quote
+  convertedToPO, // Converted to Purchase Order
 }
 
 /* USAGE:
@@ -36,17 +48,21 @@ enum AuditAction {
 * print(status.label); // Output: created
 * */
 extension AuditActionExtension on AuditAction {
-  /// [getValue] Get the label for the specific enum value (e.g. "convertedToRFQ").
-  String get getValue => EnumHelper<AuditAction>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "convertedToRFQ")
+  String get getName => EnumHelper<AuditAction>(this).getName;
 
   /// Returns a user-friendly label (e.g. "converted To RFQ")
   String get getLabel => EnumHelper<AuditAction>(this).getLabel;
 }
 
 class AuditActionHelper {
-  /// Check if action matches
-  static bool isMatch(String action) =>
+  /// Check if action is valid
+  static bool isValid(String action) =>
       EnumHelper.isValid<AuditAction>(AuditAction.values, action, false);
+
+  /// Returns true if the action is Approved
+  static bool isApproved(String? action) =>
+      EnumHelper.isEqual(AuditAction.approved, action);
 
   /// [fromString] Converts String/Label to enum value.
   static AuditAction fromString(String? value) =>
@@ -59,42 +75,69 @@ class AuditActionHelper {
   }
 }
 
-/// [AuditLog] Tracks key workflow/entry actions taken on purchase requisition.
+/// [AuditLog] Tracks key workflow/entry actions taken in the ERP System
 class AuditLog {
   static get _today => DateTime.now();
 
+  final String id;
   // e.g., 'created', 'approved', 'rejected', 'updated'
   final AuditAction action;
+  final String actionBy;
+  final DateTime actionAt;
   final String comment;
-  final String performedBy;
-  final DateTime performedAt;
+  // What is the document status immediately after this action?
+  // The snapshot of the document status immediately after the action occurred
+  final String? statusAfterAction;
 
   AuditLog({
+    this.id = '',
     required this.action,
-    required this.performedBy,
-    DateTime? performedAt,
+    required this.actionBy,
+    DateTime? actionAt,
     this.comment = '',
-  }) : performedAt = performedAt ?? _today;
+    this.statusAfterAction,
+  }) : actionAt = actionAt ?? _today;
 
   Map<String, dynamic> toMap() => {
     'action': getAction,
-    'performedBy': performedBy,
-    'performedAt': performedAt.toISOString,
+    'actionBy': actionBy,
+    'actionAt': actionAt.toISOString,
     'comment': comment,
+    'statusAfterAction': statusAfterAction,
   };
 
-  factory AuditLog.fromMap(Map<String, dynamic> map) => AuditLog(
+  factory AuditLog.fromMap(Map<String, dynamic> map, {String? id}) => AuditLog(
+    id: id ?? map['id'] ?? '',
     action: AuditActionHelper.fromString(map['action']),
-    performedBy: map['performedBy'] ?? '',
-    performedAt: toDateTimeFn(map['performedAt'] ?? '$_today'),
+    actionBy: map['actionBy'] ?? '',
+    actionAt: toDateTimeFn(map['actionAt'] ?? '$_today'),
     comment: map['comment'] ?? '',
+    statusAfterAction: map['statusAfterAction'] ?? 'NA',
   );
+
+  /// [auditLogs] Converts a list of maps from the provided [map] under the given [key] into a list of [AuditLog] objects.
+  static List<AuditLog> auditLogs(List<dynamic>? map) {
+    return map
+            ?.map((i) => AuditLog.fromMap(Map<String, dynamic>.from(i)))
+            .toList() ??
+        [];
+  }
+
+  static Map<String, dynamic>? logScaffold({
+    List<AuditLog> oldLogs = const [],
+    required AuditLog newLog,
+  }) => {
+    'history': [
+      ...oldLogs.map((e) => e.toMap()), // keep old logs
+      newLog.toMap(), // new log
+    ],
+  };
 
   /// A singleton instance representing an empty/default AuditLog.
   /// Used as a fallback when no matching PR is found.
   static final AuditLog empty = AuditLog(
     action: AuditAction.unknown,
-    performedBy: '',
+    actionBy: '',
   );
 
   /// Returns true if this instance is the singleton [empty] PR.
@@ -103,14 +146,15 @@ class AuditLog {
   bool get isNotEmpty => !isEmpty;
 
   /// For UI display only
-  String get getPerformedAt => performedAt.toStandardDT;
+  String get getActionAt => actionAt.toStandardDT;
   String get getAction => action.getLabel;
 
   /// For UI display only
   List<String> get itemAsList => [
     getAction.toTitle,
-    performedBy.toTitle,
-    getPerformedAt,
+    actionBy.toTitle,
+    getActionAt,
+    statusAfterAction.toTitle,
   ];
 
   /// For UI Header display only
@@ -118,6 +162,7 @@ class AuditLog {
     'Activity',
     'Employee',
     'Date & Time',
+    'Status After',
   ];
 }
 
@@ -138,7 +183,7 @@ class AuditTracker {
     AuditAction action = AuditAction.viewed,
   }) {
     final key =
-        "${type.getValue}::$id::$_getCurrentDate"; // namespace to avoid collisions
+        "${type.getName}::$id::$_getCurrentDate"; // namespace to avoid collisions
 
     // Ensure that the action is initialized in the map
     _sessionMap.putIfAbsent(action, () => <String>{});

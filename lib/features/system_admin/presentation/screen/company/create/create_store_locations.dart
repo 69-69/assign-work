@@ -2,8 +2,8 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
@@ -18,7 +18,7 @@ extension AddStoreLocations<T> on BuildContext {
   Future<void> openAddStoreLocations({CompanyStores? serverStore}) =>
       openBottomSheet(
         isExpand: false,
-        child: FormBottomSheet(
+        child: BottomSheetScaffold(
           title: '${serverStore == null ? '' : 'Edit'} Store (Branch) Location',
           body: _AddStoreFormBody(serverStore: serverStore),
         ),

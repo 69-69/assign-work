@@ -85,15 +85,20 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       final index = entry.key + 1;
       final group = entry.value;
 
+      // 1️⃣ Build widgets
       // Create list of TextFields for this group
       final fields = _fieldsConfig
           .map(
-            (config) => config.hideField
-                ? const SizedBox.shrink()
+            (config) => config.isHidden
+                ? null
                 : _buildFieldWidget(group, config, index),
           )
+          // 2️⃣ Remove nulls (hidden fields)
+          .where((e) => e != null)
+          .cast<Widget>()
           .toList();
 
+      // 3️⃣ Apply pairing logic
       // Return a single field if there's only one, otherwise group fields into pairs
       return fields.length <= 1 ? fields : _groupByTwo(fields);
     });
@@ -131,7 +136,8 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           ?widget.showButton
               ? SizedBox(
                   width: 24,
-                  child: _prefixCount(config.label.toTitle, index),
+                  height: 24,
+                  child: _suffixCount(config.label.toTitle, index),
                 )
               : null,
         ],
@@ -157,7 +163,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         InputDecoration(
           helperText: helperText,
           labelText: labelText,
-          suffixIcon: widget.showButton ? _prefixCount(labelText, index) : null,
+          suffixIcon: widget.showButton ? _suffixCount(labelText, index) : null,
           suffixIconConstraints: const BoxConstraints(
             minHeight: 26,
             minWidth: 26,
@@ -180,7 +186,8 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     );
   }
 
-  Card _prefixCount(String labelText, int index, {double alpha = 0.2}) {
+  /// [_suffixCount] Add field count suffix to the end of the label
+  Card _suffixCount(String labelText, int index, {double alpha = 0.2}) {
     return Card(
       color: kGrayColor.toAlpha(alpha),
       elevation: 0,
@@ -323,7 +330,7 @@ class FieldGroupConfig {
   final String label;
   final bool isTextArea;
   final int? minLines;
-  final bool hideField;
+  final bool isHidden;
   final String? helperText;
   final TextInputType type;
   final String? Function(String?)? validator;
@@ -339,7 +346,8 @@ class FieldGroupConfig {
   /// [maxHeight] Max height of the Auto-Grow text field
   final double maxHeight;
 
-  /// Optional custom widget builder
+  /// Optional custom widget builder for non text-fields
+  /// e.g., CustomButton or CustomDropdown
   final Widget Function({
     required dynamic initialData,
     required void Function(dynamic value) onChanged,
@@ -355,7 +363,7 @@ class FieldGroupConfig {
     this.validator,
     this.helperText,
     this.inputDecoration,
-    this.hideField = false,
+    this.isHidden = false,
     this.isDisabled = false,
     this.isAutoGrow = false,
     this.maxHeight = 100,

@@ -1,11 +1,11 @@
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
@@ -17,7 +17,7 @@ extension UpdateCompanyInfo<T> on BuildContext {
   Future<void> openUpdateCompanyInfo({required Company info}) =>
       openBottomSheet(
         isExpand: false,
-        child: FormBottomSheet(
+        child: BottomSheetScaffold(
           title: 'Edit Company Info',
           subtitle: info.name.toTitle,
           body: _UpdateCompanyForm(info: info),

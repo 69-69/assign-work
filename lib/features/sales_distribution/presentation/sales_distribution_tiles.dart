@@ -13,7 +13,7 @@ extension SalesDistributionTiles on dynamic {
         'icon': Icons.trending_up,
         'action': RouteNames.salesOrders2,
         'param': {},
-        'access': _getValue(SalesDistributionPermission.manageSOs),
+        'access': _getName(SalesDistributionPermission.manageSOs),
         'description': 'Create orders for customers or clients',
       },
       {
@@ -21,7 +21,7 @@ extension SalesDistributionTiles on dynamic {
         'icon': Icons.delivery_dining,
         'action': RouteNames.deliveries2,
         'param': {},
-        'access': _getValue(SalesDistributionPermission.manageDeliveries),
+        'access': _getName(SalesDistributionPermission.manageDeliveries),
         'description':
             'add or create delivery of order(s) and update their status.',
       },
@@ -31,7 +31,7 @@ extension SalesDistributionTiles on dynamic {
         'icon': Icons.location_on,
         'action': RouteNames.ordersTracking2,
         'param': {},
-        'access': _getValue(SalesDistributionPermission.manageTracking),
+        'access': _getName(SalesDistributionPermission.manageTracking),
         'description': 'monitor the progress of order placement and deliveries',
       },
     ];
@@ -444,4 +444,4 @@ Let me know if you'd like:
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<SalesDistributionPermission>(e).getValue;
+String _getName(e) => EnumHelper<SalesDistributionPermission>(e).getName;

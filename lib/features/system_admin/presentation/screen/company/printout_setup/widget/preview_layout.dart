@@ -52,7 +52,7 @@ class _Layout extends StatelessWidget {
       ),
       color: kWhiteColor,
       btnText: 'Close',
-      onPress: () => Navigator.pop(context),
+      onCancel: () => Navigator.pop(context),
     );
   }
 

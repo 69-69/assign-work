@@ -299,7 +299,7 @@ class _GuideCard extends StatelessWidget {
       textAlign: TextAlign.start,
       overflow: TextOverflow.ellipsis,
       softWrap: false,
-      style: textTheme.titleLarge?.copyWith(color: colorScheme.primary),
+      style: textTheme.titleLarge?.copyWith(color: context.mainPrimaryColor),
     );
   }
 

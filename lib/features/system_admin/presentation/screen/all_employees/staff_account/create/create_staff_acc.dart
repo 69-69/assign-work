@@ -6,8 +6,8 @@ import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -21,7 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreateStaffAcc<T> on BuildContext {
   Future<void> openCreateStaffAcc() => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: 'Add New Employee',
       body: _CreateStaffAccForm(),
     ),
@@ -69,7 +69,7 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
     roleId: _selectedRoleId,
     role: _selectedRole,
     departmentCode: _selectedDepartCode,
-    status: AccountStatus.enabled.getValue,
+    status: AccountStatus.enabled.getName,
     workspaceId: context.workspace!.id,
     passCode: SecretHasher.hash(_passcodeController.text),
     createdBy: context.employee!.fullName,

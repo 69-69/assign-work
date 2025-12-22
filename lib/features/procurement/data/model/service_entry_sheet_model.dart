@@ -17,7 +17,7 @@ class ServiceEntrySheet extends Equatable {
   final GRNSESStatus status;
   final List<SESServiceLine> servicesLines;
   final List<String> attachments;
-  final String? note;
+  final String? notes;
 
   /// [history] Audit trail: track all changes made to the PR
   final List<AuditLog> history;
@@ -38,7 +38,7 @@ class ServiceEntrySheet extends Equatable {
     this.status = GRNSESStatus.draft,
     required this.servicesLines,
     this.attachments = const [],
-    this.note,
+    this.notes,
     required this.receivedBy,
     DateTime? receivedAt,
     DateTime? serviceStart,
@@ -63,7 +63,7 @@ class ServiceEntrySheet extends Equatable {
       history: (map['history'] as List? ?? [])
           .map((i) => AuditLog.fromMap(Map<String, dynamic>.from(i)))
           .toList(),
-      note: map['note'] ?? '',
+      notes: map['notes'] ?? '',
       receivedBy: map['receivedBy'] ?? '',
       receivedAt: toDateTimeFn(map['receivedAt'] ?? '$_today'),
       serviceStart: toDateTimeFn(map['serviceStart'] ?? '$_today'),
@@ -83,7 +83,7 @@ class ServiceEntrySheet extends Equatable {
     'attachments': attachments,
     'receivedBy': receivedBy,
     'receivedAt': receivedAt,
-    'note': note,
+    'notes': notes,
     'history': history.map((i) => i.toMap()).toList(),
   };
 
@@ -126,7 +126,7 @@ class ServiceEntrySheet extends Equatable {
     GRNSESStatus? status,
     List<SESServiceLine>? servicesLines,
     List<String>? attachments,
-    String? note,
+    String? notes,
     List<AuditLog>? history,
     String? receivedBy,
     DateTime? receivedAt,
@@ -140,7 +140,7 @@ class ServiceEntrySheet extends Equatable {
     status: status ?? this.status,
     servicesLines: servicesLines ?? this.servicesLines,
     attachments: attachments ?? this.attachments,
-    note: note ?? this.note,
+    notes: notes ?? this.notes,
     history: history ?? this.history,
     receivedBy: receivedBy ?? this.receivedBy,
     receivedAt: receivedAt ?? this.receivedAt,
@@ -160,7 +160,7 @@ class ServiceEntrySheet extends Equatable {
     serviceEnd,
     servicesLines,
     attachments,
-    note,
+    notes,
     history,
     receivedAt,
   ];

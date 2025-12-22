@@ -14,7 +14,7 @@ class GetPurchaseRequisitions {
 
   /// Get by either prNumber or priority or departmentCode [byAnyTerm]
   /// @Return: `List<PurchaseRequisition>`
-  static Future<List<PurchaseRequisition>> byAnyTerm(term) async {
+  static Future<List<PurchaseRequisition>> byAnyTerm(String term) async {
     final prBloc = ProPurchaseRequisiteBloc(
       firestore: FirebaseFirestore.instance,
     );

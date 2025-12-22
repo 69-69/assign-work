@@ -31,7 +31,7 @@ class _PrintoutFontSizeScreenState extends State<PrintoutFontSizeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // _loadFontSizes();
+    _loadFontSizes();
   }
 
   Future<void> _loadFontSizes() async {

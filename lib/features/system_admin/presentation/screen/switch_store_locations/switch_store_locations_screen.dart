@@ -227,7 +227,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
               ),
               _buildTitle(
                 context,
-                title: 'Hosting: ${workspace.hostingType.getValue}'.toTitle,
+                title: 'Hosting: ${workspace.hostingType.getName}'.toTitle,
               ),
               if (showTitle) ...[
                 const SizedBox(height: 16),

@@ -16,7 +16,7 @@ extension ShowProgressBar on BuildContext {
       barrierDismissible: false,
       barrierColor: barrierColor,
       builder: (_) => AsyncProgressBarDialog(
-        request,
+        future: request,
         message: child ?? const Text('Please wait...'),
         onError: onError,
         onSuccess: onSuccess,
@@ -28,7 +28,7 @@ extension ShowProgressBar on BuildContext {
 /// This code is an extension to the package flutter_progress_dialog (https://pub.dev/packages/future_progress_dialog)
 class AsyncProgressBarDialog extends StatefulWidget {
   /// Dialog will be closed when [future] task is finished.
-  @required
+  // @required
   final Future? future;
 
   /// [BoxDecoration] of [AsyncProgressBarDialog].
@@ -58,9 +58,9 @@ class AsyncProgressBarDialog extends StatefulWidget {
   /// Calculate time left to complete in circularProgressBar [loadProgress].
   final double? loadProgress;
 
-  const AsyncProgressBarDialog(
-    this.future, {
+  const AsyncProgressBarDialog({
     super.key,
+    required this.future,
     this.decoration,
     this.opacity = 1.0,
     this.progress,

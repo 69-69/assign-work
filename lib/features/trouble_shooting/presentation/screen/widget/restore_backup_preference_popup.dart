@@ -44,7 +44,7 @@ class RestoreBackupPreference extends StatelessWidget {
         ),
       ),
       btnText: 'Close',
-      onPress: () => Navigator.pop(context),
+      onCancel: () => Navigator.pop(context),
     );
   }
 

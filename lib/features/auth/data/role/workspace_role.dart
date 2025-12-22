@@ -19,8 +19,8 @@ enum WorkspaceRole {
 }
 
 extension WorkspaceRoleExtension on WorkspaceRole {
-  /// USAGE: `WorkspaceRole.onboarding.label`
-  String get getValue => EnumHelper<WorkspaceRole>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "agentFranchise")
+  String get getName => EnumHelper<WorkspaceRole>(this).getName;
 
   /// [assign] Determines the role for a "New Workspace Setup" based on the
   /// currently signed-in user's role (cached workspace role).

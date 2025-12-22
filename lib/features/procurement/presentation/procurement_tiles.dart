@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 /// Procurement & Supplier Management System App(PSM) Dashboard tiles [ProcurementTiles]
 extension ProcurementTiles on dynamic {
+  /// Sub Menu Tiles under Procurement Dashboard
   List<DashboardTile> get supplierManagementTiles {
     final tilesData = [
       {
@@ -13,7 +14,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.account_balance,
         'action': RouteNames.supplierAccount,
         'param': {},
-        'access': _getValue(ProcurementPermission.createSuppliers),
+        'access': _getName(ProcurementPermission.createSuppliers),
         'description': 'create and manage supplier accounts',
       },
       {
@@ -21,7 +22,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.star_half_outlined,
         'action': RouteNames.supplierEvaluation,
         'param': {},
-        'access': _getValue(ProcurementPermission.evaluateSuppliers),
+        'access': _getName(ProcurementPermission.evaluateSuppliers),
         'description':
             'track and rate supplier performance: quality, delivery, and communication',
       },
@@ -30,7 +31,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.assignment_outlined,
         'action': RouteNames.contractManagement,
         'param': {},
-        'access': _getValue(ProcurementPermission.manageContracts),
+        'access': _getName(ProcurementPermission.manageContracts),
         'description':
             'manage supplier contracts, pricing terms, and service-level agreements',
       },
@@ -40,7 +41,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.compare_arrows_outlined,
         'action': RouteNames.rfqComparison,
         'param': {},
-        'access': _getValue(ProcurementPermission.compareQuotations),
+        'access': _getName(ProcurementPermission.compareQuotations),
         'description': 'compare supplier quotations side by side before converting to a PO',
       },
       {
@@ -48,7 +49,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.verified_outlined,
         'action': RouteNames.procurementApprovals,
         'param': {},
-        'access': _getValue(ProcurementPermission.approveProcurements),
+        'access': _getName(ProcurementPermission.approveProcurements),
         'description': 'manage and approve requisitions, RFQs, and POs according to rules',
       },
       {
@@ -56,7 +57,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.bar_chart,
         'action': RouteNames.procurementReports,
         'param': {},
-        'access': _getValue(ProcurementPermission.viewProcurementReports),
+        'access': _getName(ProcurementPermission.viewProcurementReports),
         'description': 'analyze procurement trends, spending, supplier performance, and more',
       },*/
     ];
@@ -64,14 +65,15 @@ extension ProcurementTiles on dynamic {
     return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
   }
 
+  /// Sub Menu Tiles under Procurement Dashboard
   List<DashboardTile> get procurementTiles {
     final tilesData = [
       {
         'label': 'purchase - requisition',
-        'icon': Icons.request_page_outlined,
+        'icon': Icons.edit_document,
         'action': RouteNames.purchaseRequisition,
         'param': {},
-        'access': _getValue(ProcurementPermission.managePRs),
+        'access': _getName(ProcurementPermission.managePRs),
         'description':
             'manage internal request by departments for needed items before a PO is created',
       },
@@ -80,7 +82,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.request_page_outlined,
         'action': RouteNames.proRequestForQuote,
         'param': {},
-        'access': _getValue(ProcurementPermission.manageRFQs),
+        'access': _getName(ProcurementPermission.manageRFQs),
         'description':
             'manage quotation requests to suppliers for pricing and terms',
       },
@@ -89,8 +91,20 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.paypal,
         'action': RouteNames.proPurchaseOrders,
         'param': {},
-        'access': _getValue(ProcurementPermission.managePOs),
+        'access': _getName(ProcurementPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
+      },
+      // -------------------------
+      // APPROVAL WORKFLOW
+      // -------------------------
+      {
+        'label': 'my approvals',
+        'icon': Icons.verified_outlined,
+        'action': RouteNames.proMyPOApprovals,
+        'param': {},
+        'access': _getName(ProcurementPermission.approvePO),
+        'description':
+            'manage and approve requisitions, RFQs, and POs according to rules',
       },
       // -------------------------
       // GOODS RECEIPT
@@ -100,7 +114,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.receipt_long,
         'action': RouteNames.goodsReceiptNote,
         'param': {},
-        'access': _getValue(ProcurementPermission.manageGRN),
+        'access': _getName(ProcurementPermission.manageGRN),
         'description':
             'Record the receipt of physical goods delivered by suppliers.\nUpdates inventory quantities and verifies items received.',
       },
@@ -112,7 +126,7 @@ extension ProcurementTiles on dynamic {
         'icon': Icons.assignment_turned_in_outlined,
         'action': RouteNames.serviceEntrySheet,
         'param': {},
-        'access': _getValue(ProcurementPermission.manageSES),
+        'access': _getName(ProcurementPermission.manageSES),
         'description':
             'Confirm and approve completion of vendor-provided services.\nUsed for service POs—no inventory impact.',
       },
@@ -122,7 +136,7 @@ extension ProcurementTiles on dynamic {
         // local_shipping
         'action': RouteNames.supplierManagement,
         'param': {},
-        'access': _getValue(ProcurementPermission.manageSuppliers),
+        'access': _getName(ProcurementPermission.manageSuppliers),
         'description':
             'register, approve, and manage suppliers and vendor profiles',
       },
@@ -606,4 +620,4 @@ Let me know if you'd like:
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<ProcurementPermission>(e).getValue;
+String _getName(e) => EnumHelper<ProcurementPermission>(e).getName;

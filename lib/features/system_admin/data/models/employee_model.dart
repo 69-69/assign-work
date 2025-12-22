@@ -65,7 +65,7 @@ class Employee extends Equatable {
       fullName: map['fullName'] ?? '',
       mobileNumber: map['mobileNumber'] ?? '',
       username: map['username'].toString().emailToUsername,
-      status: map['status'] ?? AccountStatus.disabled.getValue,
+      status: map['status'] ?? AccountStatus.disabled.getName,
       passCode: map['passCode'] ?? '',
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
@@ -182,7 +182,7 @@ class Employee extends Equatable {
   bool get isEmpty => identical(this, Employee.empty);
 
   /// Verified Status [isActive]
-  bool get isActive => status == AccountStatus.enabled.getValue;
+  bool get isActive => status == AccountStatus.enabled.getName;
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;

@@ -35,6 +35,14 @@ enum SetupPermission {
   updateRole,
   deleteRole,
 
+  // Workflow Approval
+  manageWorkflowApproval,
+  createWorkflowApproval,
+  viewWorkflowApproval,
+  updateWorkflowApproval,
+  deleteWorkflowApproval,
+  assignWorkflowApproval,
+
   // Assign Permission
   assignPermission,
 
@@ -226,6 +234,41 @@ final List<AccessControl> _rolePermissions = [
   ),
 ];
 
+final List<AccessControl> _workflowApprovalPermissions = [
+  AccessControl(
+    module: "workflow approval",
+    title: "Manage workflow approval",
+    description: "Allow users to create, edit, and delete workflow approvals.",
+    access: SetupPermission.manageWorkflowApproval,
+  ),
+  AccessControl(
+    module: "workflow approval",
+    title: "Create new workflow approval",
+    description: "Allow users to create new workflow approvals.",
+    access: SetupPermission.createWorkflowApproval,
+  ),
+  AccessControl(
+    module: "workflow approval",
+    title: "View workflow approvals",
+    description: "Allow access to a list of all workflow approvals.",
+    access: SetupPermission.viewWorkflowApproval,
+  ),
+  AccessControl(
+    module: "workflow approval",
+    title: "Edit workflow approvals",
+    description:
+        "Allow users to modify details of an existing workflow approval.",
+    access: SetupPermission.updateWorkflowApproval,
+  ),
+  AccessControl(
+    module: "workflow approval",
+    title: "Delete workflow approvals",
+    description:
+        "Allow users to permanently remove a workflow approval record.",
+    access: SetupPermission.deleteWorkflowApproval,
+  ),
+];
+
 final List<AccessControl> _assignPermissions = [
   AccessControl(
     module: "assign permission",
@@ -372,6 +415,7 @@ final List<AccessControl> setupPermissions = [
   ..._storeLocationPermissions,
   ..._employeePermissions,
   ..._rolePermissions,
+  ..._workflowApprovalPermissions,
   ..._assignPermissions,
   ..._backupPermissions,
   ..._itemSupplierPermissions,

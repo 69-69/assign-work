@@ -1,7 +1,3 @@
-### Sam's club shopping Refund
-- Aug,13 2025 @ 2:20PM => cost=21.78 + 55.14 + 38.91 = $115.83 ref-no = 250813-023191
-- Aug,12 2025 => cost = $38.92
-
 # assign_erp
 
 

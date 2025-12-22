@@ -224,7 +224,7 @@ extension Custombutton on BuildContext {
 
   Widget iconButton(
     IconData icon, {
-    double? size,
+    double? iconSize,
     Color? bgColor,
     Color? iconColor,
     Color? borderColor,
@@ -239,7 +239,7 @@ extension Custombutton on BuildContext {
       borderColor,
       icon,
       iconColor,
-      size,
+      iconSize,
     );
     return isCard ? Card(elevation: 2.0, child: btn) : btn;
   }
@@ -251,7 +251,7 @@ extension Custombutton on BuildContext {
     Color? borderColor,
     IconData icon,
     Color? iconColor,
-    double? size,
+    double? iconSize,
   ) {
     return IconButton(
       onPressed: onPressed,
@@ -268,7 +268,7 @@ extension Custombutton on BuildContext {
       icon: Icon(
         icon,
         color: iconColor ?? kWhiteColor,
-        size: size,
+        size: iconSize,
         semanticLabel: tooltip ?? 'Icon button',
       ),
     );

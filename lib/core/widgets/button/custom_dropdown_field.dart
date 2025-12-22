@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 
@@ -76,8 +79,10 @@ class StaticDropdown<T> extends StatelessWidget {
       isExpanded: true,
       isDense: true,
       icon: icon,
-      value: _defaultValue,
+      // value: _defaultValue,
+      initialValue: _defaultValue,
       onChanged: onChanged,
+      menuMaxHeight: context.screenHeight * 0.6,
       decoration:
           buttonDecoration ??
           InputDecoration(
@@ -86,7 +91,7 @@ class StaticDropdown<T> extends StatelessWidget {
             helperText: inLabel ? null : helperText,
             labelStyle: TextStyle(
               overflow: TextOverflow.ellipsis,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: context.onSurfaceColor,
             ),
           ),
       items: items.map((item) {
@@ -96,8 +101,8 @@ class StaticDropdown<T> extends StatelessWidget {
           value: item,
           child: Text(
             labelText,
-            overflow: TextOverflow.fade,
             softWrap: true,
+            overflow: TextOverflow.fade,
             style: const TextStyle(fontWeight: FontWeight.normal),
           ),
         );
@@ -129,13 +134,14 @@ class StaticDropdown<T> extends StatelessWidget {
       hintText: _labelWithHelper,
       initialSelection: _defaultValue,
       dropdownMenuEntries: entries,
+      menuHeight: context.screenHeight * 0.6,
       textStyle: const TextStyle(fontWeight: FontWeight.normal),
       expandedInsets: const EdgeInsets.symmetric(horizontal: 0),
       searchCallback: (entries, query) {
-        final lower = query.toLowerCase();
+        final lower = query.toLowerAll;
 
         return entries.indexWhere(
-          (entry) => entry.label.toLowerCase().contains(lower),
+          (entry) => entry.label.toLowerAll.contains(lower),
         );
       },
       onSelected: onChanged,
@@ -144,7 +150,7 @@ class StaticDropdown<T> extends StatelessWidget {
         isDense: true,
         labelStyle: TextStyle(
           overflow: TextOverflow.ellipsis,
-          color: Theme.of(context).colorScheme.onSurface,
+          color: context.onSurfaceColor,
         ),
       ),
     );
@@ -200,8 +206,6 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
 
   // Single-select dropdown
   _buildSingleDropdown() {
-    final helpText = helperText != null ? '($helperText)' : '';
-
     return DropdownSearch<T>(
       selectedItem: selectedItem,
       autoValidateMode: AutovalidateMode.onUserInteraction,
@@ -216,15 +220,13 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       itemAsString: (T obj) => itemAsString!(obj),
       onChanged: (T? obj) => onChanged!(obj),
       suffixProps: _dropdownSuffixProps,
-      decoratorProps: _dropDownDecoratorProps(helpText),
+      decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
       validator: validator ?? (T? obj) => obj == null ? labelText : null,
     );
   }
 
   // Multi-select dropdown
   _buildMultiSelectDropdown() {
-    final helpText = helperText != null ? '($helperText)' : '';
-
     return DropdownSearch<T>.multiSelection(
       selectedItems: selectedMultiItems ?? [],
       autoValidateMode: AutovalidateMode.onUserInteraction,
@@ -239,7 +241,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       itemAsString: (T obj) => itemAsString!(obj),
       onChanged: (List<T> obj) => onMultiChanged!(obj),
       suffixProps: _dropdownSuffixProps,
-      decoratorProps: _dropDownDecoratorProps(helpText),
+      decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
       validator:
           validatorMulti ?? (List<T>? obj) => obj == null ? labelText : null,
     );
@@ -255,7 +257,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
 
   DropDownDecoratorProps _dropDownDecoratorProps(String helpText) {
     return DropDownDecoratorProps(
-      decoration: InputDecoration(labelText: '$labelText $helpText'),
+      decoration: InputDecoration(labelText: labelText, helperText: helpText),
     );
   }
 

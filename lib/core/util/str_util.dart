@@ -7,8 +7,37 @@ import 'package:flutter/services.dart';
 enum UIDType { numeric, alphanumeric }
 
 /// Check if a MAP is empty or null [isNullEmpty]
-extension SanitizeMap on Map? {
+/*extension SanitizeMap on Map? {
   bool get isNullEmpty => this == null || this!.isEmpty;
+}*/
+
+/// [cleaned] Returns a copy of the map, removing nulls, empty strings, and zero numbers
+extension MapCleanupExtensions on Map<String, dynamic> {
+  Map<String, dynamic> get cleaned {
+    final result = Map<String, dynamic>.from(this); // copy map
+    result.removeWhere(
+      (k, v) => (v as Object?).isNullOrEmpty,
+    ); // remove empty values
+    return result; // return cleaned copy
+  }
+
+  /* Returns a new Map with all entries removed where:
+  /// - value is null
+  /// - value is an empty String
+  /// - value is a number equal to 0
+  /// OPT-1
+  Map<String, dynamic> get cleaned2 {
+    final result = <String, dynamic>{};
+    for (final entry in entries) {
+      final value = entry.value;
+      if (value != null &&
+          (value is! String || value.isNotEmpty) &&
+          (value is! num || value != 0)) {
+        result[entry.key] = value;
+      }
+    }
+    return result;
+  }*/
 }
 
 extension ToCurrencyFormat on double {
@@ -24,10 +53,11 @@ extension ToCurrencyFormat on double {
       : toStringAsFixed(1);
 }
 
-/// get the first/last index of a list GetIndexPosition
-extension GetIndexPosition on List {
+extension ListExtensions on List {
+  /// get the first index of a list
   int get getFirstIndex => isEmpty ? -1 : 0;
 
+  /// get the last index of a list
   int get getLastIndex => isNotEmpty ? length - 1 : 0;
 }
 
@@ -51,17 +81,23 @@ extension CopyTextToClipboard on BuildContext {
 
 extension UniversalIsNullOrEmpty on Object? {
   bool get isNullOrEmpty {
-    if (this == null || this == "null" || this == "null null") {
+    // For numbers (int, double), false
+    var val = this;
+    if (val is double || val is int || val is num) {
+      return false;
+    }
+
+    if (val == null || val == "null" || val == "null null") {
       return true;
     }
 
-    if (this is String && (this as String).isEmpty) return true;
-    if (this is Iterable && (this as Iterable).isEmpty) return true;
-    if (this is Map && (this as Map).isEmpty) return true;
+    if (val is String && val.isEmpty) return true;
+    if (val is Iterable && val.isEmpty) return true;
+    if (val is Map && val.isEmpty) return true;
 
     // Fallback for custom objects that define `isEmpty`
     try {
-      return (this as dynamic).isEmpty == true;
+      return (val as dynamic).isEmpty == true;
     } catch (_) {
       return false;
     }

@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:flutter/material.dart';
 
@@ -32,7 +32,7 @@ extension HistoryViewExtensions on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: title,
       isDetails: true,
       initialSize: 0.6,

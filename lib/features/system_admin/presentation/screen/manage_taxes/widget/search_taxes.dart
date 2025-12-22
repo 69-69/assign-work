@@ -1,5 +1,7 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/block_quote.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/dynamic_checkbox_list.dart';
@@ -68,13 +70,21 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
     return Wrap(
       runSpacing: 16,
       children: [
-        if (widget.onRadioChanged != null) _taxToApply(),
-        if (_isHeaderTax)
+        if (widget.onRadioChanged != null) ...{_taxToApply()},
+        if (_isHeaderTax) ...{
+          BlockQuote(
+            blockColor: context.errorColor,
+            child: Text(
+              'If Tax type is not listed, please contact your system admin.',
+              textAlign: TextAlign.justify,
+            ),
+          ),
           _TaxOptionsPanel(
             taxRate: _taxPercent,
             initialValues: widget.initialValues,
             onCheckChanged: _handleSelectedTaxes,
           ),
+        },
       ],
     );
   }
@@ -87,21 +97,22 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
       title: 'Tax Application Method',
       radiosConfig: [
         RadioGroupConfig(
-          key: perLineTax.getValue,
+          key: perLineTax.getName,
           defaultSelected: _taxModeToApply == perLineTax,
-          label: 'Apply Tax Per Line Item',
+          label: 'Apply Tax Per Item (Per-Line)',
           tooltip:
-              'Ideal when different products/services fall into different tax brackets (e.g., some at 5%, others at 18%)',
+              'Ideal when different products or services fall into different tax brackets (e.g., some at 5%, others at 18%)',
           description:
-              'Select this if different products or services have different tax rates. You will be asked to enter tax separately for each line item.',
+              'Select this if different products or services have different tax rates. You will be asked to enter or select tax separately for each line item.',
         ),
         RadioGroupConfig(
-          key: headerTax.getValue,
+          key: headerTax.getName,
           defaultSelected: _taxModeToApply == headerTax,
-          label: 'Apply Single Tax Rate for All Items',
-          tooltip: 'This method applies one tax rate to the entire quote.',
+          label: 'Apply Single Tax Rate for All Items (Header)',
+          tooltip:
+              'This method applies selected tax rate to the entire document.',
           description:
-              'Use this option if all products/services are taxed at the same rate. You’ll enter one overall tax rate that applies to the full RFQ.',
+              'Use this option if all products or services are taxed at the same rate. You’ll enter one overall tax rate that applies to the full RFQ.',
         ),
       ],
       onChanged: (List<Map<String, dynamic>> data) {
@@ -110,7 +121,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
         );
         final selectedKey = selected?['key'];
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          setState(() => _isHeaderTax = selectedKey == headerTax.getValue);
+          setState(() => _isHeaderTax = selectedKey == headerTax.getName);
         });
 
         widget.onRadioChanged!(data);
@@ -250,10 +261,12 @@ class _TaxOptionsPanel extends StatelessWidget {
 class TaxMultiSelectDropdown extends StatefulWidget {
   const TaxMultiSelectDropdown({
     super.key,
-    this.onMultiChanged,
+    this.label,
     this.initialValues,
+    this.onMultiChanged,
   });
 
+  final String? label;
   final List<String>? initialValues;
   final Function(List<Tax>)? onMultiChanged;
 
@@ -264,6 +277,8 @@ class TaxMultiSelectDropdown extends StatefulWidget {
 class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
   List<String>? _initialValues;
   List<Tax>? _taxes;
+
+  get _labelText => widget.label ?? 'Select Tax';
 
   @override
   void initState() {
@@ -302,18 +317,20 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
       AsyncSearchDropdown<Tax>(
         isMultiSelect: true,
         selectedMultiItems: _taxes,
-        labelText: 'Select Tax...',
+        labelText: '$_labelText...',
         asyncItems: (String filter, loadProps) async =>
             await _loadTaxes(filter: filter),
         filterFn: (tax, filter) => _filterTax(filter, tax, context),
         itemAsString: (Tax tax) => tax.itemAsString.toTitle,
         onMultiChanged: (List<Tax> taxes) => widget.onMultiChanged?.call(taxes),
-        validatorMulti: (taxes) => taxes.isNullOrEmpty ? 'Select Tax' : null,
+        validatorMulti: (taxes) => taxes.isNullOrEmpty ? _labelText : null,
         onNoDataFound: () {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _handleNoDataFound(context),
           );
         },
+        helperText:
+            'If Tax type is not listed, please contact your system admin.',
       );
 
   bool _filterTax(String filter, Tax tax, BuildContext cxt) {

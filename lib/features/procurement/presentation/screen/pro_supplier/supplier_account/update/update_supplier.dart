@@ -1,9 +1,10 @@
+import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -16,7 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension UpdateSupplier on BuildContext {
   Future openUpdateSupplier({required Supplier supplier}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: 'Edit Supplier',
       subtitle: supplier.name.toTitle,
       body: _UpdateSupplierForm(supplier: supplier),
@@ -38,7 +39,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
 
   final _formKey = GlobalKey<FormState>();
   final List<Supplier> _suppliers = [];
-  final List<SupplierContactPerson> _contactPersons = [];
+  final List<ContactPerson> _contactPersons = [];
 
   bool get isFormValid => _formKey.currentState!.validate();
 
@@ -129,7 +130,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
                     data.asMap().entries.map((e) {
                       final index = (e.key) + 1;
                       final contactPerson = e.value;
-                      return SupplierContactPerson.fromMap(
+                      return ContactPerson.fromMap(
                         contactPerson,
                         id: index.toString(),
                       );

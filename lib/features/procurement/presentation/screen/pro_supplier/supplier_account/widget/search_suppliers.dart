@@ -1,4 +1,5 @@
 import 'package:assign_erp/config/routes/route_names.dart';
+import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -33,7 +34,7 @@ class SearchSuppliers extends StatefulWidget {
 class _SearchSuppliersState extends State<SearchSuppliers> {
   Supplier? _supplier;
   String? _initialSupplier;
-  List<SupplierContactPerson>? _selectedContactPersons;
+  List<ContactPerson>? _selectedContactPersons;
 
   @override
   void initState() {
@@ -64,7 +65,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
         },
       ],
     );
-  }
+  } // eclarson@smu.edu
 
   /// Suppliers [_buildSuppliersDropdown]
   AsyncSearchDropdown<Supplier> _buildSuppliersDropdown(BuildContext context) {
@@ -97,14 +98,14 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
       (person) => person.id == widget.initialContactPerson,
     );
 
-    return StaticDropdown<SupplierContactPerson>(
+    return StaticDropdown<ContactPerson>(
       label: label,
       items: [
-        SupplierContactPerson.empty(name: label),
+        ContactPerson.empty(name: label),
         ...?_selectedContactPersons,
       ],
       initialValue: initial,
-      getDisplayText: (person) => person.name,
+      getDisplayText: (person) => person.itemAsString,
       onChanged: (person) {
         final id = person?.id;
         if (id.isNotNullNorEmpty) {

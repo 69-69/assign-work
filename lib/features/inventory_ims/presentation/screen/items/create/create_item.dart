@@ -5,8 +5,8 @@ import 'package:assign_erp/core/widgets/barcode_scanner.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddItemForm on BuildContext {
   Future<void> openAddItem() => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Add New Item', body: _AddItemForm()),
+    child: BottomSheetScaffold(title: 'Add New Item', body: _AddItemForm()),
   );
 }
 

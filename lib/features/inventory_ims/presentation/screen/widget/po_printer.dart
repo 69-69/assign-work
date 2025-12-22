@@ -35,7 +35,7 @@ class POPrinter {
         sku: order.supplierId,
         itemName: _toCap(order.itemName),
         unitPrice: order.unitPrice,
-        quantity: order.quantity,
+        quantity: double.parse(order.quantity.toString()),
         discount: order.discountPercent,
         validityDate: order.getDeliveryDate,
         taxPercent: order.taxPercent,

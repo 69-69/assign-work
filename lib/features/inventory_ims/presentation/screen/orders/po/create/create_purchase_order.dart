@@ -8,8 +8,8 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -25,7 +25,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddOrderPurchaseForm on BuildContext {
   Future<void> openAddPurchaseOrders({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: 'Create Purchase Order',
       body: _AddPurchaseOrdersBody(),
     ),
@@ -277,7 +277,7 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
         const SizedBox(height: 20.0),
         POStatusCurrencyDropdown(
           onStatusChange: (s) => setState(() => _selectedPOStatus = s),
-          onCurrencyChange: (c) => setState(() => _selectedCurrency = c),
+          onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
         ),
         const SizedBox(height: 20.0),
         PayTermsAndMethodDropdown(

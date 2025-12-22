@@ -72,6 +72,7 @@ const purchaseOrderScreenTitle = 'purchase order (po)';
 const miscOrderScreenTitle = 'miscellaneous order (mo)';
 const requestPriceQuoteScreenTitle = 'request for quote';
 const purchaseRequisiteScreenTitle = 'purchase Requisition';
+const proWorkflowApprovalsScreenTitle = 'workflow approvals';
 const deliveryScreenTitle = 'delivery management';
 const reportsAnalyticsScreenTitle = 'reports analytics';
 const salesScreenTitle = 'sales management';

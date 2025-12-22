@@ -7,16 +7,15 @@ import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/nav/profile_menu_dropdown.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
-import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/home/data/permission/main_permission.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 const _size = 40.0;
@@ -33,6 +32,7 @@ class SideNav extends StatefulWidget {
 
 class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   bool _isDrawerOpen = false;
+  bool _isProfileOpen = false;
   late bool _cachedIsMobile;
   late final AnimationController _controller;
   Animation<double>? _widthAnimation;
@@ -71,7 +71,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     });
   }
 
-  bool get _shouldExpand => _cachedIsMobile || _isDrawerOpen;
+  bool get _shouldExpand => _isProfileOpen || _cachedIsMobile || _isDrawerOpen;
 
   double get _dynamicWidth =>
       _shouldExpand ? (_widthAnimation?.value ?? 200) : _size;
@@ -100,6 +100,9 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     setState(() {
       _isDrawerOpen = !_isDrawerOpen;
       _isDrawerOpen ? _controller.forward() : _controller.reverse();
+      /*if (!_isDrawerOpen) {
+        _isProfileOpen = false;
+      }*/
     });
   }
 
@@ -113,6 +116,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   void _toggleExitDrawer() {
     setState(() {
       _isDrawerOpen = false;
+      _isProfileOpen = false;
       _controller.reverse();
     });
   }
@@ -152,7 +156,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
         return kGrayColor;
       }
       if (states.contains(WidgetState.hovered)) {
-        return context.colorScheme.primary;
+        return context.mainPrimaryColor;
       }
       return _bgColor;
     });
@@ -168,7 +172,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           alignment: Alignment.topLeft,
           child: Container(
             width: _dynamicWidth,
-            margin: EdgeInsets.fromLTRB(20, 120, 0, 0),
+            margin: EdgeInsets.fromLTRB(20, 120, 0, 20),
             height: cxt.screenHeight,
             child: _buildCard(cxt),
           ),
@@ -220,12 +224,28 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
             employee: _employee,
             shouldExpand: _shouldExpand,
             dynamicWidth: _dynamicWidth,
-            bgColor: _shouldExpand ? context.colorScheme.primary : _bgColor,
+            bgColor: _shouldExpand ? context.mainPrimaryColor : _bgColor,
             iconColor: _iconColor,
           ),
         ),
         const SizedBox(height: 10),
         Expanded(child: _buildNav(context)),
+        if (_shouldExpand) ...{
+          Material(
+            color: kTransparentColor,
+            child: ProfileMenuDropdown(
+              isAppbar: false,
+              workspace: _workspace,
+              employee: _employee,
+              isProfileOpen: (v) => setState(() {
+                Future.delayed(Duration(milliseconds: 20), () {
+                  _isProfileOpen != v;
+                  _toggleDrawer();
+                });
+              }),
+            ),
+          ),
+        },
       ],
     );
   }
@@ -244,7 +264,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
           label: 'Dashboard',
           action: RouteNames.homeDashboard,
           description: 'Access to dashboard',
-          access: EnumHelper<MainPermission>(MainPermission.unknown).getValue,
+          access: EnumHelper<MainPermission>(MainPermission.unknown).getName,
         ),
       );
     }
@@ -261,26 +281,21 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       padding: EdgeInsets.only(bottom: 20),
       scrollDirection: Axis.vertical,
       physics: const BouncingScrollPhysics(),
-      child: _buildTileList(tiles, context),
-    );
-  }
-
-  Widget _buildTileList(List<DashboardTile> tiles, BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...tiles.map(
-          (tile) => Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: SizedBox(
-              width: _dynamicWidth,
-              child: _buildLinks(context, tile: tile),
-            ),
-          ),
-        ),
-        _buildLogout(context),
-      ],
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: tiles
+            .map(
+              (tile) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: SizedBox(
+                  width: _dynamicWidth,
+                  child: _buildLinks(context, tile: tile),
+                ),
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
@@ -338,8 +353,148 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
         ? base
         : base.copyWith(backgroundColor: _buildResolveWith(context));
   }
+}
 
-  // Build the logout button
+class _WorkspaceInfoCard extends StatelessWidget {
+  const _WorkspaceInfoCard({
+    required this.shouldExpand,
+    required this.dynamicWidth,
+    required this.bgColor,
+    required this.iconColor,
+    this.workspace,
+    this.employee,
+  });
+
+  final bool shouldExpand;
+  final double dynamicWidth;
+  final Color bgColor;
+  final Color iconColor;
+  final Workspace? workspace;
+  final Employee? employee;
+
+  @override
+  Widget build(BuildContext context) {
+    return workspace == null
+        ? const SizedBox.shrink()
+        : AnimatedContainer(
+            width: dynamicWidth,
+            padding: const EdgeInsets.all(6.0),
+            duration: kAnimateDuration,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+            ),
+            child: _buildCard(context),
+          );
+  }
+
+  Column _buildCard(BuildContext context) {
+    // final miniScreen = context.screenHeight <= 600;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(context),
+        if (shouldExpand) ...[
+          const HorizontalDivider(color: kGrayBlueColor, thickness: 4),
+          _buildListTile(
+            context,
+            title: 'SUB.: ${context.getSubscriptionName}',
+            subtitle: 'Validity: ${workspace?.expiresOn.toStandardDT}',
+          ),
+          const HorizontalDivider(
+            thickness: 0.4,
+            space: 1,
+            color: kGrayBlueColor,
+          ),
+          _buildListTile(
+            context,
+            title:
+                "Multi-Location: ${workspace!.maxAllowedDevices > 1 ? 'On' : 'Off'}",
+            subtitle: 'Max-Devices: ${workspace?.maxAllowedDevices}',
+          ),
+          const HorizontalDivider(
+            thickness: 0.4,
+            space: 1,
+            color: kGrayBlueColor,
+          ),
+          _buildListTile(
+            context,
+            title: 'Hosting: ${workspace!.hostingType.getName}',
+            subtitle: 'Store Location: ${employee?.storeNumber}',
+          ),
+        ],
+      ],
+    );
+  }
+
+  ListTile _buildHeader(BuildContext context) {
+    return ListTile(
+      dense: true,
+      minTileHeight: 20.0,
+      horizontalTitleGap: 8.0,
+      minVerticalPadding: 3.0,
+      contentPadding: EdgeInsets.zero,
+      mouseCursor: SystemMouseCursors.click,
+      visualDensity: VisualDensity.compact,
+      title: Text(
+        workspace!.name.toUpperAll,
+        style: context.textTheme.bodyMedium?.copyWith(
+          color: kWhiteColor,
+          fontWeight: FontWeight.w600,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      leading: workspace != null
+          ? Icon(
+              Icons.workspaces,
+              color: iconColor,
+              semanticLabel: workspace!.name,
+            )
+          : Image.asset(
+              appLogoWithBG,
+              scale: 24,
+              alignment: Alignment.centerLeft,
+              semanticLabel: workspace!.name,
+            ),
+      onTap: () => context.goNamed(RouteNames.switchStoresAccount),
+    );
+  }
+
+  ListTile _buildListTile(
+    BuildContext context, {
+    String title = '',
+    String subtitle = '',
+  }) {
+    return ListTile(
+      dense: true,
+      minTileHeight: 20.0,
+      horizontalTitleGap: 0,
+      minVerticalPadding: 3.0,
+      contentPadding: EdgeInsets.zero,
+      mouseCursor: SystemMouseCursors.click,
+      title: Text(
+        title.toUpperAll,
+        style: context.textTheme.bodySmall?.copyWith(
+          color: kLightGrayColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      subtitle: Text(
+        subtitle.toTitle,
+        style: context.textTheme.labelSmall?.copyWith(
+          color: kLightGrayColor,
+          overflow: TextOverflow.ellipsis,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      onTap: () => context.goNamed(RouteNames.switchStoresAccount),
+    );
+  }
+}
+
+/*// Build the logout button
   Widget _buildLogout(BuildContext context) {
     return TextButton.icon(
       style: _btnStyle(context).copyWith(
@@ -373,122 +528,4 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   void _handleSignOut(BuildContext context) {
     final authBloc = BlocProvider.of<AuthBloc>(context);
     authBloc.add(AuthSignOutRequested());
-  }
-}
-
-class _WorkspaceInfoCard extends StatelessWidget {
-  const _WorkspaceInfoCard({
-    required this.shouldExpand,
-    required this.dynamicWidth,
-    required this.bgColor,
-    required this.iconColor,
-    this.workspace,
-    this.employee,
-  });
-
-  final bool shouldExpand;
-  final double dynamicWidth;
-  final Color bgColor;
-  final Color iconColor;
-  final Workspace? workspace;
-  final Employee? employee;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildBody(context);
-  }
-
-  _buildBody(BuildContext context) {
-    return workspace == null
-        ? const SizedBox.shrink()
-        : AnimatedContainer(
-            width: dynamicWidth,
-            padding: const EdgeInsets.all(6.0),
-            duration: kAnimateDuration,
-            decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-            ),
-            child: _buildCard(context),
-          );
-  }
-
-  Column _buildCard(BuildContext context) {
-    // final miniScreen = context.screenHeight <= 600;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-          mouseCursor: SystemMouseCursors.click,
-          title: Text(
-            workspace!.name.toUpperAll,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: kWhiteColor,
-              fontWeight: FontWeight.w600,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          leading: workspace != null
-              ? Icon(Icons.workspaces, color: iconColor)
-              : Image.asset(
-                  appLogoWithBG,
-                  scale: 24,
-                  alignment: Alignment.centerLeft,
-                ),
-          onTap: () => context.goNamed(RouteNames.switchStoresAccount),
-        ),
-        if (shouldExpand) ...[
-          Divider(thickness: 6),
-          _buildListTile(
-            context,
-            title: 'SUB.: ${context.getSubscriptionName}',
-            subtitle: 'Validity: ${workspace?.expiresOn.toStandardDT}',
-          ),
-          _buildListTile(
-            context,
-            title:
-                "Multi-Location: ${workspace!.maxAllowedDevices > 1 ? 'On' : 'Off'}",
-            subtitle: 'Max-Devices: ${workspace?.maxAllowedDevices}',
-          ),
-          _buildListTile(
-            context,
-            title: 'Hosting: ${workspace!.hostingType.getValue}',
-            subtitle: 'Store Location: ${employee?.storeNumber}',
-          ),
-        ],
-      ],
-    );
-  }
-
-  ListTile _buildListTile(
-    BuildContext context, {
-    String title = '',
-    String subtitle = '',
-  }) {
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      mouseCursor: SystemMouseCursors.click,
-      title: Text(
-        title.toUpperAll,
-        style: context.textTheme.bodySmall?.copyWith(
-          color: kWhiteColor,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      subtitle: Text(
-        subtitle.toTitle,
-        style: context.textTheme.labelSmall?.copyWith(
-          color: kWhiteColor,
-          overflow: TextOverflow.ellipsis,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-      onTap: () => context.goNamed(RouteNames.switchStoresAccount),
-    );
-  }
-}
+  }*/

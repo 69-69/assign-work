@@ -360,18 +360,3 @@ class PurchaseOrder extends Equatable {
     'Updated At',
   ];
 }
-
-class POLineItem extends Equatable {
-  final String itemName;
-  final double unitPrice;
-  final int quantity;
-
-  const POLineItem({
-    required this.itemName,
-    required this.unitPrice,
-    required this.quantity,
-  });
-
-  @override
-  List<Object?> get props => [itemName, unitPrice, quantity];
-}

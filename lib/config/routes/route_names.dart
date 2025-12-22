@@ -70,13 +70,14 @@ abstract class RouteNames {
   // for procurement
   /// ───────────────────────── 📦 Procurement Module ─────────────────────────
   static const purchaseRequisition = 'purchase_requisition_screen';
-  static const proRequestForQuote = 'procurement_request_for_quote_screen';
-  static const proPurchaseOrders = 'procurement_purchase_orders_screen';
+  static const proRequestForQuote = 'pro_request_for_quote_screen';
+  static const proPurchaseOrders = 'pro_purchase_orders_screen';
+  static const proMyPOApprovals = 'pro_my_approvals_screen';
   static const goodsReceiptNote = 'goods_receipt_note_screen';
   static const serviceEntrySheet = 'goods_receipt_note_screen';
   static const supplierManagement = 'supplier_management_screen';
   static const supplierAccount = 'supplier_account_screen';
-  static const procurementReports = 'procurement_reports_screen';
+  static const procurementReports = 'pro_reports_screen';
   static const supplierEvaluation = 'supplier_evaluation_screen';
   static const contractManagement = 'contract_management_screen';
 
@@ -101,9 +102,9 @@ abstract class RouteNames {
   static const companyInfo = 'company_info_screen';
   static const allEmployees = 'all_employees_screen';
   static const manageRoles = 'manage_roles_screen';
+  static const workflowApprovalRules = 'workflow_approval_rules_screen';
   static const productConfig = 'product_config_screen';
   static const backup = 'backup_screen';
-  static const licenseRenewal = 'license_renewal_screen';
   static const manageTaxes = 'manage_taxes_screen';
 
   /// ───────────────────────── 🔄 Switch/Change Store/Shop Locations ─────────────────────────

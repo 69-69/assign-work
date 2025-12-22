@@ -84,7 +84,7 @@ class CustomDialog extends StatelessWidget {
                 backgroundColor: context.outlineColor.toAlpha(0.4),
               ),
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close, color: kTextColor),
+              icon: Icon(Icons.close, color: kTextColor),
             ),
       ),
       iconPadding: const EdgeInsets.only(right: 5, top: 5),
@@ -190,7 +190,7 @@ class CustomCard extends StatelessWidget {
                 child: icon ??
                     IconButton(
                       style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.outline.withOpacity(0.4),
+                        backgroundColor: context.outlineColor.Aplha(0.4),
                       ),
                       onPressed: () {},
                       icon: const Icon(Icons.close),

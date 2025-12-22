@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -30,7 +31,7 @@ class Supplier extends Equatable {
 
   /// [items] Products or Services that supplier/vendor supplies
   final String items;
-  final List<SupplierContactPerson> contactPersons;
+  final List<ContactPerson> contactPersons;
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -70,10 +71,7 @@ class Supplier extends Equatable {
       taxDetails: map['taxDetails'] ?? '',
       contactPersons:
           (map['contactPersons'] as List<dynamic>?)
-              ?.map(
-                (i) =>
-                    SupplierContactPerson.fromMap(Map<String, dynamic>.from(i)),
-              )
+              ?.map((i) => ContactPerson.fromMap(Map<String, dynamic>.from(i)))
               .toList() ??
           [],
       createdBy: map['createdBy'] ?? '',
@@ -97,25 +95,23 @@ class Supplier extends Equatable {
     'taxDetails': taxDetails,
     'contactPersons': contactPersons.map((i) => i.toMap()).toList(),
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.toISOString;
-    newMap['updatedAt'] = updatedAt.toISOString;
+    final newMap = _mapTemp()
+      ..['createdAt'] = createdAt.toISOString
+      ..['updatedAt'] = updatedAt.toISOString;
 
     return newMap;
   }
 
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    final newMap = _mapTemp()
+      ..['createdAt'] = createdAt.millisecondsSinceEpoch
+      ..['updatedAt'] = updatedAt.millisecondsSinceEpoch;
 
     return {'id': id, 'data': newMap};
   }
@@ -193,7 +189,7 @@ class Supplier extends Equatable {
     String? businessType,
     String? bankDetails,
     String? taxDetails,
-    List<SupplierContactPerson>? contactPersons,
+    List<ContactPerson>? contactPersons,
     String? email,
     String? createdBy,
     DateTime? createdAt,
@@ -260,125 +256,5 @@ class Supplier extends Equatable {
     'Created At',
     'Updated By',
     'Updated At',
-  ];
-}
-
-/// RFQ Line Items
-class SupplierContactPerson extends Equatable {
-  static get _today => DateTime.now();
-
-  final String id;
-  final String name;
-  final String email;
-  final String phone;
-  final String department;
-  final String position;
-  final DateTime createdAt;
-
-  SupplierContactPerson({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.department,
-    required this.position,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? _today;
-
-  factory SupplierContactPerson.fromMap(
-    Map<String, dynamic> data, {
-    String? id,
-  }) {
-    return SupplierContactPerson(
-      id: id ?? data['id'] ?? '',
-      name: data['name'] ?? '',
-      email: data['email'] ?? '',
-      phone: data['phone'] ?? '',
-      department: data['department'] ?? '',
-      position: data['position'] ?? '',
-      createdAt: toDateTimeFn(data['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'name': name,
-    'email': email,
-    'phone': phone,
-    'department': department,
-    'position': position,
-    'createdAt': createdAt.toISOString,
-  };
-
-  SupplierContactPerson copyWith({
-    String? id,
-    String? name,
-    String? email,
-    String? phone,
-    String? department,
-    String? position,
-    DateTime? createdAt,
-  }) => SupplierContactPerson(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    email: email ?? this.email,
-    phone: phone ?? this.phone,
-    department: department ?? this.department,
-    position: position ?? this.position,
-    createdAt: createdAt ?? this.createdAt,
-  );
-
-  static empty({String? name}) => SupplierContactPerson(
-    id: '',
-    name: '',
-    email: '',
-    phone: '',
-    department: '',
-    position: '',
-  );
-
-  bool get isEmpty => identical(this, SupplierContactPerson.empty);
-
-  bool get isNotEmpty => !isEmpty;
-
-  String get itemAsString => name.toTitle;
-
-  String get getCreatedAt => createdAt.toStandardDT;
-
-  bool filterByAny(String filter) =>
-      id.contains(filter) ||
-      name.contains(filter) ||
-      email.contains(filter) ||
-      phone.contains(filter) ||
-      department.contains(filter) ||
-      position.contains(filter);
-
-  @override
-  List<Object?> get props => [
-    id,
-    name,
-    email,
-    phone,
-    department,
-    position,
-    createdAt,
-  ];
-
-  static List<String> get dataTableHeader => const [
-    'Name',
-    'Email',
-    'Phone',
-    'Department',
-    'Position',
-    'Created At',
-  ];
-
-  List<String> get itemAsList => [
-    name.toTitle,
-    email.toLowerAll,
-    phone,
-    department.toTitle,
-    position.toTitle,
-    createdAt.toStandardDT,
   ];
 }

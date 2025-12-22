@@ -3,8 +3,8 @@ import 'package:assign_erp/core/util/calculate_extras.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/orders/purchase_order_model.dart';
@@ -18,7 +18,7 @@ extension UpdatePurchaseOrderForm on BuildContext {
   Future openUpdatePurchaseOrder({required PurchaseOrder po}) =>
       openBottomSheet(
         isExpand: false,
-        child: FormBottomSheet(
+        child: BottomSheetScaffold(
           title: 'Edit Purchase Order',
           subtitle: po.poNumber.toUpperAll,
           body: _UpdatePurchaseOrderForm(po: po),
@@ -222,7 +222,7 @@ class _UpdatePurchaseOrderFormState extends State<_UpdatePurchaseOrderForm> {
           initialStatus: _order.status,
           initialCurrency: _order.currency,
           onStatusChange: (s) => setState(() => _selectedPOStatus = s),
-          onCurrencyChange: (c) => setState(() => _selectedCurrency = c),
+          onCurrencyChanged: (c) => setState(() => _selectedCurrency = c),
         ),
         const SizedBox(height: 20.0),
         PayTermsAndMethodDropdown(

@@ -31,7 +31,7 @@ class FirestoreHelper {
   (String role, String id) get _workspaceDetails {
     final workspace = _authCacheService.getWorkspace();
     return (
-      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.tenant.getValue,
+      _workspaceRole ?? workspace?.role.name ?? WorkspaceRole.tenant.getName,
       _workspaceId ?? workspace?.id ?? '',
     );
   }
@@ -81,7 +81,7 @@ class FirestoreHelper {
     // Collection('workspaceRole/workspaceId/stores/storeNumber/collectionPath')
     // Example: Collection('subscriber/3449854123s/stores/Store-46557-ER/products_db')
     return _getWorkspaceRoleCollectionRef(
-      CollectionType.stores.getValue,
+      CollectionType.stores.getName,
     ).doc(storeNumber).collection(collectionPath);
   }
 
@@ -95,7 +95,7 @@ class FirestoreHelper {
 
     return _getGlobalCollectionRef(
       collectionPath,
-    ).doc(workspaceId).collection(CollectionType.chats.getValue);
+    ).doc(workspaceId).collection(CollectionType.chats.getName);
   }
 
   /// Returns the agent-clients mapping reference: `/collectionPath/workspaceId/clients`
@@ -105,7 +105,7 @@ class FirestoreHelper {
     final (_, id) = _workspaceDetails;
     return _getGlobalCollectionRef(
       collectionPath,
-    ).doc(id).collection(CollectionType.clients.getValue);
+    ).doc(id).collection(CollectionType.clients.getName);
   }
 }
 

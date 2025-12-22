@@ -1,0 +1,445 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
+import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
+import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
+import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
+import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
+import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
+import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_form_inputs.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/widget/material_or_service_toggle.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+extension RFQFormExtensions on BuildContext {
+  /// [openRFQForm] Opens the Request For Quote Form
+  Future<void> openRFQForm() => openBottomSheet(
+    isExpand: false,
+    child: FindApprovedPR(
+      onValueChanged: (WorkflowConverter approvedPR) async {
+        if (mounted && approvedPR.isNotEmpty) {
+          await openCreateRFQForm(data: approvedPR);
+        }
+      },
+      onCreateNewRFQ: () async {
+        final lineItemType = await openMaterialOrServiceToggle('RFQ');
+        if (mounted && lineItemType != null) {
+          await openCreateRFQForm(type: lineItemType);
+        }
+      },
+    ),
+  );
+
+  Future<void> openCreateRFQForm({WorkflowConverter? data, String? type}) =>
+      openBottomSheet(
+        isExpand: false,
+        child: BottomSheetScaffold(
+          initialSize: 0.94,
+          title: 'Create Request For Quote',
+          body: _CreateRFQForm(initialPRData: data, lineItemType: type),
+        ),
+      );
+}
+
+/// Create Request For Quote Form [_CreateRFQForm]
+class _CreateRFQForm extends StatefulWidget {
+  final String? lineItemType;
+  final WorkflowConverter? initialPRData;
+
+  const _CreateRFQForm({this.initialPRData, this.lineItemType});
+
+  @override
+  State<_CreateRFQForm> createState() => _CreateRFQFormState();
+}
+
+class _CreateRFQFormState extends State<_CreateRFQForm> {
+  String? get _lineItemType =>
+      widget.lineItemType ?? _initialPR?.lineItems.first.getTypeLabel;
+  final _formKey = GlobalKey<FormState>();
+
+  // Basic fields
+  bool _autoCreatePo = false; // auto generate PO when RFQ is Accepted
+  String _costCenterCode = '';
+  String _rfqNumber = '';
+  String _rfqTitle = '';
+  String _currency = '';
+  String _requestedBy = '';
+  String _departmentCode = '';
+  String? _rfqStatus;
+  // Dates
+  DateTime? _deadlineDate;
+  DateTime? _expectedDate;
+
+  /// Line Items & Additional Info
+  final List<ProLineItem> _lineItems = [];
+  final List<RFQSupplier> _suppliers = [];
+  final List<AddressInfo> _shippingAddress = [];
+  final Map<String, dynamic> _additionalInfo = {};
+
+  /// Initial PR data if converting PR → RFQ
+  WorkflowConverter? get _initialPR => widget.initialPRData;
+
+  /// Disable form fields if converting PR to RFQ & PR has line items
+  bool get _isDisabled => _initialPR?.lineItems != null;
+
+  bool get isFormValid => _formKey.currentState!.validate();
+
+  /// Current employee info
+  String get _employeeId => context.employee!.employeeId;
+  String get _employeeName => context.employee!.fullName;
+  String get _employeeStore => context.employee!.storeNumber;
+
+  ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
+
+  @override
+  void initState() {
+    super.initState();
+    _generateRFQNumber();
+  }
+
+  void _generateRFQNumber() async {
+    await DocType.rfq.getShortUID(
+      onChanged: (s) {
+        if (mounted) setState(() => _rfqNumber = s);
+      },
+    );
+  }
+
+  /// Construct RequestForQuote object
+  RequestForQuote get _newRFQ => RequestForQuote(
+    /// [prNumber] FOREIGN KEY (purchase requisition) else its new RFQ (Not generated from PR)
+    prNumber: _initialPR?.workflowNumber ?? 'N/A',
+    rfqNumber: _rfqNumber,
+    storeNumber: _employeeStore,
+    autoCreatePo: _autoCreatePo,
+    title: _rfqTitle,
+    status: ProcurementStatusHelper.fromString(_rfqStatus ?? ''),
+    suppliers: List.from(_suppliers),
+    currency: _currency,
+    deadline: _deadlineDate,
+    expectedDate: _expectedDate,
+    notes: _additionalInfo['notes'],
+    lineItems: List.from(_lineItems),
+    shippingAddress: _shippingAddress.first.address,
+    requestedBy: _initialPR?.requestedBy ?? _requestedBy,
+    costCenterCode: _initialPR?.costCenterCode ?? _costCenterCode,
+    departmentCode: _initialPR?.departmentCode ?? _departmentCode,
+    createdBy: _employeeName,
+    history: [
+      AuditLog(
+        action: AuditAction.created,
+        actionBy: _employeeId,
+        statusAfterAction: _rfqStatus,
+      ),
+    ],
+  );
+
+  void _onSubmit() {
+    if (!isFormValid || _newRFQ.isEmpty) {
+      context.showAlertOverlay(
+        'Please fill in all required fields',
+        bgColor: kDangerColor,
+      );
+      return;
+    }
+
+    _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
+
+    _confirmPrintoutDialog().then((_) => _resetForm());
+  }
+
+  void _resetForm() {
+    if (mounted) {
+      _formKey.currentState?.reset();
+
+      setState(() {
+        _rfqTitle = '';
+        _autoCreatePo = false;
+        _suppliers.clear();
+        _requestedBy = '';
+        _currency = '';
+        _costCenterCode = '';
+        _departmentCode = '';
+        _lineItems.clear();
+        _shippingAddress.clear();
+        _rfqStatus = null;
+        _deadlineDate = null;
+        _expectedDate = null;
+      });
+      _generateRFQNumber(); // fresh RFQ number
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: _buildBody(),
+    );
+  }
+
+  Column _buildBody() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        RFQFormInputs.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
+        FormGroupCard(
+          title: 'Quotation Overview',
+          children: [
+            _buildAutoCreateAndStatus(),
+            const HorizontalDivider(space: 0.4),
+            _buildTitleField(),
+            _buildRequesterAndDepartment(),
+          ],
+        ),
+
+        FormGroupCard(
+          title: 'Cost Center',
+          children: [_buildCurrencyAndCostCenter()],
+        ),
+
+        FormGroupCard(
+          title: '${_lineItemType.toSentence} Line Items',
+          subTitle:
+              '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
+          children: [_buildLineItems()],
+        ),
+
+        FormGroupCard(
+          title: 'Invite Suppliers',
+          subTitle:
+              '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
+          children: [_buildSuppliers()],
+        ),
+
+        FormGroupCard(title: 'Buyer\'s Terms', children: [_buildBuyerTerms()]),
+
+        FormGroupCard(
+          title: 'Shipping Address',
+          children: [_buildShippingAddress()],
+        ),
+
+        context.confirmableActionButton(
+          label: 'Create Quote',
+          onPressed: _onSubmit,
+        ),
+        const SizedBox(height: 20.0),
+      ],
+    );
+  }
+
+  // -------------------------
+  // Section Builders
+  // -------------------------
+
+  DynamicTextFields _buildLineItems() {
+    return DynamicTextFields(
+      showButton: !_isDisabled,
+      fullWidthKey: 'description',
+      fieldsConfig: RFQFormInputs.fields(
+        _lineItemType ?? '',
+        isDisabled: _isDisabled,
+        keysToExclude: [
+          'discount',
+          'unitPrice',
+          'serviceRate',
+          'limitAmount',
+          'limitQuantity',
+          'taxCodes',
+        ],
+      ),
+      initialData:
+          _initialPR?.lineItems.map((e) => e.toMap(true)).toList() ?? [{}],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        // Update the ProLineItem list
+        RFQFormInputs.updateListFromData(
+          _lineItems,
+          map: data,
+          fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
+  // Addresses (e.g., Buyer Shipping Address)
+  DynamicTextFields _buildShippingAddress() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fieldsConfig: RFQFormInputs.shippingAddressFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        // Update the address list
+        RFQFormInputs.updateListFromData(
+          _shippingAddress,
+          map: data,
+          fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
+  DynamicTextFields _buildBuyerTerms() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fullWidthKey: 'buyerContactPerson',
+      fieldsConfig: RFQFormInputs.buyerTermsFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _additionalInfo
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.first);
+      },
+    );
+  }
+
+  DynamicTextFields _buildSuppliers() {
+    return DynamicTextFields(
+      initialData: [{}],
+      showButton: true,
+      fullWidthKey: 'suppliers',
+      fieldsConfig: RFQFormInputs.suppliersFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        final suppliers = data.map((e) {
+          final copy = Map<String, dynamic>.from(e['suppliers'] ?? {});
+          // Merge the status from the top-level map
+          copy['status'] = e['status'];
+          return copy;
+        }).toList();
+
+        // Update the RFQSupplier list
+        RFQFormInputs.updateListFromData(
+          _suppliers,
+          map: suppliers,
+          fromMap: (map, id) => RFQSupplier.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
+  CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
+    return CurrencyAndCostCenterDepartment(
+      onCurrencyChanged: (v) => setState(() => _currency = v),
+      onCostCenterChange: (id, code, name) =>
+          setState(() => _costCenterCode = code),
+    );
+  }
+
+  AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
+    return AutoCreateAndRFQStatus(
+      onStatusChanged: (s) => setState(() => _rfqStatus = s),
+      isSelected: _autoCreatePo,
+      onAutoCreateChanged: (bool? v) {
+        setState(() => _autoCreatePo = v ?? false);
+      },
+    );
+  }
+
+  RequestedByAndDepartments _buildRequesterAndDepartment() {
+    return RequestedByAndDepartments(
+      initialRequestedBy: _initialPR?.requestedBy,
+      initialDepartment: _initialPR?.departmentCode,
+      onRequestedChanged: (id, code, name) =>
+          setState(() => _requestedBy = name),
+      onDepartmentChange: (id, code, name) =>
+          setState(() => _departmentCode = code),
+      isDisabled: _initialPR != null,
+    );
+  }
+
+  DynamicTextFields _buildTitleField() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fieldsConfig: [
+        FieldGroupConfig(
+          key: 'title',
+          label: 'Title or subject',
+          type: TextInputType.text,
+          minLines: 1,
+        ),
+      ],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _rfqTitle = data.first['title'];
+      },
+    );
+  }
+
+  // -------------------------
+  // Print & History Logic
+  // -------------------------
+  Future<void> _confirmPrintoutDialog() async {
+    final isConfirmed = await context.confirmAction<bool>(
+      const Text('Would you like to print the request for quotation: RFQ?'),
+      title: "Print RFQ",
+      onAcceptLabel: "Print",
+      onRejectLabel: "Cancel",
+    );
+
+    if (mounted && isConfirmed) {
+      // Show progress dialog while loading data
+      await context.progressBarDialog(
+        request: _printout(),
+        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
+        onError: (e) => context.showAlertOverlay(
+          'RFQ printout failed',
+          bgColor: kDangerColor,
+        ),
+      );
+    }
+  }
+
+  Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
+    if (_newRFQ.isEmpty) return;
+
+    final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(_newRFQ);
+    final supplier = await RFQFormInputs.getSupplier(
+      _newRFQ.suppliers.first.supplierId,
+    );
+    if (supplier.isEmpty) return;
+
+    // Log that details were printed
+    if (mounted &&
+        AuditTracker.shouldLog(
+          id: '${_newRFQ.id}::$_employeeId',
+          type: DocType.rfq,
+          action: AuditAction.printed,
+        )) {
+      _updateHistory();
+    }
+    await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+  });
+
+  /// Audit Log Entry (Tracking actions)
+  void _updateHistory([AuditAction action = AuditAction.printed]) {
+    final up = RFQFormInputs.updateHistory(
+      action: action,
+      quote: _newRFQ,
+      empId: _employeeId,
+    );
+    _bloc.add(up);
+  }
+}

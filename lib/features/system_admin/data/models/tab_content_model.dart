@@ -15,5 +15,5 @@ class TabContent<T extends Enum> {
     T? accessEnum,
     required this.displayName,
     required this.permissions,
-  }) : access = accessEnum != null ? EnumHelper<T>(accessEnum).getValue : null;
+  }) : access = accessEnum != null ? EnumHelper<T>(accessEnum).getName : null;
 }

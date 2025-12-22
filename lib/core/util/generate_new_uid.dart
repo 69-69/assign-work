@@ -46,8 +46,8 @@ extension GenerateUID on DocType {
     final newId = await _checkReturn();
 
     if (newId.isNotEmpty) {
-      final prefix = getValue.isNotEmpty
-          ? getValue.substring(0, 3).toUpperAll
+      final prefix = getName.isNotEmpty
+          ? getName.substring(0, 3).toUpperAll
           : '';
       final formattedId = '$prefix-$newId';
 

@@ -8,13 +8,14 @@ import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:flutter/material.dart';
 
 const _sideTabs = [
-  {'label': 'company', 'icon': Icons.home_work},
+  {'label': 'company setup', 'icon': Icons.home_work},
   {'label': 'employees', 'icon': Icons.manage_accounts},
   {'label': 'Roles & Permissions', 'icon': Icons.admin_panel_settings},
+  {'label': 'workflow approval rules', 'icon': Icons.approval},
   {'label': 'Tax rates', 'icon': Icons.calculate},
   {'label': 'item preference', 'icon': Icons.category},
   {'label': 'back up', 'icon': Icons.backup},
-  {'label': 'renew license', 'icon': Icons.local_police},
+  // {'label': 'renew license', 'icon': Icons.local_police},
 ];
 
 class SetupScreen extends StatelessWidget {
@@ -43,16 +44,16 @@ class SetupScreen extends StatelessWidget {
       isVertical: true,
       isScrollable: true,
       openThisTab: openThisTab,
-      length: 6,
+      length: 7,
       tabs: _sideTabs,
       children: [
         const CompanyScreen(),
         const AllEmployeesScreen(),
         const ManageRolesScreen(),
+        const ApprovalRulesScreen(),
         const ManageTaxScreen(),
         const ProductConfigScreen(),
         const BackUp(),
-        const LicenseRenewal(),
       ],
     );
   }

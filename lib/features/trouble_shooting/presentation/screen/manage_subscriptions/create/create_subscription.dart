@@ -2,8 +2,8 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/license_model.dart';
@@ -18,7 +18,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreateNewSubscription<T> on BuildContext {
   Future<void> openCreateNewSubscription() => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: 'Create Subscription',
       subtitle:
           'NOTE: Subscriptions are specific to each workspaces.\nNot shared or generic!',

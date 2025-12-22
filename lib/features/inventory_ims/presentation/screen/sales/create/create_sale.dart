@@ -4,8 +4,8 @@ import 'package:assign_erp/core/util/calculate_extras.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/sale_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
@@ -17,7 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddSaleForm<T> on BuildContext {
   Future<void> openAddSales({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Add Sales', body: _AddSalesForm()),
+    child: BottomSheetScaffold(title: 'Add Sales', body: _AddSalesForm()),
   );
 }
 

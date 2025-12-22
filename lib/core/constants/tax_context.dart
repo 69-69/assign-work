@@ -27,8 +27,8 @@ enum TaxContext {
 }
 
 extension TaxContextExtension on TaxContext {
-  /// [getValue] Get the label for the specific enum value.
-  String get getValue => EnumHelper<TaxContext>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "requestForQuote")
+  String get getName => EnumHelper<TaxContext>(this).getName;
 }
 
 /// [TaxContextHelper] Utility class for working with TaxContext enum

@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/text_to_speech.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +15,7 @@ extension SubscriptionDetails<T> on BuildContext {
   Future<void> openDetailsBottomSheet(String subscriptionName) =>
       openBottomSheet(
         isExpand: true,
-        child: FormBottomSheet(
+        child: BottomSheetScaffold(
           title: '$subscriptionName License',
           body: _SubscriptionDetailsBody(subscriptionName: subscriptionName),
         ),

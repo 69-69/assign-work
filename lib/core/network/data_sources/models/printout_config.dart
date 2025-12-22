@@ -155,7 +155,7 @@ class PrintItem {
   final double discount;
   final String itemName;
   final double unitPrice;
-  final int quantity;
+  final double quantity;
   final double? taxAmount;
   final String? taxNames;
   final double deliveryAmt;

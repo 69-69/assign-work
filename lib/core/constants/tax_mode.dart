@@ -11,8 +11,8 @@ enum TaxMode {
 }
 
 extension TaxApplicationMode on TaxMode {
-  /// [getValue] Get the label for the specific enum value.
-  String get getValue => EnumHelper<TaxMode>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "headerTax")
+  String get getName => EnumHelper<TaxMode>(this).getName;
 
   bool get isPerLineTax => this == TaxMode.perLineTax;
   bool get isHeaderTax => this == TaxMode.headerTax;

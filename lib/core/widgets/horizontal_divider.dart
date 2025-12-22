@@ -48,16 +48,19 @@ class HorizontalDivider extends StatelessWidget {
     width: context.screenWidth / (width ?? 1.0),
   );
 
-  Row _buildORSeparator() {
-    return Row(
-      children: <Widget>[
-        const Expanded(child: Divider(thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Text(orText ?? 'OR'),
-        ),
-        const Expanded(child: Divider(thickness: 1)),
-      ],
+  Widget _buildORSeparator() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: space ?? 0),
+      child: Row(
+        children: <Widget>[
+          const Expanded(child: Divider(thickness: 1)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(orText ?? 'OR'),
+          ),
+          const Expanded(child: Divider(thickness: 1)),
+        ],
+      ),
     );
   }
 }

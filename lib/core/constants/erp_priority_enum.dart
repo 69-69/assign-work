@@ -19,8 +19,8 @@ enum ERPPriority {
 * print(priority.label); // Output: urgent
 * */
 extension ERPPriorityExtension on ERPPriority {
-  /// [getValue] Get the label for the specific enum value.
-  String get getValue => EnumHelper<ERPPriority>(this).getValue;
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<ERPPriority>(this).getName;
 
   /// Returns a user-friendly label
   String get getLabel => EnumHelper<ERPPriority>(this).getLabel;
@@ -34,6 +34,6 @@ class PriorityHelper {
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final list = EnumHelper.toStringList<ERPPriority>(ERPPriority.values);
-    return includeHeader ? ['priority', ...list] : list;
+    return includeHeader ? ['Priority', ...list] : list;
   }
 }

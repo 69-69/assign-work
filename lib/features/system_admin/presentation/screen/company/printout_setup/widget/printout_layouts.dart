@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/custom_radio_title.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
@@ -76,8 +77,8 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
           itemBuilder: (context, i) => _LayoutBody(
             index: i,
             title: printLayout[i],
-            selectedCardIndex: _selectedCardIndex,
-            onCardSelected: _handleCardSelection,
+            groupValue: _selectedCardIndex,
+            onChanged: _handleCardSelection,
           ),
         ),
         PrintoutFontSizeScreen(),
@@ -133,6 +134,81 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 }
 
 class _LayoutBody extends StatelessWidget {
+  const _LayoutBody({
+    required this.index,
+    required this.title,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  final int index;
+  final String title;
+  final int groupValue;
+  final Future<void> Function(int, String) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetName = index > 0 ? loosePrintLayout : densePrintLayout;
+    final label = title.toLowerAll;
+
+    return Card(
+      margin: const EdgeInsets.all(10),
+      elevation: 5,
+      child: Container(
+        decoration: BoxDecoration(
+          color: kTextColor,
+          image: DecorationImage(
+            image: AssetImage(assetName),
+            fit: BoxFit.contain,
+          ),
+        ),
+        padding: EdgeInsets.zero,
+        child: _buildRadioTile(context, label, assetName),
+      ),
+    );
+  }
+
+  CustomRadioList<int> _buildRadioTile(
+    BuildContext context,
+    String label,
+    String assetName,
+  ) {
+    return CustomRadioList<int>(
+      groupValue: groupValue,
+      tileColor: kWarningColor.toAlpha(0.1),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      onChanged: (value) async {
+        if (value != null) {
+          await onChanged(value, label);
+        }
+      },
+      options: [
+        CustomRadioModel<int>(
+          value: index,
+          title: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: context.textTheme.titleSmall?.copyWith(
+              color: kDangerColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          secondary: IconButton(
+            style: IconButton.styleFrom(
+              padding: EdgeInsets.zero,
+              backgroundColor: kWarningColor.toAlpha(0.5),
+            ),
+            onPressed: () =>
+                context.previewLayout(img: assetName, layoutName: label),
+            icon: const Icon(Icons.zoom_in, color: kWhiteColor),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/*class _LayoutBody extends StatelessWidget {
   const _LayoutBody({
     required this.index,
     required this.title,
@@ -200,3 +276,4 @@ class _LayoutBody extends StatelessWidget {
     );
   }
 }
+*/

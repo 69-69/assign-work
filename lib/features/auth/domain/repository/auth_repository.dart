@@ -102,7 +102,7 @@ class AuthRepository extends FirestoreRepository {
       final docSnapshot = await findById(id);
 
       // Check if the document exists and is not empty
-      if (docSnapshot.exists && !docSnapshot.data().isNullEmpty) {
+      if (docSnapshot.exists && !docSnapshot.data().isNullOrEmpty) {
         final workspace = Workspace.fromMap(docSnapshot.data()!);
 
         if (workspace.isExpired) return null;
@@ -127,7 +127,7 @@ class AuthRepository extends FirestoreRepository {
       // Try to get the Employee from the cache
       Employee? cacheEmployee = _getEmployeeCache();
       if (cacheEmployee != null &&
-          cacheEmployee.status == AccountStatus.enabled.getValue &&
+          cacheEmployee.status == AccountStatus.enabled.getName &&
           cacheEmployee.workspaceId == firebaseUser?.uid) {
         return cacheEmployee;
       }
@@ -361,7 +361,7 @@ class AuthRepository extends FirestoreRepository {
       // Convert the data to an Employee object
       final employee = Employee.fromMap(data, id: doc.id);
 
-      if (employee.status != AccountStatus.enabled.getValue ||
+      if (employee.status != AccountStatus.enabled.getName ||
           employee.workspaceId != workspace.uid ||
           employee.roleId.isEmpty) {
         return invalid;
@@ -424,7 +424,7 @@ class AuthRepository extends FirestoreRepository {
       }
 
       final docRef = _genericCollection(
-        workspaceRole: EnumHelper<WorkspaceRole>(cacheWorkspace.role).getValue,
+        workspaceRole: EnumHelper<WorkspaceRole>(cacheWorkspace.role).getName,
         workspaceId: cacheWorkspace.id,
       ).doc(cacheEmployee.id);
 
@@ -676,7 +676,7 @@ class AuthRepository extends FirestoreRepository {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumHelper<WorkspaceRole>(
       assignWorkspaceRole,
-    ).getValue;
+    ).getName;
 
     // Add a new document to the collection and get its reference
     final DocumentReference docRef = _genericCollection(
@@ -701,7 +701,7 @@ class AuthRepository extends FirestoreRepository {
       fullName: fullName,
       mobileNumber: mobileNumber,
       storeNumber: storeNumber,
-      status: AccountStatus.enabled.getValue,
+      status: AccountStatus.enabled.getName,
       createdBy: byWho?.fullName ?? createdBy,
       passCode: SecretHasher.hash(employeePasscode),
     );
@@ -722,7 +722,7 @@ class AuthRepository extends FirestoreRepository {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumHelper<WorkspaceRole>(
       assignWorkspaceRole,
-    ).getValue;
+    ).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -748,7 +748,7 @@ class AuthRepository extends FirestoreRepository {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumHelper<WorkspaceRole>(
       assignWorkspaceRole,
-    ).getValue;
+    ).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -780,7 +780,7 @@ class AuthRepository extends FirestoreRepository {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumHelper<WorkspaceRole>(
       assignWorkspaceRole,
-    ).getValue;
+    ).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -843,7 +843,7 @@ class AuthRepository extends FirestoreRepository {
       final queryDocSnap = await _fetchWorkspaceByEmail(email);
 
       // Check if account is available and not expired
-      if (queryDocSnap!.exists && !queryDocSnap.data().isNullEmpty) {
+      if (queryDocSnap!.exists && !queryDocSnap.data().isNullOrEmpty) {
         final workspace = Workspace.fromMap(queryDocSnap.data());
 
         if (workspace.isExpired) return false;
@@ -932,7 +932,7 @@ class AuthRepository extends FirestoreRepository {
     }
 
     final workId = cacheWorkspace.id;
-    final workRole = EnumHelper<WorkspaceRole>(cacheWorkspace.role).getValue;
+    final workRole = EnumHelper<WorkspaceRole>(cacheWorkspace.role).getName;
 
     final querySnap = await _genericCollection(
       workspaceId: workId,
@@ -1130,7 +1130,7 @@ class AuthRepository extends FirestoreRepository {
     if (cacheWork == null) return;
 
     final workId = cacheWork.id;
-    final workRole = EnumHelper<WorkspaceRole>(cacheWork.role).getValue;
+    final workRole = EnumHelper<WorkspaceRole>(cacheWork.role).getName;
 
     await _logAuthSession(
       cacheEmp?.employeeId ?? cacheWork.id,

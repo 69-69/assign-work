@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 /// Customer Management System App(IMS) Navigation Links [CustomerTiles]
 extension CustomerTiles on dynamic {
+  /// Sub Menu Tiles under Customer Dashboard
   List<DashboardTile> get customerTiles {
     final tilesData = [
       {

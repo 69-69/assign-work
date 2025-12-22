@@ -17,7 +17,8 @@ enum GRNSESStatus {
 }
 
 extension GRNSESStatusExtension on GRNSESStatus {
-  String get getValue => EnumHelper<GRNSESStatus>(this).getValue;
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<GRNSESStatus>(this).getName;
   String get getLabel => EnumHelper<GRNSESStatus>(this).getLabel;
 
   /// Returns true if this status is valid for a GRN document

@@ -155,7 +155,7 @@ class ScanToAddOrder extends StatelessWidget {
         ),
         child: const Text('Scan Next', style: TextStyle(color: kWhiteColor)),
       ),
-      onPress: () => Navigator.pop(context),
+      onCancel: () => Navigator.pop(context),
     );
   }
 
@@ -462,9 +462,7 @@ class _ScannedItemsState extends State<_ScannedItems> {
             ),
             style: ButtonStyle(
               padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),
-              backgroundColor: WidgetStatePropertyAll(
-                context.ofTheme.colorScheme.secondary,
-              ),
+              backgroundColor: WidgetStatePropertyAll(context.secondaryColor),
             ),
           ),
         ),

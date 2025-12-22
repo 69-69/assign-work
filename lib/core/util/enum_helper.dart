@@ -13,11 +13,11 @@ class EnumHelper<T extends Enum> {
 
   EnumHelper(this.enumValue);
 
-  /// [getValue] Get the label for the specific enum value (e.g. "officeSupplies").
-  String get getValue => _getEnumName(enumValue);
+  /// [getName] Get the specific Enum Name (e.g. "officeSupplies")
+  String get getName => _getEnumName(enumValue);
 
   /// [getLabel] Returns a user-friendly label (e.g. "Office Supplies")
-  String get getLabel => getValue.separateWord;
+  String get getLabel => getName.separateWord;
 
   /// [isValid] Checks if [value] corresponds to any enum value in [enumValues].
   ///
@@ -34,19 +34,23 @@ class EnumHelper<T extends Enum> {
     if (enumValues.isEmpty || value.isNullOrEmpty) return false;
 
     return enumValues.any(
-      (e) => useContains
-          ? _getEnumName(e).contains(value!)
-          : _getEnumName(e).toLowerAll == value.toLowerAll,
+      (e) => useContains ? _getEnumName(e).contains(value!) : isEqual(e, value),
     );
+  }
+
+  /// Compare two enum values for equality.
+  /// Returns true if the enum values are equal, false otherwise.
+  /// USAGE: isEqual(Color.red, 'red'); // true
+  static bool isEqual<T extends Enum>(T e, String? str) {
+    final val = str
+        ?.combineWord; // Convert to camelCase e.g., "office supplies" -> "officeSupplies"
+    return _getEnumName(e).toLowerAll == val.toLowerAll;
   }
 
   /// [fromString] Convert a string value to the enum type.
   static T fromString<T extends Enum>(List<T> enumValues, String? value) {
-    final label = value
-        ?.combineWord; // Convert to camelCase e.g., "office supplies" -> "officeSupplies"
-
     return enumValues.firstWhere(
-      (e) => _getEnumName(e) == label,
+      (e) => isEqual(e, value),
       orElse: () => enumValues.first, // Default to the first value if not found
     );
   }
@@ -58,7 +62,7 @@ class EnumHelper<T extends Enum> {
   ]) {
     if (enumValues.isEmpty) return [];
 
-    final list = enumValues.map((e) => _getEnumName(e)).toList();
+    final list = enumValues.map((e) => _getEnumName(e).toTitle).toList();
     return header.isEmpty ? list : [header, ...list];
   }
 }

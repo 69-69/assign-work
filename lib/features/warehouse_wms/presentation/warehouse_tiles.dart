@@ -13,7 +13,7 @@ extension WarehouseTiles on dynamic {
         'icon': Icons.receipt_long,
         'action': RouteNames.warehouseProducts,
         'param': {'openTab': '0'},
-        'access': _getValue(WarehousePermission.manageWarehouse),
+        'access': _getName(WarehousePermission.manageWarehouse),
         'description': 'add inventory to the warehouse.',
       },
       {
@@ -21,7 +21,7 @@ extension WarehouseTiles on dynamic {
         'icon': Icons.shopping_cart,
         'action': RouteNames.warehouseSupply,
         'param': {'openTab': '1'},
-        'access': _getValue(WarehousePermission.manageWarehouse),
+        'access': _getName(WarehousePermission.manageWarehouse),
         'description': 'add supply products and update their status as needed.',
       },
       {
@@ -29,7 +29,7 @@ extension WarehouseTiles on dynamic {
         'icon': Icons.delivery_dining,
         'action': RouteNames.warehouseDeliveries,
         'param': {'openTab': '2'},
-        'access': _getValue(WarehousePermission.manageWarehouse),
+        'access': _getName(WarehousePermission.manageWarehouse),
         'description':
             'create or add delivery of supplies and then update their status',
       },
@@ -40,4 +40,4 @@ extension WarehouseTiles on dynamic {
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<WarehousePermission>(e).getValue;
+String _getName(e) => EnumHelper<WarehousePermission>(e).getName;

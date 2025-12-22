@@ -5,7 +5,7 @@ import 'package:assign_erp/features/pos_system/data/permission/pos_permission.da
 import 'package:flutter/material.dart';
 
 // Get name from enum
-String _getValue(e) => EnumHelper<PosPermission>(e).getValue;
+String _getName(e) => EnumHelper<PosPermission>(e).getName;
 
 /// POS Navigation Links [POSTiles]
 extension POSTiles on dynamic {
@@ -16,7 +16,7 @@ extension POSTiles on dynamic {
         'icon': Icons.shopping_cart,
         'action': RouteNames.posOrders,
         'param': {},
-        'access': _getValue(PosPermission.managePosOrders),
+        'access': _getName(PosPermission.managePosOrders),
         'description':
             'place an order for a customer and then update its status.',
       },
@@ -25,7 +25,7 @@ extension POSTiles on dynamic {
         'icon': Icons.shopping_basket,
         'action': RouteNames.posSales,
         'param': {},
-        'access': _getValue(PosPermission.managePosSales),
+        'access': _getName(PosPermission.managePosSales),
         'description': 'keep track of, and oversee the progress of sales.',
       },
       {
@@ -33,7 +33,7 @@ extension POSTiles on dynamic {
         'icon': Icons.add_chart,
         'action': RouteNames.posReports,
         'param': {},
-        'access': _getValue(PosPermission.viewPosReport),
+        'access': _getName(PosPermission.viewPosReport),
         'description':
             'generate sales report, turnover rates, forecasts and performance analytics',
       },
@@ -43,7 +43,7 @@ extension POSTiles on dynamic {
         'icon': Icons.payments_outlined,
         'action': RouteNames.posPayments,
         'param': {},
-        'access': _getValue(PosPermission.managePosPayments),
+        'access': _getName(PosPermission.managePosPayments),
         'description':
             'records payment details for each transaction: payment method and any related information',
       },
@@ -53,7 +53,7 @@ extension POSTiles on dynamic {
         'icon': Icons.receipt,
         'action': RouteNames.posReceipt,
         'param': {},
-        'access': _getValue(PosPermission.reprintReceipt),
+        'access': _getName(PosPermission.reprintReceipt),
         'description':
             'keep history of the creation and processing of receipts',
       },
@@ -63,7 +63,7 @@ extension POSTiles on dynamic {
         'icon': Icons.money,
         'action': RouteNames.posPayments,
         'param': {},
-        'access': _getValue(PosPermission.managePosFinance),
+        'access': _getName(PosPermission.managePosFinance),
         'description':
             'Manages & analyzes company\'s financial resources; budgeting, forecasting, investing',
       },

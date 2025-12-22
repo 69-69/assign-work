@@ -10,8 +10,8 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -28,7 +28,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddOrderForm on BuildContext {
   Future<void> openAddOrder({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Create Order', body: _AddOrderBody()),
+    child: BottomSheetScaffold(title: 'Create Order', body: _AddOrderBody()),
   );
 }
 

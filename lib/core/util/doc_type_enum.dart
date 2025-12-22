@@ -18,10 +18,10 @@ enum DocType {
 }
 
 extension DocTypeExtension on DocType {
-  /// For storage: "rfq", "sale", "pOrder"
-  String get getValue => EnumHelper<DocType>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "pOrder")
+  String get getName => EnumHelper<DocType>(this).getName;
 
-  /// For UI labels: "RFQ", "Purchase Order", "Employee", etc.
+  /// For UI labels: 'pOrder' -> 'P Order'
   String get getLabel => EnumHelper<DocType>(this).getLabel;
 }
 

@@ -1,264 +1,126 @@
-import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/procurement/data/model/po_type.dart';
+import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
-
-/*Below is a consolidated list of **common Purchase Order (PO) fields** used across major ERPs such as **SAP ECC/S/4HANA**, **Oracle ERP**, **Microsoft Dynamics**, **NetSuite**, and others.
-The names differ slightly between systems, but the underlying **data elements are largely the same**.
-
----
-
-# ✅ **1. Header-Level PO Fields (apply to entire PO)**
-
-These fields describe the Purchase Order as a whole.
-
-### **Identification & Control**
-
-* **PO Number**
-* **PO Type** (Standard, Subcontracting, Consignment, Services, Blanket/Framework, etc.)
-* **Document Date**
-* **Posting Date**
-* **Created By / Buyer**
-* **Company Code / Legal Entity**
-* **Purchasing Organization**
-* **Purchasing Group**
-* **Document Currency**
-* **Exchange Rate**
-
-### **Vendor Information**
-
-* **Vendor ID**
-* **Vendor Name**
-* **Vendor Address**
-* **Vendor Payment Terms**
-* **Vendor Tax ID**
-* **Shipping/Delivery Address**
-* **Incoterms** (e.g., FOB, CIF)
-
-### **Terms & Compliance**
-
-* **Payment Terms**
-* **Delivery Terms**
-* **Header Text / Notes**
-* **Terms & Conditions**
-* **Retention Terms** (for construction/service POs)
-* **Approval Status / Workflow Status**
-
-### **Financial & Tax**
-
-* **Tax Code**
-* **Budget Reference / Cost Center (if header-level)**
-* **Freight Terms**
-* **Overall Discount / Surcharge**
-
----
-
-# ✅ **2. Item-Level PO Fields (one per line item)**
-
-These describe each product/service being purchased.
-
-### **Material / Service Details**
-
-* **Line Item Number**
-* **Material Number / Item Code**
-* **Material Description**
-* **Material Group / Category**
-* **Quantity**
-* **Unit of Measure (UOM)**
-* **Delivery Date**
-* **Item Type** (Goods, Services, Subcontracting, Limit item, etc.)
-
-### **Pricing**
-
-* **Unit Price**
-* **Price Unit** (e.g., price per 100 units)
-* **Gross Price**
-* **Net Price**
-* **Tax Code**
-* **Discount / Surcharge**
-* **Total Line Value**
-
-### **Account Assignment**
-
-(Varies if inventory item, service item, or consumable item)
-
-* **Cost Center**
-* **GL Account**
-* **Internal Order / Project (WBS/Task)**
-* **Asset Number**
-* **Profit Center**
-* **Accounting Category**
-
-### **Delivery & Logistics**
-
-* **Plant / Location**
-* **Storage Location**
-* **Delivery Date**
-* **Delivery Address**
-* **GR-Based Invoice Verification** flag
-* **Delivery Complete** indicator
-* **Partial Delivery Allowed** flag
-
-### **Procurement Control**
-
-* **Purchasing Info Record**
-* **Source List**
-* **Contract/Agreement Reference**
-* **Requisition Reference**
-* **Release Strategy (Approval)**
-
-### **Quality / Compliance**
-
-* **Quality Inspection Required**
-* **Batch Information**
-* **Shelf Life Requirements**
-* **Serial Number Profile**
-
----
-
-# ✅ **3. Service PO – Specific Fields**
-
-Common for service procurement in systems like SAP, Oracle, NetSuite.
-
-* **Service Line Number**
-* **Service Description**
-* **Unit of Measure (hours, days, lot, etc.)**
-* **Service Quantity**
-* **Service Rate**
-* **Limits (value limit, quantity limit)**
-* **Expected Service Date**
-* **Service Entry Sheet Required** flag
-
----
-
-# ✅ **4. PO Schedule Line Fields (SAP-specific but common concept)**
-
-Represents each planned delivery for a line item.
-
-* **Schedule Line Number**
-* **Delivery Date**
-* **Scheduled Quantity**
-* **Open Quantity**
-* **Confirmed Quantity**
-* **Vendor Confirmation Number**
-
----
-
-# 🔄 Mapping Examples: SAP vs Oracle vs Dynamics
-
-| Concept     | SAP Field | Oracle ERP Field | Dynamics Field    |
-| ----------- | --------- | ---------------- | ----------------- |
-| PO Number   | EBELN     | PO_NUMBER        | Purchase Order ID |
-| Vendor      | LIFNR     | SUPPLIER_ID      | Vendor Account    |
-| Item        | EBELP     | LINE_NUM         | Line Number       |
-| Material    | MATNR     | ITEM_ID          | Item Number       |
-| Quantity    | MENGE     | QUANTITY         | Quantity          |
-| Price       | NETPR     | UNIT_PRICE       | Unit Price        |
-| Cost Center | KOSTL     | COST_CENTER      | Cost Center       |
-| GL          | SAKTO     | ACCOUNT          | Ledger Account    |
-*/
 
 class ProPurchaseOrder extends Equatable {
   static get _today => DateTime.now();
 
-  final String id; // Firestore will assign a unique ID (documentId)
-  final String storeNumber;
+  final String id;
+
+  /// [rfqNumber] Foreign key referencing the Request for Quote (RFQ).
+  /// Used to associate this Purchase Order (PO) with its originating RFQ.
+  /// If empty, the PO is treated as a “RAW PO” and is not linked to any RFQ
+  /// (i.e., it was created independently and not generated from an RFQ).
+  final String rfqNumber;
+
   final String poNumber;
+  final String storeNumber;
+
   final String supplierId;
-  // final List<POLineItem> lineItems; // A list of items in the RFQ
+  final String supplierRepId;
+  final List<ProLineItem> lineItems; // A list of items in the RFQ
 
-  final String itemName;
   final String currency;
+  final String requestedBy; // Buyer's Contact: Who requested the PO
 
-  final double unitPrice;
-  final int quantity;
+  final ProcurementWorkflowStatus status;
 
-  final String status;
+  /// [costCenterCode] Business Unit or Department paying for the purchase
+  final String costCenterCode;
 
-  /// [payTerms] When the payment is due and if any discounts apply
-  final String payTerms;
+  /// [paymentTerm] When the payment is due and if any discounts apply
+  final String paymentTerm;
 
-  /// [payMethod] How the payment is made (the financial instrument or channel)
-  final String payMethod;
+  /// [paymentMethod] How the payment is made (the financial instrument or channel)
+  final String paymentMethod;
 
-  final String? remarks;
-
-  final double taxPercent;
-  final double discountPercent;
-
-  final double subTotal;
+  final String? notes;
+  final List<String> attachments;
+  final List<AddressInfo>? addresses;
+  final double totalAmount;
+  final double taxAmount;
+  final double discountAmount;
+  final double freightCharges;
+  final String? termsAndConditions;
 
   final DateTime? deliveryDate;
-  final double totalAmount;
-
-  final POType poType;
-
-  final String approvedBy;
 
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
   final DateTime updatedAt;
 
-  /// @TODO purchase order fields
-  // Taxes
-  // Attachments (e.g., specifications)
+  /// [history] Audit trail: track all changes made to the PR
+  final List<AuditLog> history;
 
   ProPurchaseOrder({
     this.id = '',
-    this.poNumber = '',
+    this.rfqNumber = '',
+    required this.poNumber,
     required this.currency,
     required this.storeNumber,
     required this.supplierId,
-    required this.status,
-    required this.quantity,
-    required this.itemName,
-    this.poType = POType.standard,
-    required this.unitPrice,
-    required this.payTerms,
-    required this.payMethod,
-    this.remarks,
-    this.subTotal = 0.0,
-    this.approvedBy = '',
-    this.discountPercent = 0.0,
-    this.taxPercent = 0.0,
-    required this.totalAmount,
+    this.supplierRepId = '',
+    required this.requestedBy,
+    this.costCenterCode = '',
+    this.status = ProcurementWorkflowStatus.draft,
+    required this.lineItems,
+    required this.paymentTerm,
+    required this.paymentMethod,
+    this.attachments = const [],
+    this.notes,
+    this.addresses,
+    this.totalAmount = 0.0,
+    this.taxAmount = 0.0,
+    this.discountAmount = 0.0,
+    this.freightCharges = 0.0,
+    this.termsAndConditions,
     DateTime? deliveryDate,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
-  }) : deliveryDate = deliveryDate ?? _today,
+    List<AuditLog>? history,
+  }) : history = history ?? [],
+       deliveryDate = deliveryDate ?? _today,
        createdAt = createdAt ?? _today,
-       updatedAt = updatedAt ?? _today; // Set default value
+       updatedAt = updatedAt ?? _today;
 
   /// fromFirestore / fromJson Function [ProPurchaseOrder.fromMap]
   factory ProPurchaseOrder.fromMap(Map<String, dynamic> map, {String? docId}) {
     return ProPurchaseOrder(
       id: docId ?? map['id'] ?? '',
-      storeNumber: map['storeNumber'] ?? '',
       poNumber: map['poNumber'] ?? '',
+      rfqNumber: map['rfqNumber'] ?? '',
+      storeNumber: map['storeNumber'] ?? '',
       supplierId: map['supplierId'] ?? '',
-      status: map['status'] ?? '',
-      itemName: map['itemName'] ?? '',
+      supplierRepId: map['supplierRepId'] ?? '',
+      requestedBy: map['requestedBy'] ?? '',
+      costCenterCode: map['costCenterCode'] ?? '',
+      status: ProcurementStatusHelper.fromString(map['status']),
+      lineItems: ProLineItem.lineItems(map['lineItems']),
       currency: map['currency'] ?? '',
-      poType: POTypeHelper.fromString(map['poType']),
-      quantity: map['quantity'] ?? 0,
-      unitPrice: map['unitPrice'] ?? 0.0,
-      payTerms: map['payTerms'] ?? '',
-      payMethod: map['payMethod'] ?? '',
-      remarks: map['remarks'] ?? '',
-      subTotal: map['subTotal'] ?? 0.0,
-      taxPercent: map['taxPercent'] ?? 0.0,
-      discountPercent: map['discountPercent'] ?? 0.0,
-      totalAmount: map['totalAmount'] ?? 0.0,
-      approvedBy: map['approvedBy'] ?? '',
-      deliveryDate: toDateTimeFn(map['deliveryDate']),
+      paymentTerm: map['paymentTerm'] ?? '',
+      paymentMethod: map['paymentMethod'] ?? '',
+      notes: map['notes'] ?? '',
+      attachments: List<String>.from(map['attachments'] ?? []),
+      addresses: AddressInfo.addresses(map['addresses']),
+      totalAmount: map['totalAmount']?.toDouble() ?? 0.0,
+      taxAmount: map['taxAmount']?.toDouble() ?? 0.0,
+      discountAmount: map['discountAmount']?.toDouble() ?? 0.0,
+      freightCharges: map['freightCharges']?.toDouble() ?? 0.0,
+      termsAndConditions: map['termsAndConditions'] ?? '',
+      deliveryDate: toDateTimeFn(map['deliveryDate'] ?? '$_today'),
       createdBy: map['createdBy'] ?? '',
-      createdAt: toDateTimeFn(map['createdAt']),
+      createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
       updatedBy: map['updatedBy'] ?? '',
-      updatedAt: toDateTimeFn(map['updatedAt']),
+      updatedAt: toDateTimeFn(map['updatedAt'] ?? '$_today'),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -267,26 +129,28 @@ class ProPurchaseOrder extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'poNumber': poNumber,
+    'rfqNumber': rfqNumber,
     'supplierId': supplierId,
-    'itemName': itemName,
+    'supplierRepId': supplierRepId,
+    'requestedBy': requestedBy,
+    'status': getPOStatus,
     'currency': currency,
-    'unitPrice': unitPrice,
-    'quantity': quantity,
-    'status': status,
-    'poType': getPOType,
-    'payTerms': payTerms,
-    'payMethod': payMethod,
-    'remarks': remarks,
-    'subTotal': subTotal,
-    'approvedBy': approvedBy,
-    'taxPercent': taxPercent,
-    'discountPercent': discountPercent,
+    'costCenterCode': costCenterCode,
+    'lineItems': lineItems.map((i) => i.toMap()).toList(),
+    'paymentTerm': paymentTerm,
+    'paymentMethod': paymentMethod,
+    'notes': notes,
+    'attachments': attachments,
+    'addresses': addresses?.map((i) => i.toMap()).toList(),
     'totalAmount': totalAmount,
+    'taxAmount': taxAmount,
+    'discountAmount': discountAmount,
     'deliveryDate': deliveryDate,
     'createdBy': createdBy,
     'createdAt': createdAt,
     'updatedBy': updatedBy,
     'updatedAt': updatedAt,
+    'history': history.map((i) => i.toMap()).toList(),
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
@@ -309,21 +173,30 @@ class ProPurchaseOrder extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => itemName.isEmpty;
+  /// A singleton instance representing an empty/default ProPurchaseOrder.
+  /// Used as a fallback when no matching PO is found.
+  static final ProPurchaseOrder empty = ProPurchaseOrder(
+    poNumber: '',
+    storeNumber: '',
+    supplierId: '',
+    currency: '',
+    lineItems: [],
+    paymentTerm: '',
+    paymentMethod: '',
+    createdBy: '',
+    requestedBy: '',
+  );
 
-  bool get isNotEmpty => !isEmpty;
+  /// [isEmpty] Checks if the ProPurchaseOrder is empty.
+  bool get isEmpty => identical(this, ProPurchaseOrder.empty);
 
-  String get getPOType => poType.getLabel;
+  String get getPOStatus => status.getLabel;
 
-  // NetPrice: After discountAmt is deducted & other charges are added from 'subTotal'
-  double get netPrice => subTotal - discountAmt;
+  bool get isApproved => status == ProcurementWorkflowStatus.approved;
 
-  double get discountAmt => (discountPercent / 100) * subTotal;
-
-  double get taxAmt => (taxPercent / 100) * netPrice;
-
-  /// approved POs [isApproved]
-  bool get isApproved => status == 'approved' && approvedBy.isNotEmpty;
+  /// [isFullyApproved] Have all required authorities (managers, finance, procurement, etc.) approved the PO?
+  bool get isFullyApproved =>
+      history.isNotEmpty && history.every((a) => a.getAction == getPOStatus);
 
   /// Formatted to Date Only in String [getDeliveryDate]
   String get getDeliveryDate => deliveryDate.dateOnly;
@@ -345,22 +218,22 @@ class ProPurchaseOrder extends Equatable {
 
   /// Filter
   bool filterByAny(String filter) =>
-      poNumber.contains(filter) ||
-      storeNumber.contains(filter) ||
-      itemName.contains(filter) ||
-      status.contains(filter) ||
+      itemAsList.any((item) => item.contains(filter)) ||
+      requestedBy.contains(filter) ||
       supplierId.contains(filter) ||
+      supplierRepId.contains(filter) ||
+      costCenterCode.contains(filter) ||
       currency.contains(filter) ||
-      payTerms.contains(filter);
+      paymentTerm.contains(filter) ||
+      paymentMethod.contains(filter) ||
+      lineItems.any((e) => e.filterByAny(filter));
 
-  /// [findProPurchaseOrderById]
-  static Iterable<ProPurchaseOrder> findProPurchaseOrderById(
-    List<ProPurchaseOrder> po,
-    String poId,
-  ) => po.where((order) => order.id == poId);
+  /// [findPOById]
+  static ProPurchaseOrder findPOById(List<ProPurchaseOrder> po, String poId) =>
+      po.firstWhere((o) => o.id == poId, orElse: () => ProPurchaseOrder.empty);
 
-  /// [filterProPurchaseOrderByDate]
-  static List<ProPurchaseOrder> filterProPurchaseOrderByDate(
+  /// [filterPOByDate]
+  static List<ProPurchaseOrder> filterPOByDate(
     List<ProPurchaseOrder> po, {
     bool isSameDay = true,
   }) => po
@@ -372,32 +245,83 @@ class ProPurchaseOrder extends Equatable {
 
   /// [filterApprovedPOs]
   static List<ProPurchaseOrder> filterApprovedPOs(List<ProPurchaseOrder> po) =>
-      po.where((order) => order.isApproved).toList();
+      po.where((o) => o.isApproved).toList();
 
-  @override
-  String toString() =>
-      'PO: $poNumber - $itemName @ ${isToday ? 'Today' : 'Past'}';
+  /// Unapproved POs
+  static List<ProPurchaseOrder> filterOthers(List<ProPurchaseOrder> orders) =>
+      orders.where((po) => !po.isApproved).toList();
+
+  ProPurchaseOrder computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
+    // Calculate tax amounts for each line item (perLineTax)
+    List<ProLineItem> updatedItems = lineItems.map((item) {
+      if (item is! TaxableLineItem) return item;
+
+      final taxAmount = item.computeTaxAmount(taxMap);
+      final taxNames = item.buildTaxNames(taxMap);
+
+      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
+    }).toList();
+
+    return copyWith(lineItems: updatedItems);
+
+    /*final updatedItems = lineItems.map((item) {
+      // Tax rate is in Percentage
+      final taxRate = item.resolvePerItemTaxes(taxMap);
+      final taxAmount = (item.netPrice * taxRate) / 100;
+      final taxNames = item.getTaxName(taxMap);
+
+      return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
+    }).toList();
+
+    return copyWith(lineItems: updatedItems);*/
+
+    /*if (taxMode == taxModeToApply.perLineTax) {
+      // Calculate tax amounts for each line item (perLineTax)
+      final updatedItems = lineItems.map((item) {
+        // Tax rate is in Percentage
+        final taxRate = item.resolvePerItemTaxes(taxMap);
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        final taxNames = item.getTaxName(taxMap);
+
+        return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
+      }).toList();
+
+      return copyWith(lineItems: updatedItems);
+    } else {
+      // Calculate total tax amount (headerTax/overall tax)
+      final taxRate = resolveHeaderTaxes(taxMap);
+      final totalTax = lineItems.fold(0.0, (sum, item) {
+        final taxAmount = sum + ((item.netPrice * taxRate) / 100);
+        return taxAmount;
+      });
+
+      return copyWith(headerTaxAmount: totalTax, taxNames: getTaxName(taxMap));
+    }*/
+  }
 
   /// copyWith method
   ProPurchaseOrder copyWith({
     String? id,
     String? storeNumber,
     String? poNumber,
+    String? rfqNumber,
+    String? requestedBy,
     String? supplierId,
-    String? itemName,
+    String? supplierRepId,
+    String? costCenterCode,
+    List<ProLineItem>? lineItems,
     String? currency,
-    POType? poType,
-    double? unitPrice,
-    int? quantity,
-    String? status,
-    String? payTerms,
-    String? payMethod,
-    String? remarks,
-    double? subTotal,
-    String? approvedBy,
-    double? taxPercent,
-    double? discountPercent,
+    ProcurementWorkflowStatus? status,
+    String? paymentTerm,
+    String? paymentMethod,
+    String? notes,
+    List<String>? attachments,
+    List<AddressInfo>? addresses,
     double? totalAmount,
+    double? taxAmount,
+    double? discountAmount,
+    double? freightCharges,
+    String? termsAndConditions,
     DateTime? deliveryDate,
     String? createdBy,
     DateTime? createdAt,
@@ -408,22 +332,25 @@ class ProPurchaseOrder extends Equatable {
       id: id ?? this.id,
       storeNumber: storeNumber ?? this.storeNumber,
       poNumber: poNumber ?? this.poNumber,
+      rfqNumber: rfqNumber ?? this.rfqNumber,
+      requestedBy: requestedBy ?? this.requestedBy,
       supplierId: supplierId ?? this.supplierId,
-      itemName: itemName ?? this.itemName,
+      supplierRepId: supplierRepId ?? this.supplierRepId,
       currency: currency ?? this.currency,
-      unitPrice: unitPrice ?? this.unitPrice,
-      poType: poType ?? this.poType,
-      quantity: quantity ?? this.quantity,
       status: status ?? this.status,
-      payTerms: payTerms ?? this.payTerms,
-      payMethod: payMethod ?? this.payMethod,
-      remarks: remarks ?? this.remarks,
-      subTotal: subTotal ?? this.subTotal,
-      approvedBy: approvedBy ?? this.approvedBy,
-      deliveryDate: deliveryDate ?? this.deliveryDate,
-      discountPercent: discountPercent ?? this.discountPercent,
-      taxPercent: taxPercent ?? this.taxPercent,
+      lineItems: lineItems ?? this.lineItems,
+      attachments: attachments ?? this.attachments,
+      costCenterCode: costCenterCode ?? this.costCenterCode,
+      addresses: addresses ?? this.addresses,
       totalAmount: totalAmount ?? this.totalAmount,
+      taxAmount: taxAmount ?? this.taxAmount,
+      discountAmount: discountAmount ?? this.discountAmount,
+      freightCharges: freightCharges ?? this.freightCharges,
+      termsAndConditions: termsAndConditions ?? this.termsAndConditions,
+      paymentTerm: paymentTerm ?? this.paymentTerm,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      notes: notes ?? this.notes,
+      deliveryDate: deliveryDate ?? this.deliveryDate,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -436,22 +363,25 @@ class ProPurchaseOrder extends Equatable {
     id,
     storeNumber,
     poNumber,
+    rfqNumber,
+    requestedBy,
     supplierId,
+    supplierRepId,
     status,
-    itemName,
+    lineItems,
     currency,
-    quantity,
-    poType,
-    unitPrice,
-    payTerms,
-    payMethod,
-    remarks,
-    subTotal,
-    deliveryDate ?? '',
-    taxPercent,
-    discountPercent,
+    paymentTerm,
+    paymentMethod,
+    notes,
+    attachments,
+    costCenterCode,
+    addresses,
     totalAmount,
-    approvedBy,
+    taxAmount,
+    discountAmount,
+    freightCharges,
+    termsAndConditions,
+    deliveryDate ?? '',
     createdBy,
     createdAt,
     updatedBy,
@@ -459,59 +389,32 @@ class ProPurchaseOrder extends Equatable {
   ];
 
   /// ToList for ProPurchaseOrder [itemAsList]
-  List<String> itemAsList({int? start, int? end}) {
-    var list = [
-      id,
-      storeNumber,
-      poNumber,
-      supplierId,
-      getPOType.toTitle,
-      status.toTitle,
-      currency.toTitle,
-      payTerms.toTitle,
-      payMethod.toTitle,
-      itemName.toTitle,
-      '$ghanaCedis$unitPrice',
-      '$quantity',
-      '$ghanaCedis$subTotal',
-      '$discountPercent% = $ghanaCedis$discountAmt',
-      '$taxPercent% = $ghanaCedis$taxAmt',
-      '$ghanaCedis$totalAmount',
-      getDeliveryDate,
-      approvedBy.toTitle,
-      createdBy.toTitle,
-      getCreatedAt,
-      updatedBy.toTitle,
-      getUpdatedAt,
-    ];
-
-    /// Removes a range of elements from the list
-    if (start != null && end != null) {
-      list.removeRange(start, end);
-    }
-
-    return list;
-  }
+  List<String> get itemAsList => [
+    id,
+    storeNumber,
+    '$rfqNumber -> $poNumber',
+    supplierId,
+    getPOStatus.toTitle,
+    currency.toTitle,
+    paymentTerm.toTitle,
+    paymentMethod.toTitle,
+    getDeliveryDate,
+    createdBy.toTitle,
+    getCreatedAt,
+    updatedBy.toTitle,
+    getUpdatedAt,
+  ];
 
   static List<String> get dataTableHeader => const [
     'ID',
     'Store Number',
-    'PO Number',
+    'RFQ -> PO Number',
     'Supplier ID',
-    'PO Type',
     'Status',
     'Currency',
     'Payment Terms',
     'Payment Method',
-    'Item Name',
-    'Unit Price',
-    'Quantity',
-    'SubTotal',
-    'Discount',
-    'Tax',
-    'Total Amount',
     'Delivery',
-    'Approved By',
     'Created By',
     'Created At',
     'Updated By',
@@ -519,17 +422,24 @@ class ProPurchaseOrder extends Equatable {
   ];
 }
 
-class POLineItem extends Equatable {
-  final String itemName;
-  final double unitPrice;
-  final int quantity;
+/*Message:
+“PO #PO-2025-001 requires your approval”
+📌 This does not approve anything — it only alerts.
 
-  const POLineItem({
-    required this.itemName,
-    required this.unitPrice,
-    required this.quantity,
-  });
+Step 3: Approver opens dashboard (PULL)
+The approver:
+Opens Procurement → My Approvals
+Sees list of pending items
+Example filters:
+Pending
+Overdue
+High value
+By store / cost center
 
-  @override
-  List<Object?> get props => [itemName, unitPrice, quantity];
-}
+Step 4: Approver reviews and acts
+From dashboard:
+View PO details (this is button)
+Download attachments (this is button)
+Approve / Reject (this is button)
+Add remarks (dialog & button)
+*/

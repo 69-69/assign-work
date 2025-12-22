@@ -3,7 +3,11 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/trouble_shooting/data/data_sources/remote/get_tenant_by.dart';
 import 'package:flutter/material.dart';
+
+import 'dialog/prompt_user_for_action.dart';
 
 class CheckForAppUpdate extends StatelessWidget {
   const CheckForAppUpdate({super.key});
@@ -13,10 +17,15 @@ class CheckForAppUpdate extends StatelessWidget {
     return PopupMenuButton<String>(
       // icon: const Icon(Icons.more_vert),
       tooltip: 'Check for Update',
-      onSelected: (value) {
-        if (value == 'check') {
-          _checkingForUpdate(context);
-        }
+      onSelected: (value) async {
+        if (value.isEmpty || context.mounted == false) return;
+
+        return switch (value) {
+          'check' => _checkingForUpdate(context),
+          'myLicenseAgent' =>
+            context.mounted == false ? null : await _showMyAgentDialog(context),
+          _ => null,
+        };
       },
       child: Container(
         padding: const EdgeInsets.fromLTRB(8.0, 2.0, 0, 2.0),
@@ -38,12 +47,15 @@ class CheckForAppUpdate extends StatelessWidget {
       ),
       itemBuilder: (context) => [
         const PopupMenuItem(value: 'check', child: Text('Check for Updates')),
-        const PopupMenuItem(value: 'changelog', child: Text('View Changelog')),
+        const PopupMenuItem(
+          value: 'myLicenseAgent',
+          child: Text('My License Agent'),
+        ),
       ],
     );
   }
 
-  _checkingForUpdate(BuildContext context) async {
+  Future _checkingForUpdate(BuildContext context) async {
     await context.progressBarDialog(
       child: Container(
         alignment: Alignment.center,
@@ -65,6 +77,20 @@ class CheckForAppUpdate extends StatelessWidget {
       ),
       onError: (error) =>
           context.showAlertOverlay('Updated failed', bgColor: kDangerColor),
+    );
+  }
+
+  Future _showMyAgentDialog(BuildContext context) async {
+    final myAgent = (await GetTenant.byWorkspaceId(context.workspace!.agentId));
+    if (context.mounted == false || myAgent == null) return;
+
+    return await context.confirmAction(
+      Text(
+        '${myAgent.clientName}\nTel: ${myAgent.mobileNumber}\nEmail: ${myAgent.email}',
+      ),
+      onAcceptLabel: 'Done',
+      onRejectLabel: 'Close',
+      title: 'My License Agent',
     );
   }
 }

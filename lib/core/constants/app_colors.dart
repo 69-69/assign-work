@@ -42,6 +42,7 @@ extension DefaultColors on BuildContext {
   Color get primaryColor => ofTheme.primaryColor;
   Color get mainPrimaryColor => colorScheme.primary;
   Color get errorColor => colorScheme.error;
+  // switch between red/white
   Color get onErrorColor => colorScheme.onError;
   Color get primaryColorLight => ofTheme.primaryColorLight;
   Color get secondaryColor => colorScheme.secondary;
@@ -49,14 +50,17 @@ extension DefaultColors on BuildContext {
   Color get secondaryContainerColor => colorScheme.secondaryContainer;
   Color get onSecondaryContainer => colorScheme.onSecondaryContainer;
   Color get onPrimaryColor => colorScheme.onPrimary;
+  Color get surfaceTintColor => colorScheme.surfaceTint;
   // switch between primary/light
   Color get onPrimaryContainer => colorScheme.onPrimaryContainer;
+  // switch between dark-gray/primary
   Color get primaryContainer => colorScheme.primaryContainer;
+  // switch between black/white
   Color get surfaceColor => colorScheme.surface;
   // switch between black/white
   Color get onSurfaceColor => colorScheme.onSurface;
+  // switch between dark-gray/white
   Color get outlineColor => colorScheme.outline;
-  Color get surfaceTintColor => colorScheme.surfaceTint;
   // switch between black/white
   Color get scaffoldBgColor => ofTheme.scaffoldBackgroundColor;
   Color get bgAuthColor => scaffoldBgColor.toAlpha(0.8);

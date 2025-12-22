@@ -157,7 +157,7 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
       hintText: '01/26/${_nowToday.year}',
       helperText: helpText,
       suffixIcon: IconButton(
-        tooltip: 'Click to show Calendar',
+        tooltip: helpText ?? 'Click to show Date Picker',
         icon: const Icon(Icons.date_range),
         onPressed: () => _restorableDatePickerRouteFuture.present(),
         style: IconButton.styleFrom(shape: const RoundedRectangleBorder()),
@@ -212,13 +212,17 @@ class _TimePickerState extends State<TimePicker> {
     }
   }
 
+  get _helpText => widget.helperText != null
+      ? '(${widget.helperText})'
+      : 'Click to show Time Picker';
+
   @override
   Widget build(BuildContext context) {
     return _buildTextField(context);
   }
 
   _buildTextField(BuildContext context) {
-    final helpText = widget.helperText != null ? '(${widget.helperText})' : '';
+    // final helpText = widget.helperText != null ? '(${widget.helperText})' : '';
 
     return TextFormField(
       controller: _textController,
@@ -228,7 +232,7 @@ class _TimePickerState extends State<TimePicker> {
       // cursorColor: kLightColor,
       // style: const TextStyle(color: kLightColor),
       decoration: inputDecoration.copyWith(
-        hintText: 'Pick a Time $helpText',
+        hintText: _helpText,
         // helperText: widget.helperText,
       ),
       validator: widget.validator ?? (String? v) => v == null ? "" : null,
@@ -251,6 +255,7 @@ class _TimePickerState extends State<TimePicker> {
       ),
 
       suffixIcon: IconButton(
+        tooltip: _helpText,
         icon: const Icon(Icons.access_time),
         onPressed: () => _selectTime(context),
       ),

@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/hosting_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
@@ -19,8 +20,16 @@ import 'package:go_router/go_router.dart';
 class ProfileMenuDropdown extends StatelessWidget {
   final Workspace? workspace;
   final Employee? employee;
+  final bool isAppbar;
+  final Function(bool)? isProfileOpen;
 
-  const ProfileMenuDropdown({super.key, this.workspace, this.employee});
+  const ProfileMenuDropdown({
+    super.key,
+    this.workspace,
+    this.employee,
+    this.isAppbar = true,
+    this.isProfileOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,24 +42,72 @@ class ProfileMenuDropdown extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final borderRadius = BorderRadius.circular(8);
+    final roleName = context.getRoleName;
+
     return Container(
+      width: isAppbar ? null : 200,
       alignment: Alignment.center,
-      margin: const EdgeInsets.fromLTRB(0, 20, 20, 20),
+      margin: isAppbar
+          ? EdgeInsets.fromLTRB(0, 20, 20, 20)
+          : EdgeInsets.only(top: 10),
+      decoration: isAppbar
+          ? null
+          : BoxDecoration(
+              color: kPrimaryLightColor,
+              borderRadius: borderRadius,
+            ),
       child: PopupMenuButton<String>(
-        tooltip: 'Tap to open notifications',
+        tooltip: 'Menu',
         padding: EdgeInsets.zero,
         offset: const Offset(0, 60),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onSelected: (value) => _handleMenuAction(context, value),
-        itemBuilder: (context) => _buildMenuItems(context),
-        child: _buildProfileIcon(context, isLargeScreen),
+        shape: RoundedRectangleBorder(borderRadius: borderRadius),
+        onOpened: () {
+          _isProfileOpen(true);
+          // context.read<AccessControlCubit>().getNotifications();
+        },
+        onCanceled: _isProfileOpen,
+        onSelected: (v) async => await _handleMenuAction(context, v),
+        itemBuilder: (context) => _buildMenuItems(context, roleName: roleName),
+        child: isAppbar
+            ? _buildAppBarProfile(context, isLargeScreen, roleName: roleName)
+            : _buildSideProfile(context, roleName: roleName),
       ),
     );
   }
 
-  _buildProfileIcon(BuildContext context, bool isLargeScreen) {
-    final roleName = context.getRoleName;
+  void _isProfileOpen([bool open = false]) {
+    if (isProfileOpen != null) {
+      isProfileOpen!(open);
+    }
+  }
 
+  CircleAvatar _buildCircleAvatar({double? radius, Color? bgColor}) {
+    return CircleAvatar(
+      maxRadius: radius,
+      backgroundColor: bgColor ?? kLightBlueColor,
+      child: Icon(Icons.person, color: kPrimaryColor),
+    );
+  }
+
+  _buildSideProfile(BuildContext context, {String? roleName}) {
+    return Padding(
+      padding: EdgeInsets.all(5.0),
+      child: Row(
+        children: [
+          _buildCircleAvatar(radius: 16, bgColor: kWhiteColor),
+          const SizedBox(width: 5),
+          _buildUserDetails(context, roleName: roleName, color: kWhiteColor),
+        ],
+      ),
+    );
+  }
+
+  _buildAppBarProfile(
+    BuildContext context,
+    bool isLargeScreen, {
+    String? roleName,
+  }) {
     return Padding(
       padding: EdgeInsets.all(2.0),
       child: Wrap(
@@ -58,84 +115,133 @@ class ProfileMenuDropdown extends StatelessWidget {
         direction: Axis.vertical,
         children: [
           if (isLargeScreen) ...[
-            _buildUserDetails(context, roleName),
+            _buildUserDetails(context, roleName: roleName),
             const SizedBox(width: 10),
           ],
-          const CircleAvatar(
-            backgroundColor: kLightBlueColor,
-            child: Icon(Icons.person, color: kPrimaryColor),
-          ),
+          _buildCircleAvatar(),
         ],
       ),
     );
   }
 
-  Widget _buildUserDetails(BuildContext context, String roleName) {
+  Widget _buildUserDetails(
+    BuildContext context, {
+    String? roleName,
+    Color? color,
+  }) {
     final clientName = employee?.fullName.toTitle ?? '';
+    final fontStyle = isAppbar
+        ? context.textTheme.bodyMedium
+        : context.textTheme.bodySmall;
 
+    final txtColor = color ?? kLightBlueColor;
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
+        Flexible(
           child: Text(
             clientName,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: kLightBlueColor,
-              fontWeight: FontWeight.bold,
+            style: fontStyle?.copyWith(
+              color: txtColor,
+              overflow: TextOverflow.ellipsis,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
         Text(
           roleName.toTitle,
-          style: context.textTheme.labelSmall?.copyWith(color: kLightBlueColor),
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: txtColor,
+            fontWeight: FontWeight.normal,
+          ),
         ),
       ],
     );
   }
 
-  List<PopupMenuEntry<String>> _buildMenuItems(BuildContext context) {
-    return [
-      PopupMenuItem(
-        value: 'dashboard',
-        child: ListTile(
-          dense: true,
-          mouseCursor: SystemMouseCursors.click,
-          leading: const Icon(Icons.dashboard),
-          title: const Text('Dashboard'),
+  PopupMenuItem<String> _buildItem({
+    required String value,
+    required dynamic icon,
+    required dynamic label,
+  }) {
+    return PopupMenuItem(
+      value: value,
+      child: ListTile(
+        dense: true,
+        mouseCursor: SystemMouseCursors.click,
+        leading: icon is IconData ? Icon(icon) : icon,
+        title: label is String ? Text(label) : label,
+      ),
+    );
+  }
+
+  List<PopupMenuEntry<String>> _buildMenuItems(
+    BuildContext context, {
+    String? roleName,
+  }) {
+    List<PopupMenuEntry<String>> items = [];
+
+    items.add(
+      _buildItem(
+        value: 'profile',
+        icon: _buildCircleAvatar(radius: 16),
+        label: _buildUserDetails(
+          context,
+          roleName: roleName,
+          color: context.onPrimaryContainer,
         ),
       ),
-      PopupMenuItem(
+    );
+    if (isAppbar) {
+      items.add(
+        _buildItem(
+          value: 'dashboard',
+          icon: Icons.dashboard,
+          label: 'Dashboard',
+        ),
+      );
+    }
+
+    items.addAll([
+      _buildItem(
         value: 'refresh',
-        child: ListTile(
-          dense: true,
-          mouseCursor: SystemMouseCursors.click,
-          leading: const Icon(CupertinoIcons.refresh),
-          title: const Text('Refresh Workspace'),
-        ),
+        icon: CupertinoIcons.refresh,
+        label: 'Refresh Workspace',
       ),
-      PopupMenuItem(
-        value: 'sign-out',
-        child: ListTile(
-          dense: true,
-          mouseCursor: SystemMouseCursors.click,
-          leading: Icon(Icons.logout),
-          title: Text('Sign out'),
-        ),
-      ),
-      if (workspace != null) ...[
+      _buildItem(value: 'sign-out', icon: Icons.logout, label: 'Sign out'),
+    ]);
+
+    if (workspace != null) {
+      items.add(
         PopupMenuItem(
           enabled: false,
           padding: EdgeInsets.zero,
           child: _buildWorkspaceCard(context, workspace: workspace),
         ),
-      ],
-    ];
+      );
+    }
+
+    return items;
   }
 
-  void _handleMenuAction(BuildContext context, String value) async {
+  Future<void> _handleMenuAction(BuildContext context, String value) async {
     switch (value) {
+      case 'profile':
+        await context.confirmAction<bool>(
+          Text(
+            'Change profile photo or notify Admin to update profile information.',
+          ),
+          title: "Change Profile",
+          onAcceptLabel: "Notify Admin",
+          onRejectLabel: "Change",
+        );
+        break;
       case 'dashboard':
-        context.pop();
+        if (Navigator.of(context, rootNavigator: false).canPop()) {
+          Navigator.of(context).pop();
+        }
         break;
       case 'refresh':
         final isConfirmed = await context.confirmUserActionDialog(
@@ -164,6 +270,7 @@ class ProfileMenuDropdown extends StatelessWidget {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -178,17 +285,26 @@ class ProfileMenuDropdown extends StatelessWidget {
             title: 'SUB.: ${context.readSubscriptionName}',
             subtitle: 'Validity: ${workspace.expiresOn.toStandardDT}',
           ),
-          const HorizontalDivider(thickness: 0.4),
+          const HorizontalDivider(
+            thickness: 0.4,
+            space: 1,
+            color: kGrayBlueColor,
+          ),
           _buildListTile(
             context,
             title:
                 "Multi-Location: ${workspace.maxAllowedDevices > 1 ? 'On' : 'Off'}",
             subtitle: 'Max-Devices: ${workspace.maxAllowedDevices}',
           ),
-          const HorizontalDivider(thickness: 0.4),
+          const HorizontalDivider(
+            thickness: 0.4,
+            space: 1,
+            color: kGrayBlueColor,
+          ),
+
           _buildListTile(
             context,
-            title: 'Hosting: ${workspace.hostingType.getValue}',
+            title: 'Hosting: ${workspace.hostingType.getName}',
             subtitle: 'Store Location: ${employee?.storeNumber}',
           ),
         ],
@@ -201,7 +317,32 @@ class ProfileMenuDropdown extends StatelessWidget {
     String title = '',
     String subtitle = '',
   }) {
-    return Column(
+    return ListTile(
+      dense: true,
+      minTileHeight: 20.0,
+      horizontalTitleGap: 0,
+      minVerticalPadding: 3.0,
+      contentPadding: EdgeInsets.zero,
+      mouseCursor: SystemMouseCursors.click,
+      visualDensity: VisualDensity.compact,
+      title: Text(
+        title.toUpperAll,
+        style: context.textTheme.bodySmall?.copyWith(
+          color: kLightGrayColor,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      subtitle: Text(
+        subtitle.toTitle,
+        style: context.textTheme.labelSmall?.copyWith(
+          color: kLightGrayColor,
+          overflow: TextOverflow.ellipsis,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+      onTap: () => context.goNamed(RouteNames.switchStoresAccount),
+    );
+    /*return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -220,7 +361,7 @@ class ProfileMenuDropdown extends StatelessWidget {
           ),
         ),
       ],
-    );
+    );*/
   }
 
   Future<void> _handleSignOut(BuildContext context) async {
@@ -234,7 +375,49 @@ class ProfileMenuDropdown extends StatelessWidget {
   }
 }
 
-/*class ProfileMenuDropdown2 extends StatelessWidget {
+/*
+  List<PopupMenuEntry<String>> _buildMenuItems2(BuildContext context) {
+    return [
+      if (isAppbar) ...{
+        PopupMenuItem(
+          value: 'dashboard',
+          child: ListTile(
+            dense: true,
+            mouseCursor: SystemMouseCursors.click,
+            leading: const Icon(Icons.dashboard),
+            title: const Text('Dashboard'),
+          ),
+        ),
+      },
+      PopupMenuItem(
+        value: 'refresh',
+        child: ListTile(
+          dense: true,
+          mouseCursor: SystemMouseCursors.click,
+          leading: const Icon(CupertinoIcons.refresh),
+          title: const Text('Refresh Workspace'),
+        ),
+      ),
+      PopupMenuItem(
+        value: 'sign-out',
+        child: ListTile(
+          dense: true,
+          mouseCursor: SystemMouseCursors.click,
+          leading: Icon(Icons.logout),
+          title: Text('Sign out'),
+        ),
+      ),
+      if (workspace != null) ...[
+        PopupMenuItem(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: _buildWorkspaceCard(context, workspace: workspace),
+        ),
+      ],
+    ];
+  }
+
+class ProfileMenuDropdown2 extends StatelessWidget {
   final Workspace? workspace;
   final Employee? employee;
 

@@ -1,10 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
-import 'package:assign_erp/core/widgets/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -17,7 +18,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddSuppliers on BuildContext {
   Future openAddSuppliers({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Add Supplier', body: _AddSuppliersForm()),
+    child: BottomSheetScaffold(
+      title: 'Add Supplier',
+      body: _AddSuppliersForm(),
+    ),
   );
 }
 
@@ -31,7 +35,7 @@ class _AddSuppliersForm extends StatefulWidget {
 class _AddSuppliersFormState extends State<_AddSuppliersForm> {
   final _formKey = GlobalKey<FormState>();
   final List<Supplier> _suppliers = [];
-  final List<SupplierContactPerson> _contactPersons = [];
+  final List<ContactPerson> _contactPersons = [];
 
   String get _employeeName => context.employee!.fullName;
   bool get isFormValid => _formKey.currentState!.validate();
@@ -143,7 +147,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
                     data.asMap().entries.map((e) {
                       final index = (e.key) + 1;
                       final contactPerson = e.value;
-                      return SupplierContactPerson.fromMap(
+                      return ContactPerson.fromMap(
                         contactPerson,
                         id: index.toString(),
                       );

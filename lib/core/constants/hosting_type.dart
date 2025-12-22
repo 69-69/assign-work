@@ -11,8 +11,8 @@ enum HostingType { onPremise, cloud, hybrid }
 * print(type.label); // Output: cloud
 * */
 extension HostingTypeExtension on HostingType {
-  /// [getValue] Get the label for the specific enum value (e.g. "onPremise").
-  String get getValue => EnumHelper<HostingType>(this).getValue;
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<HostingType>(this).getName;
 }
 
 class HostingTypeHelper {

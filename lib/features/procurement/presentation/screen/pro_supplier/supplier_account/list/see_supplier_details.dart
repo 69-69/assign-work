@@ -1,10 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
@@ -20,7 +21,7 @@ extension SupplierDetails on BuildContext {
     return await openBottomSheet(
       isExpand: true,
       showZoomIcon: false,
-      child: FormBottomSheet(
+      child: BottomSheetScaffold(
         isDetails: true,
         title: supplier.name.toTitle,
         subtitle: supplier.businessType.toUpperAll,
@@ -78,8 +79,7 @@ class _SupplierInfoPage extends StatelessWidget {
 
   const _SupplierInfoPage({Supplier? supplier}) : _supplier = supplier;
 
-  List<SupplierContactPerson> get _contactPersons =>
-      _supplier?.contactPersons ?? [];
+  List<ContactPerson> get _contactPersons => _supplier?.contactPersons ?? [];
   List<String> get _headerItems => [
     'Name',
     'Email',
@@ -203,7 +203,7 @@ class _SupplierInfoPage extends StatelessWidget {
     );
   }
 
-  Widget _buildItemRow(SupplierContactPerson person, int index) {
+  Widget _buildItemRow(ContactPerson person, int index) {
     final rowItems = [
       person.name.toTitle,
       person.email.toLowerAll,

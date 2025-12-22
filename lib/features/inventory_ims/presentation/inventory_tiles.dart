@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 /// Inventory Management System App(IMS) Dashboard tiles [InventoryTiles]
 extension InventoryTiles on dynamic {
-  // All Orders types Navigation Links [ordersTiles]
+  /// Sub Menu Tiles under orders tab
   List<DashboardTile> get ordersTiles {
     final tilesData = [
       {
@@ -14,7 +14,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.trending_up,
         'action': RouteNames.salesOrders,
         'param': {},
-        'access': _getValue(InventoryPermission.manageSOs),
+        'access': _getName(InventoryPermission.manageSOs),
         'description': 'Create orders for customers or clients',
       },
       {
@@ -22,7 +22,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.paypal,
         'action': RouteNames.imsPurchaseOrders,
         'param': {},
-        'access': _getValue(InventoryPermission.managePOs),
+        'access': _getName(InventoryPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
       },
     ];
@@ -30,6 +30,7 @@ extension InventoryTiles on dynamic {
     return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
   }
 
+  /// Sub Menu Tiles under Inventory Dashboard
   List<DashboardTile> get inventoryTiles {
     final tilesData = [
       // items tab
@@ -38,7 +39,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.receipt_long,
         'action': RouteNames.items,
         'param': {},
-        'access': _getValue(InventoryPermission.manageStock),
+        'access': _getName(InventoryPermission.manageStock),
         'description': 'add or create new items to the inventory.',
       },
       // orders tab
@@ -47,7 +48,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.shopping_cart,
         'action': RouteNames.orders,
         'param': {},
-        'access': _getValue(InventoryPermission.manageOrders),
+        'access': _getName(InventoryPermission.manageOrders),
         'description':
             'create purchase orders (POs), sales orders (SOs), and miscellaneous orders (MOs) for suppliers or customers',
       },
@@ -57,7 +58,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.payments_outlined,
         'action': RouteNames.miscOrders,
         'param': {},
-        'access': _getValue(InventoryPermission.manageMOs),
+        'access': _getName(InventoryPermission.manageMOs),
         'description':
             'create additional orders that may include special requests, one-time purchases',
       },
@@ -66,7 +67,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.dashboard_customize_outlined,
         'action': RouteNames.itemCategories,
         'param': {},
-        'access': _getValue(InventoryPermission.manageItemCategory),
+        'access': _getName(InventoryPermission.manageItemCategory),
         'description':
             'Organize items into categories for easier tracking and reporting.',
       },
@@ -75,7 +76,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.local_shipping,
         'action': RouteNames.itemSuppliers,
         'param': {},
-        'access': _getValue(InventoryPermission.manageItemSuppliers),
+        'access': _getName(InventoryPermission.manageItemSuppliers),
         'description':
             'Manage suppliers linked to specific items for sourcing and restocking.',
       },*/
@@ -85,7 +86,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.delivery_dining,
         'action': RouteNames.deliveries,
         'param': {},
-        'access': _getValue(InventoryPermission.manageDeliveries),
+        'access': _getName(InventoryPermission.manageDeliveries),
         'description':
             'add or create delivery of order(s) and update their status.',
       },
@@ -95,7 +96,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.shopping_basket,
         'action': RouteNames.sales,
         'param': {},
-        'access': _getValue(InventoryPermission.manageSales),
+        'access': _getName(InventoryPermission.manageSales),
         'description': 'keep track of, and oversee the progress of sales.',
       },
       // credit/debit cards, mobile payments, and cash tabs
@@ -104,7 +105,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.payments_outlined,
         'action': RouteNames.posPayments,
         'param': {},
-        'access': _getValue(InventoryPermission.manageOrders),
+        'access': _getName(InventoryPermission.manageOrders),
         'description':
             'records payment details for each transaction: payment method and any related information',
       },
@@ -114,7 +115,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.money,
         'action': RouteNames.posPayments,
         'param': {},
-        'access': _getValue(InventoryPermission.manageOrders),
+        'access': _getName(InventoryPermission.manageOrders),
         'description':
             'Manages & analyzes company\'s financial resources; budgeting, forecasting, investing',
       },
@@ -124,7 +125,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.receipt,
         'action': RouteNames.invoice,
         'param': {},
-        'access': _getValue(InventoryPermission.viewInvoice),
+        'access': _getName(InventoryPermission.viewInvoice),
         'description':
             'keep history of the creation and processing of receipts',
       },
@@ -134,7 +135,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.add_chart,
         'action': RouteNames.inventReports,
         'param': {},
-        'access': _getValue(InventoryPermission.viewReport),
+        'access': _getName(InventoryPermission.viewReport),
         'description':
             'generate sales reports, inventory status, turnover rates, forecasts, and performance analytics',
       },
@@ -144,7 +145,7 @@ extension InventoryTiles on dynamic {
         'icon': Icons.location_on,
         'action': RouteNames.ordersTracking,
         'param': {},
-        'access': _getValue(InventoryPermission.manageOrders),
+        'access': _getName(InventoryPermission.manageOrders),
         'description': 'monitor the progress of order placement and deliveries',
       },
     ];
@@ -283,4 +284,4 @@ extension InventoryTiles on dynamic {
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<InventoryPermission>(e).getValue;
+String _getName(e) => EnumHelper<InventoryPermission>(e).getName;

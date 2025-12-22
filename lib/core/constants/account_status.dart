@@ -11,8 +11,8 @@ enum AccountStatus { disabled, enabled }
 * print(status.label); // Output: enable
 * */
 extension AccountStatusExtension on AccountStatus {
-  /// [getValue] Get the label for the specific enum value.
-  String get getValue => EnumHelper<AccountStatus>(this).getValue;
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<AccountStatus>(this).getName;
 }
 
 class AccountStatusHelper {

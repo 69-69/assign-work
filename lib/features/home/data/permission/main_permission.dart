@@ -5,4 +5,4 @@ enum MainPermission {
 }
 
 bool isUnknownPermission(String p) =>
-    p == EnumHelper<MainPermission>(MainPermission.unknown).getValue;
+    p == EnumHelper<MainPermission>(MainPermission.unknown).getName;

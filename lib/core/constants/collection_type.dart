@@ -10,10 +10,10 @@ enum CollectionType { global, workspace, chats, stores, clients }
 * print(type.label); // Output: global
 * */
 extension CollectionTypeExtension on CollectionType {
-  /// [getValue] Get the label for the specific enum value.
-  String get getValue => EnumHelper<CollectionType>(this).getValue;
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<CollectionType>(this).getName;
   /*
-  String get getValue => getEnumName<CollectionType>(this);
+  String get getName => getEnumName<CollectionType>(this);
   String get label {
     return switch (this) {
       CollectionType.global => 'global', // Global collections

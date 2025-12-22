@@ -12,7 +12,7 @@ extension ConvertDateTime on dynamic {
 
   /// Convert microsecondsSinceEpoch to DateTime object [toStandardDT]
   String get toStandardDT {
-    if (this == null || this == "" || this == "null" || this == "null null") {
+    if (_isNull) {
       return '0000-00-00 00:00:00.000';
     }
 
@@ -26,9 +26,12 @@ extension ConvertDateTime on dynamic {
     return formatter.format(dateTime);
   }
 
+  bool get _isNull =>
+      this == null || this == "" || this == "null" || this == "null null";
+
   /// Convert microsecondsSinceEpoch to DateTime object [dateOnly]
   String get dateOnly {
-    if (this == null || this == "" || this == "null" || this == "null null") {
+    if (_isNull) {
       return '0000-00-00';
     }
 
@@ -41,7 +44,7 @@ extension ConvertDateTime on dynamic {
   /// Get time only from datetime: Fri, 8/8/2025 12:54:30
   /// Convert microsecondsSinceEpoch to DateTime object [timeOnly]
   String get timeOnly {
-    if (this == null || this == "" || this == "null" || this == "null null") {
+    if (_isNull) {
       return '00:00:00';
     }
     var dt = this is String ? toDateTimeFn(this) : this;
@@ -50,7 +53,7 @@ extension ConvertDateTime on dynamic {
 
   /// Convert DateTime object to microsecondsSinceEpoch String [toISOString]
   String get toISOString {
-    if (this == null || this == "" || this == "null" || this == "null null") {
+    if (_isNull) {
       return '';
     }
 

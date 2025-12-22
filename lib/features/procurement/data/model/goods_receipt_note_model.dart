@@ -16,7 +16,7 @@ class GoodsReceiptNote extends Equatable {
   final GRNSESStatus status;
   final List<GRNLineItem> lineItems;
   final List<String> attachments;
-  final String? note;
+  final String? notes;
 
   /// [history] Audit trail: track all changes made to the PR
   final List<AuditLog> history;
@@ -34,7 +34,7 @@ class GoodsReceiptNote extends Equatable {
     this.status = GRNSESStatus.draft,
     required this.lineItems,
     this.attachments = const [],
-    this.note,
+    this.notes,
     required this.receivedBy,
     DateTime? receivedAt,
     List<AuditLog>? history,
@@ -58,7 +58,7 @@ class GoodsReceiptNote extends Equatable {
       history: (map['history'] as List? ?? [])
           .map((i) => AuditLog.fromMap(Map<String, dynamic>.from(i)))
           .toList(),
-      note: map['note'] ?? '',
+      notes: map['notes'] ?? '',
     );
   }
 
@@ -69,6 +69,7 @@ class GoodsReceiptNote extends Equatable {
     'supplierId': supplierId,
     'warehouseId': warehouseId,
     'status': status.name,
+    'notes': notes,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'attachments': attachments,
     'receivedBy': receivedBy,
@@ -96,8 +97,6 @@ class GoodsReceiptNote extends Equatable {
     poNumber: '',
     storeNumber: '',
     supplierId: '',
-    warehouseId: '',
-    note: '',
     receivedBy: '',
     lineItems: [],
   );
@@ -113,7 +112,7 @@ class GoodsReceiptNote extends Equatable {
   bool filterByAny(String filter) => itemAsList.any(
     (item) =>
         item.contains(filter) ||
-        note!.contains(filter) ||
+        notes!.contains(filter) ||
         lineItems.any((e) => e.filterByAny(filter)),
   );
 
@@ -144,7 +143,7 @@ class GoodsReceiptNote extends Equatable {
     GRNSESStatus? status,
     List<GRNLineItem>? lineItems,
     List<String>? attachments,
-    String? note,
+    String? notes,
     DateTime? receivedAt,
     String? receivedBy,
     List<AuditLog>? history,
@@ -157,7 +156,7 @@ class GoodsReceiptNote extends Equatable {
     status: status ?? this.status,
     lineItems: lineItems ?? this.lineItems,
     attachments: attachments ?? this.attachments,
-    note: note ?? this.note,
+    notes: notes ?? this.notes,
     receivedAt: receivedAt ?? this.receivedAt,
     receivedBy: receivedBy ?? this.receivedBy,
     history: history ?? this.history,
@@ -173,7 +172,7 @@ class GoodsReceiptNote extends Equatable {
     status,
     lineItems,
     attachments,
-    note,
+    notes,
     receivedAt,
     receivedBy,
     history,

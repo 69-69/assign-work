@@ -76,9 +76,7 @@ class BuildBreadcrumbs extends StatelessWidget {
         breadcrumbs[i].label,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: isLast
-              ? context.colorScheme.onSecondaryContainer
-              : kPrimaryAccentColor,
+          color: isLast ? context.onSecondaryContainer : kPrimaryAccentColor,
           fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
         ),
       ),

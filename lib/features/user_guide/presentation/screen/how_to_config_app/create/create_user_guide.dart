@@ -3,8 +3,8 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/user_guide_bloc.dart';
@@ -15,7 +15,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddGuideForm<T> on BuildContext {
   Future<void> openAddGuide({String? category}) => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(title: 'Create User Guide', body: _AddGuideForm()),
+    child: BottomSheetScaffold(
+      title: 'Create User Guide',
+      body: _AddGuideForm(),
+    ),
   );
 }
 

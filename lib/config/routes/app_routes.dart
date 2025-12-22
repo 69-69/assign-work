@@ -154,10 +154,10 @@ GoRoute _setupRoute() {
     RouteNames.companyInfo,
     RouteNames.allEmployees,
     RouteNames.manageRoles,
+    RouteNames.workflowApprovalRules,
     RouteNames.manageTaxes,
     RouteNames.productConfig,
     RouteNames.backup,
-    RouteNames.licenseRenewal,
   ];
 
   return GoRoute(
@@ -257,16 +257,20 @@ GoRoute _inventoryRoute() {
 GoRoute _procurementRoute() {
   final List<({String name, Widget screen})> procurementRoutes = [
     (
-      name: RouteNames.proPurchaseOrders,
-      screen: const ProPurchaseOrderScreen(),
+      name: RouteNames.purchaseRequisition,
+      screen: const ProPurchaseRequisitionScreen(),
     ),
     (
       name: RouteNames.proRequestForQuote,
       screen: const ProRequestForQuoteScreen(),
     ),
     (
-      name: RouteNames.purchaseRequisition,
-      screen: const ProPurchaseRequisitionScreen(),
+      name: RouteNames.proPurchaseOrders,
+      screen: const ProPurchaseOrderScreen(),
+    ),
+    (
+      name: RouteNames.proMyPOApprovals,
+      screen: const ProWorkflowApprovalsScreen(),
     ),
     /*(
       name: RouteNames.imsRequestForQuote,

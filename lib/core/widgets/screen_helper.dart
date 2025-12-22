@@ -264,7 +264,7 @@ extension ScreenHelper on BuildContext {
       );
 
   Center get loader =>
-      Center(child: AsyncProgressBarDialog(null, isDialog: false));
+      Center(child: AsyncProgressBarDialog(future: null, isDialog: false));
 
   Center buildError(String error) => Center(child: Text('Error: $error'));
 

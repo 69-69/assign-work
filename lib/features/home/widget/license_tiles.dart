@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 /// Returns a list of Main-Dashboard-Tiles based on the specified license package [LicenseTiles]
 extension LicenseTiles on BuildContext {
+  /// Main Home Dashboard
   List<DashboardTile> get licenseTiles {
     final appPackages = [
       // Inventory Package
@@ -15,7 +16,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.inventory_sharp,
         'action': RouteNames.inventoryApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.inventory),
+        'access': _getName(SubscriptionLicenses.inventory),
         'description':
             'Manage stock levels, track items, and oversee warehouse operations.',
       },
@@ -25,7 +26,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.add_shopping_cart,
         'action': RouteNames.procurementApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.procurement),
+        'access': _getName(SubscriptionLicenses.procurement),
         'description':
             'Oversee purchasing, track orders, and manage supplier data.',
       },
@@ -35,7 +36,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.point_of_sale,
         'action': RouteNames.posApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.pos),
+        'access': _getName(SubscriptionLicenses.pos),
         'description':
             'Handle retail transactions, sales, and customer checkouts.',
       },
@@ -45,7 +46,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.local_shipping,
         'action': RouteNames.salesDistributionApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.salesDistribution),
+        'access': _getName(SubscriptionLicenses.salesDistribution),
         'description': 'Manage sales orders, deliveries, and tracking.',
       },
       // Warehouse Package
@@ -54,7 +55,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.warehouse,
         'action': RouteNames.warehouseApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.warehouse),
+        'access': _getName(SubscriptionLicenses.warehouse),
         'description':
             'Manage warehouse operations, stock movement, and storage locations.',
       },
@@ -64,7 +65,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.group,
         'action': RouteNames.customersApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.crm),
+        'access': _getName(SubscriptionLicenses.crm),
         'description':
             'Manage customer relationships, profiles, and communication history.',
       },
@@ -76,7 +77,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.library_books,
         'action': RouteNames.userGuideApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.training),
+        'access': _getName(SubscriptionLicenses.training),
         'description':
             'Video guides: setting up & managing key parts of the software',
       },
@@ -86,7 +87,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.support_agent,
         'action': RouteNames.liveChatSupport,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.training),
+        'access': _getName(SubscriptionLicenses.training),
         'description': 'Get 24/7 live chat support from our agents and experts',
       },
       // Agent Package
@@ -95,7 +96,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.real_estate_agent_outlined,
         'action': RouteNames.agent,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.agent),
+        'access': _getName(SubscriptionLicenses.agent),
         'description': 'setup, oversee, and monitor workspaces for clients',
       },
       // Troubleshoot Package
@@ -104,7 +105,7 @@ extension LicenseTiles on BuildContext {
         'icon': Icons.troubleshoot,
         'action': RouteNames.troubleShootingApp,
         'param': {},
-        'access': _getValue(SubscriptionLicenses.dev),
+        'access': _getName(SubscriptionLicenses.dev),
         'description':
             'Provides access to troubleshooting tools and diagnostics.',
       },
@@ -120,7 +121,7 @@ extension LicenseTiles on BuildContext {
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<SubscriptionLicenses>(e).getValue;
+String _getName(e) => EnumHelper<SubscriptionLicenses>(e).getName;
 
 /*extension LicenseTiles on dynamic {
   Map<SubscriptionLicenses, List<DashboardTile>> get _licensePackages {

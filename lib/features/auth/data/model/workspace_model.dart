@@ -84,7 +84,7 @@ class Workspace extends Equatable {
       subscriptionFee: fee,
       username: '${map['username']}'.emailToUsername,
       hostingType: HostingTypeHelper.fromString(
-        map['hostingType'] ?? HostingType.onPremise.getValue,
+        map['hostingType'] ?? HostingType.onPremise.getName,
       ),
       role: WorkspaceRoleHelper.fromString(map['role']),
       name: map['name'] ?? '',
@@ -107,11 +107,11 @@ class Workspace extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'agentId': agentId,
-    'hostingType': hostingType.getValue,
+    'hostingType': hostingType.getName,
     'username': email.emailToUsername,
     // Convert enum to string
     // roleAsString(role),
-    'role': role.getValue,
+    'role': role.getName,
     'email': email,
     'name': name,
     'address': address,

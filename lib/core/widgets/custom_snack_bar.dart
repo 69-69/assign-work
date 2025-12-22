@@ -180,19 +180,56 @@ extension ScaffoldSnackBar on BuildContext {
     return Stack(
       alignment: Alignment.center,
       children: [
+        Positioned(
+          right: 7,
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: kTextColor,
+            child: AnimatedBuilder(
+              animation: animationController,
+              builder: (context, _) {
+                return CircularProgressIndicator(
+                  value: animationController.value,
+                  strokeWidth: 2,
+                  backgroundColor: Colors.white24,
+                  valueColor: const AlwaysStoppedAnimation<Color>(kWhiteColor),
+                );
+              },
+            ),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: onPressed,
+          label: const Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Text('Close', style: TextStyle(color: kWhiteColor)),
+          ),
+          iconAlignment: IconAlignment.end,
+          icon: Icon(Icons.close, color: kWhiteColor, size: 16),
+          style: IconButton.styleFrom(
+            minimumSize: Size(100, 46),
+            backgroundColor: Colors.black26,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50),
+            ),
+          ),
+        ),
+        /*
         SizedBox(
-          height: 32,
-          width: 32,
-          child: AnimatedBuilder(
-            animation: animationController,
-            builder: (context, _) {
-              return CircularProgressIndicator(
-                value: animationController.value,
-                strokeWidth: 3,
-                backgroundColor: Colors.white24,
-                valueColor: const AlwaysStoppedAnimation<Color>(kWhiteColor),
-              );
-            },
+            height: 32,
+            width: 32,
+            color: kBgLightColor,
+            child: AnimatedBuilder(
+              animation: animationController,
+              builder: (context, _) {
+                return CircularProgressIndicator(
+                  value: animationController.value,
+                  strokeWidth: 2,
+                  backgroundColor: Colors.white24,
+                  valueColor: const AlwaysStoppedAnimation<Color>(kWhiteColor),
+                );
+              },
+            ),
           ),
         ),
         IconButton(
@@ -201,7 +238,7 @@ extension ScaffoldSnackBar on BuildContext {
           style: IconButton.styleFrom(backgroundColor: Colors.black26),
           onPressed: onPressed,
           iconSize: 20,
-        ),
+        ),*/
       ],
     );
   }

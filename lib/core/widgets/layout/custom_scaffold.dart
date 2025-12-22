@@ -256,7 +256,11 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 
     final backTitle = routePath.isEmpty || breadcrumbs.isNotEmpty
         ? 'Back'
-        : breadcrumbs.last.label;
+        : breadcrumbs.last.isNullOrEmpty
+        ? 'Back'
+        : breadcrumbs
+              .last
+              .label; // Only access last.label if last is not null or empty
 
     return Container(
       alignment: Alignment.center,

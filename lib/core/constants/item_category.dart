@@ -7,7 +7,11 @@ import 'package:assign_erp/core/util/str_util.dart';
 
 /// [ItemCategory] Item Categories for Purchase Requisition
 enum ItemCategory {
+  // Common / Unknown
   unknown,
+
+  /// Materials / Products
+  materialCategories, // an identifier purposes only
   officeSupplies,
   itEquipment,
   electrical,
@@ -23,7 +27,23 @@ enum ItemCategory {
   uniform,
   vehicle,
   foodAndBeverage,
-  service,
+
+  /// Services / Professional Work
+  serviceCategories, // an identifier purposes only
+  consulting,
+  maintenanceService,
+  repairService,
+  installation,
+  cleaningService,
+  securityService,
+  training,
+  transportation,
+  itSupport,
+  cloudService,
+  logistics,
+  cateringService,
+  subscriptionService,
+  labor,
 }
 
 /* USAGE:
@@ -31,8 +51,8 @@ enum ItemCategory {
 * print(category.label); // Output: officeSupplies
 * */
 extension ItemCategoryExtension on ItemCategory {
-  /// [getValue] Get the label for the specific enum value (e.g. "officeSupplies").
-  String get getValue => EnumHelper<ItemCategory>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "officeSupplies")
+  String get getName => EnumHelper<ItemCategory>(this).getName;
 
   /// Returns a user-friendly label (e.g. "Office Supplies")
   String get getLabel => EnumHelper<ItemCategory>(this).getLabel;
@@ -44,11 +64,37 @@ class ItemCategoryHelper {
       EnumHelper.fromString<ItemCategory>(ItemCategory.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<ItemCategory>(ItemCategory.values);
+  static List<String> toStringList({
+    bool isService = false,
+    bool includeHeader = true,
+  }) {
+    List<ItemCategory> categories = _filterByType(isService);
+    final list = EnumHelper.toStringList<ItemCategory>(categories);
+
     return [
-      if (includeHeader) 'Item Category',
+      if (includeHeader) '${isService ? 'Service' : 'Material'} Category',
       ...list.map((a) => a.separateWord),
     ];
+  }
+
+  static List<ItemCategory> _filterByType(bool isService) {
+    final categories = <ItemCategory>[];
+
+    bool add = false;
+    for (final cat in ItemCategory.values) {
+      if (cat == ItemCategory.materialCategories) {
+        add = !isService; // start adding material categories if isService=false
+        continue; // skip the identifier itself
+      }
+      if (cat == ItemCategory.serviceCategories) {
+        add = isService; // start adding service categories if isService=true
+        continue; // skip the identifier itself
+      }
+
+      if (add) {
+        categories.add(cat);
+      }
+    }
+    return categories;
   }
 }

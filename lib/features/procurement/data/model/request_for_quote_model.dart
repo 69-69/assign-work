@@ -1,19 +1,15 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/constants/item_category.dart';
-
-/// @TODO request for quotation fields
-// * Terms & conditions
 // * List of invited suppliers
-// * Attachments (drawings/specs)
 // * Responses (linked or stored in sub-table)
 
 class RequestForQuote extends Equatable {
@@ -21,32 +17,38 @@ class RequestForQuote extends Equatable {
 
   final String id;
 
-  /// [prNumber] FOREIGN KEY: Purchase Requisition ID - Used to link RFQ to PR
-  /// If not provided, its RAW RFQ and will not be linked to a PR.
+  /// [prNumber] Foreign key referencing the Purchase Requisition (PR).
+  /// Used to associate this Request for Quote (RFQ) with its originating PR.
+  /// If empty, the RFQ is treated as a “RAW RFQ” and is not linked to any PR
+  /// (i.e., it was created independently and not generated from an PR).
   final String prNumber;
 
+  final String rfqNumber; // Request for Quote number
+  /// Auto-Generate PO when RFQ is Accepted
+  final bool autoCreatePo;
   final String storeNumber;
-  final String rfqNumber;
-  final String supplierId;
+  final List<RFQSupplier> suppliers;
   final String requestedBy; // Who requested the RFQ
-
-  /// Supplier representative (Contact Person) ID
-  final String supplierRepId;
-  final String status;
-
+  final ProcurementWorkflowStatus status;
   final String title;
   final String currency;
-  final String departmentCode;
 
-  final List<RFQLineItem> lineItems;
+  /// [costCenterCode] Business Unit or Department paying for the purchase
+  final String costCenterCode;
+
+  final String departmentCode;
+  final List<ProLineItem> lineItems;
   final TaxMode taxMode;
+
   // final List<String> taxCodes;
-  final String paymentTerm;
-  final String? deliveryAddress;
+  final String buyerContactPersonId;
+  final String? shippingAddress;
   final String? notes;
   final String validityDate;
   final DateTime? deadline;
-  final DateTime? deliveryDate;
+
+  /// [expectedDate] Target date by which the entire items/services are needed
+  final DateTime? expectedDate;
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -54,6 +56,7 @@ class RequestForQuote extends Equatable {
 
   /// [history] Audit trail: track all changes made to the PR
   final List<AuditLog> history;
+  final List<String> attachments;
 
   /// [headerTaxAmount] is a non-persistent, computed value used for UI display only
   /// when [TaxMode.headerTax] is applied. This value is not stored in the database.
@@ -66,24 +69,26 @@ class RequestForQuote extends Equatable {
   RequestForQuote({
     this.id = '',
     this.prNumber = '',
-    this.rfqNumber = '',
+    this.autoCreatePo = false,
     required this.title,
+    required this.rfqNumber,
     required this.storeNumber,
-    required this.supplierId,
-    required this.supplierRepId,
-    required this.requestedBy,
-    required this.status,
+    required this.suppliers,
+    this.status = ProcurementWorkflowStatus.draft,
     required this.lineItems,
+    required this.requestedBy,
+    required this.costCenterCode,
+    required this.departmentCode,
     // this.taxCodes = const [],
     this.taxMode = TaxMode.perLineTax,
-    this.paymentTerm = '',
-    required this.departmentCode,
     this.notes,
     this.currency = ghanaCedis,
-    this.deliveryAddress = '',
+    this.shippingAddress = '',
     this.validityDate = '',
+    this.buyerContactPersonId = '', //out
+    this.attachments = const [],
     DateTime? deadline,
-    DateTime? deliveryDate,
+    DateTime? expectedDate,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -91,77 +96,73 @@ class RequestForQuote extends Equatable {
     List<AuditLog>? history,
   }) : history = history ?? [],
        deadline = deadline ?? _today,
-       deliveryDate = deliveryDate ?? _today,
+       expectedDate = expectedDate ?? _today,
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
   factory RequestForQuote.fromMap(Map<String, dynamic> map, {String? docId}) {
     return RequestForQuote(
       id: docId ?? map['id'] ?? '',
-      prNumber: map['prNumber'] ?? '', // Foreign key
+      prNumber: map['prNumber'] ?? '',
+      // Foreign key
+      autoCreatePo: map['autoCreatePo'] ?? false,
       title: map['title'] ?? '',
-      departmentCode: map['departmentCode'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       requestedBy: map['requestedBy'] ?? '',
       rfqNumber: map['rfqNumber'] ?? '',
-      supplierId: map['supplierId'] ?? '',
-      supplierRepId: map['supplierRepId'] ?? '',
-      status: map['status'] ?? '',
-      lineItems:
-          (map['lineItems'] as List<dynamic>?)
-              ?.map((i) => RFQLineItem.fromMap(Map<String, dynamic>.from(i)))
-              .toList() ??
-          [],
+      suppliers: RFQSupplier.suppliers(map['suppliers']),
+      status: ProcurementStatusHelper.fromString(map['status']),
+      costCenterCode: map['costCenterCode'] ?? '',
+      departmentCode: map['departmentCode'] ?? '',
+      lineItems: ProLineItem.lineItems(map['lineItems']),
       notes: map['notes'],
-      taxMode: TaxModeHelper.fromString(map['taxMode'] ?? TaxMode.perLineTax),
-      paymentTerm: map['paymentTerm'] ?? '',
+      taxMode: TaxModeHelper.fromString(map['taxMode']),
+      buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currency: map['currency'] ?? '',
-      deliveryAddress: map['deliveryAddress'],
+      shippingAddress: map['shippingAddress'] ?? '',
+      attachments: List<String>.from(map['attachments'] ?? []),
       validityDate: map['validityDate'] ?? '',
       deadline: toDateTimeFn(map['deadline']),
-      deliveryDate: toDateTimeFn(map['deliveryDate']),
+      expectedDate: toDateTimeFn(map['expectedDate']),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
       updatedBy: map['updatedBy'] ?? '',
       updatedAt: toDateTimeFn(map['updatedAt'] ?? '$_today'),
-      history: (map['history'] as List? ?? [])
-          .map((i) => AuditLog.fromMap(Map<String, dynamic>.from(i)))
-          .toList(),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'prNumber': prNumber,
+    'autoCreatePo': autoCreatePo,
     'title': title,
-    'departmentCode': departmentCode,
-    'requestedBy': requestedBy,
     'storeNumber': storeNumber,
     'rfqNumber': rfqNumber,
-    'supplierId': supplierId,
+    'suppliers': suppliers.map((i) => i.toMap()).toList(),
+    'status': getRFQStatus,
+    'costCenterCode': costCenterCode,
+    'departmentCode': departmentCode,
+    'requestedBy': requestedBy,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
-    'status': status,
     'notes': notes,
     // 'taxCodes': taxCodes,
-    'taxMode': taxMode.getValue,
-    'paymentTerm': paymentTerm,
-    'deadline': deadline,
-    'deliveryDate': deliveryDate,
-    'validityDate': validityDate,
+    'taxMode': getTaxMode,
     'currency': currency,
-    'deliveryAddress': deliveryAddress,
+    'buyerContactPersonId': buyerContactPersonId,
+    'attachments': attachments,
+    'shippingAddress': shippingAddress,
+    'validityDate': validityDate,
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
     'history': history.map((i) => i.toMap()).toList(),
   };
 
   Map<String, dynamic> toMap() {
     final newMap = _mapTemp();
     newMap['deadline'] = deadline?.toISOString;
-    newMap['deliveryDate'] = deliveryDate?.toISOString;
+    newMap['expectedDate'] = expectedDate?.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
 
@@ -171,7 +172,7 @@ class RequestForQuote extends Equatable {
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
     newMap['deadline'] = deadline?.millisecondsSinceEpoch;
-    newMap['deliveryDate'] = deliveryDate?.millisecondsSinceEpoch;
+    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
     newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
     newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
 
@@ -192,6 +193,7 @@ class RequestForQuote extends Equatable {
 
   double get taxAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+
   // taxMode.isHeaderTax ? headerTaxAmount : lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
   // subTotal - discountAmount;
@@ -200,17 +202,15 @@ class RequestForQuote extends Equatable {
   /// A singleton instance representing an empty/default RequestForQuote.
   /// Used as a fallback when no matching RFQ is found.
   static final empty = RequestForQuote(
-    id: '',
-    prNumber: '',
+    rfqNumber: '',
     title: '',
     storeNumber: '',
-    supplierId: '',
-    supplierRepId: '',
-    status: '',
+    suppliers: const [],
+    costCenterCode: '',
     departmentCode: '',
+    lineItems: const [],
     createdBy: '',
     requestedBy: '',
-    lineItems: const [],
   );
 
   /// Returns true if this instance is the singleton [empty] RFQ.
@@ -218,13 +218,30 @@ class RequestForQuote extends Equatable {
   bool get isEmpty => identical(this, RequestForQuote.empty);
 
   bool get isNotEmpty => lineItems.isNotEmpty;
-  bool get isAwarded => status == 'awarded';
 
-  String get getDeliveryDate => deliveryDate.dateOnly;
+  bool get isAwarded => status == ProcurementWorkflowStatus.convertedToPO;
+
+  String get getRFQStatus => status.getLabel;
+
+  String get getTaxMode => taxMode.getName;
+
+  bool get isApproved => status == ProcurementWorkflowStatus.approved;
+
+  /// [isFullyApproved] Have all required authorities (managers, finance, procurement, etc.) approved the RFQ?
+  bool get isFullyApproved =>
+      history.isNotEmpty && history.every((a) => a.getAction == getRFQStatus);
+
+  String get getAutoCreatePo => autoCreatePo ? 'Yes' : 'No';
+
+  String get getExpectedDate => expectedDate.dateOnly;
+
   String get getValidityDate =>
       (int.tryParse(validityDate.split(' ').first)?.toDate).dateOnly;
+
   String get getDeadlineDate => deadline.dateOnly;
+
   String get getCreatedAt => createdAt.toStandardDT;
+
   String get getUpdatedAt => updatedAt.toStandardDT;
 
   bool get isToday {
@@ -235,22 +252,17 @@ class RequestForQuote extends Equatable {
   }
 
   bool filterByAny(String filter) =>
+      itemAsList.any((item) => item.contains(filter)) ||
       prNumber.contains(filter) ||
-      storeNumber.contains(filter) ||
-      rfqNumber.contains(filter) ||
       requestedBy.contains(filter) ||
       title.contains(filter) ||
-      status.contains(filter) ||
-      supplierId.contains(filter) ||
-      departmentCode.contains(filter) ||
+      suppliers.any((e) => e.filterByAny(filter)) ||
       currency.contains(filter) ||
-      paymentTerm.contains(filter) ||
+      buyerContactPersonId.contains(filter) ||
       (notes ?? '').contains(filter) ||
       validityDate.contains(filter) ||
-      (deliveryAddress ?? '').contains(filter) ||
-      // taxCodes.any((e) => e.contains(filter)) ||
-      getDeadlineDate.contains(filter) ||
-      getDeliveryDate.contains(filter) ||
+      (shippingAddress ?? '').contains(filter) ||
+      getExpectedDate.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
 
   static RequestForQuote findRFQById(
@@ -273,7 +285,18 @@ class RequestForQuote extends Equatable {
 
   RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
     // Calculate tax amounts for each line item (perLineTax)
-    final updatedItems = lineItems.map((item) {
+    List<ProLineItem> updatedItems = lineItems.map((item) {
+      if (item is! TaxableLineItem) return item;
+
+      final taxAmount = item.computeTaxAmount(taxMap);
+      final taxNames = item.buildTaxNames(taxMap);
+
+      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
+    }).toList();
+
+    return copyWith(lineItems: updatedItems);
+
+    /*final updatedItems = lineItems.map((item) {
       // Tax rate is in Percentage
       final taxRate = item.resolvePerItemTaxes(taxMap);
       final taxAmount = (item.netPrice * taxRate) / 100;
@@ -282,7 +305,8 @@ class RequestForQuote extends Equatable {
       return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
     }).toList();
 
-    return copyWith(lineItems: updatedItems);
+    return copyWith(lineItems: updatedItems);*/
+
     /*if (taxMode == taxModeToApply.perLineTax) {
       // Calculate tax amounts for each line item (perLineTax)
       final updatedItems = lineItems.map((item) {
@@ -308,72 +332,76 @@ class RequestForQuote extends Equatable {
   }
 
   @override
-  String toString() => 'RFQ: $rfqNumber - $supplierId';
+  String toString() => 'RFQ: $rfqNumber - $getRFQStatus';
 
   RequestForQuote copyWith({
     String? id,
     String? prNumber,
+    bool? autoCreatePo,
     String? title,
+    String? costCenterCode,
     String? departmentCode,
     String? storeNumber,
     String? requestedBy,
     String? rfqNumber,
-    String? supplierId,
-    String? supplierRepId,
-    List<RFQLineItem>? lineItems,
-    String? status,
+    List<RFQSupplier>? suppliers,
+    List<ProLineItem>? lineItems,
+    ProcurementWorkflowStatus? status,
     String? notes,
     TaxMode? taxMode,
-    // List<String>? taxCodes,
+    List<String>? attachments,
+    String? termsAndConditions,
     DateTime? deadline,
-    DateTime? deliveryDate,
+    DateTime? expectedDate,
     String? validityDate,
     String? currency,
-    String? paymentTerm,
-    String? deliveryAddress,
+    String? buyerContactPersonId,
+    String? shippingAddress,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
     List<AuditLog>? history,
 
-    /// [headerTaxAmount] For UI header/overall tax amount only (RFQ)
+    // [headerTaxAmount] For UI header/overall tax amount only (RFQ)
     // double? headerTaxAmount,
 
-    /// [taxNames] For UI tax names only (RFQ)
+    // [taxNames] For UI tax names only (RFQ)
     // String? taxNames,
   }) {
     return RequestForQuote(
       id: id ?? this.id,
       prNumber: prNumber ?? this.prNumber,
+      autoCreatePo: autoCreatePo ?? this.autoCreatePo,
       title: title ?? this.title,
+      costCenterCode: costCenterCode ?? this.costCenterCode,
       departmentCode: departmentCode ?? this.departmentCode,
       requestedBy: requestedBy ?? this.requestedBy,
       storeNumber: storeNumber ?? this.storeNumber,
       rfqNumber: rfqNumber ?? this.rfqNumber,
-      supplierId: supplierId ?? this.supplierId,
-      supplierRepId: supplierRepId ?? this.supplierRepId,
+      suppliers: suppliers ?? this.suppliers,
       lineItems: lineItems ?? this.lineItems,
-      paymentTerm: paymentTerm ?? this.paymentTerm,
+      buyerContactPersonId: buyerContactPersonId ?? this.buyerContactPersonId,
       status: status ?? this.status,
       notes: notes ?? this.notes,
       deadline: deadline ?? this.deadline,
-      deliveryDate: deliveryDate ?? this.deliveryDate,
+      expectedDate: expectedDate ?? this.expectedDate,
       // taxCodes: taxCodes ?? this.taxCodes,
       taxMode: taxMode ?? this.taxMode,
+      attachments: attachments ?? this.attachments,
       validityDate: validityDate ?? this.validityDate,
       currency: currency ?? this.currency,
-      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      shippingAddress: shippingAddress ?? this.shippingAddress,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
       history: history ?? this.history,
 
-      /// [headerTaxAmount] For UI header tax amount calculation only (RFQ)
+      // [headerTaxAmount] For UI header tax amount calculation only (RFQ)
       // headerTaxAmount: headerTaxAmount ?? this.headerTaxAmount,
 
-      /// [taxNames] For UI tax names calculation only (RFQ)
+      // [taxNames] For UI tax names calculation only (RFQ)
       // taxNames: taxNames ?? this.taxNames,
     );
   }
@@ -382,25 +410,26 @@ class RequestForQuote extends Equatable {
   List<Object?> get props => [
     id,
     prNumber,
+    autoCreatePo,
     title,
     storeNumber,
     requestedBy,
     rfqNumber,
-    supplierId,
-    supplierRepId,
+    suppliers,
     departmentCode,
-    paymentTerm,
+    buyerContactPersonId,
     status,
     lineItems,
     notes,
     deadline,
-    deliveryDate,
+    expectedDate,
     taxMode,
     // taxCodes,
     taxMode,
     validityDate,
     currency,
-    deliveryAddress,
+    shippingAddress,
+    attachments,
     createdBy,
     createdAt,
     updatedBy,
@@ -413,8 +442,10 @@ class RequestForQuote extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    rfqNumber,
-    status.toTitle,
+    getAutoCreatePo,
+    '$prNumber -> $rfqNumber',
+    getRFQStatus.toTitle,
+    costCenterCode,
     departmentCode.toTitle,
     getDeadlineDate,
     createdBy.toTitle,
@@ -427,8 +458,10 @@ class RequestForQuote extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'RFQ Number',
+    'Auto PO',
+    'PR -> RFQ Number',
     'Status',
+    'Cost Center',
     'Department',
     'Deadline',
     'Created By',
@@ -438,55 +471,122 @@ class RequestForQuote extends Equatable {
   ];
 }
 
-/// [_resolveTaxes] Resolves the total tax amount for the current RFQ line item based on the provided tax rate map.
-///
-/// This method takes a map of tax codes and their associated tax rates (`taxMap`), and calculates the total tax
-/// for this line item by summing up the tax rates corresponding to the `taxCodes` associated with the line item.
-///
-/// The tax rate for each code is fetched from the `taxMap`. If a tax code is not found in the map, a default value
-/// of `0.0` is used (i.e., no tax is applied for that code).
-///
-/// Example:
-/// Given the taxCodes `['VAT', 'Service']` and a taxMap that looks like:
-/// ```dart
-/// {'VAT': 0.15, 'Service': 0.02}
-/// ```
-/// The resulting tax amount would be:
-/// `0.15 + 0.02 = 0.17`.
-///
-/// If the `taxMap` contains codes that are not in `taxCodes`, they will be ignored.
-/// If no tax codes are provided, the total tax is `0.0`.
-///
-/// Args:
-///   taxMap: A map of tax codes to tax rates. For example: `{'VAT': 0.15, 'Service': 0.05}`.
-///
-/// Returns:
-///   A double value representing the total tax amount for the line item based on the tax codes and rates.
-double _resolveTaxes(
-  List<String> taxCodes,
-  Map<String, ResolveTaxCode> taxMap,
-) {
-  if (taxCodes.isEmpty || taxMap.isEmpty) return 0.0;
-
-  // Summing up tax rates based on tax codes.
-  // If a tax code is missing from the map, a rate of 0.0 is used.
-  return taxCodes.fold(0.0, (sum, code) => sum + (taxMap[code]?.rate ?? 0.0));
+/// RFQ Supplier Status
+enum RFQSupplierStatus {
+  invited, // RFQ has been sent to the supplier/vendor (Waiting for quotation)
+  responded, // Supplier has submitted a quotation (Waiting for approval)
+  declined, // Supplier explicitly declined the RFQ (Rejected)
 }
 
-String _getTaxName(
-  List<String> taxCodes,
-  Map<String, ResolveTaxCode> taxMap, [
-  String separator = ', ',
-]) {
-  if (taxCodes.isEmpty || taxMap.isEmpty) return '';
-
-  return taxCodes
-      .map((code) => taxMap[code]?.taxLabel ?? 'N/A')
-      .whereType<String>()
-      .join(separator);
+extension RFQSupplierStatusExt on RFQSupplierStatus {
+  /// [getName] Get the specific Enum Name
+  String get getName => EnumHelper<RFQSupplierStatus>(this).getName;
 }
 
-/// RFQ Line Items
+/// RFQ-Supplier model
+class RFQSupplier extends Equatable {
+  static get _today => DateTime.now();
+
+  final String id;
+  final String supplierId;
+
+  /// [supplierRepId] Supplier representative (Contact Person) ID
+  final String? supplierRepId;
+  final RFQSupplierStatus status; // invited, responded, declined
+  final DateTime? invitedAt;
+  final DateTime? respondedAt;
+
+  RFQSupplier({
+    this.id = '',
+    required this.supplierId,
+    this.supplierRepId,
+    required this.status,
+    DateTime? invitedAt,
+    DateTime? respondedAt,
+  }) : invitedAt = invitedAt ?? _today,
+       respondedAt = respondedAt ?? _today;
+
+  factory RFQSupplier.fromMap(Map<String, dynamic> map, {String? id}) {
+    return RFQSupplier(
+      id: id ?? map['id'] ?? '',
+      supplierId: map['supplierId'] ?? '',
+      supplierRepId: map['supplierRepId'] ?? '',
+      status: fromString(map['status']),
+      invitedAt: toDateTimeFn(map['invitedAt']),
+      respondedAt: toDateTimeFn(map['respondedAt']),
+    );
+  }
+
+  static List<RFQSupplier> suppliers(List<dynamic>? map) {
+    return map
+            ?.map((i) => RFQSupplier.fromMap(Map<String, dynamic>.from(i)))
+            .toList() ??
+        [];
+  }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'supplierId': supplierId,
+    'supplierRepId': supplierRepId,
+    'status': status.getName,
+    'invitedAt': invitedAt.toISOString,
+    'respondedAt': respondedAt.toISOString,
+  };
+
+  String get getStatus => status.getName;
+
+  String get getInvitedAt => invitedAt.dateOnly;
+
+  String get getRespondedAt => respondedAt.dateOnly;
+
+  bool filterByAny(String filter) =>
+      id.contains(filter) ||
+      supplierId.contains(filter) ||
+      supplierRepId!.contains(filter) ||
+      getStatus.contains(filter) ||
+      getInvitedAt.contains(filter) ||
+      getRespondedAt.contains(filter);
+
+  RFQSupplier copyWith({
+    String? id,
+    String? supplierId,
+    String? supplierRepId,
+    RFQSupplierStatus? status,
+    DateTime? invitedAt,
+    DateTime? respondedAt,
+  }) => RFQSupplier(
+    id: id ?? this.id,
+    supplierId: supplierId ?? this.supplierId,
+    supplierRepId: supplierRepId ?? this.supplierRepId,
+    status: status ?? this.status,
+    invitedAt: invitedAt ?? this.invitedAt,
+    respondedAt: respondedAt ?? this.respondedAt,
+  );
+
+  @override
+  List<Object?> get props => [
+    supplierId,
+    supplierRepId,
+    status,
+    invitedAt,
+    respondedAt,
+  ];
+
+  /// [fromString] Converts String/Label to enum value.
+  static RFQSupplierStatus fromString(String? value) =>
+      EnumHelper.fromString<RFQSupplierStatus>(RFQSupplierStatus.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final list = EnumHelper.toStringList<RFQSupplierStatus>(
+      RFQSupplierStatus.values,
+    );
+    return includeHeader ? ['Supplier Status', ...list] : list;
+  }
+}
+
+/*// RFQ Line Items
+ Second Implementation:
 class RFQLineItem extends ProLineItem {
   final double unitPrice;
   final double discount;
@@ -502,12 +602,13 @@ class RFQLineItem extends ProLineItem {
 
   const RFQLineItem({
     /// Inherited from [ProLineItem]
-    required super.itemName,
+    required super.description,
     required super.quantity,
     required super.category,
     required super.unitOfMeasure,
     required super.notes,
 
+    // Internal members
     this.taxCodes = const [],
     this.unitPrice = 0.0,
 
@@ -524,7 +625,7 @@ class RFQLineItem extends ProLineItem {
   factory RFQLineItem.fromMap(Map<String, dynamic> map) {
     return RFQLineItem(
       /// Inherited from [ProLineItem]
-      itemName: map['itemName'] ?? '',
+      description: map['description'] ?? '',
       quantity: int.tryParse('${map['quantity']}') ?? 0,
       category: ItemCategoryHelper.fromString(map['category']),
       unitOfMeasure: UOMHelper.fromString(map['unitOfMeasure']),
@@ -536,6 +637,8 @@ class RFQLineItem extends ProLineItem {
       taxCodes: List<String>.from(
         map['taxCodes'] ?? [],
       ).whereType<String>().toList(),
+      taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
+      taxNames: map['taxNames'] ?? '',
     );
   }
 
@@ -543,8 +646,8 @@ class RFQLineItem extends ProLineItem {
   Map<String, dynamic> toMap() => {
     ...super.toMap(),
     'taxCodes': taxCodes,
-    'quantity': quantity,
     'discount': discount,
+    'unitPrice': unitPrice,
   };
 
   /// [taxCodesList] Get list of tax codes from [taxCodes]
@@ -552,7 +655,7 @@ class RFQLineItem extends ProLineItem {
       List<String>.from(taxCodes).whereType<String>().toList();
 
   /// [subTotal] Calculated sub-total for a line item `[subTotal = quantity * unitPrice]`
-  double get subTotal => quantity * unitPrice;
+  double get subTotal => super.quantity * unitPrice;
   double get discountAmount => (subTotal * discount) / 100;
 
   /// [perLineTotal] Calculated total for a line item including tax and after discount.
@@ -564,11 +667,11 @@ class RFQLineItem extends ProLineItem {
 
   // Get tax amount by tax codes
   double resolvePerItemTaxes(Map<String, ResolveTaxCode> taxMap) =>
-      _resolveTaxes(taxCodes, taxMap);
+      computeLineTaxAmount(taxCodes, taxMap);
 
   // Get tax names by tax codes
   String getTaxName(Map<String, ResolveTaxCode> taxMap) =>
-      _getTaxName(taxCodes, taxMap, '\n');
+      buildTaxNames(taxCodes, taxMap, '\n');
 
   @override
   bool filterByAny(String filter) =>
@@ -580,7 +683,7 @@ class RFQLineItem extends ProLineItem {
   @override
   RFQLineItem copyWith({
     /// Inherited from [ProLineItem]
-    String? itemName,
+    String? description,
     int? quantity,
     ItemCategory? category,
     UnitOfMeasure? unitOfMeasure,
@@ -600,7 +703,7 @@ class RFQLineItem extends ProLineItem {
     String? taxNames,
   }) => RFQLineItem(
     /// Inherited from [ProLineItem]
-    itemName: itemName ?? this.itemName,
+    description: description ?? this.description,
     quantity: quantity ?? this.quantity,
     category: category ?? this.category,
     unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
@@ -616,7 +719,14 @@ class RFQLineItem extends ProLineItem {
   );
 
   @override
-  List<Object?> get props => [...super.props, taxCodes, unitPrice, discount];
+  List<Object?> get props => [
+    ...super.props,
+    taxCodes,
+    unitPrice,
+    discount,
+    taxAmount,
+    taxNames,
+  ];
 
   static List<String> get dataTableHeader => const [
     'Item Name',
@@ -628,15 +738,16 @@ class RFQLineItem extends ProLineItem {
 
   @override
   List<String> get itemAsList => [
-    itemName.toTitle,
+    description.toTitle,
     '$ghanaCedis$unitPrice',
     '$quantity',
     '$discount% = $ghanaCedis$discountAmount',
     '$ghanaCedis$netPrice',
   ];
-}
+}*/
 
-/*class RFQLineItem extends Equatable {
+/* First Implementation:
+class RFQLineItem extends Equatable {
   final String itemName;
   final int quantity;
   final double unitPrice;

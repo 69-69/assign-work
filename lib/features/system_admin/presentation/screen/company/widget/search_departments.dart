@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 
 /// Search Departments [SearchDepartments]
 class SearchDepartments extends StatefulWidget {
+  final String? label;
   final String? initialValue;
   final Function(String, String, String) onChanged;
 
   const SearchDepartments({
     super.key,
+    this.label,
     this.initialValue,
     required this.onChanged,
   });
@@ -22,6 +24,8 @@ class SearchDepartments extends StatefulWidget {
 class _SearchDepartmentsState extends State<SearchDepartments> {
   String? _initialValue;
   Department? _department;
+
+  String get _labelText => widget.label ?? 'Select Department...';
 
   @override
   void initState() {
@@ -44,14 +48,14 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<Department>(
       selectedItem: _department,
-      labelText: 'Select Department...',
+      labelText: _labelText,
       asyncItems: (String filter, loadProps) async =>
           await _loadDepartments(filter: filter),
       filterFn: (depart, filter) => _filterDepartment(filter, depart),
       itemAsString: (depart) => depart.itemAsString,
       onChanged: (depart) =>
           widget.onChanged(depart!.id, depart.code, depart.name),
-      validator: (depart) => depart == null ? 'Select department' : null,
+      validator: (depart) => depart == null ? _labelText : null,
     );
   }
 

@@ -294,7 +294,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
     return (canAccess
             ? (tile.description ?? '')
             : "You don't have permission to use this feature")
-        .toTitle;
+        .toSentence;
   }
 
   GridTile _buildGridTile(DashboardTile tile, BuildContext context, viewCard) {

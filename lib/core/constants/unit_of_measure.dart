@@ -68,8 +68,8 @@ enum UnitOfMeasure {
 * print(status.label); // Output: box
 * */
 extension UOMExtension on UnitOfMeasure {
-  /// [getValue] Get the label for the specific enum value (e.g. "packOfBox")
-  String get getValue => EnumHelper<UnitOfMeasure>(this).getValue;
+  /// [getName] Get the specific Enum Name (e.g. "metricTon")
+  String get getName => EnumHelper<UnitOfMeasure>(this).getName;
 
   /// Returns a user-friendly label (e.g. "pack of box")
   String get getLabel => EnumHelper<UnitOfMeasure>(this).getLabel;

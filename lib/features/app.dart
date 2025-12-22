@@ -5,7 +5,7 @@ import 'package:assign_erp/features/access_control/domain/repository/access_cont
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/refresh_entire_app.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_info_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -64,6 +64,9 @@ class App extends StatelessWidget {
       ),
       _bloc<ProPurchaseRequisiteBloc>(
         () => ProPurchaseRequisiteBloc(firestore: _fireStore),
+      ),
+      _bloc<ProPurchaseOrderBloc>(
+        () => ProPurchaseOrderBloc(firestore: _fireStore),
       ),
       _bloc<CustomerAccountBloc>(
         () => CustomerAccountBloc(firestore: _fireStore),

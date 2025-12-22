@@ -50,7 +50,7 @@ class _UpdateUserGuide extends StatelessWidget {
         ),
       ),
       btnText: 'Delete',
-      onPress: () => _onDeleteTap(context),
+      onCancel: () => _onDeleteTap(context),
     );
   }
 

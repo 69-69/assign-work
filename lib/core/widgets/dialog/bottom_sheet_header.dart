@@ -9,7 +9,7 @@ class DialogHeader extends StatelessWidget {
     this.btnText = "",
     this.color,
     this.fontSize,
-    this.onPress,
+    this.onCancel,
     this.onBackPress,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
   });
@@ -22,7 +22,7 @@ class DialogHeader extends StatelessWidget {
 
   /// [title] Title of the header row (e.g. "Your Cart" or Text("Your Cart"))
   final dynamic title;
-  final Function()? onPress, onBackPress;
+  final Function()? onCancel, onBackPress;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class DialogHeader extends StatelessWidget {
           (btnText is Widget)
               ? btnText
               : TextButton(
-                  onPressed: onPress,
+                  onPressed: onCancel,
                   child: Text(
                     btnText,
                     semanticsLabel: btnText,

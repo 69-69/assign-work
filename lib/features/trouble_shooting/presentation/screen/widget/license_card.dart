@@ -16,9 +16,9 @@ final _tabContent = [
     displayName: licenseDisplayName,
     licenses: subscriptionLicenses,
     restrictedAccess: [
-      EnumHelper(SubscriptionLicenses.dev).getValue,
-      EnumHelper(SubscriptionLicenses.agent).getValue,
-      EnumHelper(SubscriptionLicenses.onboarding).getValue,
+      EnumHelper(SubscriptionLicenses.dev).getName,
+      EnumHelper(SubscriptionLicenses.agent).getName,
+      EnumHelper(SubscriptionLicenses.onboarding).getName,
     ],
   ),
   LicenseTabContent(

@@ -13,7 +13,7 @@ extension TroubleShootTiles on dynamic {
         'icon': Icons.bug_report_outlined,
         'action': RouteNames.diagnoseIssues,
         'param': {},
-        'access': _getValue(TroubleShootPermission.manageDiagnostics),
+        'access': _getName(TroubleShootPermission.manageDiagnostics),
         'description': 'View error logs and diagnose issues in the system.',
       },
       {
@@ -21,7 +21,7 @@ extension TroubleShootTiles on dynamic {
         'icon': Icons.workspaces_outline,
         'action': RouteNames.allTenantWorkspaces,
         'param': {},
-        'access': _getValue(TroubleShootPermission.manageTenants),
+        'access': _getName(TroubleShootPermission.manageTenants),
         'description': 'Manage and monitor all tenant workspaces.',
       },
       {
@@ -29,7 +29,7 @@ extension TroubleShootTiles on dynamic {
         'icon': Icons.subscriptions,
         'action': RouteNames.manageSubscriptions,
         'param': {},
-        'access': _getValue(TroubleShootPermission.manageSubscriptions),
+        'access': _getName(TroubleShootPermission.manageSubscriptions),
         'description': 'Manage Subscription Licenses and Plans',
       },
     ];
@@ -39,7 +39,7 @@ extension TroubleShootTiles on dynamic {
 }
 
 // Get name from enum
-String _getValue(e) => EnumHelper<TroubleShootPermission>(e).getValue;
+String _getName(e) => EnumHelper<TroubleShootPermission>(e).getName;
 
 // Get name from enum
-// String _getValue(e) => getEnumName<TroubleShootPermission>(e);
+// String _getName(e) => getEnumName<TroubleShootPermission>(e);

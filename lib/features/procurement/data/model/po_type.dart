@@ -12,12 +12,12 @@ import 'package:assign_erp/core/util/enum_helper.dart';
 enum POType { standard, subcontracting, consignment, services }
 
 /* USAGE:
-* final status = POType.box;
-* print(status.label); // Output: box
+* final status = POType.standard;
+* print(status.getLabel); // Output: standard
 * */
 extension POTypeExtension on POType {
   /// [getValue] Get the label for the specific enum value (e.g. "standard")
-  String get getValue => EnumHelper<POType>(this).getValue;
+  String get getValue => EnumHelper<POType>(this).getName;
 
   /// Returns a user-friendly label (e.g. "standard")
   String get getLabel => EnumHelper<POType>(this).getLabel;

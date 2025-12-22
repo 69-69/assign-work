@@ -38,7 +38,7 @@ class POSReceiptPrinter {
       return PrintItem(
         itemName: _toCap(order.itemName),
         unitPrice: order.unitPrice,
-        quantity: order.quantity,
+        quantity: double.parse(order.quantity.toString()),
         discount: order.discountPercent,
         taxPercent: order.taxPercent,
         paymentTerms: _toCap(order.payMethod),

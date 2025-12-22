@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/dialog/form_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/permission_model.dart';
@@ -17,7 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreateNewRole<T> on BuildContext {
   Future<void> openCreateNewRole() => openBottomSheet(
     isExpand: false,
-    child: FormBottomSheet(
+    child: BottomSheetScaffold(
       title: 'Create New Role',
       body: _CreateNewRoleForm(),
     ),
@@ -106,11 +106,6 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
   }
 
   void _onSelectedFunc(Set<Permission> permissions, String module) {
-    /*// Find all modules involved in this permission set
-    final touchedModules = permissions.map((p) => p.module).toSet();
-    // Remove all permissions that belong to any of these modules
-    _assignedPermissions.removeWhere((p) => touchedModules.contains(p.module));*/
-
     // Remove all permissions that belong to any of these modules
     _assignedPermissions.removeWhere((p) => p.module == module);
 
@@ -123,7 +118,6 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
   @override
   void dispose() {
     _nameController.dispose();
-    // _assignedPermissions.clear();
     super.dispose();
   }
 }

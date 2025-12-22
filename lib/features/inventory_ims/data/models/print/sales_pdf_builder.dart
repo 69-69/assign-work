@@ -42,8 +42,8 @@ class SalesDocPdfBuilder {
   double get _subTotal =>
       products.map<double>((p) => p.totalNetPrice).reduce((a, b) => a + b);
 
-  int get _totalItemQty =>
-      products.map<int>((p) => p.quantity).reduce((a, b) => a + b);
+  double get _totalItemQty =>
+      products.map<double>((p) => p.quantity).reduce((a, b) => a + b);
 
   double get _tax =>
       products.map<double>((p) => p.taxPercent).reduce((a, b) => a + b);

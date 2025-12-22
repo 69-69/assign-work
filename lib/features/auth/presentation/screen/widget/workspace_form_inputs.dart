@@ -5,11 +5,11 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
+import 'package:assign_erp/core/widgets/form/business_to_industries_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_auth_bloc.dart';
@@ -709,13 +709,14 @@ class UpdateWorkspacePasswordButton extends StatelessWidget {
     );
   }
 
-  Future<dynamic> _updateWorkspacePassword(BuildContext context) =>
-      // Simulate delayed to complete Workspace Password Update
-      Future.delayed(kRProgressDelay, () async {
-        if (context.mounted) {
-          context.read<WorkspaceAuthBloc>().add(UpdatePasswordRequested());
-        }
-      });
+  Future<dynamic> _updateWorkspacePassword(BuildContext context) {
+    // Simulate delayed to complete Workspace Password Update
+    return Future.delayed(kRProgressDelay, () async {
+      if (context.mounted) {
+        context.read<WorkspaceAuthBloc>().add(UpdatePasswordRequested());
+      }
+    });
+  }
 
   _buildButton(
     BuildContext context, {

@@ -134,7 +134,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen>
             child: TextButton(
               onPressed: () async => await _goToWorkspaceSignIn(),
               child: const Text(
-                'Workspace Sign In',
+                'Sign In',
                 semanticsLabel: 'Workspace Sign In',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,

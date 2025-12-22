@@ -222,7 +222,7 @@ const paymentMethod = [
   'payment upon delivery',
 ];
 
-const currencyType = [
+/*const currencyType = [
   {'code': 'Select currency', 'symbol': '-'},
   {'code': 'GHC', 'symbol': '₵'},
   {'code': 'USD', 'symbol': '\$'},
@@ -234,11 +234,49 @@ const currencyType = [
   {'code': 'JPY', 'symbol': '¥'},
   {'code': 'NZD', 'symbol': 'NZ\$'},
   {'code': 'SGD', 'symbol': 'S\$'},
+];*/
+
+const List<({String code, String symbol})> currencyType = [
+  // Default
+  (code: 'Select currency', symbol: '-'),
+
+  // Major global
+  (code: 'USD', symbol: r'$'),
+  (code: 'EUR', symbol: '€'),
+  (code: 'GBP', symbol: '£'),
+  (code: 'CAD', symbol: r'C$'),
+  (code: 'AUD', symbol: r'A$'),
+  (code: 'CHF', symbol: 'CHF'),
+  (code: 'JPY', symbol: '¥'),
+  (code: 'NZD', symbol: r'NZ$'),
+  (code: 'SGD', symbol: r'S$'),
+
+  // Africa
+  (code: 'GHS', symbol: '₵'), // Ghana Cedi
+  (code: 'NGN', symbol: '₦'), // Nigerian Naira
+  (code: 'ZAR', symbol: 'R'), // South African Rand
+  (code: 'KES', symbol: 'KSh'), // Kenyan Shilling
+  (code: 'UGX', symbol: 'USh'), // Ugandan Shilling
+  (code: 'TZS', symbol: 'TSh'), // Tanzanian Shilling
+  (code: 'EGP', symbol: '£'), // Egyptian Pound
+  (code: 'MAD', symbol: 'DH'), // Moroccan Dirham
+  (code: 'XOF', symbol: 'CFA'), // West African CFA Franc
+  (code: 'XAF', symbol: 'CFA'), // Central African CFA Franc
+  (code: 'RWF', symbol: 'FRw'), // Rwandan Franc
+  (code: 'ETB', symbol: 'Br'), // Ethiopian Birr
+  (code: 'ZMW', symbol: 'ZK'), // Zambian Kwacha
+  (code: 'MWK', symbol: 'MK'), // Malawian Kwacha
+  (code: 'BWP', symbol: 'P'), // Botswana Pula
+  (code: 'MUR', symbol: '₨'), // Mauritian Rupee
+  (code: 'SCR', symbol: '₨'), // Seychellois Rupee
+  (code: 'SLL', symbol: 'Le'), // Sierra Leonean Leone
+  (code: 'GMD', symbol: 'D'), // Gambian Dalasi
 ];
 
 /// Get Specific Currency Symbol (Sign) by Code [getCurrencySign]
 String? getCurrencySign(String code) =>
-    currencyType.firstWhere((c) => c['code'] == code)['symbol'];
+    currencyType.firstWhere((c) => c.code == code).symbol;
+// currencyType.firstWhere((c) => c['code'] == code)['symbol'];
 
 const paymentStatus = [
   'Select Payment status',
