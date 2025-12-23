@@ -70,7 +70,7 @@ class _SearchWorkflowState<T> extends State<SearchWorkflow<T>> {
         ),
         HorizontalDivider(),
         _buildResults(),
-        HorizontalDivider(isORSeparator: true, space: 16),
+        HorizontalDivider(isORSeparator: true, space: 16, color: kDangerColor),
         SizedBox(
           width: double.infinity,
           child: context.outlinedButton(
@@ -118,12 +118,11 @@ class _SearchWorkflowState<T> extends State<SearchWorkflow<T>> {
   }
 
   Widget _buildList(BuildContext context, List<T> data) {
-    const rowHeight = 56.0;
-    final maxHeight = context.screenHeight * 0.5;
-    final maxVisible = (maxHeight ~/ rowHeight).clamp(1, data.length);
+    // Measure available height to determine rows per view
+    final maxVisible = context.getMaxVisibleHeight(itemCount: data.length);
 
     return SizedBox(
-      height: maxVisible * rowHeight,
+      height: maxVisible,
       child: ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, i) {

@@ -248,9 +248,7 @@ class MaterialLineItem extends ProLineItem with TaxableLineItem {
         ).whereType<String>().toList(),
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
-        requiredDate: toDateTimeFn(
-          map['requiredDate'] ?? '${ProLineItem._today}',
-        ),
+        requiredDate: toDateTimeFn(map['requiredDate']),
       );
 
   @override
@@ -432,9 +430,7 @@ class ServiceLineItem extends ProLineItem with TaxableLineItem {
         ).whereType<String>().toList(),
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
-        requiredDate: toDateTimeFn(
-          map['requiredDate'] ?? '${ProLineItem._today}',
-        ),
+        requiredDate: toDateTimeFn(map['requiredDate']),
       );
 
   @override

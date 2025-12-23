@@ -183,51 +183,13 @@ class RFQFormInputs {
     ),
   ];
 
-  /// Supplier Fields
-  static List<FieldGroupConfig> get suppliersFields => [
-    FieldGroupConfig(
-      key: 'suppliers',
-      label: 'Select Suppliers',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        final Map<String, dynamic> value = Map<String, dynamic>.from(
-          initialData ?? {},
-        );
-
-        return FindSuppliers(
-          initialSupplier: value['supplierId'],
-          initialSupplierRep: value['supplierRepId'],
-          onSupplierChanged: (id, name) {
-            value
-              ..['supplierId'] = id
-              ..['name'] = name; // Supplier Name is not required
-            onChanged(Map<String, dynamic>.from(value));
-          },
-          onContactPersonChanged: (contactPersonId) {
-            value['supplierRepId'] = contactPersonId;
-            onChanged(Map<String, dynamic>.from(value));
-          },
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'status',
-      label: 'Supplier Status',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return _SupplierStatusDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
-        );
-      },
-    ),
-  ];
+  /// Suppliers Fields
+  static List<FieldGroupConfig> get suppliersFields =>
+      ProcurementForm.suppliersFields();
 
   /// Addresses (e.g., Buyer Shipping Address)
   static List<FieldGroupConfig> get shippingAddressFields =>
-      ProcurementForm.addressFields('Shipping');
+      ProcurementForm.addressFields(initialValue: 'Shipping');
 
   static AuditProcurement<RequestForQuote> updateHistory({
     required String empId,
@@ -267,6 +229,7 @@ class FindApprovedPR extends StatelessWidget {
       title: 'Create Request for Quote',
       body: FormGroupCard(
         title: '[Purchase Requisition] → RFQ',
+        subTitle: '\nSearch & then select a PR to create a new RFQ.\n',
         children: [
           SearchPRs(
             actionButtonText: 'Create New RFQ',
@@ -302,26 +265,6 @@ class FindSuppliers extends StatelessWidget {
       initialContactPerson: initialSupplierRep,
       onSupplierChanged: onSupplierChanged,
       onContactPersonChanged: onContactPersonChanged,
-    );
-  }
-}
-
-/// Supplier Status [_SupplierStatusDropdown]
-class _SupplierStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _SupplierStatusDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'Supplier Status',
-      initialValue: initialValue,
-      items: RFQSupplier.toStringList(),
-      getDisplayText: (status) => status,
-      onChanged: onChanged,
     );
   }
 }

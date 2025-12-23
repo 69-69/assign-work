@@ -34,7 +34,7 @@ class SearchPRs extends StatelessWidget {
 
       itemBuilder: (context, pr) {
         return ListTile(
-          dense: true,
+          // dense: true,
           title: Text('PR#: ${pr.prNumber} | ${pr.departmentCode.toUpperAll}'),
           subtitle: Wrap(
             spacing: 5,

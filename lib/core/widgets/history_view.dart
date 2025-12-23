@@ -29,7 +29,7 @@ extension HistoryViewExtensions on BuildContext {
     required List<T> items,
     required DataRow Function(T) rowBuilder,
   }) async => await openBottomSheet(
-    isExpand: true,
+    isExpand: false,
     showZoomIcon: false,
     constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
     child: BottomSheetScaffold(
@@ -271,11 +271,16 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
 
   /// Calculates the number of rows per page based on available height [_rowsPerPageHeight]
   int get _rowsPerPageHeight {
-    // Measure available height to determine rows per page
+    final maxVisible = context
+        .getMaxVisibleHeight(itemCount: _items.length, isRow: true)
+        .toInt();
+
+    return maxVisible;
+    /*// Measure available height to determine rows per page
     const rowHeight = 56.0; // default DataRow height
     final totalRows = _items.length;
     final availableHeight = context.screenHeight * 0.5;
-    return (availableHeight ~/ rowHeight).clamp(1, totalRows);
+    return (availableHeight ~/ rowHeight).clamp(1, totalRows);*/
   }
 
   /// Builds the table columns with optional sorting

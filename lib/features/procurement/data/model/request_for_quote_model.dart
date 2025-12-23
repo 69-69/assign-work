@@ -1,15 +1,15 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
-// * List of invited suppliers
 // * Responses (linked or stored in sub-table)
 
 class RequestForQuote extends Equatable {
@@ -27,7 +27,7 @@ class RequestForQuote extends Equatable {
   /// Auto-Generate PO when RFQ is Accepted
   final bool autoCreatePo;
   final String storeNumber;
-  final List<RFQSupplier> suppliers;
+  final List<SupplierLink> supplierLinks; // List of suppliers for this RFQ
   final String requestedBy; // Who requested the RFQ
   final ProcurementWorkflowStatus status;
   final String title;
@@ -42,7 +42,7 @@ class RequestForQuote extends Equatable {
 
   // final List<String> taxCodes;
   final String buyerContactPersonId;
-  final String? shippingAddress;
+  final AddressInfo? shippingAddress;
   final String? notes;
   final String validityDate;
   final DateTime? deadline;
@@ -73,7 +73,7 @@ class RequestForQuote extends Equatable {
     required this.title,
     required this.rfqNumber,
     required this.storeNumber,
-    required this.suppliers,
+    required this.supplierLinks,
     this.status = ProcurementWorkflowStatus.draft,
     required this.lineItems,
     required this.requestedBy,
@@ -81,11 +81,11 @@ class RequestForQuote extends Equatable {
     required this.departmentCode,
     // this.taxCodes = const [],
     this.taxMode = TaxMode.perLineTax,
-    this.notes,
     this.currency = ghanaCedis,
-    this.shippingAddress = '',
+    this.buyerContactPersonId = '',
+    this.shippingAddress,
     this.validityDate = '',
-    this.buyerContactPersonId = '', //out
+    this.notes,
     this.attachments = const [],
     DateTime? deadline,
     DateTime? expectedDate,
@@ -104,13 +104,12 @@ class RequestForQuote extends Equatable {
     return RequestForQuote(
       id: docId ?? map['id'] ?? '',
       prNumber: map['prNumber'] ?? '',
-      // Foreign key
       autoCreatePo: map['autoCreatePo'] ?? false,
       title: map['title'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       requestedBy: map['requestedBy'] ?? '',
       rfqNumber: map['rfqNumber'] ?? '',
-      suppliers: RFQSupplier.suppliers(map['suppliers']),
+      supplierLinks: SupplierLink.suppliers(map['supplierLinks']),
       status: ProcurementStatusHelper.fromString(map['status']),
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
@@ -120,7 +119,11 @@ class RequestForQuote extends Equatable {
       buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currency: map['currency'] ?? '',
-      shippingAddress: map['shippingAddress'] ?? '',
+      shippingAddress: map['shippingAddress'] != null
+          ? AddressInfo.fromMap(
+              Map<String, dynamic>.from(map['shippingAddress']),
+            )
+          : null,
       attachments: List<String>.from(map['attachments'] ?? []),
       validityDate: map['validityDate'] ?? '',
       deadline: toDateTimeFn(map['deadline']),
@@ -140,7 +143,7 @@ class RequestForQuote extends Equatable {
     'title': title,
     'storeNumber': storeNumber,
     'rfqNumber': rfqNumber,
-    'suppliers': suppliers.map((i) => i.toMap()).toList(),
+    'supplierLinks': supplierLinks.map((i) => i.toMap()).toList(),
     'status': getRFQStatus,
     'costCenterCode': costCenterCode,
     'departmentCode': departmentCode,
@@ -152,10 +155,14 @@ class RequestForQuote extends Equatable {
     'currency': currency,
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
-    'shippingAddress': shippingAddress,
+    'shippingAddress': shippingAddress?.toMap(),
     'validityDate': validityDate,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+    'deadline': deadline,
+    'expectedDate': expectedDate,
     'history': history.map((i) => i.toMap()).toList(),
   };
 
@@ -205,7 +212,7 @@ class RequestForQuote extends Equatable {
     rfqNumber: '',
     title: '',
     storeNumber: '',
-    suppliers: const [],
+    supplierLinks: const [],
     costCenterCode: '',
     departmentCode: '',
     lineItems: const [],
@@ -256,12 +263,12 @@ class RequestForQuote extends Equatable {
       prNumber.contains(filter) ||
       requestedBy.contains(filter) ||
       title.contains(filter) ||
-      suppliers.any((e) => e.filterByAny(filter)) ||
+      supplierLinks.any((e) => e.filterByAny(filter)) ||
       currency.contains(filter) ||
       buyerContactPersonId.contains(filter) ||
       (notes ?? '').contains(filter) ||
       validityDate.contains(filter) ||
-      (shippingAddress ?? '').contains(filter) ||
+      (shippingAddress?.filterByAny(filter) ?? false) ||
       getExpectedDate.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
 
@@ -344,7 +351,7 @@ class RequestForQuote extends Equatable {
     String? storeNumber,
     String? requestedBy,
     String? rfqNumber,
-    List<RFQSupplier>? suppliers,
+    List<SupplierLink>? supplierLinks,
     List<ProLineItem>? lineItems,
     ProcurementWorkflowStatus? status,
     String? notes,
@@ -379,7 +386,7 @@ class RequestForQuote extends Equatable {
       requestedBy: requestedBy ?? this.requestedBy,
       storeNumber: storeNumber ?? this.storeNumber,
       rfqNumber: rfqNumber ?? this.rfqNumber,
-      suppliers: suppliers ?? this.suppliers,
+      supplierLinks: supplierLinks ?? this.supplierLinks,
       lineItems: lineItems ?? this.lineItems,
       buyerContactPersonId: buyerContactPersonId ?? this.buyerContactPersonId,
       status: status ?? this.status,
@@ -391,7 +398,7 @@ class RequestForQuote extends Equatable {
       attachments: attachments ?? this.attachments,
       validityDate: validityDate ?? this.validityDate,
       currency: currency ?? this.currency,
-      shippingAddress: shippingAddress ?? this.shippingAddress,
+      // shippingAddress: shippingAddress ?? this.shippingAddress,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -415,7 +422,7 @@ class RequestForQuote extends Equatable {
     storeNumber,
     requestedBy,
     rfqNumber,
-    suppliers,
+    supplierLinks,
     departmentCode,
     buyerContactPersonId,
     status,
@@ -469,120 +476,6 @@ class RequestForQuote extends Equatable {
     'Updated By',
     'Updated At',
   ];
-}
-
-/// RFQ Supplier Status
-enum RFQSupplierStatus {
-  invited, // RFQ has been sent to the supplier/vendor (Waiting for quotation)
-  responded, // Supplier has submitted a quotation (Waiting for approval)
-  declined, // Supplier explicitly declined the RFQ (Rejected)
-}
-
-extension RFQSupplierStatusExt on RFQSupplierStatus {
-  /// [getName] Get the specific Enum Name
-  String get getName => EnumHelper<RFQSupplierStatus>(this).getName;
-}
-
-/// RFQ-Supplier model
-class RFQSupplier extends Equatable {
-  static get _today => DateTime.now();
-
-  final String id;
-  final String supplierId;
-
-  /// [supplierRepId] Supplier representative (Contact Person) ID
-  final String? supplierRepId;
-  final RFQSupplierStatus status; // invited, responded, declined
-  final DateTime? invitedAt;
-  final DateTime? respondedAt;
-
-  RFQSupplier({
-    this.id = '',
-    required this.supplierId,
-    this.supplierRepId,
-    required this.status,
-    DateTime? invitedAt,
-    DateTime? respondedAt,
-  }) : invitedAt = invitedAt ?? _today,
-       respondedAt = respondedAt ?? _today;
-
-  factory RFQSupplier.fromMap(Map<String, dynamic> map, {String? id}) {
-    return RFQSupplier(
-      id: id ?? map['id'] ?? '',
-      supplierId: map['supplierId'] ?? '',
-      supplierRepId: map['supplierRepId'] ?? '',
-      status: fromString(map['status']),
-      invitedAt: toDateTimeFn(map['invitedAt']),
-      respondedAt: toDateTimeFn(map['respondedAt']),
-    );
-  }
-
-  static List<RFQSupplier> suppliers(List<dynamic>? map) {
-    return map
-            ?.map((i) => RFQSupplier.fromMap(Map<String, dynamic>.from(i)))
-            .toList() ??
-        [];
-  }
-
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'supplierId': supplierId,
-    'supplierRepId': supplierRepId,
-    'status': status.getName,
-    'invitedAt': invitedAt.toISOString,
-    'respondedAt': respondedAt.toISOString,
-  };
-
-  String get getStatus => status.getName;
-
-  String get getInvitedAt => invitedAt.dateOnly;
-
-  String get getRespondedAt => respondedAt.dateOnly;
-
-  bool filterByAny(String filter) =>
-      id.contains(filter) ||
-      supplierId.contains(filter) ||
-      supplierRepId!.contains(filter) ||
-      getStatus.contains(filter) ||
-      getInvitedAt.contains(filter) ||
-      getRespondedAt.contains(filter);
-
-  RFQSupplier copyWith({
-    String? id,
-    String? supplierId,
-    String? supplierRepId,
-    RFQSupplierStatus? status,
-    DateTime? invitedAt,
-    DateTime? respondedAt,
-  }) => RFQSupplier(
-    id: id ?? this.id,
-    supplierId: supplierId ?? this.supplierId,
-    supplierRepId: supplierRepId ?? this.supplierRepId,
-    status: status ?? this.status,
-    invitedAt: invitedAt ?? this.invitedAt,
-    respondedAt: respondedAt ?? this.respondedAt,
-  );
-
-  @override
-  List<Object?> get props => [
-    supplierId,
-    supplierRepId,
-    status,
-    invitedAt,
-    respondedAt,
-  ];
-
-  /// [fromString] Converts String/Label to enum value.
-  static RFQSupplierStatus fromString(String? value) =>
-      EnumHelper.fromString<RFQSupplierStatus>(RFQSupplierStatus.values, value);
-
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<RFQSupplierStatus>(
-      RFQSupplierStatus.values,
-    );
-    return includeHeader ? ['Supplier Status', ...list] : list;
-  }
 }
 
 /*// RFQ Line Items

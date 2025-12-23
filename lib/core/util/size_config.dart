@@ -63,6 +63,31 @@ extension SizeConfig on BuildContext {
     return screenHeight * fraction * scaleFactor;
   }
 
+  /// Calculates either the number of visible rows or the total height
+  /// based on screen height and row height.
+  ///
+  /// - [itemCount]: total number of items to display.
+  /// - [rowHeight]: height of a single row (default 56.0).
+  /// - [maxScreenFraction]: fraction of screen height to use (default 0.5).
+  /// - [isRow]: if true, returns the number of rows height; otherwise, returns total height in pixels.
+  double getMaxVisibleHeight({
+    required int itemCount,
+    double rowHeight = 56.0,
+    double maxScreenFraction = 0.5,
+    bool isRow = false,
+  }) {
+    if (itemCount <= 0) return 0.0;
+
+    // Maximum height allowed based on screen size
+    final maxAllowedHeight = screenHeight * maxScreenFraction;
+
+    // Number of rows that can fit within the allowed height, clamped to itemCount
+    final visibleRowCount = (maxAllowedHeight ~/ rowHeight).clamp(1, itemCount);
+
+    // Return either row count or total height
+    return isRow ? visibleRowCount.toDouble() : visibleRowCount * rowHeight;
+  }
+
   /// Get screen height [screenHeight]
   double get screenHeight => mediaSize.height;
 

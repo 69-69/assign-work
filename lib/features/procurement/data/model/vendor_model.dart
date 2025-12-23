@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:equatable/equatable.dart';
 
 class Supplier extends Equatable {
@@ -72,25 +73,6 @@ class ContactInfo extends Equatable {
 
   @override
   List<Object?> get props => [email, phone, contactPerson];
-}
-
-class AddressInfo extends Equatable {
-  final String street;
-  final String city;
-  final String state;
-  final String country;
-  final String zipCode;
-
-  const AddressInfo({
-    required this.street,
-    required this.city,
-    required this.state,
-    required this.country,
-    required this.zipCode,
-  });
-
-  @override
-  List<Object?> get props => [street, city, state, country, zipCode];
 }
 
 class BankTaxInfo extends Equatable {

@@ -4,6 +4,7 @@ import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -18,6 +19,7 @@ import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -72,8 +74,10 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   String? get _lineItemType =>
       widget.lineItemType ?? _initialPR?.lineItems.first.getTypeLabel;
   final _formKey = GlobalKey<FormState>();
+  bool _isRebuilding = false;
 
   // Basic fields
+  bool _isSubmitting = false;
   bool _autoCreatePo = false; // auto generate PO when RFQ is Accepted
   String _costCenterCode = '';
   String _rfqNumber = '';
@@ -82,15 +86,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   String _requestedBy = '';
   String _departmentCode = '';
   String? _rfqStatus;
-  // Dates
-  DateTime? _deadlineDate;
-  DateTime? _expectedDate;
 
   /// Line Items & Additional Info
   final List<ProLineItem> _lineItems = [];
-  final List<RFQSupplier> _suppliers = [];
+  final List<SupplierLink> _supplierLinks = [];
   final List<AddressInfo> _shippingAddress = [];
-  final Map<String, dynamic> _additionalInfo = {};
+  final Map<String, dynamic> _buyerTerms = {};
 
   /// Initial PR data if converting PR → RFQ
   WorkflowConverter? get _initialPR => widget.initialPRData;
@@ -130,13 +131,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     autoCreatePo: _autoCreatePo,
     title: _rfqTitle,
     status: ProcurementStatusHelper.fromString(_rfqStatus ?? ''),
-    suppliers: List.from(_suppliers),
+    supplierLinks: List.from(_supplierLinks),
     currency: _currency,
-    deadline: _deadlineDate,
-    expectedDate: _expectedDate,
-    notes: _additionalInfo['notes'],
+    notes: _buyerTerms['notes'],
     lineItems: List.from(_lineItems),
-    shippingAddress: _shippingAddress.first.address,
+    shippingAddress: _shippingAddress.first,
+    deadline: toDateTimeFn(_buyerTerms['deadline']),
+    expectedDate: toDateTimeFn(_buyerTerms['expectedDate']),
+    buyerContactPersonId: _buyerTerms['buyerContactPerson'],
     requestedBy: _initialPR?.requestedBy ?? _requestedBy,
     costCenterCode: _initialPR?.costCenterCode ?? _costCenterCode,
     departmentCode: _initialPR?.departmentCode ?? _departmentCode,
@@ -150,18 +152,50 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     ],
   );
 
-  void _onSubmit() {
-    if (!isFormValid || _newRFQ.isEmpty) {
-      context.showAlertOverlay(
-        'Please fill in all required fields',
-        bgColor: kDangerColor,
-      );
-      return;
+  void _onSubmit() async {
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (!isFormValid || _newRFQ.isNullOrEmpty) {
+        context.showAlertOverlay(
+          'Please enter all required fields',
+          bgColor: kDangerColor,
+        );
+        return;
+      }
+
+      _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
+
+      context.showAlertOverlay('RFQ successfully created');
+
+      _confirmPrintoutDialog();
+    } finally {
+      if (mounted) {
+        await _rebuildForm(); // rebuild fresh form
+      }
     }
+  }
 
-    _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
+  Future<void> _rebuildForm() async {
+    _resetForm();
+    if (_isRebuilding) return;
+    _isRebuilding = true;
+    // 1️⃣ Close current bottom sheet and WAIT
+    await Navigator.of(context).maybePop();
 
-    _confirmPrintoutDialog().then((_) => _resetForm());
+    // 2️⃣ Wait one frame (critical)
+    await Future.delayed(Duration.zero);
+
+    // 3️⃣ Open fresh form
+    if (mounted) {
+      await context.openCreateRFQForm(
+        data: widget.initialPRData,
+        type: widget.lineItemType,
+      );
+    }
+    _isRebuilding = false;
   }
 
   void _resetForm() {
@@ -169,9 +203,10 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _formKey.currentState?.reset();
 
       setState(() {
+        _isSubmitting = false;
         _rfqTitle = '';
         _autoCreatePo = false;
-        _suppliers.clear();
+        _supplierLinks.clear();
         _requestedBy = '';
         _currency = '';
         _costCenterCode = '';
@@ -179,9 +214,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         _lineItems.clear();
         _shippingAddress.clear();
         _rfqStatus = null;
-        _deadlineDate = null;
-        _expectedDate = null;
       });
+
+      // Reset dynamic fields
+      _lineItems.clear();
+      _supplierLinks.clear();
+      _shippingAddress.clear();
+      _buyerTerms.clear();
+
       _generateRFQNumber(); // fresh RFQ number
     }
   }
@@ -306,8 +346,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        _additionalInfo
-          ..clear() // Clear previous entries to prevent duplication
+        _buyerTerms
+          ..clear()
           ..addAll(data.first);
       },
     );
@@ -317,13 +357,13 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return DynamicTextFields(
       initialData: [{}],
       showButton: true,
-      fullWidthKey: 'suppliers',
+      fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        final suppliers = data.map((e) {
-          final copy = Map<String, dynamic>.from(e['suppliers'] ?? {});
+        final supplierLinks = data.map((e) {
+          final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
           // Merge the status from the top-level map
           copy['status'] = e['status'];
           return copy;
@@ -331,9 +371,9 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         // Update the RFQSupplier list
         RFQFormInputs.updateListFromData(
-          _suppliers,
-          map: suppliers,
-          fromMap: (map, id) => RFQSupplier.fromMap(map, id: id),
+          _supplierLinks,
+          map: supplierLinks,
+          fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
         );
       },
     );
@@ -417,7 +457,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
     final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(_newRFQ);
     final supplier = await RFQFormInputs.getSupplier(
-      _newRFQ.suppliers.first.supplierId,
+      _newRFQ.supplierLinks.first.supplierId,
     );
     if (supplier.isEmpty) return;
 

@@ -73,11 +73,12 @@ class BottomSheetScaffold extends StatelessWidget {
         spacing: 8.0,
         children: [
           if (onPrint != null) ...{
-            context.elevatedButton(
-              'Print',
-              bgColor: kWarningColor,
+            context.iconButton(
+              Icons.print,
+              iconColor: kWarningColor,
+              bgColor: kWarningColor.toAlpha(0.1),
               tooltip: tooltip ?? 'Print out',
-              onPressed: onPrint,
+              onPressed: onPrint!,
             ),
           },
           IconButton(

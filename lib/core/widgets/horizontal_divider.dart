@@ -30,7 +30,7 @@ class HorizontalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isORSeparator) {
-      return _buildORSeparator();
+      return _buildORSeparator(context);
     }
     final cl = color ?? context.onPrimaryContainer.toAlpha(0.2);
 
@@ -48,7 +48,7 @@ class HorizontalDivider extends StatelessWidget {
     width: context.screenWidth / (width ?? 1.0),
   );
 
-  Widget _buildORSeparator() {
+  Widget _buildORSeparator(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: space ?? 0),
       child: Row(
@@ -56,7 +56,10 @@ class HorizontalDivider extends StatelessWidget {
           const Expanded(child: Divider(thickness: 1)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(orText ?? 'OR'),
+            child: Text(
+              orText ?? 'OR',
+              style: context.textTheme.bodyMedium?.copyWith(color: color),
+            ),
           ),
           const Expanded(child: Divider(thickness: 1)),
         ],

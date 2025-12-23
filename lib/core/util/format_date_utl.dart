@@ -131,9 +131,10 @@ extension DateFromTotalDays on int {
 DateTime toDateTimeFn(dateTime) {
   final today = DateTime.now();
 
-  if ('$dateTime'.trim().isNullOrEmpty) {
+  if (dateTime == null || '$dateTime'.trim().isNullOrEmpty) {
     return today;
   }
+
   // If is int else string
   if (dateTime is DateTime) return dateTime;
   if (dateTime is Timestamp) return dateTime.toDate();

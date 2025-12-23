@@ -58,12 +58,18 @@ class GetSuppliers {
     try {
       final state = await supplierBloc.stream.firstWhere(
         (state) => state is ProcurementsLoaded<Supplier>,
-        orElse: () => Supplier.empty,
+        // orElse: () => Supplier.empty,
       );
 
-      if (state is ProcurementsLoaded<Supplier>) {
+      /*if (state is ProcurementsLoaded<Supplier>) {
         final data = state.data;
         return data.isNotEmpty ? data.first : Supplier.empty;
+      }*/
+      if (state is ProcurementsLoaded<Supplier>) {
+        return state.data.firstWhere(
+          (supplier) => supplier.id == supplierId,
+          orElse: () => Supplier.empty,
+        );
       }
     } catch (e) {
       prettyPrint('Error fetching supplier', '$e');

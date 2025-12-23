@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -11,10 +11,12 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/create/create_request_for_quotation.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/open_rfq_with_suppliers.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/see_quote_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
@@ -25,6 +27,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// LIST Request For Quotations
 class ListQuotations extends StatefulWidget {
   final bool isAwarded;
+
   const ListQuotations({super.key, this.isAwarded = false});
 
   @override
@@ -100,8 +103,10 @@ class _ListQuotationsState extends State<ListQuotations> {
       rows: filtered.rows,
       childrenRow: filtered.childrenRow,
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
-      selectedRowKeyIndex: 0, // Column index used as row key (e.g., ID)
-      selectedRowKeys: _selectedIds, // Currently selected row keys
+      selectedRowKeyIndex: 0,
+      // Column index used as row key (e.g., ID)
+      selectedRowKeys: _selectedIds,
+      // Currently selected row keys
       onChecked: (bool? isChecked, checkedRow) {
         setState(() => _updateSelectedIds(isChecked, checkedRow.first, quotes));
       },
@@ -248,7 +253,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     return quote.computeTaxAmounts(taxMap);
   }
 
-  Future _getSupplier(String supplierId) async {
+  Future<Supplier?> _getSupplier(String supplierId) async {
     final supplier = await GetSuppliers.bySupplierId(supplierId);
     return supplier.isEmpty ? null : supplier;
   }
@@ -262,13 +267,15 @@ class _ListQuotationsState extends State<ListQuotations> {
       );
       return;
     }
-    // limit to 2 quotes
+    // limit to 2 RFQ
     for (int i = 0; i < 2; i++) {
       final quote = _selectedForCompare[i];
       final quoteWithTaxes = await _applyTaxesToQuote(quote);
-      final supplier = await _getSupplier(quote.suppliers.first.supplierId);
-      _quotesWithTaxes.add(quoteWithTaxes);
-      _suppliers.add(supplier);
+      final supplier = await _getSupplier(quote.supplierLinks.first.supplierId);
+      if (!supplier.isNullOrEmpty) {
+        _quotesWithTaxes.add(quoteWithTaxes);
+        _suppliers.add(supplier!);
+      }
     }
 
     if (cxt.mounted) {
@@ -284,24 +291,28 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   Future<void> _onViewDetails(List<RequestForQuote> quotes, String id) async {
-    final quote = _getQuoteById(quotes, id);
-    if (quote == null) return;
-
-    final quoteWithTaxes = await _applyTaxesToQuote(quote);
-    final supplier = await _getSupplier(quote.suppliers.first.supplierId);
-
-    if (mounted) {
-      // Log that User viewed details
-      if (AuditTracker.shouldLog(id: quote.id, type: DocType.rfq)) {
-        _readBloc.add(_updateHistory(quote, action: AuditAction.viewed));
-      }
-      // User opens RFQ details screen
-      await context.openRFQDetails(
-        quote: quoteWithTaxes,
-        supplier: supplier,
-        bloc: _readBloc,
-      );
-    }
+    await _withRfqSupplierLinks(
+      id,
+      quotes,
+      auditAction: AuditAction.viewed,
+      onSingleSupplier: (quote, supplier) {
+        return context.openRFQDetails(
+          quote: quote,
+          supplier: supplier,
+          bloc: _readBloc,
+        );
+      },
+      onMultipleSuppliers: (quote, supplierLinks) {
+        return context.openRFQWithSuppliers(
+          supplierLinks: supplierLinks,
+          onSelected: (supplier) => context.openRFQDetails(
+            quote: quote,
+            supplier: supplier,
+            bloc: _readBloc,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onPrintRFQ(List<RequestForQuote> quotes, String id) async {
@@ -317,21 +328,26 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  Future<dynamic> _printout(List<RequestForQuote> quotes, String id) =>
-      Future.delayed(kRProgressDelay, () async {
-        final quote = _getQuoteById(quotes, id);
-        if (quote == null) return;
+  Future<void> _printout(List<RequestForQuote> quotes, String id) async {
+    await Future.delayed(kRProgressDelay);
 
-        final quoteWithTaxes = await _applyTaxesToQuote(quote);
-        final supplier = await _getSupplier(quote.suppliers.first.supplierId);
-        if (supplier == null) return;
-
-        if (mounted) {
-          _readBloc.add(_updateHistory(quote, action: AuditAction.printed));
-        }
-        // Perform action after loading
-        await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
-      });
+    await _withRfqSupplierLinks(
+      id,
+      quotes,
+      auditAction: AuditAction.printed,
+      onSingleSupplier: (quote, supplier) {
+        return RFQPrinter(quote: quote, supplier: supplier).printRFQ();
+      },
+      onMultipleSuppliers: (quote, supplierLinks) {
+        return context.openRFQWithSuppliers(
+          subTitle: 'printout RFQ',
+          supplierLinks: supplierLinks,
+          onSelected: (supplier) =>
+              RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
+        );
+      },
+    );
+  }
 
   Future<void> _onEditTap(List<RequestForQuote> quotes, String id) async {
     final quote = _getQuoteById(quotes, id);
@@ -371,7 +387,129 @@ class _ListQuotationsState extends State<ListQuotations> {
       ),
     );
   }
+
+  /// Orchestrates an RFQ action that depends on supplier selection.
+  /// [_withRfqSupplierLinks]
+  /// Resolves the RFQ by [id], applies taxes, logs the given [auditAction],
+  /// and then:
+  /// - Executes [onSingleSupplier] if exactly one supplier is linked
+  /// - Prompts supplier selection and executes [onMultipleSuppliers] otherwise
+  ///
+  /// Safely guards against invalid state (unmounted widget, missing RFQ,
+  /// or empty supplier links) and rechecks [mounted] after async gaps.
+  Future<void> _withRfqSupplierLinks(
+    String id,
+    List<RequestForQuote> quotes, {
+    required AuditAction auditAction,
+    required Future<void> Function(
+      RequestForQuote quoteWithTaxes,
+      Supplier supplier,
+    )
+    onSingleSupplier,
+    required Future<void> Function(
+      RequestForQuote quoteWithTaxes,
+      List<SupplierLink> supplierLinks,
+    )
+    onMultipleSuppliers,
+  }) async {
+    final quote = _getQuoteById(quotes, id);
+    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
+
+    final quoteWithTaxes = await _applyTaxesToQuote(quote);
+    if (!mounted) return;
+
+    final supplierLinks = quote.supplierLinks;
+
+    _readBloc.add(_updateHistory(quote, action: auditAction));
+
+    // Single supplier
+    if (supplierLinks.length == 1) {
+      final supplier = await _getSupplier(supplierLinks.first.supplierId);
+      if (!mounted || supplier == null) return;
+
+      await onSingleSupplier(quoteWithTaxes, supplier);
+      return;
+    }
+
+    if (!mounted) return;
+
+    // Multiple suppliers
+    await onMultipleSuppliers(quoteWithTaxes, supplierLinks);
+  }
 }
+
+/* Future<void> _onViewDetails2(List<RequestForQuote> quotes, String id) async {
+    final quote = _getQuoteById(quotes, id);
+    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
+
+    final quoteWithTaxes = await _applyTaxesToQuote(quote);
+    List<SupplierLink> supplierLinks = quote.supplierLinks;
+
+    // Log that User viewed details
+    if (AuditTracker.shouldLog(id: quote.id, type: DocType.rfq)) {
+      _readBloc.add(_updateHistory(quote, action: AuditAction.viewed));
+    }
+
+    // Check the length of supplierLinks
+    // If Single supplier → open RFQ Details directly
+    if (supplierLinks.length == 1) {
+      final supplier = await _getSupplier(supplierLinks.first.supplierId);
+      if (!mounted || supplier == null) return;
+
+      await context.openRFQDetails(
+        quote: quoteWithTaxes,
+        supplier: supplier,
+        bloc: _readBloc,
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    // Otherwise, Multiple supplierLinks → let user select one to view RFQ details
+    await context.openRFQInvitedSuppliers(
+      supplierLinks: supplierLinks,
+      onSelected: (Supplier supplier) async => await context.openRFQDetails(
+        quote: quoteWithTaxes,
+        supplier: supplier,
+        bloc: _readBloc,
+      ), // Open RFQ Details Screen
+    );
+  }
+
+
+  Future<dynamic> _printout2(
+    List<RequestForQuote> quotes,
+    String id,
+  ) => Future.delayed(kRProgressDelay, () async {
+    final quote = _getQuoteById(quotes, id);
+    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
+
+    final quoteWithTaxes = await _applyTaxesToQuote(quote);
+    List<SupplierLink> supplierLinks = quote.supplierLinks;
+
+    _readBloc.add(_updateHistory(quote, action: AuditAction.printed));
+
+    // Check the length of supplierLinks
+    // If Single supplier → print RFQ directly
+    if (supplierLinks.length == 1) {
+      final supplier = await _getSupplier(supplierLinks.first.supplierId);
+      if (!mounted || supplier == null) return;
+
+      await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+
+      return;
+    }
+
+    if (!mounted) return;
+    // Otherwise, Multiple supplierLinks → let user select one to print RFQ with
+    await context.openRFQInvitedSuppliers(
+      supplierLinks: quote.supplierLinks,
+      onSelected: (Supplier supplier) async => await RFQPrinter(
+        quote: quoteWithTaxes,
+        supplier: supplier,
+      ).printRFQ(), // Print the RFQ for the selected supplier
+    );
+  });*/
 
 /*/// Print grouped or multiple Purchase Quotes [_IssueMultiQuotesPrintout]
 class _IssueMultiQuotesPrintout extends StatelessWidget {

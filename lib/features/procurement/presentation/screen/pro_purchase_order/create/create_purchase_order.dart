@@ -17,6 +17,7 @@ import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_po/pro_purchase_order_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -73,15 +74,15 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   final _formKey = GlobalKey<FormState>();
 
   // Basic fields
+  bool _isSubmitting = false;
   String _costCenterCode = '';
   String _poNumber = '';
   String _currency = '';
   String _requestedBy = '';
   String _paymentTerm = '';
   String _paymentMethod = '';
-  String _supplierId = '';
-  String _supplierRepId = '';
   String? _poStatus;
+  final List<SupplierLink> _supplierLinks = [];
   // Dates
   DateTime? _deliveryDate;
 
@@ -128,8 +129,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     storeNumber: _employeeStore,
 
     status: ProcurementStatusHelper.fromString(_poStatus ?? ''),
-    supplierId: _initialRFQ?.supplierId ?? _supplierId,
-    supplierRepId: _initialRFQ?.supplierRepId ?? _supplierRepId,
+    supplierLink: _supplierLinks.first,
     requestedBy: _initialRFQ?.requestedBy ?? _requestedBy,
 
     costCenterCode: _initialRFQ?.costCenterCode ?? _costCenterCode,
@@ -156,18 +156,28 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     ],
   );
 
-  void _onSubmit() {
-    if (!isFormValid || _newPO.isEmpty) {
-      context.showAlertOverlay(
-        'Please fill in all required fields',
-        bgColor: kDangerColor,
-      );
-      return;
+  void _onSubmit() async {
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (!isFormValid || _newPO.isNullOrEmpty) {
+        context.showAlertOverlay(
+          'Please enter all required fields',
+          bgColor: kDangerColor,
+        );
+        return;
+      }
+
+      _bloc.add(AddProcurement<ProPurchaseOrder>(data: _newPO));
+
+      context.showAlertOverlay('PO successfully created');
+
+      _confirmPrintoutDialog();
+    } finally {
+      _resetForm();
     }
-
-    _bloc.add(AddProcurement<ProPurchaseOrder>(data: _newPO));
-
-    _confirmPrintoutDialog().then((_) => _resetForm());
   }
 
   void _resetForm() {
@@ -175,14 +185,13 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       _formKey.currentState?.reset();
 
       setState(() {
+        _isSubmitting = false;
         _currency = '';
         _poNumber = '';
-        _supplierId = '';
         _requestedBy = '';
-        _supplierRepId = '';
-        _costCenterCode = '';
         _payments.clear();
         _addresses.clear();
+        _supplierLinks.clear();
         _additionalInfo.clear();
         _poStatus = null;
         _deliveryDate = null;
@@ -207,20 +216,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         POFormInputs.buildPONumber(context, _poNumber, _generatePONumber),
         FormGroupCard(
           title: 'Purchase Order Overview',
-          children: [
-            _buildPOStatusAndRequestedBy(),
-            FindSuppliers(
-              initialSupplier: _supplierId,
-              onSupplierChanged: (id, name) {
-                if (isFormValid) setState(() => _supplierId = id);
-              },
-              onContactPersonChanged: (id) {
-                if (isFormValid) {
-                  setState(() => _supplierRepId = id);
-                }
-              },
-            ),
-          ],
+          children: [_buildPOStatusAndRequestedBy(), _buildSupplier()],
         ),
 
         FormGroupCard(
@@ -349,6 +345,33 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     );
   }
 
+  // Only a single supplier is allowed for a PO
+  DynamicTextFields _buildSupplier() {
+    return DynamicTextFields(
+      initialData: [{}],
+      showButton: false,
+      fullWidthKey: 'supplierLinks',
+      fieldsConfig: POFormInputs.suppliersFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        final supplierLinks = data.map((e) {
+          final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
+          // Merge the status from the top-level map
+          copy['status'] = e['status'];
+          return copy;
+        }).toList();
+
+        // Update the RFQSupplier list
+        POFormInputs.updateListFromData(
+          _supplierLinks,
+          map: supplierLinks,
+          fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
   PayMethodAndTermsDropdown _buildPayMethodAndTerms() {
     return PayMethodAndTermsDropdown(
       onPayTermsChanged: (t) => setState(() => _paymentTerm = t),
@@ -384,7 +407,9 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     if (_newPO.isEmpty) return;
 
     final quoteWithTaxes = await POFormInputs.applyTaxesToQuote(_newPO);
-    final supplier = await POFormInputs.getSupplier(_newPO.supplierId);
+    final supplier = await POFormInputs.getSupplier(
+      _newPO.supplierLink.supplierId,
+    );
     if (supplier.isEmpty) return;
 
     // Log that details were printed

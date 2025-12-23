@@ -34,7 +34,7 @@ class SearchRFQs extends StatelessWidget {
 
       itemBuilder: (context, rfq) {
         return ListTile(
-          dense: true,
+          // dense: true,
           title: Text(
             'RFQ#: ${rfq.rfqNumber} | ${rfq.departmentCode.toUpperAll}',
           ),

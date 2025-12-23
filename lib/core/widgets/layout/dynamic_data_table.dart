@@ -260,10 +260,14 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
   // Calculates rows per page based on available height [_rowsPerPageHeight]
   int get _rowsPerPageHeight {
-    // Measure available height to determine rows per page
+    final maxVisible = context
+        .getMaxVisibleHeight(itemCount: totalRows + 1, isRow: true)
+        .toInt();
+    return maxVisible;
+    /* // Measure available height to determine rows per page
     const rowHeight = 56.0; // default DataRow height
     final availableHeight = context.screenHeight * 0.5;
-    return (availableHeight ~/ rowHeight).clamp(1, totalRows + 1);
+    return (availableHeight ~/ rowHeight).clamp(1, totalRows + 1);*/
   }
 
   @override

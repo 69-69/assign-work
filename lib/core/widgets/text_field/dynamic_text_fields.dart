@@ -350,7 +350,7 @@ class FieldGroupConfig {
   /// e.g., CustomButton or CustomDropdown
   final Widget Function({
     required dynamic initialData,
-    required void Function(dynamic value) onChanged,
+    required void Function(dynamic) onChanged,
   })?
   customBuilder;
 

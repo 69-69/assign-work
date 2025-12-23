@@ -55,7 +55,7 @@ class RFQPrinter {
     List<PrintItem> lineItems = _buildLineItems();
 
     ContactPerson? contactPerson = supplier.contactPersons.firstWhereOrNull(
-      (i) => i.id == quote.suppliers.first.supplierRepId,
+      (i) => i.id == quote.supplierLinks.first.supplierRepId,
     );
 
     final rfq = _RFQPdfBuilder(
@@ -65,7 +65,7 @@ class RFQPrinter {
       contactPerson: contactPerson,
       validityDate: quote.getDeadlineDate,
       deliveryDate: quote.getExpectedDate,
-      altDeliveryAddress: quote.shippingAddress,
+      altDeliveryAddress: quote.shippingAddress?.address ?? '',
     );
 
     // Now you can use the `rfq` object as needed, e.g., to print or display it

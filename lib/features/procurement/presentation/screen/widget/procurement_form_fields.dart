@@ -9,6 +9,8 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:flutter/material.dart';
 
 class ProcurementForm {
@@ -261,7 +263,7 @@ class ProcurementForm {
   ];
 
   /// Addresses (e.g., Billing, Shipping Address)
-  static List<FieldGroupConfig> addressFields([String? initialValue]) => [
+  static List<FieldGroupConfig> addressFields({String? initialValue}) => [
     FieldGroupConfig(
       key: 'type',
       label: 'Address Type',
@@ -293,6 +295,46 @@ class ProcurementForm {
       isAutoGrow: true,
       minLines: null,
       // validator: (_) => null,
+    ),
+  ];
+
+  /// Supplier Fields
+  static List<FieldGroupConfig> suppliersFields({String? key}) => [
+    FieldGroupConfig(
+      key: key ?? 'supplierLinks',
+      label: 'Select Suppliers',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        final value = Map<String, dynamic>.from(initialData ?? {});
+
+        return FindSuppliers(
+          initialSupplier: value['supplierId'],
+          initialSupplierRep: value['supplierRepId'],
+          onSupplierChanged: (id, name) {
+            value
+              ..['supplierId'] = id
+              ..['name'] = name; // Supplier Name is not required
+            onChanged(Map<String, dynamic>.from(value));
+          },
+          onContactPersonChanged: (contactPersonId) {
+            value['supplierRepId'] = contactPersonId;
+            onChanged(Map<String, dynamic>.from(value));
+          },
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'status',
+      label: 'Supplier Status',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return _SupplierStatusDropdown(
+          initialValue: initialData,
+          onChanged: onChanged,
+        );
+      },
     ),
   ];
 
@@ -328,6 +370,26 @@ class ProcurementForm {
                 .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
                 .toList(),
           );*/
+  }
+}
+
+/// Supplier Status [_SupplierStatusDropdown]
+class _SupplierStatusDropdown extends StatelessWidget {
+  final String? initialValue;
+  final void Function(dynamic s) onChanged;
+
+  const _SupplierStatusDropdown({required this.onChanged, this.initialValue});
+
+  @override
+  Widget build(BuildContext context) {
+    return StaticDropdown<String>(
+      key: key,
+      label: 'Supplier Status',
+      initialValue: initialValue,
+      items: SupplierLink.toStringList(),
+      getDisplayText: (status) => status,
+      onChanged: onChanged,
+    );
   }
 }
 

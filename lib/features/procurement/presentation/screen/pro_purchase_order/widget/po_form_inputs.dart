@@ -118,6 +118,10 @@ class POFormInputs {
   static List<FieldGroupConfig> get addressFields =>
       ProcurementForm.addressFields();
 
+  /// Suppliers Fields
+  static List<FieldGroupConfig> get suppliersFields =>
+      ProcurementForm.suppliersFields();
+
   static AuditProcurement<ProPurchaseOrder> updateHistory({
     required String empId,
     required AuditAction action,
@@ -156,6 +160,7 @@ class FindApprovedRFQ extends StatelessWidget {
       title: 'Create Purchase Order',
       body: FormGroupCard(
         title: '[Request for Quote] → PO',
+        subTitle: '\nSearch & then select a RFQ below to create a new PO.\n',
         children: [
           SearchRFQs(
             actionButtonText: 'Create New PO',

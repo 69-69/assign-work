@@ -125,7 +125,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       status: ProcurementStatusHelper.fromString(status),
       currency: _currency ?? _serverRFQ.currency,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
-      suppliers: _serverRFQ.suppliers,
+      supplierLinks: _serverRFQ.supplierLinks,
       lineItems: List.from(_lineItems),
       notes: _additionalInfo['notes'],
       shippingAddress: _additionalInfo['deliveryAddress'],
@@ -427,7 +427,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       _cachedUpdatedRFQ,
     );
     final supplier = await RFQFormInputs.getSupplier(
-      _cachedUpdatedRFQ.suppliers.first.supplierId,
+      _cachedUpdatedRFQ.supplierLinks.first.supplierId,
     );
     if (supplier.isEmpty) return;
 

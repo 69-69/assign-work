@@ -634,8 +634,8 @@ class _LeftSummary extends StatelessWidget {
           ),
           ...buildOptionalSection(
             context,
-            'Delivery Address',
-            quote!.shippingAddress,
+            'Shipping Address',
+            quote?.shippingAddress?.address ?? 'None',
           ),
           ...buildOptionalSection(context, 'Notes', quote!.notes),
         ],

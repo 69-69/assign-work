@@ -115,6 +115,9 @@ class AddressInfo extends Equatable {
     'Postal Code',
   ];
 
+  bool filterByAny(String query) =>
+      itemAsList.any((item) => item.contains(query));
+
   /// [fromString] Converts String/Label to enum value.
   static AddressType fromString(String? value) =>
       EnumHelper.fromString<AddressType>(AddressType.values, value);

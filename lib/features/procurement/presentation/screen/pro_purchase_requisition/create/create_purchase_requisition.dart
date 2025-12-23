@@ -57,6 +57,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   String get _lineItemType => widget.type;
 
   // Basic fields
+  bool _isSubmitting = false;
   bool _autoCreateRfq = false; // auto create RFQ when PR is Approved
   String _prNumber = '';
   String _requestedBy = '';
@@ -125,17 +126,28 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     ],
   );
 
-  void _onSubmit() {
-    if (!isFormValid || _newPR.isEmpty) {
-      context.showAlertOverlay(
-        'Please fill in all required fields',
-        bgColor: kDangerColor,
-      );
-      return;
-    }
-    _bloc.add(AddProcurement<PurchaseRequisition>(data: _newPR));
+  void _onSubmit() async {
+    if (_isSubmitting) return;
 
-    _confirmPrintoutDialog().then((_) => _resetForm());
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (!isFormValid || _newPR.isNullOrEmpty) {
+        context.showAlertOverlay(
+          'Please enter all required fields',
+          bgColor: kDangerColor,
+        );
+        return;
+      }
+
+      _bloc.add(AddProcurement<PurchaseRequisition>(data: _newPR));
+
+      context.showAlertOverlay('PR successfully created');
+
+      _confirmPrintoutDialog();
+    } finally {
+      _resetForm();
+    }
   }
 
   void _resetForm() {
@@ -144,6 +156,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
       _formKey.currentState?.reset();
       setState(() {
+        _isSubmitting = false;
         _autoCreateRfq = false;
         _costCenterCode = '';
         _departmentCode = '';

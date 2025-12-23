@@ -91,15 +91,17 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     final sWidth = context.screenWidth * (context.isMobile ? 0.94 : 0.7);
     final tileCount = filteredTiles.length <= 1 ? 1 : filteredTiles.length;
 
-    final rowHeight = 130.0;
-    final availableHeight = context.screenHeight * 0.5;
-    final maxVisibleRows = (availableHeight ~/ rowHeight).clamp(1, tileCount);
+    // Measure available height to determine rows per view
+    final maxVisible = context.getMaxVisibleHeight(
+      rowHeight: 130.0,
+      itemCount: tileCount,
+    );
 
     return SingleChildScrollView(
       padding: EdgeInsets.zero,
       child: SizedBox(
         width: sWidth,
-        height: maxVisibleRows * rowHeight,
+        height: maxVisible,
         child: _buildBody(context),
       ),
     );

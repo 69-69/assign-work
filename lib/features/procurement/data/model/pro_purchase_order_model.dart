@@ -4,6 +4,7 @@ import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
@@ -20,9 +21,7 @@ class ProPurchaseOrder extends Equatable {
 
   final String poNumber;
   final String storeNumber;
-
-  final String supplierId;
-  final String supplierRepId;
+  final SupplierLink supplierLink;
   final List<ProLineItem> lineItems; // A list of items in the RFQ
 
   final String currency;
@@ -41,6 +40,8 @@ class ProPurchaseOrder extends Equatable {
 
   final String? notes;
   final List<String> attachments;
+
+  /// [addresses] Addresses (e.g., Billing, Shipping Address, etc)
   final List<AddressInfo>? addresses;
   final double totalAmount;
   final double taxAmount;
@@ -64,8 +65,7 @@ class ProPurchaseOrder extends Equatable {
     required this.poNumber,
     required this.currency,
     required this.storeNumber,
-    required this.supplierId,
-    this.supplierRepId = '',
+    required this.supplierLink,
     required this.requestedBy,
     this.costCenterCode = '',
     this.status = ProcurementWorkflowStatus.draft,
@@ -98,8 +98,7 @@ class ProPurchaseOrder extends Equatable {
       poNumber: map['poNumber'] ?? '',
       rfqNumber: map['rfqNumber'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
-      supplierId: map['supplierId'] ?? '',
-      supplierRepId: map['supplierRepId'] ?? '',
+      supplierLink: SupplierLink.fromMap(map['supplierLink']),
       requestedBy: map['requestedBy'] ?? '',
       costCenterCode: map['costCenterCode'] ?? '',
       status: ProcurementStatusHelper.fromString(map['status']),
@@ -130,8 +129,7 @@ class ProPurchaseOrder extends Equatable {
     'storeNumber': storeNumber,
     'poNumber': poNumber,
     'rfqNumber': rfqNumber,
-    'supplierId': supplierId,
-    'supplierRepId': supplierRepId,
+    'supplierLink': supplierLink.toMap(),
     'requestedBy': requestedBy,
     'status': getPOStatus,
     'currency': currency,
@@ -147,9 +145,7 @@ class ProPurchaseOrder extends Equatable {
     'discountAmount': discountAmount,
     'deliveryDate': deliveryDate,
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
     'history': history.map((i) => i.toMap()).toList(),
   };
 
@@ -178,7 +174,7 @@ class ProPurchaseOrder extends Equatable {
   static final ProPurchaseOrder empty = ProPurchaseOrder(
     poNumber: '',
     storeNumber: '',
-    supplierId: '',
+    supplierLink: SupplierLink.empty,
     currency: '',
     lineItems: [],
     paymentTerm: '',
@@ -220,8 +216,7 @@ class ProPurchaseOrder extends Equatable {
   bool filterByAny(String filter) =>
       itemAsList.any((item) => item.contains(filter)) ||
       requestedBy.contains(filter) ||
-      supplierId.contains(filter) ||
-      supplierRepId.contains(filter) ||
+      supplierLink.filterByAny(filter) ||
       costCenterCode.contains(filter) ||
       currency.contains(filter) ||
       paymentTerm.contains(filter) ||
@@ -306,8 +301,7 @@ class ProPurchaseOrder extends Equatable {
     String? poNumber,
     String? rfqNumber,
     String? requestedBy,
-    String? supplierId,
-    String? supplierRepId,
+    SupplierLink? supplierLink,
     String? costCenterCode,
     List<ProLineItem>? lineItems,
     String? currency,
@@ -334,8 +328,7 @@ class ProPurchaseOrder extends Equatable {
       poNumber: poNumber ?? this.poNumber,
       rfqNumber: rfqNumber ?? this.rfqNumber,
       requestedBy: requestedBy ?? this.requestedBy,
-      supplierId: supplierId ?? this.supplierId,
-      supplierRepId: supplierRepId ?? this.supplierRepId,
+      supplierLink: supplierLink ?? this.supplierLink,
       currency: currency ?? this.currency,
       status: status ?? this.status,
       lineItems: lineItems ?? this.lineItems,
@@ -365,8 +358,7 @@ class ProPurchaseOrder extends Equatable {
     poNumber,
     rfqNumber,
     requestedBy,
-    supplierId,
-    supplierRepId,
+    supplierLink,
     status,
     lineItems,
     currency,
@@ -393,7 +385,7 @@ class ProPurchaseOrder extends Equatable {
     id,
     storeNumber,
     '$rfqNumber -> $poNumber',
-    supplierId,
+    supplierLink.supplierId,
     getPOStatus.toTitle,
     currency.toTitle,
     paymentTerm.toTitle,
