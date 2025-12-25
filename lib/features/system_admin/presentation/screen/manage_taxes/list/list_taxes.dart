@@ -42,7 +42,7 @@ class _ListTaxesState extends State<ListTaxes> {
       omitAtIndex: 0,
       headers: Tax.dataHeader,
       toolbar: _buildToolbar(taxes),
-      rows: taxes.map((d) => d.toListT()).toList(),
+      rows: taxes.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(taxes, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(taxes, row.first),
     );

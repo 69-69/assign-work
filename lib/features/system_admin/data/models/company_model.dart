@@ -2,6 +2,7 @@ import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
 class Company extends Equatable {
@@ -60,6 +61,27 @@ class Company extends Equatable {
     );
   }
 
+  factory Company.create({
+    required Company company,
+    String? logo,
+    String? createdBy,
+    String? updatedBy,
+    List<AuditLog>? history,
+    List<AddressInfo>? addresses,
+  }) => Company(
+    id: company.id,
+    name: company.name,
+    email: company.email,
+    phone: company.phone,
+    altPhone: company.altPhone,
+    faxNumber: company.faxNumber,
+    logo: logo ?? company.logo,
+    addresses: addresses ?? company.addresses,
+    createdBy: createdBy ?? company.createdBy,
+    updatedBy: updatedBy ?? company.updatedBy,
+    history: history ?? company.history,
+  );
+
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
@@ -113,6 +135,10 @@ class Company extends Equatable {
 
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
+
+  // Get a Single Address by type (e.g., office, shipping, billing, warehouse)
+  AddressInfo? getByType(String type) =>
+      addresses.firstWhereOrNull((e) => e.getType == type);
 
   /// copyWith method
   Company copyWith({

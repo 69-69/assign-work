@@ -7,7 +7,6 @@ import 'package:assign_erp/features/system_admin/data/models/category_model.dart
 import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/item_config/create/create_category.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/item_config/update/update_category.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,7 +57,7 @@ class _ListCategoriesState extends State<ListCategories> {
       omitAtIndex: 0,
       headers: Category.dataHeader,
       toolbar: _buildToolbar(categories),
-      rows: categories.map((d) => d.toListL()).toList(),
+      rows: categories.map((cat) => cat.itemAsList).toList(),
       onEditTap: (row) async => _onEditTap(categories, row.first),
       onDeleteTap: (row) async => _onDeleteTap(categories, row.first),
     );
@@ -90,7 +89,7 @@ class _ListCategoriesState extends State<ListCategories> {
 
   Future<void> _onEditTap(List<Category> categories, String id) async {
     final category = Category.findCategoriesById(categories, id).first;
-    await context.openUpdateCategory(category: category);
+    await context.openAddCategory(serverCategory: category);
   }
 
   Future<void> _onDeleteTap(List<Category> categories, String id) async {

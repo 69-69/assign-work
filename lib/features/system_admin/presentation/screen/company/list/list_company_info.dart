@@ -5,7 +5,6 @@ import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
-import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -61,24 +60,21 @@ class _InfoCard extends StatelessWidget {
     return CustomScaffold(
       noAppBar: true,
       body: Padding(
-        padding: const EdgeInsets.all(50),
+        padding: const EdgeInsets.all(40),
         child: _buildBody(context),
       ),
       bottomNavigationBar: const SizedBox.shrink(),
     );
   }
 
+  EdgeInsets get _contentPadding => EdgeInsets.fromLTRB(40, 10, 40, 10);
+
   Widget _buildBody(BuildContext context) {
     return CustomScrollView(
       slivers: [
         SliverFillRemaining(
           hasScrollBody: false,
-          child: FormGroupCard(
-            children: [
-              if (info.isNotEmpty) _buildEditButton(context),
-              _buildCompanyInfo(context),
-            ],
-          ),
+          child: _buildCompanyInfo(context),
         ),
       ],
     );
@@ -86,25 +82,46 @@ class _InfoCard extends StatelessWidget {
 
   Widget _buildCompanyInfo(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+        FormGroupCard(
+          contentPadding: _contentPadding,
           children: [
-            _buildLogo(context),
-            const SizedBox(width: 16.0),
-            _buildCompanyDetails(context),
+            if (info.isNotEmpty) _buildEditButton(context),
+            Row(
+              children: [
+                _buildLogo(context),
+                const SizedBox(width: 16.0),
+                Expanded(child: _buildCompanyDetails(context)),
+              ],
+            ),
           ],
         ),
-        HorizontalDivider(),
-        ...info.addresses.map(
-          (e) => _buildRichText(
-            context,
-            label: '${e.type.getName} Address'.toTitle,
-            text: e.address,
-            padding: const EdgeInsets.only(top: 10.0),
-          ),
+        ...info.addresses.map((e) => _buildAddressInfo(context, e: e)),
+      ],
+    );
+  }
+
+  Widget _buildAddressInfo(BuildContext context, {required AddressInfo e}) {
+    final pad = const EdgeInsets.only(top: 8.0);
+    return FormGroupCard(
+      title: '${e.type.getName} Address'.toUpperAll,
+      scrollDirection: Axis.vertical,
+      contentPadding: _contentPadding,
+      children: [
+        _buildRichText(context, label: 'Street', text: e.address, padding: pad),
+        _buildRichText(context, label: 'City', text: e.city, padding: pad),
+        _buildRichText(
+          context,
+          label: 'Postal Code',
+          text: e.postalCode,
+          padding: pad,
+        ),
+        _buildRichText(
+          context,
+          label: 'State / Region',
+          text: e.state,
+          padding: pad,
         ),
       ],
     );
@@ -139,14 +156,15 @@ class _InfoCard extends StatelessWidget {
   }
 
   Widget _buildEditButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(right: 6.0),
-      alignment: Alignment.centerRight,
+    final color = context.onPrimaryContainer;
+
+    return Align(
+      alignment: Alignment.topRight,
       child: context.outlinedIconBtn(
-        Icon(Icons.edit, color: kPrimaryAccentColor),
+        Icon(Icons.edit, color: color),
         label: 'Edit Company',
-        txtColor: kPrimaryAccentColor,
-        borderColor: kPrimaryAccentColor,
+        txtColor: color,
+        borderColor: color,
         onPressed: () => context.openUpdateCompanyInfo(serverInfo: info),
       ),
     );
@@ -207,19 +225,20 @@ class _InfoCard extends StatelessWidget {
     String text = '',
     EdgeInsetsGeometry? padding,
   }) {
+    final style = context.textTheme.bodyLarge;
+
     return Padding(
       padding: padding ?? const EdgeInsets.only(top: 4.0),
       child: RichText(
-        overflow: TextOverflow.ellipsis,
+        overflow: TextOverflow.fade,
+        softWrap: true,
         text: TextSpan(
           text: '$label: ',
-          style: context.textTheme.titleLarge?.copyWith(color: kTextColor),
+          style: style?.copyWith(color: kTextColor),
           children: [
             TextSpan(
               text: text.toTitle,
-              style: context.textTheme.titleLarge?.copyWith(
-                color: context.onSurfaceColor,
-              ),
+              style: style?.copyWith(color: context.onSurfaceColor),
             ),
           ],
         ),

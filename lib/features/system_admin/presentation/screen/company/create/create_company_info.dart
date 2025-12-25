@@ -1,7 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -15,7 +14,7 @@ import 'package:assign_erp/features/system_admin/data/models/company_model.dart'
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/company_form_inputs.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/upload_company_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,27 +52,19 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
   final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   // Construct Company Info Object
-  Company get _info {
-    final company = _companyInfo.first;
-
-    return Company(
-      logo: _uploadedLogoPath,
-      name: company.name,
-      email: company.email,
-      phone: company.phone,
-      altPhone: company.altPhone,
-      faxNumber: company.faxNumber,
-      addresses: List.from(_addresses),
-      createdBy: _employee!.fullName,
-      history: [
-        AuditLog(
-          action: AuditAction.created,
-          actionBy: _employee!.employeeId,
-          statusAfterAction: 'unknown',
-        ),
-      ],
-    );
-  }
+  Company get _info => Company.create(
+    logo: _uploadedLogoPath,
+    company: _companyInfo.first,
+    addresses: List.from(_addresses),
+    createdBy: _employee!.fullName,
+    history: [
+      AuditLog(
+        action: AuditAction.created,
+        actionBy: _employee!.employeeId,
+        statusAfterAction: 'unknown',
+      ),
+    ],
+  );
 
   void _onSubmit() async {
     if (_isSubmitting) return;
@@ -103,7 +94,6 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
   // Save Company-info to cache
   Future<void> _saveToCache() async {
     final company = _companyInfo.first;
-    prettyPrint('_addresses-1', _addresses);
 
     final settings = (await _printoutService.getSettings())?.copyWith(
       companyLogo: _uploadedLogoPath,
@@ -114,7 +104,6 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       companyAddresses: _addresses.map((e) => e.toMap()).toList(),
     );
     if (settings != null) {
-      prettyPrint('_addresses-2', _addresses);
       await _printoutService.setSettings(settings);
     }
   }

@@ -7,6 +7,12 @@ enum AddressType { billing, shipping, warehouse, office }
 extension AddressTypeExtension on AddressType {
   /// [getName] Get the specific Enum Name (e.g. "material")
   String get getName => EnumHelper<AddressType>(this).getName;
+
+  // if same
+  bool get isBilling => this == AddressType.billing;
+  bool get isShipping => this == AddressType.shipping;
+  bool get isWarehouse => this == AddressType.warehouse;
+  bool get isOffice => this == AddressType.office;
 }
 
 /// Address Class [Address]

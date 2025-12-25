@@ -156,10 +156,6 @@ class RequestForQuote extends Equatable {
     'shippingAddress': shippingAddress?.toMap(),
     'createdBy': createdBy,
     'updatedBy': updatedBy,
-    'createdAt': createdAt,
-    'updatedAt': updatedAt,
-    'deadline': deadline,
-    'expectedDate': expectedDate,
     'history': history.map((i) => i.toMap()).toList(),
   };
 
@@ -215,6 +211,7 @@ class RequestForQuote extends Equatable {
     lineItems: const [],
     createdBy: '',
     requestedBy: '',
+    shippingAddress: null,
   );
 
   /// Returns true if this instance is the singleton [empty] RFQ.

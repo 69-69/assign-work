@@ -6,7 +6,7 @@ class CategoryBloc extends SetupBloc<Category> {
   CategoryBloc({required super.firestore})
     : super(
         collectionPath: categoryDBCollectionPath,
-        fromFirestore: (data, id) => Category.fromMap(data, id),
+        fromFirestore: (data, id) => Category.fromMap(data, id: id),
         toFirestore: (info) => info.toMap(),
         toCache: (info) => info.toCache(),
       );

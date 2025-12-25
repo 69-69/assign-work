@@ -14,13 +14,12 @@ class ProductConfigScreen extends StatelessWidget {
   CustomTab _buildBody(BuildContext context) {
     return CustomTab(
       length: 2,
-      indicatorWeight: 1.0,
-      hideIcon: false,
       tabs: [
-        {'label': 'Any Widget here', 'icon': Icons.widgets},
         {'label': 'Item Category', 'icon': Icons.category_outlined},
+        {'label': 'Any Widget here', 'icon': Icons.widgets},
       ],
       children: [
+        ListCategories(),
         Center(
           child: Text(
             'Any Widget Can be Used',
@@ -28,7 +27,6 @@ class ProductConfigScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ),
-        ListCategories(),
       ],
     );
   }

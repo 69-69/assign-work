@@ -289,7 +289,7 @@ class ProcurementForm {
     ),
     FieldGroupConfig(
       key: 'address',
-      label: 'Address...',
+      label: 'Street Address...',
       type: TextInputType.multiline,
       isTextArea: true,
       isAutoGrow: true,

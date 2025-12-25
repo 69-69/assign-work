@@ -89,7 +89,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
     final depart = Department.findById(departments, id);
     if (depart == null) return;
 
-    await context.openAddDepartment(serverDepartment: depart);
+    await context.openAddDepartment(serverDepart: depart);
   }
 
   Future<void> _onDeleteTap(List<Department> departments, String id) async {

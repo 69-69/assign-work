@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -7,27 +8,29 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/department_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/company_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension CreateDepartment<T> on BuildContext {
-  Future<void> openAddDepartment({Department? serverDepartment}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: BottomSheetScaffold(
-          title: '${serverDepartment != null ? 'Edit' : 'Create'} Department',
-          body: _AddDepartmentForm(serverDepartment: serverDepartment),
-        ),
-      );
+  Future<void> openAddDepartment({Department? serverDepart}) => openBottomSheet(
+    isExpand: false,
+    child: BottomSheetScaffold(
+      title: serverDepart != null
+          ? 'Edit ${serverDepart.name}'
+          : 'Create Department',
+      body: _AddDepartmentForm(serverDepart: serverDepart),
+    ),
+  );
 }
 
 class _AddDepartmentForm extends StatefulWidget {
-  final Department? serverDepartment;
+  final Department? serverDepart;
 
-  const _AddDepartmentForm({this.serverDepartment});
+  const _AddDepartmentForm({this.serverDepart});
 
   @override
   State<_AddDepartmentForm> createState() => _AddDepartmentFormState();
@@ -35,17 +38,16 @@ class _AddDepartmentForm extends StatefulWidget {
 
 class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   final _formKey = GlobalKey<FormState>();
-  final List<Department> _departmentList = [];
-
-  Department? get _serverDepartment => widget.serverDepartment;
+  final List<Department> _departments = [];
+  Department? get _serverDepart => widget.serverDepart;
   bool get _isValid => _formKey.currentState?.validate() ?? false;
-  String get _employeeName => context.employee!.fullName;
+  Employee? get _employee => context.employee;
 
   void _onSubmit() {
-    if (_isValid && _departmentList.isNotEmpty) {
+    if (_isValid && _departments.isNotEmpty) {
       final bloc = context.read<DepartmentBloc>();
 
-      if (_serverDepartment != null) {
+      if (_serverDepart != null) {
         final updated = _prepareUpdatedDepartment();
 
         bloc.add(
@@ -63,22 +65,28 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     }
   }
 
+  List<AuditLog> history([action = AuditAction.created]) => [
+    AuditLog(action: action, actionBy: _employee!.employeeId),
+  ];
+
   Department _prepareUpdatedDepartment() {
-    final updated = _departmentList.first.copyWith(
-      id: _serverDepartment!.id,
-      code: _serverDepartment!.code,
-      updatedBy: _employeeName,
+    final updated = _departments.first.copyWith(
+      id: _serverDepart!.id,
+      code: _serverDepart!.code,
+      updatedBy: _employee!.fullName,
+      history: history(),
     );
     return updated;
   }
 
   List<Department> _prepareNewDepartments() {
     // Append department code to each department
-    final newDeparts = _departmentList
+    final newDeparts = _departments
         .map(
           (e) => e.copyWith(
             code: e.name.generateUniqueCode(),
-            createdBy: _employeeName,
+            createdBy: _employee!.fullName,
+            history: history(AuditAction.updated),
           ),
         )
         .toList();
@@ -87,10 +95,10 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
 
   // load existing departments
   void _loadExistingDeparts() {
-    if (_serverDepartment != null) {
-      _departmentList
+    if (_serverDepart != null) {
+      _departments
         ..clear()
-        ..add(_serverDepartment!);
+        ..add(_serverDepart!);
     }
   }
 
@@ -116,18 +124,15 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              showButton: _serverDepartment == null,
-              title: _serverDepartment?.name ?? 'Company\'s Department(s)',
+              showButton: _serverDepart == null,
+              title: 'Company\'s Department(s)',
               fieldsConfig: CompanyFormInputs.departmentsFields,
-              initialData: [?_serverDepartment?.toMap()],
-              /*initialData: [
-              _serverDepartment?.toMap().map((k, v) => MapEntry(k, v.toString())) ?? {};
-              ],*/
+              initialData: [?_serverDepart?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
                 if (_isValid) setState(() {});
 
                 // Create a new line item
-                _departmentList
+                _departments
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map((e) => Department.fromMap(e)));
               },
@@ -135,7 +140,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           ],
         ),
         context.confirmableActionButton(
-          label: _serverDepartment == null ? 'Create Department' : null,
+          label: _serverDepart == null ? 'Create Department' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

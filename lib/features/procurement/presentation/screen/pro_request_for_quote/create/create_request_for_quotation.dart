@@ -3,6 +3,7 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
@@ -78,22 +79,22 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   bool _isRebuilding = false;
 
   // Basic fields
-  bool _isSubmitting = false;
-  bool _autoCreatePo = true; // auto generate PO when RFQ is Accepted
-  bool _useDefaultAddress = true;
-  String _costCenterCode = '';
-  String _rfqNumber = '';
+  String? _rfqStatus;
   String _rfqTitle = '';
   String _currency = '';
+  String _rfqNumber = '';
   String _requestedBy = '';
+  bool _autoCreatePo = true; // auto generate PO when RFQ is Accepted
+  bool _isSubmitting = false;
+  String _costCenterCode = '';
   String _departmentCode = '';
-  String? _rfqStatus;
+  bool _useDefaultAddress = false;
 
   /// Line Items & Additional Info
   final List<ProLineItem> _lineItems = [];
+  final Map<String, dynamic> _buyerTerms = {};
   final List<SupplierLink> _supplierLinks = [];
   final List<AddressInfo> _shippingAddress = [];
-  final Map<String, dynamic> _buyerTerms = {};
 
   /// Initial PR data if converting PR → RFQ
   WorkflowConverter? get _initialPR => widget.initialPRData;
@@ -110,18 +111,30 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
-  @override
-  void initState() {
-    super.initState();
-    _generateRFQNumber();
-  }
-
   void _generateRFQNumber() async {
     await DocType.rfq.getShortUID(
       onChanged: (s) {
         if (mounted) setState(() => _rfqNumber = s);
       },
     );
+  }
+
+  Future<void> _getDefaultShippingAddress() async {
+    if (!_useDefaultAddress) {
+      prettyPrint('Default-Address', 'Its False');
+      setState(() => _shippingAddress.clear());
+      return;
+    }
+
+    final shippingAddress = await RFQFormInputs.getCompanyAddress();
+
+    if (!mounted || shippingAddress == null) return;
+
+    setState(() {
+      _shippingAddress
+        ..clear()
+        ..add(shippingAddress);
+    });
   }
 
   /// Construct RequestForQuote object
@@ -156,11 +169,10 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
-
     setState(() => _isSubmitting = true);
 
     try {
-      if (!isFormValid || _newRFQ.isNullOrEmpty) {
+      if (!isFormValid || _newRFQ.isEmpty) {
         context.showAlertOverlay(
           'Please enter all required fields',
           bgColor: kDangerColor,
@@ -174,7 +186,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
       _confirmPrintoutDialog();
     } finally {
-      if (mounted) {
+      if (mounted && isFormValid) {
         await _rebuildForm(); // rebuild fresh form
       }
     }
@@ -201,31 +213,38 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   }
 
   void _resetForm() {
-    if (mounted) {
-      _formKey.currentState?.reset();
+    _formKey.currentState?.reset();
 
-      setState(() {
-        _isSubmitting = false;
-        _rfqTitle = '';
-        _autoCreatePo = false;
-        _supplierLinks.clear();
-        _requestedBy = '';
-        _currency = '';
-        _costCenterCode = '';
-        _departmentCode = '';
-        _lineItems.clear();
-        _shippingAddress.clear();
-        _rfqStatus = null;
-      });
-
-      // Reset dynamic fields
-      _lineItems.clear();
+    setState(() {
+      _isSubmitting = false;
+      _rfqTitle = '';
+      _autoCreatePo = false;
       _supplierLinks.clear();
+      _requestedBy = '';
+      _currency = '';
+      _costCenterCode = '';
+      _departmentCode = '';
+      _lineItems.clear();
       _shippingAddress.clear();
-      _buyerTerms.clear();
+      _rfqStatus = null;
+    });
 
-      _generateRFQNumber(); // fresh RFQ number
-    }
+    // Reset dynamic fields
+    _lineItems.clear();
+    _supplierLinks.clear();
+    _shippingAddress.clear();
+    _buyerTerms.clear();
+    _useDefaultAddress = true;
+
+    _generateRFQNumber();
+  }
+
+  @override
+  void initState() {
+    _generateRFQNumber();
+
+    _getDefaultShippingAddress();
+    super.initState();
   }
 
   @override
@@ -280,8 +299,11 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
               width: context.dynamicWidth(0.48),
               child: UseDefaultAddress(
                 isChecked: _useDefaultAddress,
-                onChanged: (v) {
-                  if (mounted) setState(() => _useDefaultAddress = v);
+                onChanged: (v) async {
+                  if (!mounted) return;
+
+                  setState(() => _useDefaultAddress = v);
+                  await _getDefaultShippingAddress();
                 },
               ),
             ),
@@ -338,7 +360,10 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   // Addresses (e.g., Buyer Shipping Address)
   DynamicTextFields _buildShippingAddress() {
     return DynamicTextFields(
-      initialData: [{}],
+      key: Key('default_${_useDefaultAddress.hashCode}'),
+      initialData: _shippingAddress.isNotEmpty
+          ? [_shippingAddress.first.toMap()]
+          : [{}], // empty form
       fieldsConfig: RFQFormInputs.shippingAddressFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});

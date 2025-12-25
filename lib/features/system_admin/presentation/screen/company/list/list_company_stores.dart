@@ -60,7 +60,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       omitAtIndex: 0,
       headers: CompanyStores.dataTableHeader,
       toolbar: _buildToolbar(stores),
-      rows: stores.map((d) => d.itemAsList()).toList(),
+      rows: stores.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => _onEditTap(stores, row.first),
       onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
       optButtonIcon: Icons.store,

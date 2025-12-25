@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -16,6 +17,7 @@ class CompanyStores extends Equatable {
   final DateTime createdAt;
   final String updatedBy;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   CompanyStores({
     this.id = '',
@@ -28,22 +30,25 @@ class CompanyStores extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? _today,
+    List<AuditLog>? history,
+  }) : history = history ?? const [],
+       createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [StoreLocation.fromMap]
-  factory CompanyStores.fromMap(Map<String, dynamic> data, {String? id}) {
+  factory CompanyStores.fromMap(Map<String, dynamic> map, {String? id}) {
     return CompanyStores(
-      id: id ?? data['id'] ?? '',
-      name: data['name'] ?? '',
-      phone: data['phone'] ?? '',
-      location: data['location'] ?? '',
-      storeNumber: data['storeNumber'] ?? '',
-      notes: data['notes'] ?? '',
-      createdBy: data['createdBy'] ?? '',
-      createdAt: toDateTimeFn(data['createdAt']),
-      updatedBy: data['updatedBy'] ?? '',
-      updatedAt: toDateTimeFn(data['updatedAt']),
+      id: id ?? map['id'] ?? '',
+      name: map['name'] ?? '',
+      phone: map['phone'] ?? '',
+      location: map['location'] ?? '',
+      storeNumber: map['storeNumber'] ?? '',
+      notes: map['notes'] ?? '',
+      createdBy: map['createdBy'] ?? '',
+      createdAt: toDateTimeFn(map['createdAt']),
+      updatedBy: map['updatedBy'] ?? '',
+      updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -56,9 +61,8 @@ class CompanyStores extends Equatable {
     'storeNumber': storeNumber,
     'notes': notes,
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
+    'history': history.map((e) => e.toMap()).toList(),
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
@@ -128,6 +132,7 @@ class CompanyStores extends Equatable {
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return CompanyStores(
       id: id ?? this.id,
@@ -140,6 +145,7 @@ class CompanyStores extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
 
@@ -155,10 +161,11 @@ class CompanyStores extends Equatable {
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
-  /// ToList for StoreLocation [toListL]
-  List<String> itemAsList() => [
+  /// ToList for StoreLocation [itemAsList]
+  List<String> get itemAsList => [
     id,
     storeNumber,
     name.toTitle,

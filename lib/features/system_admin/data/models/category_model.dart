@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -11,6 +12,7 @@ class Category extends Equatable {
   final DateTime createdAt;
   final String updatedBy;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   Category({
     this.id = '',
@@ -19,18 +21,21 @@ class Category extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? _today,
+    List<AuditLog>? history,
+  }) : history = history ?? const [],
+       createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [StoreLocation.fromMap]
-  factory Category.fromMap(Map<String, dynamic> data, String documentId) {
+  factory Category.fromMap(Map<String, dynamic> map, {String? id}) {
     return Category(
-      id: documentId,
-      name: data['name'] ?? '',
-      createdBy: data['createdBy'] ?? '',
-      createdAt: toDateTimeFn(data['createdAt']),
-      updatedBy: data['updatedBy'] ?? '',
-      updatedAt: toDateTimeFn(data['updatedAt']),
+      id: id ?? map['id'] ?? '',
+      name: map['name'] ?? '',
+      createdBy: map['createdBy'] ?? '',
+      createdAt: toDateTimeFn(map['createdAt']),
+      updatedBy: map['updatedBy'] ?? '',
+      updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -39,9 +44,8 @@ class Category extends Equatable {
     'id': id,
     'name': name,
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
+    'history': history.map((e) => e.toMap()).toList(),
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
@@ -109,6 +113,7 @@ class Category extends Equatable {
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return Category(
       id: id ?? this.id,
@@ -117,6 +122,7 @@ class Category extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
 
@@ -128,10 +134,11 @@ class Category extends Equatable {
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
-  /// ToList for StoreLocation [toListL]
-  List<String> toListL() => [
+  /// ToList for StoreLocation [itemAsList]
+  List<String> get itemAsList => [
     id,
     name.toTitle,
     createdBy.toTitle,

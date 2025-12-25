@@ -7,8 +7,12 @@ class FormGroupCard extends StatefulWidget {
   final Color? bgColor;
   final Color? textColor;
   final List<Widget> children;
+  final Axis? scrollDirection;
   final bool showCollapseButton;
   final GlobalKey<FormState>? formKey;
+  final CrossAxisAlignment? crossAlignment;
+  final EdgeInsetsGeometry? contentMargin;
+  final EdgeInsetsGeometry? contentPadding;
 
   const FormGroupCard({
     super.key,
@@ -16,9 +20,14 @@ class FormGroupCard extends StatefulWidget {
     this.textColor,
     this.title = '',
     this.subTitle = '',
+    this.scrollDirection,
     required this.children,
     this.showCollapseButton = true,
+    this.contentMargin,
+
     this.formKey,
+    this.crossAlignment,
+    this.contentPadding,
   });
 
   @override
@@ -35,9 +44,16 @@ class _FormGroupCardState extends State<FormGroupCard> {
   // Generate a unique key for each card based on the title
   String get _collapseKey => _title.isEmpty ? '' : _title.replaceAll(' ', '_');
   List<Widget> get _children => widget.children;
-  Color? get _bgColor => widget.bgColor;
   Color? get _textColor => widget.textColor;
+  Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+  Axis get _scrollDirection => widget.scrollDirection ?? Axis.horizontal;
   bool get _showCollapseButton => widget.showCollapseButton;
+  EdgeInsetsGeometry get _contentPadding =>
+      widget.contentPadding ?? const EdgeInsets.all(10);
+  CrossAxisAlignment get _crossAlignment =>
+      widget.crossAlignment ?? CrossAxisAlignment.start;
+  EdgeInsetsGeometry get _contentMargin =>
+      widget.contentMargin ?? const EdgeInsets.symmetric(vertical: 8);
 
   @override
   void initState() {
@@ -57,11 +73,12 @@ class _FormGroupCardState extends State<FormGroupCard> {
   Widget build(BuildContext context) {
     return Card(
       // elevation: 2.0,
-      color: _bgColor ?? context.onSecondaryColor, // context.scaffoldBgColor
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: _bgColor, // context.scaffoldBgColor
+      margin: _contentMargin,
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: _contentPadding,
         child: Column(
+          crossAxisAlignment: _crossAlignment,
           children: [
             if (_title.isNotEmpty) ...{_buildHeader(context)},
             Visibility(
@@ -69,7 +86,11 @@ class _FormGroupCardState extends State<FormGroupCard> {
               maintainState: true, // KEEP the state of children
               maintainAnimation: false,
               maintainSize: false, // Prevent layout jump
-              child: Wrap(runSpacing: 14.0, children: _children),
+              child: Wrap(
+                runSpacing: 14.0,
+                direction: _scrollDirection,
+                children: _children,
+              ),
             ),
           ],
         ),

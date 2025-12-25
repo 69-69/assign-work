@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /* USAGE:
@@ -103,6 +104,8 @@ class CustomCheckboxTile extends StatelessWidget {
   final Widget? secondary;
   final ValueChanged<bool?>? onChanged;
   final Color? tileColor;
+  final Color? activeColor;
+  final Color? borderColor;
   final EdgeInsetsGeometry? contentPadding;
   final WidgetStateProperty<Color?>? fillColor;
 
@@ -115,7 +118,9 @@ class CustomCheckboxTile extends StatelessWidget {
     this.onChanged,
     this.tileColor,
     this.contentPadding,
+    this.activeColor,
     this.fillColor,
+    this.borderColor,
   });
 
   @override
@@ -124,12 +129,14 @@ class CustomCheckboxTile extends StatelessWidget {
       dense: true,
       tileColor: tileColor,
       fillColor: fillColor,
+      activeColor: activeColor,
       contentPadding: contentPadding,
       value: value,
       title: title,
       subtitle: subtitle,
       secondary: secondary,
       onChanged: onChanged,
+      side: BorderSide(color: borderColor ?? context.onSecondaryContainer),
     );
   }
 }

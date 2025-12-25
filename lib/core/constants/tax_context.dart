@@ -53,6 +53,6 @@ class TaxContextHelper {
       EnumHelper.fromString<TaxContext>(TaxContext.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList(List<TaxContext> contexts) =>
-      EnumHelper.toStringList<TaxContext>(contexts);
+  static List<String> toStringList([List<TaxContext>? contexts]) =>
+      EnumHelper.toStringList<TaxContext>(contexts ?? TaxContext.values);
 }

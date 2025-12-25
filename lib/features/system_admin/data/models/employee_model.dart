@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/account_status.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -27,6 +28,7 @@ class Employee extends Equatable {
   final String updatedBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   Employee({
     this.id = '',
@@ -46,7 +48,9 @@ class Employee extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? _today,
+    List<AuditLog>? history,
+  }) : history = history ?? const [],
+       createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
   static const String cacheKey = 'employee_auth_cache';
@@ -71,6 +75,7 @@ class Employee extends Equatable {
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
       updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -90,9 +95,8 @@ class Employee extends Equatable {
     'passCode': passCode,
     'status': status,
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
+    'history': history.map((e) => e.toMap()).toList(),
   };
 
   /// Convert Employee to a map for storing in Firestore [toMap]
@@ -131,6 +135,7 @@ class Employee extends Equatable {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return Employee(
       id: id ?? this.id,
@@ -150,6 +155,7 @@ class Employee extends Equatable {
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
       workspaceId: workspaceId ?? this.workspaceId,
+      history: history ?? this.history,
     );
   }
 
@@ -234,6 +240,7 @@ class Employee extends Equatable {
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
   /// ToList for Employee [itemAsList]

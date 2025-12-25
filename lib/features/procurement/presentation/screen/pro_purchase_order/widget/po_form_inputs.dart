@@ -1,7 +1,9 @@
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/form/currency_selection.dart';
@@ -15,6 +17,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/search_request_for_quotes.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/widget/procurement_form_fields.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_company.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
@@ -24,6 +27,14 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class POFormInputs {
+  /// Get Company Info and Addresses
+  static Future<AddressInfo?> getCompanyAddress({
+    String type = 'shipping',
+  }) async {
+    final company = await GetCompany.load();
+    return company.isNullOrEmpty ? null : company?.getByType(type);
+  }
+
   static updateListFromData<T>(
     List<T> list, {
     required List<Map<String, dynamic>> map,

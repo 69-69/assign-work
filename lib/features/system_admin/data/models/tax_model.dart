@@ -71,7 +71,7 @@ class Tax extends Equatable {
 
   // map template
   Map<String, dynamic> _mapTemp() {
-    final strList = TaxContextHelper.toStringList(autoApplyOn);
+    List<String> strList = TaxContextHelper.toStringList(autoApplyOn);
 
     return {
       'id': id,
@@ -83,9 +83,7 @@ class Tax extends Equatable {
       'isWithholding': isWithholding,
       'autoApplyOn': strList,
       'createdBy': createdBy,
-      'createdAt': createdAt,
       'updatedBy': updatedBy,
-      'updatedAt': updatedAt,
     };
   }
 
@@ -205,8 +203,8 @@ class Tax extends Equatable {
     updatedAt,
   ];
 
-  /// ToList for tax [toListT]
-  List<String> toListT() => [
+  /// ToList for tax [itemAsList]
+  List<String> get itemAsList => [
     id,
     name.toTitle,
     isWithholding ? 'Withholding Tax' : 'Standard Tax',

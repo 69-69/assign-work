@@ -1,164 +1,142 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/item_config/widget/item_pref_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension AddCategory<T> on BuildContext {
-  Future<void> openAddCategory({Widget? header}) => openBottomSheet(
+extension CreateCategory<T> on BuildContext {
+  Future<void> openAddCategory({Category? serverCategory}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create Item Category',
-      body: _AddCategoryForm(),
+      title: serverCategory != null
+          ? 'Edit ${serverCategory.name}'
+          : 'Create Category',
+      body: _AddCategoryForm(serverCategory: serverCategory),
     ),
   );
 }
 
 class _AddCategoryForm extends StatefulWidget {
-  const _AddCategoryForm();
+  final Category? serverCategory;
+
+  const _AddCategoryForm({this.serverCategory});
 
   @override
   State<_AddCategoryForm> createState() => _AddCategoryFormState();
 }
 
 class _AddCategoryFormState extends State<_AddCategoryForm> {
-  final ScrollController _scrollController = ScrollController();
-  bool isMultipleCategories = false;
+  final _formKey = GlobalKey<FormState>();
   final List<Category> _categories = [];
 
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  Category get _categoryData => Category(
-    name: _nameController.text,
-    createdBy: context.employee!.fullName,
-  );
+  Category? get _serverCategory => widget.serverCategory;
+  Employee? get _employee => context.employee;
+  bool get _isValid => _formKey.currentState?.validate() ?? false;
 
   void _onSubmit() {
-    if (_formKey.currentState!.validate()) {
-      /// Added Multiple Categories Simultaneously
-      _categories.add(_categoryData);
+    if (_isValid && _categories.isNotEmpty) {
+      final bloc = context.read<CategoryBloc>();
 
-      context.read<CategoryBloc>().add(
-        AddSetup<List<Category>>(data: _categories),
-      );
+      if (_serverCategory != null) {
+        final updated = _prepareUpdatedCategory();
 
-      _formKey.currentState!.reset();
+        bloc.add(UpdateSetup<Category>(documentId: updated.id, data: updated));
+        context.showAlertOverlay('Changes successfully saved');
+      } else {
+        final categories = _prepareNewCategories();
+        bloc.add(AddSetup<List<Category>>(data: categories));
 
-      _clearFields();
-
-      context.showAlertOverlay('Categories successfully created');
-      Navigator.pop(context);
+        _formKey.currentState!.reset();
+        context.showAlertOverlay('Categories successfully created');
+        Navigator.pop(context);
+      }
     }
   }
 
-  /// Function for Adding Multiple Categories Simultaneously
-  void _addCategoryToList() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => isMultipleCategories = true);
-      _categories.add(_categoryData);
+  List<AuditLog> history([action = AuditAction.created]) => [
+    AuditLog(action: action, actionBy: _employee!.employeeId),
+  ];
 
-      context.showAlertOverlay(
-        '${_nameController.text.toTitle} added to batch',
-      );
-      _clearFields();
+  Category _prepareUpdatedCategory() {
+    final updated = _categories.first.copyWith(
+      id: _serverCategory!.id,
+      name: _serverCategory!.name,
+      updatedBy: _employee!.fullName,
+      history: history(AuditAction.updated),
+    );
+    return updated;
+  }
+
+  List<Category> _prepareNewCategories() {
+    final newCats = _categories
+        .map(
+          (e) => e.copyWith(
+            createdBy: _employee!.fullName,
+            history: history(AuditAction.updated),
+          ),
+        )
+        .toList();
+    return newCats;
+  }
+
+  // load existing Categories
+  void _loadExistingCategories() {
+    if (_serverCategory != null) {
+      _categories
+        ..clear()
+        ..add(_serverCategory!);
     }
   }
 
-  void _clearFields() => _nameController.clear();
-
-  void _removeCategory(Category category) =>
-      setState(() => _categories.remove(category));
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingCategories();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: Wrap(
-        runSpacing: 20,
-        alignment: WrapAlignment.center,
-        children: [
-          if (isMultipleCategories && _categories.isNotEmpty)
-            _buildCategoryPreviewChips(),
-          _buildBody(context),
-        ],
-      ),
-    );
-  }
-
-  // Horizontal scrollable row of chips representing the List of batch of Categories
-  Widget _buildCategoryPreviewChips() {
-    return CustomScrollBar(
-      controller: _scrollController,
-      padding: EdgeInsets.zero,
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _categories.map((o) {
-          return o.isEmpty
-              ? const SizedBox.shrink()
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Chip(
-                    padding: EdgeInsets.zero,
-                    label: Text(
-                      o.name.toTitle,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    deleteButtonTooltipMessage: 'Remove ${o.name}',
-                    backgroundColor: kGrayColor.toAlpha(0.3),
-                    deleteIcon: const Icon(
-                      size: 16,
-                      Icons.clear,
-                      color: kGrayColor,
-                    ),
-                    onDeleted: () => _removeCategory(o),
-                  ),
-                );
-        }).toList(),
-      ),
+      child: _buildBody(context),
     );
   }
 
   Column _buildBody(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const SizedBox(height: 20.0),
-        CategoryTextField(
-          controller: _nameController,
-          onChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
+      children: [
+        FormGroupCard(
+          children: [
+            DynamicTextFields(
+              showButton: true,
+              title: 'Item Categories',
+              fieldsConfig: ItemPref.categoryField,
+              initialData: [?_serverCategory?.toMap()],
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (_isValid) setState(() {});
+
+                // Create a new line item
+                _categories
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.map((e) => Category.fromMap(e)));
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 10.0),
-        context.elevatedIconBtn(
-          Icons.add,
-          onPressed: _addCategoryToList,
-          label: 'Add to List',
-        ),
-        const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: isMultipleCategories
-              ? 'Create All Categories'
-              : 'Create Category',
+          label: _serverCategory == null ? 'Create Category' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
