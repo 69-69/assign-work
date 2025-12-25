@@ -3,12 +3,13 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/department_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -116,8 +117,8 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           children: [
             DynamicTextFields(
               showButton: _serverDepartment == null,
-              title: _serverDepartment?.name ?? 'Organization\'s Departments',
-              fieldsConfig: _fieldsConfig,
+              title: _serverDepartment?.name ?? 'Company\'s Department(s)',
+              fieldsConfig: CompanyFormInputs.departmentsFields,
               initialData: [?_serverDepartment?.toMap()],
               /*initialData: [
               _serverDepartment?.toMap().map((k, v) => MapEntry(k, v.toString())) ?? {};
@@ -140,31 +141,5 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         const SizedBox(height: 20.0),
       ],
     );
-  }
-
-  List<FieldGroupConfig> get _fieldsConfig {
-    return [
-      FieldGroupConfig(
-        key: 'name',
-        label: 'Department Name',
-        type: TextInputType.text,
-        helperText: 'Department name',
-      ),
-      FieldGroupConfig(
-        key: 'lead',
-        label: 'Department Lead',
-        type: TextInputType.text,
-        helperText: 'Department Lead name',
-      ),
-      FieldGroupConfig(
-        key: 'description',
-        label: 'Description',
-        type: TextInputType.multiline,
-        isTextArea: true,
-        isAutoGrow: true,
-        minLines: null,
-        helperText: 'Short description of the department\'s role',
-      ),
-    ];
   }
 }

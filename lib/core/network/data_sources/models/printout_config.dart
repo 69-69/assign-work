@@ -47,7 +47,7 @@ class PrintPDFConfig {
 
   // Asynchronous factory constructor
   static Future<PrintPDFConfig> create() async {
-    final PrintoutSetupCacheService service = PrintoutSetupCacheService();
+    final PrintSetupCacheService service = PrintSetupCacheService();
     var setup = await service.getSettings();
 
     // Load Printout-Assets Images
@@ -76,7 +76,7 @@ class PrintPDFConfig {
         email: setup.companyEmail ?? '',
         phone: setup.companyPhone ?? '',
         fax: setup.companyFax ?? '',
-        address: (setup.companyAddress ?? '').toSentence,
+        address: (setup.companyAddresses?.first['office'] ?? '').toSentence,
       );
       isDenseLayout = setup.layout == 'dense';
       // footerColorStr = setup.headerColor;

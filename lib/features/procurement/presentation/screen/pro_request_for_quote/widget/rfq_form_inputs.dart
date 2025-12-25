@@ -1,14 +1,15 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_switch_list.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/form/currency_selection.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
@@ -31,7 +32,7 @@ class RFQFormInputs {
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData(list, map: map, fromMap: fromMap);
+  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
 
   /// Apply taxes to RFQ quote
   static Future<RequestForQuote> applyTaxesToQuote(
@@ -325,7 +326,7 @@ class AutoCreateAndRFQStatus extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Auto-Generate PO when RFQ is Accepted
-        _AutoCreatePO(isSelected: isSelected, onChanged: onAutoCreateChanged),
+        _AutoCreatePO(isChecked: isSelected, onChanged: onAutoCreateChanged),
         _RFQStatusDropdown(
           initialValue: initialStatus,
           onChange: onStatusChanged,
@@ -594,20 +595,60 @@ class _PayTermsDropdown extends StatelessWidget {
 
 /// [_AutoCreatePO] Auto create PO when RFQ is Accepted
 class _AutoCreatePO extends StatelessWidget {
-  final bool isSelected;
+  final bool isChecked;
   final void Function(bool) onChanged;
 
-  const _AutoCreatePO({required this.isSelected, required this.onChanged});
+  const _AutoCreatePO({required this.isChecked, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     // Auto-Generate PO when RFQ is Accepted
-    return CustomSwitchList(
+    return CustomCheckboxTile(
+      title: Text(
+        'Auto Create PO?',
+        style: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text('Auto generate PO when RFQ is accepted'),
+      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+      value: isChecked,
+      onChanged: (v) => onChanged(v ?? false),
+    );
+    /*CustomSwitchTile(
       title: 'Auto Create PO',
       subtitle: 'Generate PO when RFQ is accepted',
       padding: EdgeInsets.symmetric(horizontal: 6.0),
       isSelected: isSelected,
       onChanged: onChanged,
+    );*/
+  }
+}
+
+/// [UseDefaultAddress] Option to Use Default Address
+class UseDefaultAddress extends StatelessWidget {
+  final bool isChecked;
+  final void Function(bool) onChanged;
+
+  const UseDefaultAddress({
+    super.key,
+    required this.isChecked,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomCheckboxTile(
+      title: Text(
+        'Use Default Address?',
+        style: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text('Use the company’s default address for shipping'),
+      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+      value: isChecked,
+      onChanged: (v) => onChanged(v ?? false),
     );
   }
 }

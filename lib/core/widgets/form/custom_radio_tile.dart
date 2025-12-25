@@ -46,10 +46,9 @@ class CustomRadioList<T> extends StatelessWidget {
     );
   }
 
-  List<RadioListTile<dynamic>> _buildList(BuildContext context) {
+  List<CustomRadioBoxTile<dynamic>> _buildList(BuildContext context) {
     return options.map((option) {
-      return RadioListTile<T>.adaptive(
-        dense: true,
+      return CustomRadioBoxTile<T>(
         tileColor: tileColor,
         fillColor: fillColor,
         contentPadding: padding,
@@ -57,8 +56,45 @@ class CustomRadioList<T> extends StatelessWidget {
         title: option.title,
         subtitle: option.subtitle,
         secondary: option.secondary,
-        selected: RadioGroup.maybeOf<T>(context)?.groupValue == option.value,
+        // selected: RadioGroup.maybeOf<T>(context)?.groupValue == option.value,
       );
     }).toList();
+  }
+}
+
+/// A Single Custom Radio button tile.
+class CustomRadioBoxTile<T> extends StatelessWidget {
+  final T value;
+  final Widget title;
+  final Widget? subtitle;
+  final Widget? secondary;
+  final Color? tileColor;
+  final EdgeInsetsGeometry? contentPadding;
+  final WidgetStateProperty<Color?>? fillColor;
+
+  const CustomRadioBoxTile({
+    super.key,
+    required this.value,
+    required this.title,
+    this.subtitle,
+    this.secondary,
+    this.tileColor,
+    this.fillColor,
+    this.contentPadding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RadioListTile<T>.adaptive(
+      dense: true,
+      tileColor: tileColor,
+      fillColor: fillColor,
+      contentPadding: contentPadding,
+      value: value,
+      title: title,
+      subtitle: subtitle,
+      secondary: secondary,
+      selected: RadioGroup.maybeOf<T>(context)?.groupValue == value,
+    );
   }
 }

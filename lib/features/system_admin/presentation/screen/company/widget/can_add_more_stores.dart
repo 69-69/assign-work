@@ -20,10 +20,16 @@ extension CompanyStoreBranches on BuildContext {
   /// Limits the number of branch stores or shops a company (subscriber) can add, according to the
   /// maximum number of allowed devices defined in the current Workspace subscription license.
   /// [canAddMoreStores]
-  bool get canAddMoreStores {
+  ({bool addMore, int maxAllowed}) get canAddMoreStores {
     final workspace = this.workspace;
-    if (workspace == null) return false; // no workspace, no action
-    return totalStores < workspace.maxAllowedDevices;
+    if (workspace == null) {
+      return (addMore: false, maxAllowed: 0); // no workspace, no action
+    }
+    // prettyPrint('workspace-maxAllowedDevices', workspace.maxAllowedDevices);
+    return (
+      addMore: totalStores < workspace.maxAllowedDevices,
+      maxAllowed: workspace.maxAllowedDevices,
+    );
   }
 
   /// [totalStores] Returns the total number of branch stores or shops a company (subscriber) has added.
@@ -99,10 +105,10 @@ extension CompanyStoreBranches on BuildContext {
     }
   }
 
-  Future<bool> showUpgradeDialog() async {
+  Future<dynamic> showUpgradeDialog() async {
     return await confirmAction(
       Text(
-        'You cannot add more branches (stores). Please extend your subscription license to add more stores.\nKindly contact support for more information.',
+        'You can\'t add more stores (branches). Please extend your subscription license to add more stores.\nKindly contact support for more information.',
       ),
       onAcceptLabel: 'Done',
       onRejectLabel: 'Cancel',

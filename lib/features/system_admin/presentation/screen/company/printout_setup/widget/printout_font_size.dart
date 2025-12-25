@@ -3,8 +3,8 @@ import 'package:assign_erp/core/network/data_sources/local/setup_printout_model.
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +17,7 @@ class PrintoutFontSizeScreen extends StatefulWidget {
 }
 
 class _PrintoutFontSizeScreenState extends State<PrintoutFontSizeScreen> {
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   SetupPrintOut settings = SetupPrintOut.empty;
 
@@ -109,18 +108,46 @@ class _PrintoutFontSizeScreenState extends State<PrintoutFontSizeScreen> {
     return ListTile(
       dense: true,
       titleAlignment: ListTileTitleAlignment.center,
-      title: Text(
-        'Print Font Sizes',
-        textAlign: TextAlign.center,
-        style: context.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
+      title: Wrap(
+        spacing: 5,
+        direction: Axis.horizontal,
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            'Print Font Sizes',
+            textAlign: TextAlign.center,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          _buildRefreshFontSizes(),
+        ],
       ),
       subtitle: Text(
         'This font size will be used for all printout',
         textAlign: TextAlign.center,
         style: context.textTheme.titleSmall,
       ),
+    );
+  }
+
+  RefreshButton _buildRefreshFontSizes() {
+    return RefreshButton(
+      tooltip: 'Reset & Refresh Font Sizes',
+      callback: () async {
+        final settings = (await _printoutService.getSettings())?.copyWith(
+          headerFontSize: null,
+          subHeaderFontSize: null,
+          tableFontSize: null,
+          bodyFontSize: null,
+        );
+        if (settings != null) {
+          await _printoutService.setSettings(settings);
+        }
+        _loadFontSizes();
+      },
     );
   }
 }

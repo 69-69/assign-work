@@ -25,7 +25,7 @@ class SetupPrintOutAdapter extends TypeAdapter<SetupPrintOut> {
       companyName: fields[5] as String?,
       companyEmail: fields[6] as String?,
       companyPhone: fields[7] as String?,
-      companyAddress: fields[8] as String?,
+      companyAddresses: fields[8] as List<Map<String, dynamic>>?,
       companyFax: fields[9] as String?,
       bodyFontSize: fields[10] as double?,
       tableFontSize: fields[11] as double?,
@@ -55,7 +55,7 @@ class SetupPrintOutAdapter extends TypeAdapter<SetupPrintOut> {
       ..writeByte(7)
       ..write(obj.companyPhone)
       ..writeByte(8)
-      ..write(obj.companyAddress)
+      ..write(obj.companyAddresses)
       ..writeByte(9)
       ..write(obj.companyFax)
       ..writeByte(10)

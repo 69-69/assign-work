@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
+import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
 import 'package:flutter/material.dart';
 
 extension ColumnRowBuilder on BuildContext {

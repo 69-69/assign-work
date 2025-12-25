@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -10,7 +12,7 @@ class Company extends Equatable {
   final String email;
   final String phone;
   final String altPhone;
-  final String address;
+  final List<AddressInfo> addresses;
   final String faxNumber;
   final String? logo;
   final String createdBy;
@@ -18,37 +20,43 @@ class Company extends Equatable {
   final String updatedBy;
   final DateTime updatedAt;
 
+  /// [history] Audit trail: track all changes made to the PR
+  final List<AuditLog> history;
+
   Company({
     this.id = '',
     required this.name,
     required this.email,
     required this.phone,
     this.altPhone = '',
-    required this.address,
+    required this.addresses,
     this.faxNumber = '',
     this.logo,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
-  }) : createdAt = createdAt ?? _today,
+    List<AuditLog>? history,
+  }) : history = history ?? [],
+       createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [CompanyInfo.fromMap]
-  factory Company.fromMap(Map<String, dynamic> map, {String? docId}) {
+  factory Company.fromMap(Map<String, dynamic> map, {String? id}) {
     return Company(
-      id: docId ?? map['id'] ?? '',
+      id: id ?? map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       phone: map['phone'] ?? '',
-      address: map['address'] ?? '',
       altPhone: map['altPhone'] ?? '',
       faxNumber: map['faxNumber'] ?? '',
       logo: map['logo'] ?? '',
+      addresses: AddressInfo.addresses(map['addresses']),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
       updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -58,14 +66,13 @@ class Company extends Equatable {
     'name': name,
     'email': email,
     'phone': phone,
-    'address': address,
     'altPhone': altPhone,
     'faxNumber': faxNumber,
     'logo': logo,
+    'addresses': addresses.map((i) => i.toMap()).toList(),
     'createdBy': createdBy,
-    'createdAt': createdAt,
     'updatedBy': updatedBy,
-    'updatedAt': updatedAt,
+    'history': history.map((i) => i.toMap()).toList(),
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
@@ -86,10 +93,15 @@ class Company extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  /// A singleton instance representing an empty/default Address.
-  /// Used as a fallback when no matching Address is found.
-  static Company get empty =>
-      Company(name: '', email: '', phone: '', address: '', createdBy: '');
+  /// A singleton instance representing an empty/default Company.
+  /// Used as a fallback when no matching Company is found.
+  static Company get empty => Company(
+    name: '',
+    email: '',
+    phone: '',
+    addresses: const [],
+    createdBy: '',
+  );
 
   /// [isEmpty] Checks if the PurchaseOrder is empty.
   bool get isEmpty => identical(this, Company.empty);
@@ -109,27 +121,29 @@ class Company extends Equatable {
     String? email,
     String? altPhone,
     String? name,
-    String? address,
     String? logo,
     String? faxNumber,
+    List<AddressInfo>? addresses,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return Company(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      address: address ?? this.address,
       altPhone: altPhone ?? this.altPhone,
       faxNumber: faxNumber ?? this.faxNumber,
       logo: logo ?? this.logo,
+      addresses: addresses ?? this.addresses,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
 
@@ -137,27 +151,28 @@ class Company extends Equatable {
   List<Object?> get props => [
     id,
     phone,
-    address,
     altPhone,
     email,
     name,
     faxNumber,
     logo,
+    addresses,
     createdBy,
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
   /// ToList for CompanyInfo [toListC]
-  List<String> toListC() => [
+  List<String> get itemAsList => [
     id,
     name.toTitle,
     phone,
     altPhone,
     email,
-    address.toTitle,
     faxNumber,
+    addresses.first.address.toSentence,
     createdBy.toTitle,
     getCreatedAt,
     updatedBy.toTitle,
@@ -170,8 +185,8 @@ class Company extends Equatable {
     'phone',
     'Alt Phone',
     'Email',
-    'Address',
     'Fax',
+    'Address',
     'Created By',
     'Created At',
     'Updated By',

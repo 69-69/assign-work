@@ -64,7 +64,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       onEditTap: (row) async => _onEditTap(stores, row.first),
       onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
       optButtonIcon: Icons.store,
-      optButtonLabel: 'Switch Store',
+      optButtonLabel: 'Switch',
       onOptButtonTap: (row) async {
         final store = _findStoresById(stores, row.first);
         await context.onSwitchStore(

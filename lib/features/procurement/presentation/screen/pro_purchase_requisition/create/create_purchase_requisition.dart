@@ -12,7 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
@@ -58,7 +58,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   // Basic fields
   bool _isSubmitting = false;
-  bool _autoCreateRfq = false; // auto create RFQ when PR is Approved
+  bool _autoCreateRfq = true; // auto create RFQ when PR is Approved
   String _prNumber = '';
   String _requestedBy = '';
   String _costCenterCode = ''; // 47960533
@@ -268,7 +268,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        PRFormInputs.updateListFromData(
+        PRFormInputs.updateListFromData<ProLineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => ProLineItem.fromMap(map, id: id),

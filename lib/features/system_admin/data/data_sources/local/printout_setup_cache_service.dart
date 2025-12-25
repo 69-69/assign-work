@@ -2,11 +2,11 @@ import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/core/network/data_sources/local/setup_printout_model.dart';
 import 'package:hive/hive.dart';
 
-class PrintoutSetupCacheService {
+class PrintSetupCacheService {
   static const String _settingsKey = 'print_out_setup';
   final Box<SetupPrintOut> dataBox;
 
-  PrintoutSetupCacheService()
+  PrintSetupCacheService()
     : dataBox = Hive.box<SetupPrintOut>(printoutSetupCache);
 
   Future<SetupPrintOut?> getSettings() async {

@@ -4,9 +4,9 @@ import 'package:assign_erp/core/constants/hosting_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
+import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -107,7 +107,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
   }
 
   _addStores(BuildContext context) {
-    final canAddStores = context.canAddMoreStores;
+    final canAddStores = context.canAddMoreStores.addMore;
 
     return _buildContainer(
       context,

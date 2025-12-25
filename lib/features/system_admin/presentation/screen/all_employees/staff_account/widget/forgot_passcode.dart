@@ -10,6 +10,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
@@ -92,8 +93,7 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
                 if (_formKey.currentState!.validate()) setState(() {});
               },
             ),
-
-            CheckboxListTile(
+            CustomCheckboxTile(
               contentPadding: EdgeInsets.zero,
               title: Row(
                 children: [

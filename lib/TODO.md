@@ -9,11 +9,16 @@
   - Updating PO
 - 7. RFQ
   - Updating RFQ
+-------------------------
+- @Continue
+  - Linking it with RFQ and PO
+  - Item Category
+  - ~~Company Setup with address (issue: address not saving multiple data)~~
 
 ```shell
 git init
 git add .
-git commit -m "Done with Creating RFQ...ongoing"
+git commit -m "Rsolved: Company Setup with address (issue: address not saving multiple data)"
 git branch -M main
 git push -u origin main
 ```

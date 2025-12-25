@@ -12,7 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
@@ -24,6 +24,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_printer.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/widget/material_or_service_toggle.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -101,9 +102,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   bool get isFormValid => _formKey.currentState!.validate();
 
   /// Current employee info
-  String get _employeeId => context.employee!.employeeId;
-  String get _employeeName => context.employee!.fullName;
-  String get _employeeStore => context.employee!.storeNumber;
+  Employee? get _employee => context.employee;
+  String get _employeeId => _employee!.employeeId;
+  String get _employeeName => _employee!.fullName;
+  String get _employeeStore => _employee!.storeNumber;
 
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();
 
@@ -158,7 +160,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
-
     setState(() => _isSubmitting = true);
 
     try {
@@ -283,7 +284,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         if (isFormValid) setState(() {});
 
         // Update the address list
-        POFormInputs.updateListFromData(
+        POFormInputs.updateListFromData<AddressInfo>(
           _addresses,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
@@ -321,7 +322,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        POFormInputs.updateListFromData(
+        POFormInputs.updateListFromData<ProLineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
@@ -363,7 +364,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         }).toList();
 
         // Update the RFQSupplier list
-        POFormInputs.updateListFromData(
+        POFormInputs.updateListFromData<SupplierLink>(
           _supplierLinks,
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map, id: id),

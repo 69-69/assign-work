@@ -230,7 +230,7 @@ extension Custombutton on BuildContext {
     Color? borderColor,
     String? tooltip,
     bool isCard = false,
-    required VoidCallback onPressed,
+    required void Function()? onPressed,
   }) {
     final btn = _buildIconButton(
       onPressed,
@@ -245,7 +245,7 @@ extension Custombutton on BuildContext {
   }
 
   IconButton _buildIconButton(
-    VoidCallback onPressed,
+    void Function()? onPressed,
     String? tooltip,
     Color? bgColor,
     Color? borderColor,

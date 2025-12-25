@@ -143,7 +143,6 @@ class ProPurchaseOrder extends Equatable {
     'totalAmount': totalAmount,
     'taxAmount': taxAmount,
     'discountAmount': discountAmount,
-    'deliveryDate': deliveryDate,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'history': history.map((i) => i.toMap()).toList(),

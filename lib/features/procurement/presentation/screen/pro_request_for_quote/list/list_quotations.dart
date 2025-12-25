@@ -295,15 +295,15 @@ class _ListQuotationsState extends State<ListQuotations> {
       id,
       quotes,
       auditAction: AuditAction.viewed,
-      onSingleSupplier: (quote, supplier) {
-        return context.openRFQDetails(
+      onSingleSupplier: (quote, supplier) async {
+        return await context.openRFQDetails(
           quote: quote,
           supplier: supplier,
           bloc: _readBloc,
         );
       },
-      onMultipleSuppliers: (quote, supplierLinks) {
-        return context.openRFQWithSuppliers(
+      onMultipleSuppliers: (quote, supplierLinks) async {
+        return await context.openRFQWithSuppliers(
           supplierLinks: supplierLinks,
           onSelected: (supplier) => context.openRFQDetails(
             quote: quote,

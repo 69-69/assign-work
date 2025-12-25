@@ -100,7 +100,7 @@ class StaticDropdown<T> extends StatelessWidget {
         return DropdownMenuItem<T>(
           value: item,
           child: Text(
-            labelText,
+            labelText.toTitle,
             softWrap: true,
             overflow: TextOverflow.fade,
             style: const TextStyle(fontWeight: FontWeight.normal),
@@ -122,7 +122,7 @@ class StaticDropdown<T> extends StatelessWidget {
         .map(
           (item) => DropdownMenuEntry<T>(
             value: item,
-            label: getDisplayText(item),
+            label: getDisplayText(item).toTitle,
             style: const ButtonStyle(),
           ),
         )

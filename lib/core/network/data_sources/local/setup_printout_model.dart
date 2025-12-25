@@ -22,7 +22,7 @@ class SetupPrintOut extends HiveObject {
   @HiveField(7)
   final String? companyPhone;
   @HiveField(8)
-  final String? companyAddress;
+  final List<Map<String, dynamic>>? companyAddresses;
   @HiveField(9)
   final String? companyFax;
   @HiveField(10)
@@ -43,7 +43,7 @@ class SetupPrintOut extends HiveObject {
     this.companyName,
     this.companyEmail,
     this.companyPhone,
-    this.companyAddress,
+    this.companyAddresses,
     this.companyFax,
     this.bodyFontSize = 11.0,
     this.tableFontSize = 10.0,
@@ -82,7 +82,7 @@ class SetupPrintOut extends HiveObject {
     String? companyName,
     String? companyEmail,
     String? companyPhone,
-    String? companyAddress,
+    List<Map<String, dynamic>>? companyAddresses,
     String? companyFax,
     double? headerFontSize,
     double? bodyFontSize,
@@ -97,7 +97,7 @@ class SetupPrintOut extends HiveObject {
     companyName: companyName ?? this.companyName,
     companyEmail: companyEmail ?? this.companyEmail,
     companyPhone: companyPhone ?? this.companyPhone,
-    companyAddress: companyAddress ?? this.companyAddress,
+    companyAddresses: companyAddresses ?? this.companyAddresses,
     companyFax: companyFax ?? this.companyFax,
     headerFontSize: headerFontSize ?? this.headerFontSize,
     bodyFontSize: bodyFontSize ?? this.bodyFontSize,

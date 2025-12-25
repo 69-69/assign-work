@@ -17,10 +17,12 @@ class DynamicTextFields extends StatefulWidget {
   /// [fullWidthKey] Use to specify the key for the full width field, else fallback to the last field
   final String? fullWidthKey;
   final bool showButton;
+  final int? fieldGroupsLimit;
   final Color? textColor;
   final List<FieldGroupConfig> fieldsConfig;
   final List<Map<String, dynamic>>? initialData;
   final Function(List<Map<String, dynamic>>) onChanged;
+  final Future<dynamic> Function()? onLimitReached;
 
   /// Callback to get the total count of fields-group
   final Function(int total)? onCount;
@@ -28,10 +30,12 @@ class DynamicTextFields extends StatefulWidget {
   const DynamicTextFields({
     super.key,
     this.showButton = false,
+    this.fieldGroupsLimit,
     required this.fieldsConfig,
     required this.onChanged,
     this.fullWidthKey,
     this.initialData,
+    this.onLimitReached,
     this.textColor,
     this.onCount,
     this.title,
@@ -44,11 +48,17 @@ class DynamicTextFields extends StatefulWidget {
 class _DynamicTextFieldsState extends State<DynamicTextFields> {
   final List<FieldGroup> _fieldGroups = [];
 
-  String? get _fullWidthKey => widget.fullWidthKey;
-
   String? get _title => widget.title;
-
+  bool get _showButton => widget.showButton;
+  String? get _fullWidthKey => widget.fullWidthKey;
   List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
+  Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
+  int get _fieldGroupsLength => _fieldGroups.length;
+
+  bool get _canAddMoreGroups {
+    final limit = widget.fieldGroupsLimit;
+    return limit == null || _fieldGroupsLength < (limit - 1);
+  }
 
   @override
   void initState() {
@@ -133,7 +143,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
               },
             ),
           ),
-          ?widget.showButton
+          ?_showButton
               ? SizedBox(
                   width: 24,
                   height: 24,
@@ -163,7 +173,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         InputDecoration(
           helperText: helperText,
           labelText: labelText,
-          suffixIcon: widget.showButton ? _suffixCount(labelText, index) : null,
+          suffixIcon: _showButton ? _suffixCount(labelText, index) : null,
           suffixIconConstraints: const BoxConstraints(
             minHeight: 26,
             minWidth: 26,
@@ -244,7 +254,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     }
 
     // Add divider if multiple field groups
-    if (_fieldGroups.length > 1) {
+    if (_fieldGroupsLength > 1) {
       rows.add(const HorizontalDivider());
     }
 
@@ -252,13 +262,15 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   }
 
   _buildHeader(BuildContext context) {
+    final addColor = _canAddMoreGroups ? kPrimaryAccentColor : kGrayColor;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (_title != null) ...[
           Expanded(
             child: Text(
-              _title.toTitle,
+              '${_title.toTitle} [$_fieldGroupsLength]',
               style: context.textTheme.titleMedium?.copyWith(
                 color:
                     widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
@@ -267,25 +279,28 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           ),
           const SizedBox(height: 10),
         ],
-        if (widget.showButton) ...[
+        if (_showButton) ...[
           context.iconButton(
             Icons.add,
             isCard: true,
-            tooltip: 'Add more ${_title ?? 'field'} group'.toSentence,
-            onPressed: _addTextField,
-            iconColor: kPrimaryAccentColor,
-            borderColor: kPrimaryAccentColor,
+            iconColor: addColor,
+            borderColor: addColor,
+            tooltip: _canAddMoreGroups
+                ? 'Add more ${_title ?? 'field'} group'.toSentence
+                : '',
+            onPressed: _canAddMoreGroups ? _addTextField : _onLimitReached,
           ),
-          if (_fieldGroups.isNotEmpty)
+          if (_fieldGroupsLength > 1) ...{
             context.iconButton(
               Icons.remove,
               isCard: true,
-              tooltip: 'Remove last ${_title ?? 'field'} group'.toSentence,
               iconColor: kDangerColor,
               bgColor: kWhiteColor,
               borderColor: kDangerColor,
+              tooltip: 'Remove last ${_title ?? 'field'} group'.toSentence,
               onPressed: _removeTextField,
             ),
+          },
         ],
       ],
     );
@@ -293,6 +308,9 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   // Add a new set of fields
   void _addTextField() {
+    // Enforce limit strictly
+    if (!_canAddMoreGroups) return;
+
     setState(() => _fieldGroups.add(FieldGroup(_fieldsConfig)));
     _notifyParent();
   }
@@ -307,7 +325,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   void _notifyParent() {
     // get count of fields
     if (widget.onCount != null) {
-      widget.onCount!(_fieldGroups.length);
+      widget.onCount!(_fieldGroupsLength);
     }
     widget.onChanged(getAllData());
   }

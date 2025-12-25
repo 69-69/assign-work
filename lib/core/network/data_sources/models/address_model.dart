@@ -17,10 +17,11 @@ class AddressInfo extends Equatable {
   final String state;
   final String postalCode;
   final String country;
-  // final AddressType type;
+  final AddressType type;
 
   const AddressInfo({
     this.id = '',
+    required this.type,
     required this.address,
     required this.city,
     required this.state,
@@ -32,11 +33,12 @@ class AddressInfo extends Equatable {
   factory AddressInfo.fromMap(Map<String, dynamic> map, {String? id}) {
     return AddressInfo(
       id: id ?? map['id'] ?? '',
-      address: map['address'] ?? '',
       city: map['city'] ?? '',
       state: map['state'] ?? '',
       postalCode: map['postalCode'] ?? '',
       country: map['country'] ?? '',
+      type: fromString(map['type']),
+      address: map['address'] ?? '',
     );
   }
 
@@ -52,11 +54,12 @@ class AddressInfo extends Equatable {
   Map<String, dynamic> toMap() {
     final map = {
       'id': id,
-      'address': address,
       'city': city,
       'state': state,
       'country': country,
       'postalCode': postalCode,
+      'address': address,
+      'type': getType,
     };
 
     return map.cleaned;
@@ -67,38 +70,56 @@ class AddressInfo extends Equatable {
 
   /// A singleton instance representing an empty/default Address.
   /// Used as a fallback when no matching Address is found.
-  static AddressInfo get empty =>
-      AddressInfo(address: '', city: '', state: '', postalCode: '');
+  static AddressInfo get empty => AddressInfo(
+    address: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    type: AddressType.office,
+  );
 
   /// [isEmpty] Checks if the PurchaseOrder is empty.
   bool get isEmpty => identical(this, AddressInfo.empty);
 
   bool get isNotEmpty => !isEmpty;
 
+  String get getType => type.getName;
+
   /// copyWith method
   AddressInfo copyWith({
     String? id,
-    String? address,
     String? city,
     String? state,
     String? postalCode,
     String? country,
+    String? address,
+    AddressType? type,
   }) {
     return AddressInfo(
       id: id ?? this.id,
-      address: address ?? this.address,
       city: city ?? this.city,
       state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
+      address: address ?? this.address,
+      type: type ?? this.type,
     );
   }
 
   @override
-  List<Object?> get props => [id, address, city, state, country, postalCode];
+  List<Object?> get props => [
+    id,
+    city,
+    state,
+    country,
+    postalCode,
+    type,
+    address,
+  ];
 
   List<String> get itemAsList => [
     id,
+    getType,
     address,
     city,
     state,
@@ -108,11 +129,12 @@ class AddressInfo extends Equatable {
 
   static List<String> get dataHeader => const [
     'ID',
-    'Address',
     'City',
     'State',
     'Country',
     'Postal Code',
+    'Type',
+    'Address',
   ];
 
   bool filterByAny(String query) =>

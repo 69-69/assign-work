@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/custom_radio_title.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/form/custom_radio_tile.dart';
 import 'package:flutter/material.dart';
 
 /// Reusable radio list with dynamic groups [DynamicRadioList]

@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
@@ -5,7 +6,7 @@ import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/custom_switch_list.dart';
+import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
@@ -21,7 +22,7 @@ class PRFormInputs {
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData(list, map: map, fromMap: fromMap);
+  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
 
   static Widget buildPRNumber(
     BuildContext context,
@@ -274,13 +275,25 @@ class _AutoCreateRFQ extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Auto-Generate RFQ when PR is Approved
-    return CustomSwitchList(
+    return CustomCheckboxTile(
+      title: Text(
+        'Auto Create RFQ?',
+        style: context.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text('Auto generate RFQ when PR is approved'),
+      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+      value: isSelected,
+      onChanged: (v) => onChanged(v ?? false),
+    );
+    /*CustomSwitchTile(
       title: 'Auto Create RFQ',
       subtitle: 'Generate RFQ when PR is approved',
       padding: EdgeInsets.symmetric(horizontal: 6.0),
       isSelected: isSelected,
       onChanged: onChanged,
-    );
+    );*/
   }
 }
 

@@ -5,9 +5,9 @@ import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
-import 'package:assign_erp/core/widgets/dashboard_metrics.dart';
 import 'package:assign_erp/core/widgets/delayed_tooltip.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/nav/dashboard_metrics.dart';
 import 'package:assign_erp/core/widgets/nav/side_nav.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';

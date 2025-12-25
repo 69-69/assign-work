@@ -1,14 +1,14 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class CustomSwitchList extends StatelessWidget {
+class CustomSwitchTile extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
   final String title;
   final String subtitle;
   final bool isSelected;
   final EdgeInsetsGeometry? padding;
 
-  const CustomSwitchList({
+  const CustomSwitchTile({
     super.key,
     required this.title,
     required this.subtitle,

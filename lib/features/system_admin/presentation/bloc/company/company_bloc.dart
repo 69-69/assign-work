@@ -6,7 +6,7 @@ class CompanyBloc extends SetupBloc<Company> {
   CompanyBloc({required super.firestore})
     : super(
         collectionPath: companyInfoDBCollectionPath,
-        fromFirestore: (data, id) => Company.fromMap(data, docId: id),
+        fromFirestore: (data, id) => Company.fromMap(data, id: id),
         toFirestore: (info) => info.toMap(),
         toCache: (info) => info.toCache(),
       );

@@ -4,7 +4,6 @@ import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
-import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -12,7 +11,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
@@ -69,7 +68,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   // Dates
   DateTime? _deadlineDate;
   DateTime? _expectedDate;
-  DateTime? _validityDate;
   final _titleController = TextEditingController();
 
   final List<String> _taxCodes = [];
@@ -133,9 +131,9 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       deadline: _deadlineDate ?? _serverRFQ.deadline,
       buyerContactPersonId: _paymentTerm ?? _serverRFQ.buyerContactPersonId,
       expectedDate: _expectedDate ?? _serverRFQ.expectedDate,
-      validityDate: _validityDate != null
+      /*validityDate: _validityDate != null
           ? '${_validityDate!.toDays} days'
-          : _serverRFQ.validityDate,
+          : _serverRFQ.validityDate,*/
       updatedBy: _employeeName,
       history: [
         ..._serverRFQ.history, // keep all old logs
@@ -234,7 +232,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
         FormGroupCard(
           title: 'Supplier Terms',
-          children: [_buildValidityAndPayTerms(), _buildTaxModeSelector()],
+          children: [/*_buildValidityAndPayTerms()*/ _buildTaxModeSelector()],
         ),
 
         FormGroupCard(
@@ -283,14 +281,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     );
   }
 
-  Widget _buildValidityAndPayTerms() {
+  /*Widget _buildValidityAndPayTerms() {
     return ValidityAndPayTermsDropdown(
       initialPayTerms: _serverRFQ.buyerContactPersonId,
       onPayTermsChanged: (s) => setState(() => _paymentTerm = s),
       initialValidity: _serverRFQ.getValidityDate,
       onValidityChanged: (date) => setState(() => _validityDate = date),
     );
-  }
+  }*/
 
   Widget _buildTaxModeSelector() {
     return TaxModeSelector(
@@ -364,7 +362,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        RFQFormInputs.updateListFromData(
+        RFQFormInputs.updateListFromData<ProLineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => ProLineItem.fromMap(map, id: id),

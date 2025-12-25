@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/custom_radio_title.dart';
-import 'package:assign_erp/core/widgets/custom_switch_list.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/form/custom_radio_tile.dart';
+import 'package:assign_erp/core/widgets/form/custom_switch_tile.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
@@ -293,7 +293,7 @@ class _SwitchListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomSwitchList(
+    return CustomSwitchTile(
       title: item.title,
       subtitle: item.description,
       isSelected: isSelected,

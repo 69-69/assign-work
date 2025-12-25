@@ -6,6 +6,7 @@ import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
+import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -13,8 +14,8 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
@@ -78,7 +79,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   // Basic fields
   bool _isSubmitting = false;
-  bool _autoCreatePo = false; // auto generate PO when RFQ is Accepted
+  bool _autoCreatePo = true; // auto generate PO when RFQ is Accepted
+  bool _useDefaultAddress = true;
   String _costCenterCode = '';
   String _rfqNumber = '';
   String _rfqTitle = '';
@@ -273,7 +275,20 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           title: 'Shipping Address',
-          children: [_buildShippingAddress()],
+          children: [
+            SizedBox(
+              width: context.dynamicWidth(0.48),
+              child: UseDefaultAddress(
+                isChecked: _useDefaultAddress,
+                onChanged: (v) {
+                  if (mounted) setState(() => _useDefaultAddress = v);
+                },
+              ),
+            ),
+            const HorizontalDivider(isORSeparator: true, space: 0.4),
+
+            _buildShippingAddress(),
+          ],
         ),
 
         context.confirmableActionButton(
@@ -311,7 +326,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        RFQFormInputs.updateListFromData(
+        RFQFormInputs.updateListFromData<ProLineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
@@ -329,7 +344,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         if (isFormValid) setState(() {});
 
         // Update the address list
-        RFQFormInputs.updateListFromData(
+        RFQFormInputs.updateListFromData<AddressInfo>(
           _shippingAddress,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
@@ -370,7 +385,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         }).toList();
 
         // Update the RFQSupplier list
-        RFQFormInputs.updateListFromData(
+        RFQFormInputs.updateListFromData<SupplierLink>(
           _supplierLinks,
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map, id: id),

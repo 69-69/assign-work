@@ -44,8 +44,7 @@ class UploadCompanyLogo extends StatefulWidget {
 
 class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
   final SetupPrintOut _setupPrintOut = SetupPrintOut();
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   final List<String> _imgType = ['png, jpg, jpeg'];
 

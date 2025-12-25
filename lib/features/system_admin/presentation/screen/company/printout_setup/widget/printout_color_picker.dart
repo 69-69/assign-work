@@ -26,8 +26,7 @@ class PrintoutColorPickerScreen extends StatefulWidget {
 class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
   int _selectedPaletteIndex = 0;
   List<Color> _selectedPalette = [];
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   @override
   void initState() {
@@ -107,7 +106,7 @@ class _PrintoutColorPickerScreenState extends State<PrintoutColorPickerScreen> {
 
   RefreshButton _buildResetColorsButton() {
     return RefreshButton(
-      tooltip: 'Reset Colors',
+      tooltip: 'Reset & Refresh Colors',
       callback: () async {
         final settings = await _printoutService.getSettings();
         if (settings != null) {

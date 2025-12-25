@@ -27,7 +27,8 @@ class RequestForQuote extends Equatable {
   /// Auto-Generate PO when RFQ is Accepted
   final bool autoCreatePo;
   final String storeNumber;
-  final List<SupplierLink> supplierLinks; // List of suppliers for this RFQ
+  final List<SupplierLink>
+  supplierLinks; // List of invited suppliers for this RFQ
   final String requestedBy; // Who requested the RFQ
   final ProcurementWorkflowStatus status;
   final String title;
@@ -44,11 +45,10 @@ class RequestForQuote extends Equatable {
   final String buyerContactPersonId;
   final AddressInfo? shippingAddress;
   final String? notes;
-  final String validityDate;
-  final DateTime? deadline;
 
-  /// [expectedDate] Target date by which the entire items/services are needed
+  /// [expectedDate] Target/delivery date by which the entire items/services are needed
   final DateTime? expectedDate;
+  final DateTime? deadline; // RFQ deadline date
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -58,13 +58,13 @@ class RequestForQuote extends Equatable {
   final List<AuditLog> history;
   final List<String> attachments;
 
-  /// [headerTaxAmount] is a non-persistent, computed value used for UI display only
+  /*/// [headerTaxAmount] is a non-persistent, computed value used for UI display only
   /// when [TaxMode.headerTax] is applied. This value is not stored in the database.
-  // final double headerTaxAmount;
+  final double headerTaxAmount;
 
   /// [taxNames] is a non-persistent, computed field used solely for UI display.
   /// It is derived from [taxCodes] and the tax map. Not stored in the database.
-  // final String taxNames;
+  final String taxNames;*/
 
   RequestForQuote({
     this.id = '',
@@ -84,7 +84,6 @@ class RequestForQuote extends Equatable {
     this.currency = ghanaCedis,
     this.buyerContactPersonId = '',
     this.shippingAddress,
-    this.validityDate = '',
     this.notes,
     this.attachments = const [],
     DateTime? deadline,
@@ -125,7 +124,6 @@ class RequestForQuote extends Equatable {
             )
           : null,
       attachments: List<String>.from(map['attachments'] ?? []),
-      validityDate: map['validityDate'] ?? '',
       deadline: toDateTimeFn(map['deadline']),
       expectedDate: toDateTimeFn(map['expectedDate']),
       createdBy: map['createdBy'] ?? '',
@@ -156,7 +154,6 @@ class RequestForQuote extends Equatable {
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
     'shippingAddress': shippingAddress?.toMap(),
-    'validityDate': validityDate,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'createdAt': createdAt,
@@ -242,8 +239,7 @@ class RequestForQuote extends Equatable {
 
   String get getExpectedDate => expectedDate.dateOnly;
 
-  String get getValidityDate =>
-      (int.tryParse(validityDate.split(' ').first)?.toDate).dateOnly;
+  // String get getValidityDate => (int.tryParse(validityDate.split(' ').first)?.toDate).dateOnly;
 
   String get getDeadlineDate => deadline.dateOnly;
 
@@ -267,7 +263,6 @@ class RequestForQuote extends Equatable {
       currency.contains(filter) ||
       buyerContactPersonId.contains(filter) ||
       (notes ?? '').contains(filter) ||
-      validityDate.contains(filter) ||
       (shippingAddress?.filterByAny(filter) ?? false) ||
       getExpectedDate.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
@@ -360,10 +355,9 @@ class RequestForQuote extends Equatable {
     String? termsAndConditions,
     DateTime? deadline,
     DateTime? expectedDate,
-    String? validityDate,
     String? currency,
     String? buyerContactPersonId,
-    String? shippingAddress,
+    AddressInfo? shippingAddress,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -396,9 +390,8 @@ class RequestForQuote extends Equatable {
       // taxCodes: taxCodes ?? this.taxCodes,
       taxMode: taxMode ?? this.taxMode,
       attachments: attachments ?? this.attachments,
-      validityDate: validityDate ?? this.validityDate,
       currency: currency ?? this.currency,
-      // shippingAddress: shippingAddress ?? this.shippingAddress,
+      shippingAddress: shippingAddress ?? this.shippingAddress,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -433,7 +426,6 @@ class RequestForQuote extends Equatable {
     taxMode,
     // taxCodes,
     taxMode,
-    validityDate,
     currency,
     shippingAddress,
     attachments,

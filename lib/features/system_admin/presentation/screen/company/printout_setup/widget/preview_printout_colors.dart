@@ -28,8 +28,7 @@ class PreviewPrintoutColors extends StatefulWidget {
 class _PreviewPrintoutColorsState extends State<PreviewPrintoutColors> {
   int? _selectedHeaderPreviewIndex;
   int? _selectedFooterPreviewIndex;
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   List<Color> get paletteColors => widget.paletteColors;
 

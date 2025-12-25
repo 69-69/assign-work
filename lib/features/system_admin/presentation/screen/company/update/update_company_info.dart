@@ -1,11 +1,18 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
@@ -13,98 +20,111 @@ import 'package:assign_erp/features/system_admin/presentation/screen/company/wid
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension UpdateCompanyInfo<T> on BuildContext {
-  Future<void> openUpdateCompanyInfo({required Company info}) =>
+extension UpdateCompanyInfo on BuildContext {
+  Future<void> openUpdateCompanyInfo({required Company serverInfo}) =>
       openBottomSheet(
         isExpand: false,
         child: BottomSheetScaffold(
           title: 'Edit Company Info',
-          subtitle: info.name.toTitle,
-          body: _UpdateCompanyForm(info: info),
+          subtitle: serverInfo.name.toTitle,
+          body: _UpdateCompanyForm(serverInfo: serverInfo),
         ),
       );
 }
 
 class _UpdateCompanyForm extends StatefulWidget {
-  final Company info;
+  final Company serverInfo;
 
-  const _UpdateCompanyForm({required this.info});
+  const _UpdateCompanyForm({required this.serverInfo});
 
   @override
   State<_UpdateCompanyForm> createState() => _UpdateCompanyFormState();
 }
 
 class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
-  // final SetupPrintOut _setupPrintOut = SetupPrintOut();
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
-
-  Company get _info => widget.info;
-  late String? _uploadedLogoPath = _info.logo;
-
+  bool _isSubmitting = false;
+  final _companyInfo = <Company>[];
+  final _addresses = <AddressInfo>[];
   final _formKey = GlobalKey<FormState>();
-  late final _nameController = TextEditingController(text: _info.name);
-  late final _emailController = TextEditingController(text: _info.email);
-  late final _phoneController = TextEditingController(text: _info.phone);
-  late final _altPhoneController = TextEditingController(text: _info.altPhone);
-  late final _faxNumberController = TextEditingController(
-    text: _info.faxNumber,
-  );
-  late final _addressController = TextEditingController(text: _info.address);
+  late String? _uploadedLogoPath = _serverInfo.logo;
+  bool get isFormValid => _formKey.currentState?.validate() ?? false;
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
+
+  Employee? get _employee => context.employee;
+  Company get _serverInfo => widget.serverInfo;
 
   @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _altPhoneController.dispose();
-    _addressController.dispose();
-    _emailController.dispose();
-    _faxNumberController.dispose();
-    super.dispose();
+  void initState() {
+    _addresses.addAll(_serverInfo.addresses);
+    _companyInfo.add(_serverInfo);
+    super.initState();
   }
 
-  Future<void> _onSubmit() async {
-    if (_formKey.currentState!.validate()) {
-      /// Update Company Info
-      final item = _info.copyWith(
-        name: _nameController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        altPhone: _altPhoneController.text,
-        address: _addressController.text,
-        faxNumber: _faxNumberController.text,
-        logo: _uploadedLogoPath ?? _info.logo,
+  /// Construct the updated company info
+  Company get _updatedCompany {
+    final company = _companyInfo.first;
 
-        createdBy: _info.createdBy,
-        updatedBy: context.employee!.fullName,
-      );
+    return _serverInfo.copyWith(
+      logo: _uploadedLogoPath,
+      name: company.name,
+      email: company.email,
+      phone: company.phone,
+      altPhone: company.altPhone,
+      faxNumber: company.faxNumber,
+      addresses: List.from(_addresses),
+      updatedBy: _employee!.fullName,
+      history: [
+        AuditLog(
+          action: AuditAction.updated,
+          actionBy: _employee!.employeeId,
+          statusAfterAction: 'created',
+        ),
+      ],
+    );
+  }
+
+  void _onSubmit() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      if (!isFormValid || _addresses.isNullOrEmpty) {
+        context.showAlertOverlay(
+          'Please enter all required fields',
+          bgColor: kDangerColor,
+        );
+        return;
+      }
 
       context.read<CompanyBloc>().add(
-        UpdateSetup<Company>(documentId: _info.id, data: item),
+        UpdateSetup<Company>(documentId: _serverInfo.id, data: _updatedCompany),
       );
-
       await _saveToCache();
 
       if (mounted) {
-        context.showAlertOverlay(
-          '${_nameController.text.toTitle} successfully updated',
-        );
-        Navigator.pop(context);
+        context.showAlertOverlay('Changes successfully saved');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
       }
     }
   }
 
-  // Update Company-info in cache
+  // Update Company-info to cache
   Future<void> _saveToCache() async {
+    final company = _companyInfo.first;
+
     final settings = (await _printoutService.getSettings())?.copyWith(
       companyLogo: _uploadedLogoPath,
-      companyName: _nameController.text,
-      companyEmail: _emailController.text,
-      companyPhone: '${_phoneController.text} | ${_altPhoneController.text}',
-      companyAddress: _addressController.text,
-      companyFax: _faxNumberController.text,
+      companyName: company.name,
+      companyEmail: company.email,
+      companyPhone: '${company.phone} | ${company.altPhone}',
+      companyFax: company.faxNumber,
+      companyAddresses: _addresses.map((e) => e.toMap()).toList(),
     );
     if (settings != null) {
+      prettyPrint('_addresses-2', _addresses);
       await _printoutService.setSettings(settings);
     }
   }
@@ -123,40 +143,66 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         const SizedBox(height: 20.0),
-        CompanyNameAndEmailInput(
-          nameController: _nameController,
-          emailController: _emailController,
-          onNameChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onEmailChanged: (s) => setState(() {}),
+        FormGroupCard(
+          title: 'Company Information',
+          subTitle: '\nEnter your company information to complete setup.',
+          children: [_buildCompanyInfo()],
         ),
-        const SizedBox(height: 20.0),
-        PhoneAndAltPhoneInput(
-          phoneController: _phoneController,
-          altPhoneController: _altPhoneController,
-          onPhoneChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-          onAltPhoneChanged: (s) => setState(() {}),
+        FormGroupCard(
+          title: 'Addresses',
+          subTitle:
+              '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
+          children: [
+            _buildAddresses(),
+            const SizedBox(height: 20.0),
+            UploadCompanyLogo(
+              serverFilePath: _serverInfo.logo,
+              uploadedFilePath: (s) {
+                setState(() => _uploadedLogoPath = s);
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 20.0),
-        FaxAndAddressTextField(
-          addressController: _addressController,
-          faxController: _faxNumberController,
-          onFaxChanged: (s) => setState(() {}),
-          onAddressChanged: (s) => setState(() {}),
-        ),
-        const SizedBox(height: 20.0),
-        UploadCompanyLogo(
-          serverFilePath: _info.logo,
-          uploadedFilePath: (s) {
-            setState(() => _uploadedLogoPath = s);
-          },
-        ),
+
         const SizedBox(height: 20.0),
         context.confirmableActionButton(onPressed: _onSubmit),
       ],
+    );
+  }
+
+  DynamicTextFields _buildCompanyInfo() {
+    return DynamicTextFields(
+      initialData: [_serverInfo.toMap()],
+      fieldsConfig: CompanyFormInputs.companyFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        // Update the ProLineItem list
+        CompanyFormInputs.updateListFromData<Company>(
+          _companyInfo,
+          map: data,
+          fromMap: (map, id) => Company.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
+  // Addresses (e.g., Office, Billing, Shipping Address)
+  DynamicTextFields _buildAddresses() {
+    return DynamicTextFields(
+      showButton: true,
+      initialData: _serverInfo.addresses.map((e) => e.toMap()).toList(),
+      fieldsConfig: CompanyFormInputs.addressFields(),
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        // Update the address list
+        CompanyFormInputs.updateListFromData<AddressInfo>(
+          _addresses,
+          map: data,
+          fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
+        );
+      },
     );
   }
 }

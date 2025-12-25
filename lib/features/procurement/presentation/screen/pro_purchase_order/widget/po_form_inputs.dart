@@ -5,8 +5,8 @@ import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/form/currency_selection.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_model.dart';
@@ -28,7 +28,7 @@ class POFormInputs {
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData(list, map: map, fromMap: fromMap);
+  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
 
   /// Apply taxes to PO
   static Future<ProPurchaseOrder> applyTaxesToQuote(

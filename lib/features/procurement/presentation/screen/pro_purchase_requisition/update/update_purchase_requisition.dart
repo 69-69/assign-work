@@ -11,7 +11,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
@@ -20,6 +20,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/pro_requisitio
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_printer.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -54,12 +55,12 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
   // Basic fields
   bool _isSubmitting = false;
-  bool? _autoCreateRfq;
-  String? _costCenterCode;
-  String? _requestedBy;
-  String? _departmentCode;
   String? _priority;
   String? _prStatus;
+  bool? _autoCreateRfq;
+  String? _requestedBy;
+  String? _costCenterCode;
+  String? _departmentCode;
   // Dates
   DateTime? _expectedDate;
   DateTime? _requestDate;
@@ -67,14 +68,14 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   /// Line Items & purpose/reason for PR
   final List<ProLineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
+  bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
   PurchaseRequisition get _serverPR => widget.requisite;
 
-  bool get isFormValid => _formKey.currentState?.validate() ?? false;
-
   /// Current employee info
-  String get _employeeId => context.employee!.employeeId;
-  String get _employeeName => context.employee!.fullName;
+  Employee? get _employee => context.employee;
+  String get _employeeId => _employee!.employeeId;
+  String get _employeeName => _employee!.fullName;
 
   ProPurchaseRequisiteBloc get _bloc =>
       context.read<ProPurchaseRequisiteBloc>();
@@ -82,18 +83,6 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   AuditAction get _action => AuditActionHelper.isApproved(_prStatus)
       ? AuditAction.approved
       : AuditAction.updated;
-
-  @override
-  void initState() {
-    super.initState();
-    _purposeForPR.addAll({'purpose': _serverPR.purpose});
-    _lineItems.addAll(_serverPR.lineItems);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   /// Construct Purchase Requisite object
   PurchaseRequisition get _updatedPR {
@@ -153,6 +142,18 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _purposeForPR.addAll({'purpose': _serverPR.purpose});
+    _lineItems.addAll(_serverPR.lineItems);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -244,7 +245,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        PRFormInputs.updateListFromData(
+        PRFormInputs.updateListFromData<ProLineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => ProLineItem.fromMap(map, id: id),

@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/custom_radio_title.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
+import 'package:assign_erp/core/widgets/form/custom_radio_tile.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/printout_setup_cache_service.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/printout_setup/widget/preview_layout.dart';
@@ -21,8 +21,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
 
   // Assuming this list is defined somewhere in your code
   final List<String> printLayout = ['dense', 'loose'];
-  final PrintoutSetupCacheService _printoutService =
-      PrintoutSetupCacheService();
+  final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   @override
   void initState() {
@@ -106,7 +105,7 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          _buildResetColorsButton(),
+          _buildRefreshColorsButton(),
         ],
       ),
       subtitle: Text(
@@ -117,9 +116,9 @@ class _PrintoutLayoutsState extends State<PrintoutLayouts> {
     );
   }
 
-  RefreshButton _buildResetColorsButton() {
+  RefreshButton _buildRefreshColorsButton() {
     return RefreshButton(
-      tooltip: 'Reset Layout',
+      tooltip: 'Reset & Refresh Layout',
       callback: () async {
         final settings = (await _printoutService.getSettings())?.copyWith(
           layout: '',

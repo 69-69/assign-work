@@ -1,28 +1,32 @@
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/can_add_more_stores.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Add Company Stores or Branches
 extension AddStoreLocations<T> on BuildContext {
-  Future<void> openAddStoreLocations({CompanyStores? serverStore}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: BottomSheetScaffold(
-          title: '${serverStore == null ? '' : 'Edit'} Store (Branch) Location',
-          body: _AddStoreFormBody(serverStore: serverStore),
-        ),
-      );
+  Future<void> openAddStoreLocations({
+    CompanyStores? serverStore,
+  }) => openBottomSheet(
+    isExpand: false,
+    child: BottomSheetScaffold(
+      title:
+          '${serverStore == null ? 'Add Stores (Branches)' : 'Edit ${serverStore.name.toTitle}'} ',
+      body: _AddStoreFormBody(serverStore: serverStore),
+    ),
+  );
 }
 
 class _AddStoreFormBody extends StatefulWidget {
@@ -100,8 +104,9 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
     );
   }
 
-  Column _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     final canAddStore = context.canAddMoreStores;
+    final title = _serverStore?.name ?? 'Stores (Branches)';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -109,10 +114,12 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              title: _serverStore?.name ?? 'Stores (Branches)',
-              showButton: canAddStore || _serverStore != null,
-              fieldsConfig: _fieldsConfig,
+              title: title,
+              fieldsConfig: CompanyFormInputs.addStoresFields,
               initialData: [?_serverStore?.toMap()],
+              showButton: canAddStore.addMore || _serverStore != null,
+              fieldGroupsLimit: canAddStore.maxAllowed,
+              onLimitReached: () async => await context.showUpgradeDialog(),
               onChanged: (List<Map<String, dynamic>> data) {
                 if (_isValid) setState(() {});
 
@@ -131,40 +138,5 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
         const SizedBox(height: 20.0),
       ],
     );
-  }
-
-  List<FieldGroupConfig> get _fieldsConfig {
-    return [
-      FieldGroupConfig(
-        key: 'name',
-        label: 'Store Name',
-        type: TextInputType.text,
-        helperText: 'Store name',
-      ),
-      FieldGroupConfig(
-        key: 'phone',
-        label: 'Phone Number',
-        type: TextInputType.number,
-        helperText: 'Store\'s Phone number',
-      ),
-      FieldGroupConfig(
-        key: 'location',
-        label: 'Location',
-        isTextArea: true,
-        isAutoGrow: true,
-        minLines: null,
-        type: TextInputType.text,
-        helperText: 'Address or Location of Store (Branch)',
-      ),
-      FieldGroupConfig(
-        key: 'notes',
-        label: 'Additional Notes',
-        isTextArea: true,
-        isAutoGrow: true,
-        minLines: null,
-        type: TextInputType.text,
-        helperText: 'Short description of Store (Branch)',
-      ),
-    ];
   }
 }

@@ -1,245 +1,157 @@
-import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:flutter/material.dart';
 
-/// Store Name & Location TextField [StoreNameAndLocationInput]
-class StoreNameAndLocationInput extends StatelessWidget {
-  const StoreNameAndLocationInput({
-    super.key,
-    required this.nameController,
-    required this.locationController,
-    this.onNameChanged,
-    this.onLocationChanged,
-  });
+class CompanyFormInputs {
+  /// Company information (e.g., name, email, phone, fax)
+  static List<FieldGroupConfig> get companyFields => [
+    FieldGroupConfig(key: 'name', label: 'Name', type: TextInputType.text),
+    FieldGroupConfig(
+      key: 'email',
+      label: 'Email',
+      type: TextInputType.emailAddress,
+    ),
+    FieldGroupConfig(key: 'phone', label: 'Phone', type: TextInputType.phone),
+    FieldGroupConfig(
+      key: 'altPhone',
+      label: 'Secondary phone',
+      type: TextInputType.phone,
+      validator: (_) => null,
+    ),
+    FieldGroupConfig(
+      key: 'faxNumber',
+      label: 'Fax Number',
+      type: TextInputType.phone,
+      validator: (_) => null,
+    ),
+  ];
 
-  final TextEditingController nameController;
-  final TextEditingController locationController;
-  final ValueChanged? onNameChanged;
-  final ValueChanged? onLocationChanged;
+  /// Addresses (e.g., Office, Warehouse, Billing, Shipping Address)
+  static List<FieldGroupConfig> addressFields({String? initialValue}) => [
+    FieldGroupConfig(
+      key: 'type',
+      label: 'Address Type',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return AddressTypeDropdown(
+          initialValue: initialData ?? initialValue,
+          onChanged: onChanged,
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'postalCode',
+      label: 'postal Code',
+      type: TextInputType.text,
+    ),
+    FieldGroupConfig(key: 'city', label: 'city', type: TextInputType.text),
+    FieldGroupConfig(
+      key: 'state',
+      label: 'state / region',
+      type: TextInputType.text,
+    ),
+    FieldGroupConfig(
+      key: 'address',
+      label: 'Address...',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+    ),
+  ];
 
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        StoreNameTextField(
-          controller: nameController,
-          onChanged: onNameChanged,
-        ),
-        StoreLocationTextField(
-          controller: locationController,
-          onChanged: onLocationChanged,
-        ),
-      ],
-    );
-  }
-}
+  /// Add company's branches/stores
+  static List<FieldGroupConfig> get addStoresFields => [
+    FieldGroupConfig(
+      key: 'name',
+      label: 'Store Name',
+      type: TextInputType.text,
+      helperText: 'Store name',
+    ),
+    FieldGroupConfig(
+      key: 'phone',
+      label: 'Phone',
+      type: TextInputType.number,
+      helperText: 'Store\'s Phone number',
+    ),
+    FieldGroupConfig(
+      key: 'location',
+      label: 'Address',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      helperText: 'Address or Location of Store (Branch)',
+    ),
+    FieldGroupConfig(
+      key: 'notes',
+      label: 'Additional Notes (if any)',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      validator: (_) => null,
+      helperText: 'Short description of Store (Branch)',
+    ),
+  ];
 
-/// Company Name & Email TextField [CompanyNameAndEmailInput]
-class CompanyNameAndEmailInput extends StatelessWidget {
-  const CompanyNameAndEmailInput({
-    super.key,
-    required this.nameController,
-    required this.emailController,
-    this.onNameChanged,
-    this.onEmailChanged,
-  });
+  /// Create Company's departments
+  static List<FieldGroupConfig> get departmentsFields => [
+    FieldGroupConfig(
+      key: 'name',
+      label: 'Department Name',
+      type: TextInputType.text,
+      helperText: 'Department name',
+    ),
+    FieldGroupConfig(
+      key: 'lead',
+      label: 'Department Lead',
+      type: TextInputType.text,
+      helperText: 'Department Lead name',
+    ),
+    FieldGroupConfig(
+      key: 'description',
+      label: 'Description',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      helperText: 'Short description of the department\'s role',
+    ),
+  ];
 
-  final TextEditingController nameController;
-  final TextEditingController emailController;
-  final ValueChanged? onNameChanged;
-  final ValueChanged? onEmailChanged;
+  /// Updates the [list] with objects of type [T] from a list of maps.
+  /// Clears the list first to prevent duplication, then adds new objects.
+  /// [fromMap] converts each map entry into an object with the index as the ID.
+  static updateListFromData<T>(
+    List<T> list, {
+    required List<Map<String, dynamic>> map,
+    required T Function(Map<String, dynamic>, String) fromMap,
+  }) {
+    return list
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(
+        map
+            .asMap()
+            .entries
+            .map((e) => fromMap(e.value, '${e.key + 1}'))
+            .toList(),
+      );
 
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CustomTextField(
-          label: 'Company name',
-          controller: nameController,
-          keyboardType: TextInputType.name,
-          onChanged: onNameChanged,
-        ),
-        CustomTextField(
-          label: 'Company email',
-          controller: emailController,
-          keyboardType: TextInputType.emailAddress,
-          onChanged: onEmailChanged,
-          validator: (v) => null,
-        ),
-      ],
-    );
-  }
-}
-
-/// Phone & Alternative Phone TextField [PhoneAndAltPhoneInput]
-class PhoneAndAltPhoneInput extends StatelessWidget {
-  const PhoneAndAltPhoneInput({
-    super.key,
-    required this.phoneController,
-    required this.altPhoneController,
-    this.onPhoneChanged,
-    this.onAltPhoneChanged,
-  });
-
-  final TextEditingController phoneController;
-  final TextEditingController altPhoneController;
-  final ValueChanged? onPhoneChanged;
-  final ValueChanged? onAltPhoneChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        PhoneTextField(controller: phoneController, onChanged: onPhoneChanged),
-        AltPhoneTextField(
-          controller: altPhoneController,
-          onChanged: onAltPhoneChanged,
-        ),
-      ],
-    );
-  }
-}
-
-/// Address & Fax number TextField [FaxAndAddressTextField]
-class FaxAndAddressTextField extends StatelessWidget {
-  final TextEditingController? addressController;
-  final TextEditingController? faxController;
-  final ValueChanged? onAddressChanged;
-  final ValueChanged? onFaxChanged;
-
-  const FaxAndAddressTextField({
-    super.key,
-    this.addressController,
-    this.onAddressChanged,
-    this.faxController,
-    this.onFaxChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AdaptiveLayout(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CustomTextField(
-          label: 'Fax',
-          helperText: 'Optional',
-          controller: faxController,
-          onChanged: onFaxChanged,
-          keyboardType: TextInputType.phone,
-          validator: (s) => null,
-        ),
-        CustomTextField(
-          label: 'Address or location...',
-          helperText: 'Optional',
-          controller: addressController,
-          onChanged: onAddressChanged,
-          keyboardType: TextInputType.multiline,
-          maxLines: 4,
-          validator: (s) => null,
-        ),
-      ],
-    );
-  }
-}
-
-///********* TextFields *************///
-
-/// [RemarksTextField]
-class RemarksTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
-
-  const RemarksTextField({super.key, this.controller, this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      label: 'Remarks...',
-      helperText: 'Optional',
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.multiline,
-      maxLines: 4,
-      validator: (s) => null,
-    );
-  }
-}
-
-/// [StoreNameTextField]
-class StoreNameTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
-
-  const StoreNameTextField({super.key, this.controller, this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      label: 'Store name',
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.text,
-    );
-  }
-}
-
-/// [StoreLocationTextField]
-class StoreLocationTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
-
-  const StoreLocationTextField({super.key, this.controller, this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      label: 'Store location',
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.text,
-    );
-  }
-}
-
-/// [PhoneTextField]
-class PhoneTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
-
-  const PhoneTextField({super.key, this.controller, this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      label: 'Phone number',
-      helperText: 'Optional',
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.phone,
-      validator: (v) => null,
-    );
-  }
-}
-
-/// [AltPhoneTextField]
-class AltPhoneTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final ValueChanged? onChanged;
-
-  const AltPhoneTextField({super.key, this.controller, this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomTextField(
-      label: 'Alternative phone number',
-      helperText: 'Optional',
-      controller: controller,
-      onChanged: onChanged,
-      keyboardType: TextInputType.phone,
-      validator: (v) => null,
-    );
+    /* // Alternative-1 approach (now commented out)
+    _lineItems
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
+   // Alternative-1
+    _lineItems
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(
+            data
+                .asMap()
+                .entries
+                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
+                .toList(),
+          );*/
   }
 }

@@ -3,15 +3,15 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/form_group_card.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:flutter/material.dart';
 
-extension ChooseSuppliersForRFQExtensions on BuildContext {
+extension ChooseSuppliersForRFQExt on BuildContext {
   /// [openRFQWithSuppliers] Opens List of Invited Suppliers
   Future<void> openRFQWithSuppliers({
     String subTitle = 'view their RFQ details',
