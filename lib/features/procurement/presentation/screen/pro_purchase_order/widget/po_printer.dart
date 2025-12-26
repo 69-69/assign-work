@@ -29,7 +29,7 @@ class POPrinter {
 
   // Sample function to aggregate Invoice data
   List<PrintItem> _buildLineItems() {
-    final currencySign = getCurrencySign(order.currency);
+    final currencySign = getCurrencySign(order.currencyCode);
     return order.lineItems.asMap().entries.map((entry) {
       final index = entry.key;
       final item = entry.value;

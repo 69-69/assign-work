@@ -38,6 +38,7 @@ enum ProcurementWorkflowStatus {
   /// [RFQ & PO]
   /// ------------------
   closed, // No more submissions accepted
+  inactive, // Not in use anymore
 }
 
 // Procurement Type

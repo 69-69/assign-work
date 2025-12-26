@@ -37,12 +37,10 @@ class RFQFormInputs {
     required T Function(Map<String, dynamic>, String) fromMap,
   }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
 
-  /// Apply taxes to RFQ quote
-  static Future<RequestForQuote> applyTaxesToQuote(
-    RequestForQuote quote,
-  ) async {
+  /// Apply taxes to RFQ
+  static Future<RequestForQuote> applyTaxesToQuote(RequestForQuote rfq) async {
     final taxMap = await GetTaxes.loadAllTaxRates();
-    return quote.computeTaxAmounts(taxMap);
+    return rfq.computeTaxAmounts(taxMap);
   }
 
   /// Get Supplier by ID
@@ -206,16 +204,16 @@ class RFQFormInputs {
   static AuditProcurement<RequestForQuote> updateHistory({
     required String empId,
     required AuditAction action,
-    required RequestForQuote quote,
+    required RequestForQuote rfq,
   }) {
     final up = AuditProcurement<RequestForQuote>(
-      documentId: quote.id,
+      documentId: rfq.id,
       log: AuditLog.logScaffold(
-        oldLogs: quote.history,
+        oldLogs: rfq.history,
         newLog: AuditLog(
           action: action,
           actionBy: empId,
-          statusAfterAction: quote.getRFQStatus,
+          statusAfterAction: rfq.getRFQStatus,
         ),
       ),
     );

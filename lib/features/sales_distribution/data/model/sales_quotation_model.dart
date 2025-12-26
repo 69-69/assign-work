@@ -1,54 +1,54 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/sales_channel.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
-import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
 // * Responses (linked or stored in sub-table)
 
-class RequestForQuote extends Equatable {
+class SalesQuotation extends Equatable {
   static get _today => DateTime.now();
 
+  /// 1. Identification & Status
   final String id;
-
-  /// [prNumber] Foreign key referencing the Purchase Requisition (PR).
-  /// Used to associate this Request for Quotation (RFQ) with its originating PR.
-  /// If empty, the RFQ is treated as a “RAW RFQ” and is not linked to any PR
-  /// (i.e., it was created independently and not generated from an PR).
-  final String prNumber;
-
-  final String rfqNumber; // Request for Quotation number
-  /// Auto-Generate PO when RFQ is Accepted
-  final bool autoCreatePo;
+  // Specific Store issuing the Sales Quote to the Customer
   final String storeNumber;
-  final List<SupplierLink>
-  supplierLinks; // List of invited suppliers for this RFQ
-  final String requestedBy; // Who requested the RFQ
+  final String quoteNumber; // Request for Quotation number
   final ProcurementWorkflowStatus status;
-  final String title;
+
+  /// 2. Customer & Sales Context
+  final String customerId;
+  final List<AddressInfo> addresses;
+  final String salesRepId; // Who generated the Sales Quotation
+  final SalesChannel salesChannel;
+
+  /// 3. Currency & Pricing Control
   final String currencyCode;
+  final String exchangeRate;
 
-  /// [costCenterCode] Business Unit or Department paying for the purchase
-  final String costCenterCode;
-
-  final String departmentCode;
+  /// 4. Financial Summary Fields
+  final double shippingAmount;
+  /*final double subtotalAmount;
+  final double discountAmount;
+  final double taxAmount;
+  final double totalAmount;*/
   final List<ProLineItem> lineItems;
   final TaxMode taxMode;
 
   // final List<String> taxCodes;
   final String buyerContactPersonId;
-  final AddressInfo? shippingAddress;
   final String? notes;
 
   /// [expectedDate] Target/delivery date by which the entire items/services are needed
   final DateTime? expectedDate;
-  final DateTime? deadline; // RFQ deadline date
+  final DateTime? validFrom; // When Sales Quotation validity start
+  final DateTime? validUntil; // When Sales Quotation expires
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -66,27 +66,26 @@ class RequestForQuote extends Equatable {
   /// It is derived from [taxCodes] and the tax map. Not stored in the database.
   final String taxNames;*/
 
-  RequestForQuote({
+  SalesQuotation({
     this.id = '',
-    this.prNumber = '',
-    this.autoCreatePo = false,
-    required this.title,
-    required this.rfqNumber,
+    required this.quoteNumber,
     required this.storeNumber,
-    required this.supplierLinks,
+    required this.customerId,
     this.status = ProcurementWorkflowStatus.draft,
     required this.lineItems,
-    required this.requestedBy,
-    required this.costCenterCode,
-    required this.departmentCode,
+    required this.salesRepId,
+    this.salesChannel = SalesChannel.inStore,
+    this.shippingAmount = 0.0,
     // this.taxCodes = const [],
     this.taxMode = TaxMode.perLineTax,
     this.currencyCode = ghanaCedis,
+    this.exchangeRate = '',
     this.buyerContactPersonId = '',
-    this.shippingAddress,
+    required this.addresses,
     this.notes,
     this.attachments = const [],
-    DateTime? deadline,
+    DateTime? validFrom,
+    DateTime? validUntil,
     DateTime? expectedDate,
     required this.createdBy,
     DateTime? createdAt,
@@ -94,37 +93,33 @@ class RequestForQuote extends Equatable {
     DateTime? updatedAt,
     List<AuditLog>? history,
   }) : history = history ?? [],
-       deadline = deadline ?? _today,
+       validFrom = validFrom ?? _today,
+       validUntil = validUntil ?? _today,
        expectedDate = expectedDate ?? _today,
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory RequestForQuote.fromMap(Map<String, dynamic> map, {String? docId}) {
-    return RequestForQuote(
+  factory SalesQuotation.fromMap(Map<String, dynamic> map, {String? docId}) {
+    return SalesQuotation(
       id: docId ?? map['id'] ?? '',
-      prNumber: map['prNumber'] ?? '',
-      autoCreatePo: map['autoCreatePo'] ?? false,
-      title: map['title'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
-      requestedBy: map['requestedBy'] ?? '',
-      rfqNumber: map['rfqNumber'] ?? '',
-      supplierLinks: SupplierLink.suppliers(map['supplierLinks']),
+      salesRepId: map['salesRepId'] ?? '',
+      quoteNumber: map['quoteNumber'] ?? '',
+      customerId: map['customerId'] ?? '',
       status: ProcurementStatusHelper.fromString(map['status']),
-      costCenterCode: map['costCenterCode'] ?? '',
-      departmentCode: map['departmentCode'] ?? '',
+      salesChannel: SalesChannelHelper.fromString(map['SalesChannel']),
       lineItems: ProLineItem.lineItems(map['lineItems']),
       notes: map['notes'],
       taxMode: TaxModeHelper.fromString(map['taxMode']),
-      buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
-      currencyCode: map['currencyCode'] ?? '',
-      shippingAddress: map['shippingAddress'] != null
-          ? AddressInfo.fromMap(
-              Map<String, dynamic>.from(map['shippingAddress']),
-            )
-          : null,
+      currencyCode: map['currency'] ?? '',
+      exchangeRate: map['exchangeRate'] ?? '',
+      addresses: AddressInfo.addresses(map['addresses']),
       attachments: List<String>.from(map['attachments'] ?? []),
-      deadline: toDateTimeFn(map['deadline']),
+      buyerContactPersonId: map['buyerContactPersonId'] ?? '',
+      shippingAmount: map['shippingAmount'] ?? '',
+      validFrom: toDateTimeFn(map['validFrom']),
+      validUntil: toDateTimeFn(map['validUntil']),
       expectedDate: toDateTimeFn(map['expectedDate']),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt'] ?? '$_today'),
@@ -136,24 +131,21 @@ class RequestForQuote extends Equatable {
 
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'prNumber': prNumber,
-    'autoCreatePo': autoCreatePo,
-    'title': title,
     'storeNumber': storeNumber,
-    'rfqNumber': rfqNumber,
-    'supplierLinks': supplierLinks.map((i) => i.toMap()).toList(),
+    'quoteNumber': quoteNumber,
+    'customerId': customerId,
     'status': getRFQStatus,
-    'costCenterCode': costCenterCode,
-    'departmentCode': departmentCode,
-    'requestedBy': requestedBy,
+    'SalesChannel': salesChannel,
+    'shippingAmount': shippingAmount,
+    'salesRepId': salesRepId,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'notes': notes,
     // 'taxCodes': taxCodes,
     'taxMode': getTaxMode,
-    'currencyCode': currencyCode,
+    'currency': currencyCode,
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
-    'shippingAddress': shippingAddress?.toMap(),
+    'addresses': addresses.map((i) => i.toMap()).toList(),
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'history': history.map((i) => i.toMap()).toList(),
@@ -161,7 +153,7 @@ class RequestForQuote extends Equatable {
 
   Map<String, dynamic> toMap() {
     final newMap = _mapTemp();
-    newMap['deadline'] = deadline?.toISOString;
+    newMap['validFrom'] = validFrom?.toISOString;
     newMap['expectedDate'] = expectedDate?.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
@@ -171,7 +163,7 @@ class RequestForQuote extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['deadline'] = deadline?.millisecondsSinceEpoch;
+    newMap['validFrom'] = validFrom?.millisecondsSinceEpoch;
     newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
     newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
     newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
@@ -199,30 +191,30 @@ class RequestForQuote extends Equatable {
   // subTotal - discountAmount;
   double get netTotal => subTotal - discountAmount + taxAmount;
 
-  /// A singleton instance representing an empty/default RequestForQuote.
+  /// A singleton instance representing an empty/default SalesQuotation.
   /// Used as a fallback when no matching RFQ is found.
-  static final empty = RequestForQuote(
-    rfqNumber: '',
-    title: '',
+  static final empty = SalesQuotation(
+    quoteNumber: '',
     storeNumber: '',
-    supplierLinks: const [],
-    costCenterCode: '',
-    departmentCode: '',
+    customerId: '',
+    shippingAmount: 0.0,
     lineItems: const [],
     createdBy: '',
-    requestedBy: '',
-    shippingAddress: null,
+    salesRepId: '',
+    addresses: const [],
   );
 
   /// Returns true if this instance is the singleton [empty] RFQ.
   /// Use this to check if the RFQ is the default/fallback (e.g., not found).
-  bool get isEmpty => identical(this, RequestForQuote.empty);
+  bool get isEmpty => identical(this, SalesQuotation.empty);
 
   bool get isNotEmpty => lineItems.isNotEmpty;
 
   bool get isAwarded => status == ProcurementWorkflowStatus.convertedToPO;
 
   String get getRFQStatus => status.getLabel;
+
+  String get getSalesChannel => salesChannel.getLabel;
 
   String get getTaxMode => taxMode.getName;
 
@@ -232,13 +224,11 @@ class RequestForQuote extends Equatable {
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getRFQStatus);
 
-  String get getAutoCreatePo => autoCreatePo ? 'Yes' : 'No';
-
   String get getExpectedDate => expectedDate.dateOnly;
 
   // String get getValidityDate => (int.tryParse(validityDate.split(' ').first)?.toDate).dateOnly;
 
-  String get getDeadlineDate => deadline.dateOnly;
+  String get getvalidFromDate => validFrom.dateOnly;
 
   String get getCreatedAt => createdAt.toStandardDT;
 
@@ -253,36 +243,32 @@ class RequestForQuote extends Equatable {
 
   bool filterByAny(String filter) =>
       itemAsList.any((item) => item.contains(filter)) ||
-      prNumber.contains(filter) ||
-      requestedBy.contains(filter) ||
-      title.contains(filter) ||
-      supplierLinks.any((e) => e.filterByAny(filter)) ||
+      salesRepId.contains(filter) ||
+      customerId.contains(filter) ||
       currencyCode.contains(filter) ||
       buyerContactPersonId.contains(filter) ||
       (notes ?? '').contains(filter) ||
-      (shippingAddress?.filterByAny(filter) ?? false) ||
+      addresses.any((a) => a.filterByAny(filter)) ||
       getExpectedDate.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
 
-  static RequestForQuote findRFQById(
-    List<RequestForQuote> rfqs,
-    String rfqId,
-  ) => rfqs.firstWhere(
-    (rfq) => rfq.id == rfqId,
-    orElse: () => RequestForQuote.empty,
-  );
+  static SalesQuotation findRFQById(List<SalesQuotation> rfqs, String rfqId) =>
+      rfqs.firstWhere(
+        (rfq) => rfq.id == rfqId,
+        orElse: () => SalesQuotation.empty,
+      );
 
-  static List<RequestForQuote> filterRFQByDate(
-    List<RequestForQuote> rfqs, {
+  static List<SalesQuotation> filterRFQByDate(
+    List<SalesQuotation> rfqs, {
     bool isSameDay = true,
   }) => rfqs
       .where((q) => !q.isAwarded && (isSameDay ? q.isToday : !q.isToday))
       .toList();
 
-  static List<RequestForQuote> filterAwardedRFQ(List<RequestForQuote> rfqs) =>
+  static List<SalesQuotation> filterAwardedRFQ(List<SalesQuotation> rfqs) =>
       rfqs.where((q) => q.isAwarded).toList();
 
-  RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
+  SalesQuotation computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
     // Calculate tax amounts for each line item (perLineTax)
     List<ProLineItem> updatedItems = lineItems.map((item) {
       if (item is! TaxableLineItem) return item;
@@ -331,30 +317,31 @@ class RequestForQuote extends Equatable {
   }
 
   @override
-  String toString() => 'RFQ: $rfqNumber - $getRFQStatus';
+  String toString() => 'RFQ: $quoteNumber - $getRFQStatus';
 
-  RequestForQuote copyWith({
+  SalesQuotation copyWith({
     String? id,
     String? prNumber,
     bool? autoCreatePo,
     String? title,
-    String? costCenterCode,
-    String? departmentCode,
+    SalesChannel? salesChannel,
+    double? shippingAmount,
     String? storeNumber,
-    String? requestedBy,
-    String? rfqNumber,
-    List<SupplierLink>? supplierLinks,
+    String? salesRepId,
+    String? quoteNumber,
+    String? customerId,
     List<ProLineItem>? lineItems,
     ProcurementWorkflowStatus? status,
     String? notes,
     TaxMode? taxMode,
     List<String>? attachments,
     String? termsAndConditions,
-    DateTime? deadline,
+    DateTime? validFrom,
+    DateTime? validUntil,
     DateTime? expectedDate,
     String? currencyCode,
     String? buyerContactPersonId,
-    AddressInfo? shippingAddress,
+    List<AddressInfo>? addresses,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -367,28 +354,26 @@ class RequestForQuote extends Equatable {
     // [taxNames] For UI tax names only (RFQ)
     // String? taxNames,
   }) {
-    return RequestForQuote(
+    return SalesQuotation(
       id: id ?? this.id,
-      prNumber: prNumber ?? this.prNumber,
-      autoCreatePo: autoCreatePo ?? this.autoCreatePo,
-      title: title ?? this.title,
-      costCenterCode: costCenterCode ?? this.costCenterCode,
-      departmentCode: departmentCode ?? this.departmentCode,
-      requestedBy: requestedBy ?? this.requestedBy,
-      storeNumber: storeNumber ?? this.storeNumber,
-      rfqNumber: rfqNumber ?? this.rfqNumber,
-      supplierLinks: supplierLinks ?? this.supplierLinks,
-      lineItems: lineItems ?? this.lineItems,
-      buyerContactPersonId: buyerContactPersonId ?? this.buyerContactPersonId,
       status: status ?? this.status,
+      salesChannel: salesChannel ?? this.salesChannel,
+      salesRepId: salesRepId ?? this.salesRepId,
+      storeNumber: storeNumber ?? this.storeNumber,
+      quoteNumber: quoteNumber ?? this.quoteNumber,
+      customerId: customerId ?? this.customerId,
+      lineItems: lineItems ?? this.lineItems,
+      shippingAmount: shippingAmount ?? this.shippingAmount,
+      buyerContactPersonId: buyerContactPersonId ?? this.buyerContactPersonId,
       notes: notes ?? this.notes,
-      deadline: deadline ?? this.deadline,
-      expectedDate: expectedDate ?? this.expectedDate,
+      addresses: addresses ?? this.addresses,
       // taxCodes: taxCodes ?? this.taxCodes,
       taxMode: taxMode ?? this.taxMode,
       attachments: attachments ?? this.attachments,
+      validFrom: validFrom ?? this.validFrom,
+      validUntil: validUntil ?? this.validUntil,
+      expectedDate: expectedDate ?? this.expectedDate,
       currencyCode: currencyCode ?? this.currencyCode,
-      shippingAddress: shippingAddress ?? this.shippingAddress,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -406,25 +391,22 @@ class RequestForQuote extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    prNumber,
-    autoCreatePo,
-    title,
     storeNumber,
-    requestedBy,
-    rfqNumber,
-    supplierLinks,
-    departmentCode,
+    salesRepId,
+    quoteNumber,
+    customerId,
+    '$ghanaCedis$shippingAmount',
     buyerContactPersonId,
     status,
     lineItems,
     notes,
-    deadline,
+    validFrom,
     expectedDate,
     taxMode,
     // taxCodes,
     taxMode,
     currencyCode,
-    shippingAddress,
+    addresses,
     attachments,
     createdBy,
     createdAt,
@@ -438,12 +420,10 @@ class RequestForQuote extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getAutoCreatePo,
-    '$prNumber -> $rfqNumber',
+    quoteNumber,
     getRFQStatus.toTitle,
-    costCenterCode,
-    departmentCode.toTitle,
-    getDeadlineDate,
+    getSalesChannel.toTitle,
+    getvalidFromDate,
     createdBy.toTitle,
     getCreatedAt,
     updatedBy.toTitle,
@@ -454,12 +434,10 @@ class RequestForQuote extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'Auto PO',
-    'PR -> RFQ Number',
+    'Quote Number',
     'Status',
-    'Cost Center',
-    'Department',
-    'Deadline',
+    'Sales Channel',
+    'validFrom',
     'Created By',
     'Created At',
     'Updated By',

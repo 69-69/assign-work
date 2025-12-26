@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 extension SetupTiles on dynamic {
   /// Header-Level [homeSetupTiles] Used for system setup and configuration of Tenant organization\'s workspace
   get homeSetupTiles => {
-    'label': 'system - administration',
+    'label': 'system . administration',
     'icon': Icons.settings,
     'action': RouteNames.systemAdminApp,
     'param': {},
@@ -22,7 +22,7 @@ extension SetupTiles on dynamic {
   List<DashboardTile> get setupTiles {
     final tilesData = [
       {
-        'label': 'company - setup',
+        'label': 'company . setup',
         'icon': Icons.home_work,
         'action': RouteNames.companyInfo,
         'param': {'openTab': '0'},
@@ -39,7 +39,7 @@ extension SetupTiles on dynamic {
             'create staff attendance, accounts, assign roles for their utilization of the software',
       },
       {
-        'label': 'roles - permissions',
+        'label': 'roles . permissions',
         'icon': Icons.admin_panel_settings,
         'action': RouteNames.manageRoles,
         'param': {'openTab': '2'},
@@ -48,7 +48,7 @@ extension SetupTiles on dynamic {
             'Create, edit, assign roles with specific permissions to control access within your team.',
       },
       {
-        'label': 'workflow - approval rules',
+        'label': 'workflow . approval rules',
         'icon': Icons.approval,
         'action': RouteNames.workflowApprovalRules,
         'param': {'openTab': '3'},
@@ -58,7 +58,7 @@ extension SetupTiles on dynamic {
         // 'description': 'Define and manage approval workflows by document type, role, and approval level to ensure proper authorization across your organization.',
       },
       {
-        'label': 'Tax - Rates',
+        'label': 'Tax . Rates',
         'icon': Icons.calculate,
         'action': RouteNames.manageTaxes,
         'param': {'openTab': '4'},
@@ -67,7 +67,7 @@ extension SetupTiles on dynamic {
             'Manage tax rates (VAT or sales tax). Apply them to items, services, and invoices as needed.',
       },
       {
-        'label': 'Items - Preference',
+        'label': 'Items . Preference',
         'icon': Icons.category,
         'action': RouteNames.productConfig,
         'param': {'openTab': '5'},
@@ -76,7 +76,7 @@ extension SetupTiles on dynamic {
             'Customize item categories, units of measure, and other preferences for inventory management.',
       },
       {
-        'label': 'back - up',
+        'label': 'backup',
         'icon': Icons.backup,
         'action': RouteNames.backup,
         'param': {'openTab': '6'},

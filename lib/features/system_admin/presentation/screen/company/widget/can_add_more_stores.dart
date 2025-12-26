@@ -108,7 +108,7 @@ extension CompanyStoreBranches on BuildContext {
   Future<dynamic> showUpgradeDialog() async {
     return await confirmAction(
       Text(
-        'You can\'t add more stores (branches). Please extend your subscription license to add more stores.\nKindly contact support for more information.',
+        'You can\'t add more stores (branches). Please extend your subscription license for additional stores.\nFor further assistance, kindly contact support.',
       ),
       onAcceptLabel: 'Done',
       onRejectLabel: 'Cancel',

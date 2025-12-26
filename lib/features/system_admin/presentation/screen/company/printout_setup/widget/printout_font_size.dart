@@ -65,18 +65,18 @@ class _PrintoutFontSizeScreenState extends State<PrintoutFontSizeScreen> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(10),
-      child: settings.isEmpty
-          ? context.loader
-          : Column(
-              children: [
-                _buildTitle(context),
-                FormGroupCard(children: [_buildBody()]),
-              ],
-            ),
+      child: Column(
+        children: [
+          _buildTitle(context),
+          settings.isEmpty
+              ? context.loader
+              : FormGroupCard(children: [_buildBody()]),
+        ],
+      ),
     );
   }
 
-  AdaptiveLayout _buildBody() {
+  Widget _buildBody() {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

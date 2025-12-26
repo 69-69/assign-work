@@ -48,12 +48,12 @@ const agentTitle = 'agent';
 const posAppTitle = 'p.o.s';
 const inventoryAppTitle = 'inventory - ims';
 const procurementAppTitle = 'procurement & suppliers';
-const salesDistributionAppTitle = 'sales - distribution';
+const salesDistributionAppTitle = 'sales distribution';
 const warehouseAppTitle = 'warehouse - wms';
 const customerAppTitle = 'customer - crm';
 const systemAdminAppTitle = 'System Administration';
 const storeSwitcherAppTitle = 'switch store locations';
-const userGuideAppTitle = 'user - guide';
+const userGuideAppTitle = 'user guide';
 
 /// MANAGEMENT SUB-SCREENS TITLES
 const supplierManagementScreenTitle = 'supplier management';

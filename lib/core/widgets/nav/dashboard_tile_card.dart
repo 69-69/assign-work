@@ -319,7 +319,8 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
   }
 
   _buildIconCard(DashboardTile tile, BuildContext context) {
-    final parts = tile.label.split(' - ');
+    // Split on multiple separators like '- _ . & + /'
+    final parts = tile.label.split(RegExp(r'\s*[-_.&+/]\s*'));
     final title = parts.first;
     final subTitle = parts.length > 1 ? parts[1] : '';
 

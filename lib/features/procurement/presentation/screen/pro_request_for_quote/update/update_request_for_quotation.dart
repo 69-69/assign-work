@@ -27,24 +27,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension UpdateRequestForQuotationForm on BuildContext {
-  Future openUpdateRequestForQuote({required RequestForQuote quote}) async {
-    if (quote.id.isEmpty) return;
+  Future openUpdateRequestForQuote({required RequestForQuote rfq}) async {
+    if (rfq.id.isEmpty) return;
 
     return await openBottomSheet(
       isExpand: false,
       child: BottomSheetScaffold(
         title: 'Edit Request For Quote',
-        subtitle: quote.rfqNumber.toUpperAll,
-        body: _UpdateRequestForQuote(quote: quote),
+        subtitle: rfq.rfqNumber.toUpperAll,
+        body: _UpdateRequestForQuote(rfq: rfq),
       ),
     );
   }
 }
 
 class _UpdateRequestForQuote extends StatefulWidget {
-  final RequestForQuote quote;
+  final RequestForQuote rfq;
 
-  const _UpdateRequestForQuote({required this.quote});
+  const _UpdateRequestForQuote({required this.rfq});
 
   @override
   State<_UpdateRequestForQuote> createState() => _UpdateRequestForQuoteState();
@@ -59,7 +59,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   // Basic fields
   bool _isSubmitting = false;
-  String? _currency;
+  String? _currencyCode;
   String? _rfqTitle;
   String? _requestedBy;
   String? _departmentCode;
@@ -76,7 +76,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   final List<ProLineItem> _lineItems = [];
   final Map<String, dynamic> _additionalInfo = {};
 
-  RequestForQuote get _serverRFQ => widget.quote;
+  RequestForQuote get _serverRFQ => widget.rfq;
   String? get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
 
   List<String> get _initialHeaderTaxes => _serverRFQ.taxMode.isHeaderTax
@@ -121,7 +121,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       title: _rfqTitle ?? _serverRFQ.title,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
       status: ProcurementStatusHelper.fromString(status),
-      currency: _currency ?? _serverRFQ.currency,
+      currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
       supplierLinks: _serverRFQ.supplierLinks,
       lineItems: List.from(_lineItems),
@@ -180,20 +180,20 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   /// - For Per-Line Tax:
   ///   Line items already carry their own tax codes, so no modification
   ///   is required.
-  RequestForQuote _sanitizeTaxCodes(RequestForQuote quote) {
+  RequestForQuote _sanitizeTaxCodes(RequestForQuote rfq) {
     // If Header Tax is selected, apply the same tax codes
     // to all line items to ensure backend compatibility.
-    if (quote.taxMode.isHeaderTax) {
+    if (rfq.taxMode.isHeaderTax) {
       // Apply tax codes to each line item in the quote object
-      final updatedItems = quote.lineItems
+      final updatedItems = rfq.lineItems
           .map((e) => e.copyWith(taxCodes: _taxCodes))
           .toList();
       // Return a new RFQ object with updated line items
-      return quote.copyWith(lineItems: updatedItems);
+      return rfq.copyWith(lineItems: updatedItems);
     }
     // For Per-Line Tax mode, return the RFQ unchanged since
     // tax codes are managed individually per line item.
-    return quote;
+    return rfq;
   }
 
   @override
@@ -331,8 +331,8 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   Widget _buildCurrency() {
     return CurrencyDropdown(
-      initialCurrency: _serverRFQ.currency,
-      onCurrencyChanged: (s) => setState(() => _currency = s),
+      initialCurrency: _serverRFQ.currencyCode,
+      onCurrencyChanged: (s) => setState(() => _currencyCode = s),
     );
   }
 
@@ -421,7 +421,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(
+    final rfqWithTaxes = await RFQFormInputs.applyTaxesToQuote(
       _cachedUpdatedRFQ,
     );
     final supplier = await RFQFormInputs.getSupplier(
@@ -439,7 +439,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       _updateHistory();
     }
 
-    await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+    await RFQPrinter(rfq: rfqWithTaxes, supplier: supplier).printRFQ();
   });
 
   /// Audit Log Entry (Tracking actions)
@@ -447,7 +447,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     final up = RFQFormInputs.updateHistory(
       empId: _employeeId,
       action: action,
-      quote: _updatedRFQ,
+      rfq: _updatedRFQ,
     );
     _bloc.add(up);
   }

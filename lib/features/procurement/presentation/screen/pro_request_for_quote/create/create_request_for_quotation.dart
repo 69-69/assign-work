@@ -3,7 +3,6 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
@@ -81,7 +80,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   // Basic fields
   String? _rfqStatus;
   String _rfqTitle = '';
-  String _currency = '';
+  String _currencyCode = '';
   String _rfqNumber = '';
   String _requestedBy = '';
   bool _autoCreatePo = true; // auto generate PO when RFQ is Accepted
@@ -121,7 +120,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   Future<void> _getDefaultShippingAddress() async {
     if (!_useDefaultAddress) {
-      prettyPrint('Default-Address', 'Its False');
       setState(() => _shippingAddress.clear());
       return;
     }
@@ -147,7 +145,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     title: _rfqTitle,
     status: ProcurementStatusHelper.fromString(_rfqStatus ?? ''),
     supplierLinks: List.from(_supplierLinks),
-    currency: _currency,
+    currencyCode: _currencyCode,
     notes: _buyerTerms['notes'],
     lineItems: List.from(_lineItems),
     shippingAddress: _shippingAddress.first,
@@ -221,7 +219,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _autoCreatePo = false;
       _supplierLinks.clear();
       _requestedBy = '';
-      _currency = '';
+      _currencyCode = '';
       _costCenterCode = '';
       _departmentCode = '';
       _lineItems.clear();
@@ -421,7 +419,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
     return CurrencyAndCostCenterDepartment(
-      onCurrencyChanged: (v) => setState(() => _currency = v),
+      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
       onCostCenterChange: (id, code, name) =>
           setState(() => _costCenterCode = code),
     );
@@ -510,14 +508,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         )) {
       _updateHistory();
     }
-    await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+    await RFQPrinter(rfq: quoteWithTaxes, supplier: supplier).printRFQ();
   });
 
   /// Audit Log Entry (Tracking actions)
   void _updateHistory([AuditAction action = AuditAction.printed]) {
     final up = RFQFormInputs.updateHistory(
       action: action,
-      quote: _newRFQ,
+      rfq: _newRFQ,
       empId: _employeeId,
     );
     _bloc.add(up);

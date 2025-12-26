@@ -17,7 +17,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_re
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/create/create_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/open_rfq_with_suppliers.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/see_quote_details.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/see_rfq_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/update/update_request_for_quotation.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
@@ -38,7 +38,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   // List to group quotations for printout
   final List<RequestForQuote> _selectedForCompare = [];
   final List<String> _selectedIds = [];
-  final List<RequestForQuote> _quotesWithTaxes = [];
+  final List<RequestForQuote> _rfqsWithTaxes = [];
   final List<Supplier> _suppliers = [];
 
   bool get _isAwarded => widget.isAwarded;
@@ -159,13 +159,13 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   // Select quotes for comparison based on selected IDs
-  void _selectedQuotes(List<RequestForQuote> quotes) {
+  void _selectedQuotes(List<RequestForQuote> rfqs) {
     if (_selectedIds.length == 2) {
       // Get the first two selected IDs from _selectedIds
       _selectedIds.take(2).forEach((id) {
-        final quote = _getQuoteById(quotes, id);
-        if (quote != null) {
-          _selectedForCompare.add(quote);
+        final rfq = _getRFQById(rfqs, id);
+        if (rfq != null) {
+          _selectedForCompare.add(rfq);
         }
       });
     }
@@ -175,12 +175,12 @@ class _ListQuotationsState extends State<ListQuotations> {
     setState(() {
       _selectedIds.clear();
       _selectedForCompare.clear();
-      _quotesWithTaxes.clear();
+      _rfqsWithTaxes.clear();
       _suppliers.clear();
     });
   }
 
-  _buildToolbar(List<RequestForQuote> quotes) {
+  _buildToolbar(List<RequestForQuote> rfqs) {
     return AdaptiveLayout(
       isFormBuilder: false,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +189,7 @@ class _ListQuotationsState extends State<ListQuotations> {
         context.actionInfoButton(
           'Refresh ${_isAwarded ? 'Awarded' : 'Request For'} Quotes',
           label: 'Quotations',
-          count: quotes.length,
+          count: rfqs.length,
           // Dispatch an event to refresh data
           onPressed: () {
             // Refresh Request For Quotation Data
@@ -198,20 +198,20 @@ class _ListQuotationsState extends State<ListQuotations> {
         ),
         const SizedBox(width: 20),
         context.elevatedButton(
-          'Create Quote',
+          'Create RFQ',
           onPressed: () => context.openRFQForm(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,
         ),
-        // Compare two Quotes
+        // Compare two RFQS
         if (_selectedIds.length == 2) ...[
           const SizedBox(width: 20),
           context.compareButton(
-            'Compare Quotes',
+            'Compare RFQ',
             onPressed: () async => await _onCompareTwoRFQ(context),
             bgColor: kSuccessColor,
             txtColor: kWhiteColor,
-            tooltip: 'Compare two quotes',
+            tooltip: 'Compare two RFQs',
           ),
         ],
         if (_selectedIds.length > 1) ...[
@@ -220,11 +220,11 @@ class _ListQuotationsState extends State<ListQuotations> {
             'Delete',
             txtColor: kWhiteColor,
             bgColor: kDangerColor,
-            tooltip: 'Delete selected quotes',
+            tooltip: 'Delete selected RFQ',
             onPressed: () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
-                /// Delete all selected Quotations from Quote-DB
+                /// Delete all selected Quotations from RFQ-DB
                 _readBloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
@@ -243,14 +243,14 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  RequestForQuote? _getQuoteById(List<RequestForQuote> quotes, String id) {
-    final quote = RequestForQuote.findRFQById(quotes, id);
-    return quote.isEmpty ? null : quote;
+  RequestForQuote? _getRFQById(List<RequestForQuote> rfqs, String id) {
+    final rfq = RequestForQuote.findRFQById(rfqs, id);
+    return rfq.isEmpty ? null : rfq;
   }
 
-  Future<RequestForQuote> _applyTaxesToQuote(RequestForQuote quote) async {
+  Future<RequestForQuote> _applyTaxesToRFQ(RequestForQuote rfq) async {
     final taxMap = await GetTaxes.loadAllTaxRates();
-    return quote.computeTaxAmounts(taxMap);
+    return rfq.computeTaxAmounts(taxMap);
   }
 
   Future<Supplier?> _getSupplier(String supplierId) async {
@@ -261,7 +261,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   Future<void> _onCompareTwoRFQ(BuildContext cxt) async {
     if (_selectedForCompare.length != 2) {
       context.showAlertOverlay(
-        'To compare, deselect and then reselect two quotes',
+        'To compare, deselect and then reselect two RFQ',
         bgColor: kDangerColor,
         popContext: () => _clearComparisonData(),
       );
@@ -269,44 +269,44 @@ class _ListQuotationsState extends State<ListQuotations> {
     }
     // limit to 2 RFQ
     for (int i = 0; i < 2; i++) {
-      final quote = _selectedForCompare[i];
-      final quoteWithTaxes = await _applyTaxesToQuote(quote);
-      final supplier = await _getSupplier(quote.supplierLinks.first.supplierId);
+      final rfq = _selectedForCompare[i];
+      final rfqWithTaxes = await _applyTaxesToRFQ(rfq);
+      final supplier = await _getSupplier(rfq.supplierLinks.first.supplierId);
       if (!supplier.isNullOrEmpty) {
-        _quotesWithTaxes.add(quoteWithTaxes);
+        _rfqsWithTaxes.add(rfqWithTaxes);
         _suppliers.add(supplier!);
       }
     }
 
     if (cxt.mounted) {
-      if (_quotesWithTaxes.length > 1 &&
-          (_quotesWithTaxes.length != _suppliers.length)) {
-        cxt.showAlertOverlay('Mismatch between quotes and suppliers.');
+      if (_rfqsWithTaxes.length > 1 &&
+          (_rfqsWithTaxes.length != _suppliers.length)) {
+        cxt.showAlertOverlay('Mismatch between RFQ and suppliers.');
         return;
       }
 
-      await cxt.openCompareRFQ(quotes: _quotesWithTaxes, suppliers: _suppliers);
+      await cxt.openCompareRFQ(rfqs: _rfqsWithTaxes, suppliers: _suppliers);
       _clearComparisonData();
     }
   }
 
-  Future<void> _onViewDetails(List<RequestForQuote> quotes, String id) async {
+  Future<void> _onViewDetails(List<RequestForQuote> rfqs, String id) async {
     await _withRfqSupplierLinks(
       id,
-      quotes,
+      rfqs,
       auditAction: AuditAction.viewed,
-      onSingleSupplier: (quote, supplier) async {
+      onSingleSupplier: (rfq, supplier) async {
         return await context.openRFQDetails(
-          quote: quote,
+          rfq: rfq,
           supplier: supplier,
           bloc: _readBloc,
         );
       },
-      onMultipleSuppliers: (quote, supplierLinks) async {
+      onMultipleSuppliers: (rfq, supplierLinks) async {
         return await context.openRFQWithSuppliers(
           supplierLinks: supplierLinks,
           onSelected: (supplier) => context.openRFQDetails(
-            quote: quote,
+            rfq: rfq,
             supplier: supplier,
             bloc: _readBloc,
           ),
@@ -315,10 +315,10 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  Future<void> _onPrintRFQ(List<RequestForQuote> quotes, String id) async {
+  Future<void> _onPrintRFQ(List<RequestForQuote> rfqs, String id) async {
     // Show progress dialog while loading data
     await context.progressBarDialog(
-      request: _printout(quotes, id),
+      request: _printout(rfqs, id),
       onSuccess: (_) =>
           context.showAlertOverlay('Printout successfully created'),
       onError: (error) => context.showAlertOverlay(
@@ -328,61 +328,61 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  Future<void> _printout(List<RequestForQuote> quotes, String id) async {
+  Future<void> _printout(List<RequestForQuote> rfqs, String id) async {
     await Future.delayed(kRProgressDelay);
 
     await _withRfqSupplierLinks(
       id,
-      quotes,
+      rfqs,
       auditAction: AuditAction.printed,
-      onSingleSupplier: (quote, supplier) {
-        return RFQPrinter(quote: quote, supplier: supplier).printRFQ();
+      onSingleSupplier: (rfq, supplier) {
+        return RFQPrinter(rfq: rfq, supplier: supplier).printRFQ();
       },
-      onMultipleSuppliers: (quote, supplierLinks) {
+      onMultipleSuppliers: (rfq, supplierLinks) {
         return context.openRFQWithSuppliers(
           subTitle: 'printout RFQ',
           supplierLinks: supplierLinks,
           onSelected: (supplier) =>
-              RFQPrinter(quote: quote, supplier: supplier).printRFQ(),
+              RFQPrinter(rfq: rfq, supplier: supplier).printRFQ(),
         );
       },
     );
   }
 
-  Future<void> _onEditTap(List<RequestForQuote> quotes, String id) async {
-    final quote = _getQuoteById(quotes, id);
-    if (quote == null) return;
+  Future<void> _onEditTap(List<RequestForQuote> rfqs, String id) async {
+    final rfq = _getRFQById(rfqs, id);
+    if (rfq == null) return;
 
-    await context.openUpdateRequestForQuote(quote: quote);
+    await context.openUpdateRequestForQuote(rfq: rfq);
   }
 
-  Future<void> _onDeleteTap(List<RequestForQuote> quotes, String id) async {
-    final quote = _getQuoteById(quotes, id);
-    if (quote == null) return;
+  Future<void> _onDeleteTap(List<RequestForQuote> rfqs, String id) async {
+    final rfq = _getRFQById(rfqs, id);
+    if (rfq == null) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
       final bloc = _readBloc;
 
       bloc
-        ..add(_updateHistory(quote))
-        ..add(DeleteProcurement<String>(documentId: quote.id));
+        ..add(_updateHistory(rfq))
+        ..add(DeleteProcurement<String>(documentId: rfq.id));
     }
   }
 
   /// Audit Log Entry (Tracking actions)
   AuditProcurement<RequestForQuote> _updateHistory(
-    RequestForQuote quote, {
+    RequestForQuote rfq, {
     AuditAction action = AuditAction.deleted,
   }) {
     return AuditProcurement<RequestForQuote>(
-      documentId: quote.id,
+      documentId: rfq.id,
       log: AuditLog.logScaffold(
-        oldLogs: quote.history,
+        oldLogs: rfq.history,
         newLog: AuditLog(
           action: action,
           actionBy: context.employee!.employeeId,
-          statusAfterAction: quote.getRFQStatus,
+          statusAfterAction: rfq.getRFQStatus,
         ),
       ),
     );
@@ -399,42 +399,42 @@ class _ListQuotationsState extends State<ListQuotations> {
   /// or empty supplier links) and rechecks [mounted] after async gaps.
   Future<void> _withRfqSupplierLinks(
     String id,
-    List<RequestForQuote> quotes, {
+    List<RequestForQuote> rfqs, {
     required AuditAction auditAction,
     required Future<void> Function(
-      RequestForQuote quoteWithTaxes,
+      RequestForQuote rfqWithTaxes,
       Supplier supplier,
     )
     onSingleSupplier,
     required Future<void> Function(
-      RequestForQuote quoteWithTaxes,
+      RequestForQuote rfqWithTaxes,
       List<SupplierLink> supplierLinks,
     )
     onMultipleSuppliers,
   }) async {
-    final quote = _getQuoteById(quotes, id);
-    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
+    final rfq = _getRFQById(rfqs, id);
+    if (!mounted || rfq == null || rfq.supplierLinks.isNullOrEmpty) return;
 
-    final quoteWithTaxes = await _applyTaxesToQuote(quote);
+    final rfqWithTaxes = await _applyTaxesToRFQ(rfq);
     if (!mounted) return;
 
-    final supplierLinks = quote.supplierLinks;
+    final supplierLinks = rfq.supplierLinks;
 
-    _readBloc.add(_updateHistory(quote, action: auditAction));
+    _readBloc.add(_updateHistory(rfq, action: auditAction));
 
     // Single supplier
     if (supplierLinks.length == 1) {
       final supplier = await _getSupplier(supplierLinks.first.supplierId);
       if (!mounted || supplier == null) return;
 
-      await onSingleSupplier(quoteWithTaxes, supplier);
+      await onSingleSupplier(rfqWithTaxes, supplier);
       return;
     }
 
     if (!mounted) return;
 
     // Multiple suppliers
-    await onMultipleSuppliers(quoteWithTaxes, supplierLinks);
+    await onMultipleSuppliers(rfqWithTaxes, supplierLinks);
   }
 }
 

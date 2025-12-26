@@ -22,7 +22,7 @@ extension LicenseTiles on BuildContext {
       },
       // Procurement Package
       {
-        'label': 'procurement - supplier',
+        'label': 'procurement & supplier',
         'icon': Icons.add_shopping_cart,
         'action': RouteNames.procurementApp,
         'param': {},
@@ -42,7 +42,7 @@ extension LicenseTiles on BuildContext {
       },
       // Sales Distribution Package
       {
-        'label': 'sales - distribution',
+        'label': 'sales & distribution',
         'icon': Icons.local_shipping,
         'action': RouteNames.salesDistributionApp,
         'param': {},
@@ -73,7 +73,7 @@ extension LicenseTiles on BuildContext {
       /// Not-A-License - Only used for system setup and configuration of Tenant organization\'s workspace.
       homeSetupTiles,
       {
-        'label': 'user - guide',
+        'label': 'user . guide',
         'icon': Icons.library_books,
         'action': RouteNames.userGuideApp,
         'param': {},
@@ -83,7 +83,7 @@ extension LicenseTiles on BuildContext {
       },
       // Live Chat Support Package
       {
-        'label': 'support - (Live Chat)',
+        'label': 'support . (Live Chat)',
         'icon': Icons.support_agent,
         'action': RouteNames.liveChatSupport,
         'param': {},

@@ -9,30 +9,30 @@ extension SalesDistributionTiles on dynamic {
   List<DashboardTile> get salesDistributionTiles {
     final tilesData = [
       {
-        'label': 'sales - order',
-        'icon': Icons.trending_up,
+        'label': 'sales . order',
+        'icon': Icons.shopping_bag,
         'action': RouteNames.salesOrders2,
         'param': {},
         'access': _getName(SalesDistributionPermission.manageSOs),
-        'description': 'Create orders for customers or clients',
+        'description': 'Create and manage customer sales orders efficiently.',
+      },
+      // sales quotation tab
+      {
+        'label': 'Sales . Quotation',
+        'icon': Icons.notes,
+        'action': RouteNames.salesQuotation,
+        'param': {},
+        'access': _getName(SalesDistributionPermission.manageSalesQuotation),
+        'description': 'Draft and control customer sales quotations with ease.',
       },
       {
-        'label': 'deliveries',
-        'icon': Icons.delivery_dining,
-        'action': RouteNames.deliveries2,
+        'label': 'delivery . shipping',
+        'icon': Icons.all_inbox,
+        'action': RouteNames.deliveryShipping,
         'param': {},
         'access': _getName(SalesDistributionPermission.manageDeliveries),
         'description':
-            'add or create delivery of order(s) and update their status.',
-      },
-      // tracking tab
-      {
-        'label': 'tracking',
-        'icon': Icons.location_on,
-        'action': RouteNames.ordersTracking2,
-        'param': {},
-        'access': _getName(SalesDistributionPermission.manageTracking),
-        'description': 'monitor the progress of order placement and deliveries',
+            'Create deliveries, ship orders, and track delivery status.',
       },
     ];
 

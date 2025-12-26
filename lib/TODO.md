@@ -13,6 +13,7 @@
 - @Continue
   - Linking it with PO
   - RFQ Update Form
+  - Sales Quotation (Sales & Distribution)
   - ~~Linking it with RFQ~~
   - ~~Item Category~~
   - ~~Company Setup with address (issue: address not saving multiple data)~~
@@ -20,7 +21,7 @@
 ```shell
 git init
 git add .
-git commit -m "Completed: Linking it with RFQ & Item Category"
+git commit -m "Working on Sales Quotation (Sales & Distribution)"
 git branch -M main
 git push -u origin main
 ```

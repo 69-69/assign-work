@@ -63,7 +63,7 @@ class _NeededUpdateRequestForQuoteState
 
   // Basic fields
   bool _isSubmitting = false;
-  String? _currency;
+  String? _currencyCode;
   String? _rfqTitle;
   String? _requestedBy;
   String? _departmentCode;
@@ -125,7 +125,7 @@ class _NeededUpdateRequestForQuoteState
       title: _rfqTitle ?? _serverRFQ.title,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
       status: ProcurementStatusHelper.fromString(status),
-      currency: _currency ?? _serverRFQ.currency,
+      currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
       supplierLinks: _serverRFQ.supplierLinks,
       lineItems: List.from(_lineItems),
@@ -335,8 +335,8 @@ class _NeededUpdateRequestForQuoteState
 
   Widget _buildCurrency() {
     return CurrencyDropdown(
-      initialCurrency: _serverRFQ.currency,
-      onCurrencyChanged: (s) => setState(() => _currency = s),
+      initialCurrency: _serverRFQ.currencyCode,
+      onCurrencyChanged: (s) => setState(() => _currencyCode = s),
     );
   }
 
@@ -443,7 +443,7 @@ class _NeededUpdateRequestForQuoteState
       _updateHistory();
     }
 
-    await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
+    await RFQPrinter(rfq: quoteWithTaxes, supplier: supplier).printRFQ();
   });
 
   /// Audit Log Entry (Tracking actions)
@@ -451,7 +451,7 @@ class _NeededUpdateRequestForQuoteState
     final up = RFQFormInputs.updateHistory(
       empId: _employeeId,
       action: action,
-      quote: _updatedRFQ,
+      rfq: _updatedRFQ,
     );
     _bloc.add(up);
   }

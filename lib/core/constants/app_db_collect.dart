@@ -71,8 +71,11 @@ const purchaseOrdersDBCollectionPath = 'purchase_orders_inventory_db';
 /// Firebase collection for purchase requisition
 const purchaseRequisitionDBCollectionPath = 'purchase_requisition_inventory_db';
 
-/// Firebase collection for customer price quote requests
+/// Firebase collection for Request for Quotation (Procurement: Supplier → Company)
 const requestPriceQuoteDBCollectionPath = 'request_price_quote_inventory_db';
+
+/// Firebase collection for Quotation (Sales / Distribution: Company → Customer)
+const salesQuotationDBCollectionPath = 'sales_quotation_inventory_db';
 
 // ---------------------------
 // 💬 Live Customer Support Collections

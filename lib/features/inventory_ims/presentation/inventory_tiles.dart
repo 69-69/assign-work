@@ -33,7 +33,211 @@ extension InventoryTiles on dynamic {
   /// Sub Menu Tiles under Inventory Dashboard
   List<DashboardTile> get inventoryTiles {
     final tilesData = [
-      // items tab
+      /// NEW Modules (These will be added)
+      /*1️⃣ Item / Product Master
+          Purpose: Central definition of everything that can be stocked.
+          Key objects:
+          Items / Products
+          Item Categories
+          Units of Measure (UOM)
+          Barcodes / SKUs
+          Variants (size, color, model)
+          Lot / Serial tracking flags
+        📌 Shared across Sales, Procurement, POS, Manufacturing.
+        =========================
+        1️⃣ Item / Product Master
+          Purpose: This module acts as the central repository for defining and categorizing all items/products that are stocked, sold, or procured. It’s essential for standardizing product information across all other ERP modules.
+        Key Objects:
+          Items / Products: Defines each individual item in the system.
+          Item Categories: Groups products by type (e.g., electronics, furniture, raw materials).
+          Units of Measure (UOM): Defines how items are measured (e.g., pieces, kilograms, liters).
+          Barcodes / SKUs: Unique identifiers for easy tracking and sales processing.
+          Variants: Variations of a product like size, color, or model (e.g., “T-shirt (Large, Red)”).
+          Lot / Serial Tracking Flags: Helps track inventory at a lot or serial number level for high-value or regulated items.
+        Shared Across:
+          Sales: Products defined here show up in catalogs and sales orders.
+          Procurement: Products managed here are ordered and tracked.
+          POS (Point of Sale): Items are identified and sold through POS systems.
+          Manufacturing: Products can be raw materials or finished goods.
+          Finance: Product costs and inventory valuation affect financial reporting.
+
+        =========================
+        /// NOTE: There'll be Horizonal-tabs under the Item Master tab (for: Items Stocking, Expiry, Warranty start/end).
+        */
+      {
+        'label': 'Items . Master',
+        'icon': Icons.inventory_2,
+        'action': RouteNames.items,
+        'param': {},
+        'access': _getName(InventoryPermission.manageStock),
+        'description':
+            'Create, update, and manage inventory, SKUs, and attributes.',
+      },
+      /* 2️⃣ Stock Management
+          Purpose: Real-time stock control.
+          Key objects:
+          Stock On Hand
+          Available Quantity
+          Reserved Quantity
+          Damaged / Blocked Stock
+        📌 Core for preventing overselling.
+        =========================
+        2️⃣ Stock Management
+          Purpose: Ensures real-time visibility and control over stock levels.
+          It tracks the actual quantities available and makes sure there’s no overselling.
+        Key Objects:
+          Stock On Hand: The total quantity of an item in inventory.
+          Available Quantity: Quantity that is ready for sale or use.
+          Reserved Quantity: Stock reserved for a sales order or production process.
+          Damaged / Blocked Stock: Items that are no longer sellable or usable, flagged for reporting.
+        Why It Matters:
+          This module is core to preventing overselling. It helps balance sales, production, and
+          procurement by providing real-time visibility into what’s actually available and what’s already committed elsewhere in the system.*/
+      {
+        'label': 'Stock . Management',
+        'icon': Icons.receipt_long,
+        'action': RouteNames.items, // Temporal Placeholder
+        // 'action': RouteNames.stockOnHand,
+        'param': {},
+        'access': _getName(InventoryPermission.viewStock),
+        'description': 'View available, reserved, and total stock quantities.',
+      },
+
+      /*3️⃣ Warehouse Management
+        Purpose: Physical stock organization.
+        Key objects:
+        Warehouses
+        Locations / Bins
+        Zones / Racks
+        Put-away rules
+        Picking strategies
+        📌 Scales from simple warehouse → WMS-level complexity.
+        ==================
+        3️⃣ Warehouse Management
+          Purpose: Organizes physical stock within the warehouse or distribution center. It helps optimize the space, flow, and handling of products, which becomes increasingly important as your business grows.
+        Key Objects:
+          Warehouses: Different locations where stock is held (e.g., Main Warehouse, Regional Depot).
+          Locations / Bins: Specific spots within the warehouse (e.g., “Aisle 3, Bin 5”).
+          Zones / Racks: Larger divisions within the warehouse (e.g., Cold Storage, Bulk Storage).
+          Put-away Rules: Guidelines for where to store products based on size, demand, and other factors.
+          Picking Strategies: Optimized processes for retrieving items, such as FIFO (First In, First Out) or LIFO (Last In, First Out), depending on product type.
+        Why It Matters:
+          This module can scale from a simple warehouse system to a WMS (Warehouse Management System)-level solution, with features like automated stock picking, real-time location tracking, and advanced reporting.
+          It’s crucial for large businesses with multiple warehouses or complex inventory flows.
+        */
+      {
+        'label': 'Warehouses',
+        'icon': Icons.warehouse,
+        'action': RouteNames.warehouseProducts,
+        'param': {},
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        // 'access': _getName(InventoryPermission.manageWarehouses),
+        'description': 'Manage warehouses, bins, racks, and storage locations.',
+      },
+
+      // Goods Receipt (Inbound)
+      /*4️⃣ Goods Receipt (Inbound)
+        Purpose: Increase inventory from external sources.
+        Sources:
+        Purchase Orders
+        Customer Returns
+        Production Output
+        Key objects:
+        Goods Receipt Notes (GRN)
+        Receiving Inspection
+        Partial Receipts
+        =====================
+        4️⃣ Goods Receipt (Inbound)
+          Purpose: Manages the receipt of goods from external sources—suppliers, customers, or even internal
+          production outputs. It ensures accurate, timely updates to stock levels.
+        Sources:
+          Purchase Orders: Goods received based on orders placed with suppliers.
+          Customer Returns: Items returned by customers for exchange or refund.
+          Production Output: Finished goods produced in-house and added to stock.
+        Key Objects:
+          Goods Receipt Notes (GRN): Documents used to confirm the receipt of items from suppliers or other sources.
+          Receiving Inspection: Process for inspecting goods on arrival for quality and quantity.
+          Partial Receipts: Handling of partial shipments from suppliers.
+          Why It Matters:
+          Without a robust Goods Receipt system, businesses can easily experience inventory discrepancies,
+          which could lead to overselling, stockouts, or misplaced goods. Accurate receipt tracking
+          ensures inventory levels are updated in real time and that the correct quantities are added.
+
+          /// NOTE: There'll be Horizonal-tabs under the Goods / Service Receipt tab (for: GRN, SES).*/
+      {
+        /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
+        /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
+        /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
+        'label': 'Goods / Service Receipt',
+        'icon': Icons.assignment_returned,
+        'action': RouteNames.items, // Temporal Placeholder
+        // 'action': RouteNames.goodsReceipt,
+        'param': {},
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        // 'access': _getName(InventoryPermission.manageGoodsReceipt),
+        'description':
+            'Record goods/services from suppliers, returns, or production into inventory.',
+      },
+
+      /*5️⃣ Goods Issue (Outbound)
+        Purpose: Decrease inventory.
+        Sources:
+        Sales Orders
+        POS Sales
+        Transfers
+        Write-offs
+        Key objects:
+        Delivery Issues
+        Picking Lists
+        Issue Notes*/
+      {
+        'label': 'Goods Issue',
+        'icon': Icons.call_made,
+        // 'action': RouteNames.goodsIssue,
+        'action': RouteNames.items, // Temporal Placeholder
+        'param': {},
+        // 'access': _getName(InventoryPermission.issueStock),
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        'description':
+            'Release stock for in-store or online sales, POS or internal use.',
+      },
+
+      /*6️⃣ Inventory Reports & Analytics
+        Purpose: Visibility and control
+        This module turns raw inventory data into actionable insights for managers and planners.
+        Common Reports
+        Stock Aging – how long items have been in stock
+        Inventory Turnover – how fast stock is sold/used
+        Dead Stock – items with no movement
+        Fast / Slow Moving Items
+        Warehouse Utilization – space and capacity usage
+        Why it matters
+        Identifies cash tied up in inventory
+        Improves purchasing and stocking decisions
+        Supports strategic planning and audits*/
+      {
+        'label': 'Inventory . Reports',
+        'icon': Icons.bar_chart,
+        // 'action': RouteNames.inventoryReports,
+        'action': RouteNames.items, // Temporal Placeholder
+        'param': {},
+        // 'access': _getName(InventoryPermission.viewInventoryReports),
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        'description':
+            'Visual insights of stock levels, movement, aging, and inventory performance.',
+        // Visual insights into stock levels, movement trends, aging analysis, and overall inventory performance.
+      },
+
+      /// OLD Modules (These will be remove)
+      // stocking tab
       {
         'label': 'stocks',
         'icon': Icons.receipt_long,
@@ -155,8 +359,316 @@ extension InventoryTiles on dynamic {
 
     return defaultTiles;
   }
+}
 
-  /*/// Returns a list of Inventory-Dashboard-Tiles based on the Inventory license [inventoryTiles]
+// Get name from enum
+String _getName(e) => EnumHelper<InventoryPermission>(e).getName;
+
+/**In a **full ERP**, **Inventory** is not just “stock in / stock out”. It’s a **core operational domain** with multiple tightly related **sub-modules** that support Sales, Procurement, POS, Manufacturing, and Finance.
+
+Below is a **clean, enterprise-grade breakdown** of what typically falls **under the Inventory module**, with practical ERP context.
+
+---
+
+# @TODO Core Inventory Modules
+
+## 1️⃣ Item / Product Master
+
+**Purpose:** Central definition of everything that can be stocked.
+
+**Key objects:**
+
+* Items / Products
+* Item Categories
+* Units of Measure (UOM)
+* Barcodes / SKUs
+* Variants (size, color, model)
+* Lot / Serial tracking flags
+
+📌 Shared across **Sales, Procurement, POS, Manufacturing**.
+
+---
+
+## 2️⃣ Stock Management
+
+**Purpose:** Real-time stock control.
+
+**Key objects:**
+
+* Stock On Hand
+* Available Quantity
+* Reserved Quantity
+* Damaged / Blocked Stock
+
+📌 Core for preventing overselling.
+
+---
+
+## 3️⃣ Warehouse Management
+
+**Purpose:** Physical stock organization.
+
+**Key objects:**
+
+* Warehouses
+* Locations / Bins
+* Zones / Racks
+* Put-away rules
+* Picking strategies
+
+📌 Scales from simple warehouse → WMS-level complexity.
+
+---
+
+## 4️⃣ Goods Receipt (Inbound)
+
+**Purpose:** Increase inventory from external sources.
+
+**Sources:**
+
+* Purchase Orders
+* Customer Returns
+* Production Output
+
+**Key objects:**
+
+* Goods Receipt Notes (GRN)
+* Receiving Inspection
+* Partial Receipts
+
+---
+
+## 5️⃣ Goods Issue (Outbound)
+
+**Purpose:** Decrease inventory.
+
+**Sources:**
+
+* Sales Orders
+* POS Sales
+* Transfers
+* Write-offs
+
+**Key objects:**
+
+* Delivery Issues
+* Picking Lists
+* Issue Notes
+
+---
+
+## 6️⃣ Inventory Transfers
+
+**Purpose:** Move stock internally.
+
+**Types:**
+
+* Warehouse → Warehouse
+* Bin → Bin
+* Store → Store
+
+**Key objects:**
+
+* Transfer Orders
+* In-Transit Stock
+
+---
+
+## 7️⃣ Inventory Adjustments
+
+**Purpose:** Correct discrepancies.
+
+**Reasons:**
+
+* Damage
+* Theft
+* Shrinkage
+* Counting errors
+
+**Key objects:**
+
+* Adjustment Documents
+* Reason Codes
+* Approval Workflow
+
+📌 Strong audit requirement.
+
+---
+
+## 8️⃣ Cycle Counting & Physical Inventory
+
+**Purpose:** Stock accuracy.
+
+**Key objects:**
+
+* Physical Count Documents
+* Variance Reports
+* Reconciliation Entries
+
+📌 Essential for compliance and accuracy.
+
+---
+
+## 9️⃣ Lot / Batch Management
+
+**Purpose:** Traceability.
+
+**Used in:**
+
+* Food
+* Pharma
+* Manufacturing
+
+**Key objects:**
+
+* Lot Numbers
+* Expiry Dates
+* Batch History
+
+---
+
+## 🔟 Serial Number Tracking
+
+**Purpose:** Individual item traceability.
+
+**Used for:**
+
+* Electronics
+* Appliances
+* Assets
+
+**Key objects:**
+
+* Serial Numbers
+* Warranty Tracking
+* Ownership History
+
+---
+
+## 1️⃣1️⃣ Inventory Valuation
+
+**Purpose:** Financial impact of stock.
+
+**Methods:**
+
+* FIFO
+* LIFO
+* Weighted Average
+* Standard Cost
+
+**Key objects:**
+
+* Stock Value
+* Cost Layers
+* GL Postings
+
+📌 Deep integration with Finance.
+
+---
+
+## 1️⃣2️⃣ Reordering & Stock Planning
+
+**Purpose:** Prevent stockouts and overstocking.
+
+**Key objects:**
+
+* Reorder Levels
+* Safety Stock
+* Min / Max Rules
+* Demand Forecast (optional)
+
+📌 Feeds into Procurement.
+
+---
+
+## 1️⃣3️⃣ Inventory Reservations
+
+**Purpose:** Protect stock for specific orders.
+
+**Sources:**
+
+* Sales Orders
+* Production Orders
+* Transfers
+
+📌 Critical for ERP sales integrity.
+
+---
+
+## 1️⃣4️⃣ Inventory Reports & Analytics
+
+**Purpose:** Visibility and control.
+
+**Reports:**
+
+* Stock Aging
+* Inventory Turnover
+* Dead Stock
+* Fast / Slow Moving Items
+* Warehouse Utilization
+
+---
+
+# Inventory Module → Integration Map
+
+| Inventory Sub-Module | Integrates With    |
+| -------------------- | ------------------ |
+| Goods Receipt        | Procurement        |
+| Goods Issue          | Sales / POS        |
+| Valuation            | Finance (GL, COGS) |
+| Reordering           | Procurement        |
+| Serial / Lot         | Sales, Returns     |
+| Transfers            | Logistics          |
+
+---
+
+# High-Level Inventory Flow
+
+```
+Item Master
+     ↓
+Goods Receipt
+     ↓
+Stock On Hand
+     ↓
+Reservation
+     ↓
+Goods Issue
+     ↓
+Valuation Posting
+```
+
+---
+
+# Architecture Tip (From Your ERP Experience)
+
+Best practice is to separate:
+
+* **Inventory Core Service** (stock, reservations)
+* **Warehouse Service** (bins, picking)
+* **Valuation Service** (costing, GL entries)
+
+Even in a monolith, keep **clear boundaries**.
+
+---
+
+## Final takeaway
+
+✔ Inventory is a **domain**, not a table
+✔ Every movement is a **document + ledger entry**
+✔ Accuracy and auditability are more important than speed
+✔ POS is just another consumer of inventory
+
+If you want next, I can:
+
+* Design **Inventory DB schema**
+* Show **event-driven inventory updates**
+* Explain **reservation vs deduction timing**
+
+Just tell me.
+*/
+
+/*/// Returns a list of Inventory-Dashboard-Tiles based on the Inventory license [inventoryTiles]
   Map<EmployeeRole, List<DashboardTile>> get _rbcInventoryTiles {
     final tilesData = [
       // products tab
@@ -281,7 +793,3 @@ extension InventoryTiles on dynamic {
 
   Map<EmployeeRole, RoleBasedDashboardTile<EmployeeRole>> get inventoryTiles =>
       DashboardTileManager<EmployeeRole>(tiles: _rbcInventoryTiles).create();*/
-}
-
-// Get name from enum
-String _getName(e) => EnumHelper<InventoryPermission>(e).getName;

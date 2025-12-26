@@ -24,7 +24,7 @@ class ProPurchaseOrder extends Equatable {
   final SupplierLink supplierLink;
   final List<ProLineItem> lineItems; // A list of items in the RFQ
 
-  final String currency;
+  final String currencyCode;
   final String requestedBy; // Buyer's Contact: Who requested the PO
 
   final ProcurementWorkflowStatus status;
@@ -63,7 +63,7 @@ class ProPurchaseOrder extends Equatable {
     this.id = '',
     this.rfqNumber = '',
     required this.poNumber,
-    required this.currency,
+    required this.currencyCode,
     required this.storeNumber,
     required this.supplierLink,
     required this.requestedBy,
@@ -103,7 +103,7 @@ class ProPurchaseOrder extends Equatable {
       costCenterCode: map['costCenterCode'] ?? '',
       status: ProcurementStatusHelper.fromString(map['status']),
       lineItems: ProLineItem.lineItems(map['lineItems']),
-      currency: map['currency'] ?? '',
+      currencyCode: map['currencyCode'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
       notes: map['notes'] ?? '',
@@ -132,7 +132,7 @@ class ProPurchaseOrder extends Equatable {
     'supplierLink': supplierLink.toMap(),
     'requestedBy': requestedBy,
     'status': getPOStatus,
-    'currency': currency,
+    'currencyCode': currencyCode,
     'costCenterCode': costCenterCode,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'paymentTerm': paymentTerm,
@@ -174,7 +174,7 @@ class ProPurchaseOrder extends Equatable {
     poNumber: '',
     storeNumber: '',
     supplierLink: SupplierLink.empty,
-    currency: '',
+    currencyCode: '',
     lineItems: [],
     paymentTerm: '',
     paymentMethod: '',
@@ -217,7 +217,7 @@ class ProPurchaseOrder extends Equatable {
       requestedBy.contains(filter) ||
       supplierLink.filterByAny(filter) ||
       costCenterCode.contains(filter) ||
-      currency.contains(filter) ||
+      currencyCode.contains(filter) ||
       paymentTerm.contains(filter) ||
       paymentMethod.contains(filter) ||
       lineItems.any((e) => e.filterByAny(filter));
@@ -303,7 +303,7 @@ class ProPurchaseOrder extends Equatable {
     SupplierLink? supplierLink,
     String? costCenterCode,
     List<ProLineItem>? lineItems,
-    String? currency,
+    String? currencyCode,
     ProcurementWorkflowStatus? status,
     String? paymentTerm,
     String? paymentMethod,
@@ -328,7 +328,7 @@ class ProPurchaseOrder extends Equatable {
       rfqNumber: rfqNumber ?? this.rfqNumber,
       requestedBy: requestedBy ?? this.requestedBy,
       supplierLink: supplierLink ?? this.supplierLink,
-      currency: currency ?? this.currency,
+      currencyCode: currencyCode ?? this.currencyCode,
       status: status ?? this.status,
       lineItems: lineItems ?? this.lineItems,
       attachments: attachments ?? this.attachments,
@@ -360,7 +360,7 @@ class ProPurchaseOrder extends Equatable {
     supplierLink,
     status,
     lineItems,
-    currency,
+    currencyCode,
     paymentTerm,
     paymentMethod,
     notes,
@@ -386,7 +386,7 @@ class ProPurchaseOrder extends Equatable {
     '$rfqNumber -> $poNumber',
     supplierLink.supplierId,
     getPOStatus.toTitle,
-    currency.toTitle,
+    currencyCode.toTitle,
     paymentTerm.toTitle,
     paymentMethod.toTitle,
     getDeliveryDate,

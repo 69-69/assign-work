@@ -78,7 +78,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   bool _isSubmitting = false;
   String _costCenterCode = '';
   String _poNumber = '';
-  String _currency = '';
+  String _currencyCode = '';
   String _requestedBy = '';
   String _paymentTerm = '';
   String _paymentMethod = '';
@@ -135,7 +135,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     requestedBy: _initialRFQ?.requestedBy ?? _requestedBy,
 
     costCenterCode: _initialRFQ?.costCenterCode ?? _costCenterCode,
-    currency: _currency,
+    currencyCode: _currencyCode,
 
     paymentTerm: _initialRFQ?.paymentTerm ?? _paymentTerm,
     paymentMethod: _paymentMethod,
@@ -187,7 +187,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       setState(() {
         _isSubmitting = false;
-        _currency = '';
+        _currencyCode = '';
         _poNumber = '';
         _requestedBy = '';
         _payments.clear();
@@ -333,7 +333,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
     return CurrencyAndCostCenterDepartment(
-      onCurrencyChanged: (v) => setState(() => _currency = v),
+      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
       onCostCenterChange: (id, code, name) =>
           setState(() => _costCenterCode = code),
     );

@@ -314,8 +314,8 @@ GoRoute _procurementRoute() {
 GoRoute _salesDistributionRoute() {
   final List<({String name, Widget screen})> salesDistributionRoutes = [
     (name: RouteNames.salesOrders2, screen: const SalesOrderScreen()),
-    (name: RouteNames.deliveries2, screen: const OrderDeliveryScreen()),
-    (name: RouteNames.ordersTracking2, screen: const TrackingScreen()),
+    (name: RouteNames.deliveryShipping, screen: const OrderDeliveryScreen()),
+    (name: RouteNames.salesQuotation, screen: const SalesQuotationScreen()),
   ];
 
   return GoRoute(

@@ -1,3 +1,3 @@
-export 'delivery/delivery_screen.dart';
-export 'sales_ors/sale_order_screen.dart';
-export 'tracking/tracking_screen.dart';
+export 'sales_order/sale_order_screen.dart';
+export 'sales_quotation/sales_quotation_screen.dart';
+export 'shipping_delivery/shipping_delivery_screen.dart';

@@ -19,7 +19,7 @@ enum SalesDistributionPermission {
   // Invoice
   printInvoice,
   viewInvoice,
-  manageTracking,
+  manageSalesQuotation,
   // Report
   viewReport,
   viewImsSecrets, // For viewing items IDs
@@ -69,9 +69,9 @@ final List<AccessControl> _salesOrderPermissions = [
 
 final List<AccessControl> _deliveryPermissions = [
   AccessControl(
-    module: "delivery",
-    title: "Manage deliveries",
-    description: "Allow users to create, edit, and delete deliveries.",
+    module: "shipping & delivery",
+    title: "Manage shipping & delivery",
+    description: "Allow users to create and manage shipping & delivery.",
     access: SalesDistributionPermission.manageDeliveries,
   ),
   AccessControl(
@@ -100,12 +100,12 @@ final List<AccessControl> _deliveryPermissions = [
   ),
 ];
 
-final List<AccessControl> _trackingPermissions = [
+final List<AccessControl> _salesQuotationPermissions = [
   AccessControl(
-    module: "tracking",
-    title: "Manage tracking",
-    description: "Allow users to create, edit, and delete tracking records.",
-    access: SalesDistributionPermission.manageTracking,
+    module: "sales quotation",
+    title: "Manage sales quotation",
+    description: "Allow users to create, edit, and delete sales quotation.",
+    access: SalesDistributionPermission.manageSalesQuotation,
   ),
 ];
 
@@ -145,7 +145,7 @@ final List<AccessControl> salesDistributionPermissions = [
   ..._salesDistributionPermissions,
   ..._salesOrderPermissions,
   ..._deliveryPermissions,
-  ..._trackingPermissions,
+  ..._salesQuotationPermissions,
   ..._metricsPermissions,
   ..._secretPermissions,
 ];

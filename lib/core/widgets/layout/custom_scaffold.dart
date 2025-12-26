@@ -254,13 +254,19 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
       optFallback: 'Back',
     );
 
-    final backTitle = routePath.isEmpty || breadcrumbs.isNotEmpty
+    /*final backTitle = routePath.isEmpty || breadcrumbs.isNotEmpty
         ? 'Back'
         : breadcrumbs.last.isNullOrEmpty
         ? 'Back'
         : breadcrumbs
               .last
-              .label; // Only access last.label if last is not null or empty
+              .label;*/
+    // Check if breadcrumbs is empty or not, and set backTitle accordingly
+    final backTitle = breadcrumbs.isNotEmpty
+        ? breadcrumbs.last.isNullOrEmpty
+              ? 'Back'
+              : breadcrumbs.last.label
+        : 'Back'; // If the list is empty, fallback to 'Back'
 
     return Container(
       alignment: Alignment.center,

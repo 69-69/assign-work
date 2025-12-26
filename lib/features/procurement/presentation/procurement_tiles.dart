@@ -69,7 +69,7 @@ extension ProcurementTiles on dynamic {
   List<DashboardTile> get procurementTiles {
     final tilesData = [
       {
-        'label': 'purchase - requisition',
+        'label': 'purchase . requisition',
         'icon': Icons.edit_document,
         'action': RouteNames.purchaseRequisition,
         'param': {},
@@ -78,7 +78,7 @@ extension ProcurementTiles on dynamic {
             'manage internal request by departments for needed items before a PO is created',
       },
       {
-        'label': 'request - for quotes',
+        'label': 'request . for quotes',
         'icon': Icons.request_page_outlined,
         'action': RouteNames.proRequestForQuote,
         'param': {},
@@ -87,7 +87,7 @@ extension ProcurementTiles on dynamic {
             'manage quotation requests to suppliers for pricing and terms',
       },
       {
-        'label': 'purchase - orders',
+        'label': 'purchase . orders',
         'icon': Icons.paypal,
         'action': RouteNames.proPurchaseOrders,
         'param': {},

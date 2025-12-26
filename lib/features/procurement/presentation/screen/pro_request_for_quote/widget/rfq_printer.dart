@@ -14,9 +14,9 @@ import 'package:printing/printing.dart';
 /// Printout for Request For Quotation [RFQPrinter]
 class RFQPrinter {
   final Supplier supplier;
-  final RequestForQuote quote;
+  final RequestForQuote rfq;
 
-  RFQPrinter({required this.quote, required this.supplier});
+  RFQPrinter({required this.rfq, required this.supplier});
 
   Future<void> printRFQ() async {
     Printing.layoutPdf(
@@ -28,9 +28,9 @@ class RFQPrinter {
   }
 
   List<PrintItem> _buildLineItems() {
-    final currencySign = getCurrencySign(quote.currency);
+    final currencySign = getCurrencySign(rfq.currencyCode);
 
-    return quote.lineItems.asMap().entries.map((entry) {
+    return rfq.lineItems.asMap().entries.map((entry) {
       final index = entry.key;
       final item = entry.value;
 
@@ -42,9 +42,9 @@ class RFQPrinter {
         discount: item.discount,
         unitPrice: item.unitPrice,
         taxAmount: item.taxAmount,
-        paymentTerms: quote.buyerContactPersonId,
+        paymentTerms: rfq.buyerContactPersonId,
         taxNames: item.taxNames.toUpperAll,
-        validityDate: quote.getDeadlineDate,
+        validityDate: rfq.getDeadlineDate,
       );
     }).toList();
   }
@@ -55,21 +55,21 @@ class RFQPrinter {
     List<PrintItem> lineItems = _buildLineItems();
 
     ContactPerson? contactPerson = supplier.contactPersons.firstWhereOrNull(
-      (i) => i.id == quote.supplierLinks.first.supplierRepId,
+      (i) => i.id == rfq.supplierLinks.first.supplierRepId,
     );
 
-    final rfq = _RFQPdfBuilder(
+    final quote = _RFQPdfBuilder(
       items: lineItems,
       supplier: supplier,
-      rfqNumber: quote.rfqNumber,
+      rfqNumber: rfq.rfqNumber,
       contactPerson: contactPerson,
-      validityDate: quote.getDeadlineDate,
-      deliveryDate: quote.getExpectedDate,
-      altDeliveryAddress: quote.shippingAddress?.address ?? '',
+      validityDate: rfq.getDeadlineDate,
+      deliveryDate: rfq.getExpectedDate,
+      altDeliveryAddress: rfq.shippingAddress?.address ?? '',
     );
 
     // Now you can use the `rfq` object as needed, e.g., to print or display it
-    return await rfq.build(format);
+    return await quote.build(format);
   }
 }
 

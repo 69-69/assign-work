@@ -89,12 +89,11 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
   @override
   Widget build(BuildContext context) {
     final sWidth = context.screenWidth * (context.isMobile ? 0.94 : 0.7);
-    final tileCount = filteredTiles.length <= 1 ? 1 : filteredTiles.length;
 
     // Measure available height to determine rows per view
     final maxVisible = context.getMaxVisibleHeight(
       rowHeight: 130.0,
-      itemCount: tileCount,
+      itemCount: filteredTiles.length + 1,
     );
 
     return SingleChildScrollView(
@@ -494,7 +493,7 @@ class _HighlightedText extends StatelessWidget {
           text: displayText.substring(index, index + query.length),
           // Highlight color
           style: styleCopy?.copyWith(
-            color: kSuccessColor,
+            color: kBgLightColor,
             fontWeight: FontWeight.bold,
             // backgroundColor: kBgLightColor.toAlpha(0.7),
           ),
