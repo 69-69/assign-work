@@ -20,7 +20,7 @@ import 'package:assign_erp/features/procurement/data/model/workflow_converter_mo
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/search_purchase_requisitions.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/procurement_form_fields.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/screen/widget/sales_dist_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_company.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
@@ -30,12 +30,16 @@ import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxe
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-class RFQFormInputs {
+class SQFormInputs {
   static updateListFromData<T>(
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
+  }) => SalesDistFormFields.updateListFromData<T>(
+    list,
+    map: map,
+    fromMap: fromMap,
+  );
 
   /// Apply taxes to RFQ
   static Future<RequestForQuote> applyTaxesToQuote(RequestForQuote rfq) async {
@@ -62,7 +66,7 @@ class RFQFormInputs {
     BuildContext context,
     String count,
     void Function()? onPressed,
-  ) => ProcurementForm.buildNumber(
+  ) => SalesDistFormFields.buildNumber(
     context,
     what: 'RFQ',
     count: count,
@@ -75,7 +79,7 @@ class RFQFormInputs {
     bool isHidden = false,
     List<String> keysToExclude = const [],
   }) {
-    final fields = ProcurementForm.fields(
+    final fields = SalesDistFormFields.fields(
       type,
       isDisabled: isDisabled,
       keysToExclude: keysToExclude,
@@ -195,11 +199,11 @@ class RFQFormInputs {
 
   /// Suppliers Fields
   static List<FieldGroupConfig> get suppliersFields =>
-      ProcurementForm.suppliersFields();
+      SalesDistFormFields.suppliersFields();
 
   /// Addresses (e.g., Buyer Shipping Address)
   static List<FieldGroupConfig> get shippingAddressFields =>
-      ProcurementForm.addressFields(initialValue: 'Shipping');
+      SalesDistFormFields.addressFields(initialValue: 'Shipping');
 
   static AuditProcurement<RequestForQuote> updateHistory({
     required String empId,
@@ -334,9 +338,9 @@ class AutoCreateAndRFQStatus extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Auto-convert RFQ to PO after acceptance
-        _AutoCreateRFQ(isChecked: isSelected, onChanged: onAutoConvertChanged),
-        _RFQStatusDropdown(
+        // Auto-Convert Sales Quote to Sales Order when RFQ is Accepted
+        _AutoCreateSO(isChecked: isSelected, onChanged: onAutoConvertChanged),
+        _SQStatusDropdown(
           initialValue: initialStatus,
           onChange: onStatusChanged,
         ),
@@ -561,11 +565,11 @@ class _BuyerContactPerson extends StatelessWidget {
 }
 
 /// Request for Price Quote Status [RFQStatusDropdown]
-class _RFQStatusDropdown extends StatelessWidget {
+class _SQStatusDropdown extends StatelessWidget {
   final String? initialValue;
   final void Function(dynamic s) onChange;
 
-  const _RFQStatusDropdown({required this.onChange, this.initialValue});
+  const _SQStatusDropdown({required this.onChange, this.initialValue});
 
   @override
   Widget build(BuildContext context) {
@@ -602,24 +606,24 @@ class _PayTermsDropdown extends StatelessWidget {
   }
 }
 
-/// [_AutoCreateRFQ] Auto-convert RFQ to PO after acceptance
-class _AutoCreateRFQ extends StatelessWidget {
+/// [_AutoCreateSO] Auto-Convert Sales Quote to Sales Order if SQ is Approved
+class _AutoCreateSO extends StatelessWidget {
   final bool isChecked;
   final void Function(bool) onChanged;
 
-  const _AutoCreateRFQ({required this.isChecked, required this.onChanged});
+  const _AutoCreateSO({required this.isChecked, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    // Auto-Convert PO to RFQ when RFQ is Accepted
+    // Auto-Convert Sales Quote to Sales Order if SQ is Approved
     return CustomCheckboxTile(
       title: Text(
-        'Auto Convert RFQ?',
+        'Auto Convert Quote?',
         style: context.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
         ),
       ),
-      subtitle: Text('Auto-convert RFQ to PO after acceptance'),
+      subtitle: Text('Auto-convert Quote to Orders after approval'),
       contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
       value: isChecked,
       onChanged: (v) => onChanged(v ?? false),

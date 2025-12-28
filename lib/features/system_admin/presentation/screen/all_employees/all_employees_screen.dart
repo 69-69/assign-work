@@ -17,12 +17,11 @@ class _AllEmployeesScreenState extends State<AllEmployeesScreen> {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 2,
-      indicatorWeight: 1.0,
       tabs: [
-        {'label': 'account', 'icon': Icons.account_circle},
-        {'label': 'attendance', 'icon': Icons.fact_check_outlined},
+        CustomTabModel(label: 'Employees', icon: Icons.people),
+        CustomTabModel(label: 'Attendance', icon: Icons.fact_check_outlined),
       ],
       children: [CreateUserAccScreen(), AttendanceScreen()],
     );

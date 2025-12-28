@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/list_quotations.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/list_request_for_quotes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,10 +31,10 @@ class ProRequestForQuoteScreen extends StatelessWidget {
       length: 2,
       openThisTab: 0,
       tabs: [
-        {'label': 'Request For Quote', 'icon': Icons.miscellaneous_services},
-        {'label': 'Awarded RFQ', 'icon': Icons.card_giftcard},
+        CustomTabModel(label: 'Request For Quote', icon: Icons.request_quote),
+        CustomTabModel(label: 'Awarded RFQ', icon: Icons.card_giftcard),
       ],
-      children: [ListQuotations(), ListQuotations(isAwarded: true)],
+      children: [ListRequestForQuotes(), ListRequestForQuotes(isAwarded: true)],
     );
   }
 }

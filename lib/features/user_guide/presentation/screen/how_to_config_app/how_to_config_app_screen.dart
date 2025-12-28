@@ -59,7 +59,7 @@ class HowToConfigAppScreen extends StatelessWidget {
     final tabs = guideCategories.map((type) {
       final label = type[0].toUpperAll + type.substring(1);
       final icon = _iconForType(type);
-      return {'label': label, 'icon': icon};
+      return CustomTabModel(label: label, icon: icon);
     }).toList();
 
     final children = guideCategories

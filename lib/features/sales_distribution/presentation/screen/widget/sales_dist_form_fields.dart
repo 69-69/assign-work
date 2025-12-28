@@ -13,11 +13,11 @@ import 'package:assign_erp/features/procurement/data/model/supplier_link_model.d
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:flutter/material.dart';
 
-class ProcurementForm {
+class SalesDistFormFields {
   static Widget buildNumber(
     BuildContext context, {
     String count = '',
-    String what = 'PR',
+    String what = 'Quote',
     void Function()? onPressed,
   }) => Align(
     alignment: Alignment.topLeft,
@@ -25,14 +25,14 @@ class ProcurementForm {
       child: context.actionInfoButton(
         'Refresh $what Number',
         count: count,
-        bgColor: kPrimaryColor,
         isTotal: false,
         onPressed: onPressed,
+        bgColor: kPrimaryColor,
       ),
     ),
   );
 
-  /// Product(Material)/Service Line Item Fields
+  /// Line Item Fields
   static List<FieldGroupConfig> fields(
     // Line item type
     String type, {

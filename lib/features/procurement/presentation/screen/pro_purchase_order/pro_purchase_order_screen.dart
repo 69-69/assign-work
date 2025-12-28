@@ -31,8 +31,8 @@ class ProPurchaseOrderScreen extends StatelessWidget {
       length: 2,
       openThisTab: 0,
       tabs: [
-        {'label': 'Purchase Orders', 'icon': Icons.paypal},
-        {'label': 'Approved POs', 'icon': Icons.approval},
+        CustomTabModel(label: 'Purchase Orders', icon: Icons.shopping_cart),
+        CustomTabModel(label: 'Approved POs', icon: Icons.approval),
       ],
       children: [ListPurchaseOrders(), ListPurchaseOrders(isApproved: true)],
     );

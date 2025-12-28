@@ -31,8 +31,11 @@ class ProPurchaseRequisitionScreen extends StatelessWidget {
       length: 2,
       openThisTab: 0,
       tabs: [
-        {'label': 'Purchase Requisitions', 'icon': Icons.edit_document},
-        {'label': 'Approved PRs', 'icon': Icons.approval},
+        CustomTabModel(
+          label: 'Purchase Requisitions',
+          icon: Icons.edit_document,
+        ),
+        CustomTabModel(label: 'Approved PRs', icon: Icons.approval),
       ],
       children: [
         ListPurchaseRequisitions(),

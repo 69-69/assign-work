@@ -25,20 +25,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// LIST Request For Quotations
-class ListQuotations extends StatefulWidget {
+class ListRequestForQuotes extends StatefulWidget {
   final bool isAwarded;
 
-  const ListQuotations({super.key, this.isAwarded = false});
+  const ListRequestForQuotes({super.key, this.isAwarded = false});
 
   @override
-  State<ListQuotations> createState() => _ListQuotationsState();
+  State<ListRequestForQuotes> createState() => _ListRequestForQuotesState();
 }
 
-class _ListQuotationsState extends State<ListQuotations> {
+class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
   // List to group quotations for printout
   final List<RequestForQuote> _selectedForCompare = [];
-  final List<String> _selectedIds = [];
   final List<RequestForQuote> _rfqsWithTaxes = [];
+  final List<String> _selectedIds = [];
   final List<Supplier> _suppliers = [];
 
   bool get _isAwarded => widget.isAwarded;
@@ -70,7 +70,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     );
   }
 
-  ({List<List<String>> rows, List<List<String>>? childrenRow}) _filterQuotes(
+  ({List<List<String>> rows, List<List<String>>? childrenRow}) _filterRFQs(
     List<RequestForQuote> quotes,
   ) {
     if (_isAwarded) {
@@ -94,7 +94,7 @@ class _ListQuotationsState extends State<ListQuotations> {
 
   Widget _buildCard(BuildContext context, List<RequestForQuote> quotes) {
     // Filter for Quotations by date
-    final filtered = _filterQuotes(quotes);
+    final filtered = _filterRFQs(quotes);
 
     return DynamicDataTable(
       omitAtIndex: 0,
@@ -136,7 +136,7 @@ class _ListQuotationsState extends State<ListQuotations> {
     if (isChecked == true) {
       if (!_selectedIds.contains(id)) {
         _selectedIds.add(id);
-        _selectedQuotes(quotes); // Only select quotes when IDs are updated
+        _selectedRFQs(quotes); // Only select quotes when IDs are updated
       }
     } else {
       // Remove item from the selected list if unchecked
@@ -154,12 +154,12 @@ class _ListQuotationsState extends State<ListQuotations> {
     if (isChecked) {
       // Add all selected rows, ensuring uniqueness using a Set
       _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      _selectedQuotes(quotes);
+      _selectedRFQs(quotes);
     }
   }
 
   // Select quotes for comparison based on selected IDs
-  void _selectedQuotes(List<RequestForQuote> rfqs) {
+  void _selectedRFQs(List<RequestForQuote> rfqs) {
     if (_selectedIds.length == 2) {
       // Get the first two selected IDs from _selectedIds
       _selectedIds.take(2).forEach((id) {
@@ -188,20 +188,17 @@ class _ListQuotationsState extends State<ListQuotations> {
       children: [
         context.actionInfoButton(
           'Refresh ${_isAwarded ? 'Awarded' : 'Request For'} Quotes',
-          label: 'Quotations',
+          label: 'RFQ',
           count: rfqs.length,
-          // Dispatch an event to refresh data
-          onPressed: () {
-            // Refresh Request For Quotation Data
-            _readBloc.add(RefreshProcurements<RequestForQuote>());
-          },
+          onPressed: () =>
+              _readBloc.add(RefreshProcurements<RequestForQuote>()),
         ),
         const SizedBox(width: 20),
         context.elevatedButton(
           'Create RFQ',
-          onPressed: () => context.openRFQForm(),
           bgColor: kDangerColor,
           txtColor: kWhiteColor,
+          onPressed: () => context.openRFQForm(),
         ),
         // Compare two RFQS
         if (_selectedIds.length == 2) ...[
@@ -291,7 +288,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   Future<void> _onViewDetails(List<RequestForQuote> rfqs, String id) async {
-    await _withRfqSupplierLinks(
+    await _withRFQSupplierLinks(
       id,
       rfqs,
       auditAction: AuditAction.viewed,
@@ -331,7 +328,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   Future<void> _printout(List<RequestForQuote> rfqs, String id) async {
     await Future.delayed(kRProgressDelay);
 
-    await _withRfqSupplierLinks(
+    await _withRFQSupplierLinks(
       id,
       rfqs,
       auditAction: AuditAction.printed,
@@ -389,7 +386,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   }
 
   /// Orchestrates an RFQ action that depends on supplier selection.
-  /// [_withRfqSupplierLinks]
+  /// [_withRFQSupplierLinks]
   /// Resolves the RFQ by [id], applies taxes, logs the given [auditAction],
   /// and then:
   /// - Executes [onSingleSupplier] if exactly one supplier is linked
@@ -397,7 +394,7 @@ class _ListQuotationsState extends State<ListQuotations> {
   ///
   /// Safely guards against invalid state (unmounted widget, missing RFQ,
   /// or empty supplier links) and rechecks [mounted] after async gaps.
-  Future<void> _withRfqSupplierLinks(
+  Future<void> _withRFQSupplierLinks(
     String id,
     List<RequestForQuote> rfqs, {
     required AuditAction auditAction,

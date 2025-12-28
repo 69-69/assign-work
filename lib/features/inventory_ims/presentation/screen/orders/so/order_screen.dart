@@ -33,13 +33,16 @@ class OrderScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 4,
       tabs: [
-        {'label': 'Orders', 'icon': Icons.shopping_cart},
-        {'label': 'Pending', 'icon': Icons.pending},
-        {'label': 'Shipped or Dispatched', 'icon': Icons.local_shipping},
-        {'label': 'Completed', 'icon': Icons.done_all},
+        CustomTabModel(label: 'Orders', icon: Icons.shopping_cart),
+        CustomTabModel(label: 'Pending', icon: Icons.pending),
+        CustomTabModel(
+          label: 'Shipped or Dispatched',
+          icon: Icons.local_shipping,
+        ),
+        CustomTabModel(label: 'Completed', icon: Icons.done_all),
       ],
       children: [
         ListOrders(),

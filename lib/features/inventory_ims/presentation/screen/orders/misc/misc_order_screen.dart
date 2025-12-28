@@ -29,13 +29,16 @@ class MiscOrderScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 3,
       openThisTab: 0,
       tabs: [
-        {'label': 'Misc', 'icon': Icons.miscellaneous_services},
-        {'label': 'Approved Misc', 'icon': Icons.approval},
-        {'label': 'Fulfilled Misc', 'icon': Icons.done_all_sharp},
+        CustomTabModel(
+          label: 'Misc Orders',
+          icon: Icons.miscellaneous_services,
+        ),
+        CustomTabModel(label: 'Approved Misc', icon: Icons.approval),
+        CustomTabModel(label: 'Fulfilled Misc', icon: Icons.done_all_sharp),
       ],
       children: [
         ListMiscellaneousOrders(),

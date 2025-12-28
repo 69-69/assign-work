@@ -8,6 +8,7 @@ import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
@@ -17,7 +18,6 @@ import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/list/see_requisition_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/update/update_purchase_requisition.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_printer.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/material_or_service_toggle.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_employees.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

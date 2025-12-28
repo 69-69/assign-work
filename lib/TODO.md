@@ -21,7 +21,7 @@
 ```shell
 git init
 git add .
-git commit -m "Working on Sales Quotation (Sales & Distribution)"
+git commit -m "Working on Creating Sales Quotation (Sales & Distribution)"
 git branch -M main
 git push -u origin main
 ```

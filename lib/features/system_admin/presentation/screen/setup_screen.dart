@@ -7,15 +7,20 @@ import 'package:assign_erp/features/auth/presentation/screen/workspace/update/up
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:flutter/material.dart';
 
-const _sideTabs = [
-  {'label': 'company setup', 'icon': Icons.home_work},
-  {'label': 'employees', 'icon': Icons.manage_accounts},
-  {'label': 'Roles & Permissions', 'icon': Icons.admin_panel_settings},
-  {'label': 'workflow approval rules', 'icon': Icons.approval},
-  {'label': 'Tax rates', 'icon': Icons.calculate},
-  {'label': 'item preference', 'icon': Icons.category},
-  {'label': 'back up', 'icon': Icons.backup},
-  // {'label': 'renew license', 'icon': Icons.local_police},
+final _sideTabs = [
+  CustomTabModel(label: 'company setup', icon: Icons.home_work),
+  CustomTabModel(label: 'employees', icon: Icons.manage_accounts),
+  CustomTabModel(
+    label: 'Roles & Permissions',
+    icon: Icons.admin_panel_settings,
+  ),
+  CustomTabModel(label: 'workflow approval rules', icon: Icons.approval),
+  CustomTabModel(label: 'Tax rates', icon: Icons.calculate),
+  CustomTabModel(label: 'item preference', icon: Icons.category),
+  CustomTabModel(label: 'back up', icon: Icons.backup),
+  /*CustomTabModel(
+    label: 'renew license', icon: Icons.local_police,
+  )*/
 ];
 
 class SetupScreen extends StatelessWidget {

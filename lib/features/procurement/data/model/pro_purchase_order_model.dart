@@ -1,9 +1,9 @@
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
@@ -22,12 +22,12 @@ class ProPurchaseOrder extends Equatable {
   final String poNumber;
   final String storeNumber;
   final SupplierLink supplierLink;
-  final List<ProLineItem> lineItems; // A list of items in the RFQ
+  final List<LineItem> lineItems; // A list of items in the RFQ
 
   final String currencyCode;
   final String requestedBy; // Buyer's Contact: Who requested the PO
 
-  final ProcurementWorkflowStatus status;
+  final WorkflowStatus status;
 
   /// [costCenterCode] Business Unit or Department paying for the purchase
   final String costCenterCode;
@@ -68,7 +68,7 @@ class ProPurchaseOrder extends Equatable {
     required this.supplierLink,
     required this.requestedBy,
     this.costCenterCode = '',
-    this.status = ProcurementWorkflowStatus.draft,
+    this.status = WorkflowStatus.draft,
     required this.lineItems,
     required this.paymentTerm,
     required this.paymentMethod,
@@ -101,8 +101,8 @@ class ProPurchaseOrder extends Equatable {
       supplierLink: SupplierLink.fromMap(map['supplierLink']),
       requestedBy: map['requestedBy'] ?? '',
       costCenterCode: map['costCenterCode'] ?? '',
-      status: ProcurementStatusHelper.fromString(map['status']),
-      lineItems: ProLineItem.lineItems(map['lineItems']),
+      status: WorkflowStatusHelper.fromString(map['status']),
+      lineItems: LineItem.lineItems(map['lineItems']),
       currencyCode: map['currencyCode'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
@@ -187,9 +187,9 @@ class ProPurchaseOrder extends Equatable {
 
   String get getPOStatus => status.getLabel;
 
-  bool get isApproved => status == ProcurementWorkflowStatus.approved;
+  bool get isApproved => status == WorkflowStatus.approved;
 
-  /// [isFullyApproved] Have all required authorities (managers, finance, procurement, etc.) approved the PO?
+  // Returns true if all authorities have approved the PO (based on history)
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getPOStatus);
 
@@ -247,7 +247,7 @@ class ProPurchaseOrder extends Equatable {
 
   ProPurchaseOrder computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
     // Calculate tax amounts for each line item (perLineTax)
-    List<ProLineItem> updatedItems = lineItems.map((item) {
+    List<LineItem> updatedItems = lineItems.map((item) {
       if (item is! TaxableLineItem) return item;
 
       final taxAmount = item.computeTaxAmount(taxMap);
@@ -302,9 +302,9 @@ class ProPurchaseOrder extends Equatable {
     String? requestedBy,
     SupplierLink? supplierLink,
     String? costCenterCode,
-    List<ProLineItem>? lineItems,
+    List<LineItem>? lineItems,
     String? currencyCode,
-    ProcurementWorkflowStatus? status,
+    WorkflowStatus? status,
     String? paymentTerm,
     String? paymentMethod,
     String? notes,

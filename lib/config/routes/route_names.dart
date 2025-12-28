@@ -58,7 +58,7 @@ abstract class RouteNames {
   static const salesOrders = 'sales_orders_screen';
   static const salesOrders2 = 'temp_sales_orders_screen';
   static const deliveries = 'deliveries_screen';
-  static const deliveryShipping = 'delivery_shipping_screen';
+  static const shippingDelivery = 'shipping_delivery_screen';
   static const ordersTracking = 'orders_tracking';
   static const salesQuotation = 'sales_quotation_screen';
   static const imsPurchaseOrders = 'inventory_purchase_orders_screen';

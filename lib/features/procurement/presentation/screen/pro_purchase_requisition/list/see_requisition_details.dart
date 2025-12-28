@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -12,7 +13,6 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_printer.dart';
@@ -116,7 +116,7 @@ class _PRInfoPage extends StatelessWidget {
        _requestBy = employee,
        _textColor = textColor;
 
-  List<ProLineItem> get _items => _requisite?.lineItems ?? [];
+  List<LineItem> get _items => _requisite?.lineItems ?? [];
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +165,7 @@ class _PRInfoPage extends StatelessWidget {
           (item) => _buildItemRow(item.value, item.key),
         ),
         HorizontalDivider(),*/
-        InlineHistoryTable<ProLineItem>(
+        InlineHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,

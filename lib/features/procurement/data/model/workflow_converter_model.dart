@@ -1,4 +1,4 @@
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 
 /// Workflow:
 /// Purchase Request (PR) -> Request for Quotation (RFQ) -> Purchase Order (PO)
@@ -23,7 +23,7 @@ class WorkflowConverter {
   final String supplierRepId;
 
   /// Line items carried through the workflow
-  final List<ProLineItem> lineItems;
+  final List<LineItem> lineItems;
 
   /// Payment term for the purchase
   final String paymentTerm;
@@ -51,7 +51,7 @@ class WorkflowConverter {
       departmentCode: map['departmentCode'] ?? '',
       requestedBy: map['requestedBy'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
-      lineItems: ProLineItem.lineItems(map['lineItems']),
+      lineItems: LineItem.lineItems(map['lineItems']),
     );
   }
 

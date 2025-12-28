@@ -11,14 +11,14 @@ class CompanyScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 4,
       indicatorWeight: 1.0,
       tabs: [
-        {'label': 'company', 'icon': Icons.home_work},
-        {'label': 'departments', 'icon': Icons.groups},
-        {'label': 'add stores', 'icon': Icons.store},
-        {'label': 'PDFs / Print Setup', 'icon': Icons.print},
+        CustomTabModel(label: 'Company', icon: Icons.home_work),
+        CustomTabModel(label: 'Departments', icon: Icons.groups),
+        CustomTabModel(label: 'Stores', icon: Icons.store),
+        CustomTabModel(label: 'PDFs / Print Setup', icon: Icons.print),
       ],
       children: [
         ListCompanyInfo(),

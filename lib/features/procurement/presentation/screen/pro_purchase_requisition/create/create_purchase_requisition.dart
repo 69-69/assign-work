@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -15,7 +16,6 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_requisition/pro_purchase_requisite_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -58,7 +58,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   // Basic fields
   bool _isSubmitting = false;
-  bool _autoCreateRfq = true; // auto create RFQ when PR is Approved
+  bool _autoCreatePr = true; // auto create RFQ when PR is Approved
   String _prNumber = '';
   String _requestedBy = '';
   String _costCenterCode = ''; // 47960533
@@ -70,7 +70,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   DateTime? _requestDate;
 
   /// Line Items & purpose/reason for PR
-  final List<ProLineItem> _lineItems = [];
+  final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
 
   bool get isFormValid => _formKey.currentState!.validate();
@@ -106,9 +106,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   PurchaseRequisition get _newPR => PurchaseRequisition(
     prNumber: _prNumber,
     storeNumber: _employeeStore,
-    autoCreateRfq: _autoCreateRfq,
+    autoCreatePr: _autoCreatePr,
     priority: PriorityHelper.fromString(_priority ?? ''),
-    status: ProcurementStatusHelper.fromString(_prStatus ?? ''),
+    status: WorkflowStatusHelper.fromString(_prStatus ?? ''),
     costCenterCode: _costCenterCode,
     departmentCode: _departmentCode,
     requestedBy: _requestedBy,
@@ -157,7 +157,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       _formKey.currentState?.reset();
       setState(() {
         _isSubmitting = false;
-        _autoCreateRfq = false;
+        _autoCreatePr = false;
         _costCenterCode = '';
         _departmentCode = '';
         _requestedBy = '';
@@ -268,10 +268,10 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        PRFormInputs.updateListFromData<ProLineItem>(
+        PRFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map, id: id),
         );
       },
     );
@@ -294,9 +294,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   AutoAndCostCenterDepartment _buildAutoCreateAndCostCenter() {
     return AutoAndCostCenterDepartment(
-      isSelected: _autoCreateRfq,
-      onChanged: (bool? v) {
-        setState(() => _autoCreateRfq = v ?? false);
+      isSelected: _autoCreatePr,
+      onAutoConvertChanged: (bool? v) {
+        setState(() => _autoCreatePr = v ?? false);
       },
       onCostCenterChange: (id, code, name) =>
           setState(() => _costCenterCode = code),

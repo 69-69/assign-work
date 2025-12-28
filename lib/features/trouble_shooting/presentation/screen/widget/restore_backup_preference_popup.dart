@@ -53,9 +53,9 @@ class RestoreBackupPreference extends StatelessWidget {
       length: 3,
       padding: EdgeInsets.zero,
       tabs: [
-        {'label': 'From Local', 'icon': Icons.computer},
-        {'label': 'From Drive', 'icon': Icons.storage_sharp},
-        {'label': 'From Cloud', 'icon': Icons.cloud_download},
+        CustomTabModel(label: 'From Local', icon: Icons.computer),
+        CustomTabModel(label: 'From Drive', icon: Icons.storage_sharp),
+        CustomTabModel(label: 'From Cloud', icon: Icons.cloud_download),
       ],
       children: [RestoreFromLocalDoc(), RestoreFromDrive(), RestoreFromCloud()],
     );

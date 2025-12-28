@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
@@ -352,7 +352,7 @@ class _POStatusDropdown extends StatelessWidget {
       key: key,
       label: 'PO Status',
       initialValue: initialValue,
-      items: ProcurementStatusHelper.toStringList(type: ProcurementType.po),
+      items: WorkflowStatusHelper.toStringList(type: WorkflowType.po),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );

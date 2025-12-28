@@ -8,24 +8,24 @@ import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 
-extension LineItemTogglePopUp on BuildContext {
+extension LineItemChoicePopUp on BuildContext {
   Future openMaterialOrServiceToggle([
     String procureType = 'line item',
-  ]) async => await MaterialOrServiceToggle(
+  ]) async => await MaterialOrServiceChoice(
     procureType: procureType,
   ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
-class MaterialOrServiceToggle extends StatefulWidget {
+class MaterialOrServiceChoice extends StatefulWidget {
   final String procureType;
-  const MaterialOrServiceToggle({super.key, required this.procureType});
+  const MaterialOrServiceChoice({super.key, required this.procureType});
 
   @override
-  State<MaterialOrServiceToggle> createState() =>
-      _MaterialOrServiceToggleState();
+  State<MaterialOrServiceChoice> createState() =>
+      _MaterialOrServiceChoiceState();
 }
 
-class _MaterialOrServiceToggleState extends State<MaterialOrServiceToggle> {
+class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
   String? selectedType;
   get _procureType => widget.procureType;
 
@@ -40,7 +40,7 @@ class _MaterialOrServiceToggleState extends State<MaterialOrServiceToggle> {
       title: DialogTitle(
         title: 'Product or Service?',
         subtitle:
-            'Select whether this $_procureType is a Material (Product) or Service.',
+            'Select whether this $_procureType is a Material (Product) or Service?',
       ),
       body: _buildFBody(context),
       actions: [

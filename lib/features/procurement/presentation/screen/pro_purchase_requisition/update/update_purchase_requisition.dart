@@ -2,8 +2,9 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
 import 'package:assign_erp/core/constants/line_item_type.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -14,7 +15,6 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_requisition/pro_purchase_requisite_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -57,7 +57,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   bool _isSubmitting = false;
   String? _priority;
   String? _prStatus;
-  bool? _autoCreateRfq;
+  bool? _autoCreatePr;
   String? _requestedBy;
   String? _costCenterCode;
   String? _departmentCode;
@@ -66,7 +66,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   DateTime? _requestDate;
 
   /// Line Items & purpose/reason for PR
-  final List<ProLineItem> _lineItems = [];
+  final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
@@ -89,11 +89,11 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     final status = _prStatus ?? _serverPR.status.getName;
 
     return _serverPR.copyWith(
-      autoCreateRfq: _autoCreateRfq,
+      autoCreatePr: _autoCreatePr,
       priority: PriorityHelper.fromString(
         _priority ?? _serverPR.priority.getName,
       ),
-      status: ProcurementStatusHelper.fromString(status),
+      status: WorkflowStatusHelper.fromString(status),
       requestedBy: _requestedBy ?? _serverPR.requestedBy,
       costCenterCode: _costCenterCode ?? _serverPR.costCenterCode,
       departmentCode: _departmentCode ?? _serverPR.departmentCode,
@@ -245,10 +245,10 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        PRFormInputs.updateListFromData<ProLineItem>(
+        PRFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map, id: id),
         );
       },
     );
@@ -283,9 +283,9 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
   AutoAndCostCenterDepartment _buildAutoCreateAndCostCenter() {
     return AutoAndCostCenterDepartment(
-      isSelected: _autoCreateRfq ?? _serverPR.autoCreateRfq,
-      onChanged: (bool? v) {
-        setState(() => _autoCreateRfq = v ?? false);
+      isSelected: _autoCreatePr ?? _serverPR.autoCreatePr,
+      onAutoConvertChanged: (bool? v) {
+        setState(() => _autoCreatePr = v ?? false);
       },
       initialCostCenter: _serverPR.costCenterCode,
       onCostCenterChange: (id, code, name) =>

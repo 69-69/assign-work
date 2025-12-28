@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -13,7 +14,6 @@ import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/index.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -344,7 +344,7 @@ class _RFQInfoPage extends StatelessWidget {
        _supplier = supplier,
        _textColor = textColor;
 
-  List<ProLineItem> get _items => _rfq?.lineItems ?? [];
+  List<LineItem> get _items => _rfq?.lineItems ?? [];
 
   TaxMode? get _taxMode => _rfq?.taxMode;
 
@@ -402,7 +402,7 @@ class _RFQInfoPage extends StatelessWidget {
         ),
         HorizontalDivider(),
          */
-        InlineHistoryTable<ProLineItem>(
+        InlineHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,

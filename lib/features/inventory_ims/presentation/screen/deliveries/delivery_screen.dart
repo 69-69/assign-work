@@ -41,11 +41,14 @@ class DeliveryScreen extends StatelessWidget {
     return CustomTab(
       openThisTab: openThisTab,
       length: 4,
-      tabs: const [
-        {'label': 'Deliveries', 'icon': Icons.delivery_dining},
-        {'label': 'Pending', 'icon': Icons.pending},
-        {'label': 'Shipped or Dispatched', 'icon': Icons.local_shipping},
-        {'label': 'Delivered', 'icon': Icons.checklist},
+      tabs: [
+        CustomTabModel(label: 'Deliveries', icon: Icons.delivery_dining),
+        CustomTabModel(label: 'Pending', icon: Icons.pending),
+        CustomTabModel(
+          label: 'Shipped or Dispatched',
+          icon: Icons.local_shipping,
+        ),
+        CustomTabModel(label: 'Delivered', icon: Icons.checklist),
       ],
       children: const [
         ListDeliveries(),

@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 extension SalesDistributionTiles on dynamic {
   List<DashboardTile> get salesDistributionTiles {
     final tilesData = [
+      /*Sales databases do NOT duplicate full item master data.
+        They store references (foreign keys) + a small snapshot.*/
       {
         'label': 'sales . order',
         'icon': Icons.shopping_bag,
@@ -26,9 +28,9 @@ extension SalesDistributionTiles on dynamic {
         'description': 'Draft and control customer sales quotations with ease.',
       },
       {
-        'label': 'delivery . shipping',
+        'label': 'shipping . delivery',
         'icon': Icons.all_inbox,
-        'action': RouteNames.deliveryShipping,
+        'action': RouteNames.shippingDelivery,
         'param': {},
         'access': _getName(SalesDistributionPermission.manageDeliveries),
         'description':

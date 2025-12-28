@@ -7,7 +7,6 @@ import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
-import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -17,76 +16,57 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
-import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
-import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/widget/sq_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension RFQFormExtensions on BuildContext {
-  /// [openRFQForm] Opens the Request For Quote Form
-  Future<void> openRFQForm() => openBottomSheet(
+extension SalesQuoteFormExtensions on BuildContext {
+  /// [openCreateSQForm] Opens the Sales Quote Form
+  Future<void> openCreateSQForm({
+    required String type,
+    void Function()? onBackPress,
+  }) => openBottomSheet(
     isExpand: false,
-    child: FindApprovedPR(
-      onValueChanged: (WorkflowConverter approvedPR) async {
-        if (mounted && approvedPR.isNotEmpty) {
-          await openCreateRFQForm(data: approvedPR);
-        }
-      },
-      onCreateNewRFQ: () async {
-        final lineItemType = await openMaterialOrServiceToggle('RFQ');
-        if (mounted && lineItemType != null) {
-          await openCreateRFQForm(type: lineItemType);
-        }
-      },
+    child: BottomSheetScaffold(
+      title: 'Create Sales Quotation',
+      onBackPress: onBackPress,
+      body: _CreateSQForm(lineItemType: type),
     ),
   );
-
-  Future<void> openCreateRFQForm({WorkflowConverter? data, String? type}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: BottomSheetScaffold(
-          initialSize: 0.94,
-          title: 'Create Request For Quote',
-          body: _CreateRFQForm(initialPRData: data, lineItemType: type),
-        ),
-      );
 }
 
-/// Create Request For Quote Form [_CreateRFQForm]
-class _CreateRFQForm extends StatefulWidget {
-  final String? lineItemType;
-  final WorkflowConverter? initialPRData;
+/// Create Sales Quotation Form [_CreateSQForm]
+class _CreateSQForm extends StatefulWidget {
+  final String lineItemType;
 
-  const _CreateRFQForm({this.initialPRData, this.lineItemType});
+  const _CreateSQForm({required this.lineItemType});
 
   @override
-  State<_CreateRFQForm> createState() => _CreateRFQFormState();
+  State<_CreateSQForm> createState() => _CreateSQFormState();
 }
 
-class _CreateRFQFormState extends State<_CreateRFQForm> {
-  String? get _lineItemType =>
-      widget.lineItemType ?? _initialPR?.lineItems.first.getTypeLabel;
+class _CreateSQFormState extends State<_CreateSQForm> {
+  String? get _lineItemType => widget.lineItemType;
   final _formKey = GlobalKey<FormState>();
   bool _isRebuilding = false;
 
   // Basic fields
-  String? _rfqStatus;
+  String? _sqStatus;
   String _rfqTitle = '';
+  String _quoteNumber = '';
   String _currencyCode = '';
-  String _rfqNumber = '';
-  String _requestedBy = '';
-  bool _autoCreateRfq = true; // auto-convert PO when RFQ is Accepted
-  bool _isSubmitting = false;
+  String _salesRepId = '';
   String _costCenterCode = '';
-  String _departmentCode = '';
+  bool _autoConvertSO = true; // If approved, auto-convert SQ to SO
+  bool _isSubmitting = false;
+  String _customerId = '';
   bool _useDefaultAddress = false;
 
   /// Line Items & Additional Info
@@ -95,25 +75,21 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   final List<SupplierLink> _supplierLinks = [];
   final List<AddressInfo> _shippingAddress = [];
 
-  /// Initial PR data if converting PR → RFQ
-  WorkflowConverter? get _initialPR => widget.initialPRData;
-
-  /// Disable form fields if converting PR to RFQ & PR has line items
-  bool get _isDisabled => _initialPR?.lineItems != null;
-
   bool get isFormValid => _formKey.currentState!.validate();
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
+
   String get _employeeName => context.employee!.fullName;
+
   String get _employeeStore => context.employee!.storeNumber;
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
   void _generateRFQNumber() async {
-    await DocType.rfq.getShortUID(
+    await DocType.sale.getShortUID(
       onChanged: (s) {
-        if (mounted) setState(() => _rfqNumber = s);
+        if (mounted) setState(() => _quoteNumber = s);
       },
     );
   }
@@ -124,7 +100,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       return;
     }
 
-    final shippingAddress = await RFQFormInputs.getCompanyAddress();
+    final shippingAddress = await SQFormInputs.getCompanyAddress();
 
     if (!mounted || shippingAddress == null) return;
 
@@ -138,12 +114,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   /// Construct RequestForQuote object
   RequestForQuote get _newRFQ => RequestForQuote(
     /// [prNumber] FOREIGN KEY (purchase requisition) else its new RFQ (Not generated from PR)
-    prNumber: _initialPR?.workflowNumber ?? 'N/A',
-    rfqNumber: _rfqNumber,
+    prNumber: 'N/A',
+    rfqNumber: _quoteNumber,
     storeNumber: _employeeStore,
-    autoConvertRfq: _autoCreateRfq,
+    autoConvertRfq: _autoConvertSO,
     title: _rfqTitle,
-    status: WorkflowStatusHelper.fromString(_rfqStatus ?? ''),
+    status: WorkflowStatusHelper.fromString(_sqStatus ?? ''),
     supplierLinks: List.from(_supplierLinks),
     currencyCode: _currencyCode,
     notes: _buyerTerms['notes'],
@@ -152,15 +128,15 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     deadline: toDateTimeFn(_buyerTerms['deadline']),
     expectedDate: toDateTimeFn(_buyerTerms['expectedDate']),
     buyerContactPersonId: _buyerTerms['buyerContactPerson'],
-    requestedBy: _initialPR?.requestedBy ?? _requestedBy,
-    costCenterCode: _initialPR?.costCenterCode ?? _costCenterCode,
-    departmentCode: _initialPR?.departmentCode ?? _departmentCode,
+    requestedBy: _salesRepId,
+    costCenterCode: _costCenterCode,
+    departmentCode: _customerId,
     createdBy: _employeeName,
     history: [
       AuditLog(
         action: AuditAction.created,
         actionBy: _employeeId,
-        statusAfterAction: _rfqStatus,
+        statusAfterAction: _sqStatus,
       ),
     ],
   );
@@ -202,10 +178,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
     // 3️⃣ Open fresh form
     if (mounted) {
-      await context.openCreateRFQForm(
-        data: widget.initialPRData,
-        type: widget.lineItemType,
-      );
+      await context.openCreateSQForm(type: widget.lineItemType);
     }
     _isRebuilding = false;
   }
@@ -216,15 +189,15 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     setState(() {
       _isSubmitting = false;
       _rfqTitle = '';
-      _autoCreateRfq = false;
+      _autoConvertSO = false;
       _supplierLinks.clear();
-      _requestedBy = '';
+      _salesRepId = '';
       _currencyCode = '';
       _costCenterCode = '';
-      _departmentCode = '';
+      _customerId = '';
       _lineItems.clear();
       _shippingAddress.clear();
-      _rfqStatus = null;
+      _sqStatus = null;
     });
 
     // Reset dynamic fields
@@ -240,8 +213,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   @override
   void initState() {
     _generateRFQNumber();
-
-    _getDefaultShippingAddress();
     super.initState();
   }
 
@@ -258,7 +229,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        RFQFormInputs.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
+        SQFormInputs.buildRFQNumber(context, _quoteNumber, _generateRFQNumber),
         FormGroupCard(
           title: 'Quotation Overview',
           children: [
@@ -291,24 +262,9 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         FormGroupCard(title: 'Buyer\'s Terms', children: [_buildBuyerTerms()]),
 
         FormGroupCard(
-          title: 'Shipping Address',
-          children: [
-            SizedBox(
-              width: context.dynamicWidth(0.48),
-              child: UseDefaultAddress(
-                isChecked: _useDefaultAddress,
-                onChanged: (v) async {
-                  if (!mounted) return;
-
-                  setState(() => _useDefaultAddress = v);
-                  await _getDefaultShippingAddress();
-                },
-              ),
-            ),
-            const HorizontalDivider(isORSeparator: true, space: 0.4),
-
-            _buildShippingAddress(),
-          ],
+          title: 'Addresses',
+          subTitle: '\nCustomer shipping & billing address.',
+          children: [_buildShippingAddress()],
         ),
 
         context.confirmableActionButton(
@@ -326,11 +282,9 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: !_isDisabled,
       fullWidthKey: 'description',
-      fieldsConfig: RFQFormInputs.fields(
+      fieldsConfig: SQFormInputs.fields(
         _lineItemType ?? '',
-        isDisabled: _isDisabled,
         keysToExclude: [
           'discount',
           'unitPrice',
@@ -340,13 +294,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
           'taxCodes',
         ],
       ),
-      initialData:
-          _initialPR?.lineItems.map((e) => e.toMap(true)).toList() ?? [{}],
+      initialData: [{}],
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        RFQFormInputs.updateListFromData<LineItem>(
+        SQFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
           fromMap: (map, id) => LineItem.fromMap(map, id: id),
@@ -362,12 +315,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       initialData: _shippingAddress.isNotEmpty
           ? [_shippingAddress.first.toMap()]
           : [{}], // empty form
-      fieldsConfig: RFQFormInputs.shippingAddressFields,
+      fieldsConfig: SQFormInputs.shippingAddressFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
         // Update the address list
-        RFQFormInputs.updateListFromData<AddressInfo>(
+        SQFormInputs.updateListFromData<AddressInfo>(
           _shippingAddress,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
@@ -380,7 +333,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return DynamicTextFields(
       initialData: [{}],
       fullWidthKey: 'buyerContactPerson',
-      fieldsConfig: RFQFormInputs.buyerTermsFields,
+      fieldsConfig: SQFormInputs.buyerTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
@@ -396,7 +349,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       initialData: [{}],
       showButton: true,
       fullWidthKey: 'supplierLinks',
-      fieldsConfig: RFQFormInputs.suppliersFields,
+      fieldsConfig: SQFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
@@ -408,7 +361,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         }).toList();
 
         // Update the RFQSupplier list
-        RFQFormInputs.updateListFromData<SupplierLink>(
+        SQFormInputs.updateListFromData<SupplierLink>(
           _supplierLinks,
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
@@ -427,23 +380,20 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndRFQStatus(
-      onStatusChanged: (s) => setState(() => _rfqStatus = s),
-      isSelected: _autoCreateRfq,
+      onStatusChanged: (s) => setState(() => _sqStatus = s),
+      isSelected: _autoConvertSO,
       onAutoConvertChanged: (bool? v) {
-        setState(() => _autoCreateRfq = v ?? false);
+        setState(() => _autoConvertSO = v ?? false);
       },
     );
   }
 
   RequestedByAndDepartments _buildRequesterAndDepartment() {
     return RequestedByAndDepartments(
-      initialRequestedBy: _initialPR?.requestedBy,
-      initialDepartment: _initialPR?.departmentCode,
       onRequestedChanged: (id, code, name) =>
-          setState(() => _requestedBy = name),
+          setState(() => _salesRepId = name),
       onDepartmentChange: (id, code, name) =>
-          setState(() => _departmentCode = code),
-      isDisabled: _initialPR != null,
+          setState(() => _customerId = code),
     );
   }
 
@@ -493,8 +443,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
     if (_newRFQ.isEmpty) return;
 
-    final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(_newRFQ);
-    final supplier = await RFQFormInputs.getSupplier(
+    final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(_newRFQ);
+    final supplier = await SQFormInputs.getSupplier(
       _newRFQ.supplierLinks.first.supplierId,
     );
     if (supplier.isEmpty) return;
@@ -513,7 +463,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   /// Audit Log Entry (Tracking actions)
   void _updateHistory([AuditAction action = AuditAction.printed]) {
-    final up = RFQFormInputs.updateHistory(
+    final up = SQFormInputs.updateHistory(
       action: action,
       rfq: _newRFQ,
       empId: _employeeId,

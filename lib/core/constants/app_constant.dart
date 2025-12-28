@@ -11,11 +11,11 @@ const errorPrefix = 'Assign';
 // rhoda= 172298 - steve = 60438
 /// APP NAME
 const _nChar = '⏺';
-// WORKSPACE, HEALTHSPACE, EDUSPACE
+// WORKSPACE/WORKER/WORKING, HEALTHSPACE, EDUSPACE
 const appName = 'ASSIGN.WORK';
 const appSubName =
     'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Reports $_nChar Multi-Location';
-const ghanaCedis = '¢';
+const ghanaCedis = 'GHS';
 
 /// APP LOGO
 const assetPath = 'assets/images';
@@ -69,6 +69,7 @@ const subscriptionScreenTitle = 'subscriptions & licenses';
 const troubleshootScreenTitle = 'troubleshoot';
 const salesOrderScreenTitle = ' orders (so)';
 const purchaseOrderScreenTitle = 'purchase order (po)';
+const salesQuoteScreenTitle = 'Sales Quotation (sq)';
 const miscOrderScreenTitle = 'miscellaneous order (mo)';
 const requestPriceQuoteScreenTitle = 'request for quote';
 const purchaseRequisiteScreenTitle = 'purchase Requisition';

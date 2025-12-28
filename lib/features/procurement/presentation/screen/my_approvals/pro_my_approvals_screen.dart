@@ -16,9 +16,15 @@ class ProWorkflowApprovalsScreen extends StatelessWidget {
         openThisTab: 0,
         hideIcon: false,
         tabs: [
-          {'label': 'Purchase Requisition', 'icon': Icons.edit_document},
-          {'label': 'Request For Quote', 'icon': Icons.request_page_outlined},
-          {'label': 'Purchase Order', 'icon': Icons.paypal},
+          CustomTabModel(
+            label: 'Purchase Requisition',
+            icon: Icons.edit_document,
+          ),
+          CustomTabModel(
+            label: 'Request For Quote',
+            icon: Icons.request_page_outlined,
+          ),
+          CustomTabModel(label: 'Purchase Order', icon: Icons.paypal),
         ],
         children: [
           Center(child: Text('Purchase Requisition Screen')),

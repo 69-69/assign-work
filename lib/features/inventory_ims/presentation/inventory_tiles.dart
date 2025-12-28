@@ -62,10 +62,10 @@ extension InventoryTiles on dynamic {
           Finance: Product costs and inventory valuation affect financial reporting.
 
         =========================
-        /// NOTE: There'll be Horizonal-tabs under the Item Master tab (for: Items Stocking, Expiry, Warranty start/end).
+        /// NOTE: There'll be Horizonal-tabs under the Item/Product Master tab (for: Items Stocking, Expiry, Warranty start/end).
         */
       {
-        'label': 'Items . Master',
+        'label': 'Item . Master',
         'icon': Icons.inventory_2,
         'action': RouteNames.items,
         'param': {},
@@ -205,7 +205,7 @@ extension InventoryTiles on dynamic {
           InventoryPermission.manageStock,
         ), // Temporal Placeholder
         'description':
-            'Release stock for in-store or online sales, POS or internal use.',
+            'Release stock for in-store, online sales, POS or internal use.',
       },
 
       /*6️⃣ Inventory Reports & Analytics

@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -13,9 +14,9 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
@@ -23,7 +24,6 @@ import 'package:assign_erp/features/procurement/presentation/bloc/pro_po/pro_pur
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_printer.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/widget/material_or_service_toggle.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,7 +88,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DateTime? _deliveryDate;
 
   /// Line Items & Additional Info
-  final List<ProLineItem> _lineItems = [];
+  final List<LineItem> _lineItems = [];
   final List<AddressInfo> _addresses = [];
   final Map<String, dynamic> _payments = {};
   final Map<String, dynamic> _additionalInfo = {};
@@ -130,7 +130,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     poNumber: _poNumber,
     storeNumber: _employeeStore,
 
-    status: ProcurementStatusHelper.fromString(_poStatus ?? ''),
+    status: WorkflowStatusHelper.fromString(_poStatus ?? ''),
     supplierLink: _supplierLinks.first,
     requestedBy: _initialRFQ?.requestedBy ?? _requestedBy,
 
@@ -322,10 +322,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        POFormInputs.updateListFromData<ProLineItem>(
+        POFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map, id: id),
         );
       },
     );

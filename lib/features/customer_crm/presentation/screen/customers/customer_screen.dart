@@ -41,10 +41,13 @@ class CustomerScreen extends StatelessWidget {
     return CustomTab(
       openThisTab: openThisTab,
       length: 3,
-      tabs: const [
-        {'label': 'Customers', 'icon': Icons.group},
-        {'label': 'Activities', 'icon': Icons.account_tree},
-        {'label': 'Statement of Account', 'icon': Icons.pending_actions},
+      tabs: [
+        CustomTabModel(label: 'Customers', icon: Icons.group),
+        CustomTabModel(label: 'Activities', icon: Icons.account_tree),
+        CustomTabModel(
+          label: 'Statement of Account',
+          icon: Icons.pending_actions,
+        ),
       ],
       children: const [
         ListCustomers(),

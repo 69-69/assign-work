@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -14,7 +15,6 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -68,12 +68,11 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   // Dates
   DateTime? _deadlineDate;
   DateTime? _expectedDate;
-  final _titleController = TextEditingController();
 
   final List<String> _taxCodes = [];
 
   /// Line Items & Additional Info
-  final List<ProLineItem> _lineItems = [];
+  final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _additionalInfo = {};
 
   RequestForQuote get _serverRFQ => widget.rfq;
@@ -99,7 +98,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   void initState() {
     super.initState();
     _taxModeToApply = _serverRFQ.taxMode;
-    _titleController.text = _serverRFQ.title;
     _additionalInfo.addAll({
       'notes': _serverRFQ.notes,
       'deliveryAddress': _serverRFQ.shippingAddress,
@@ -120,7 +118,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       taxMode: _taxModeToApply,
       title: _rfqTitle ?? _serverRFQ.title,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
-      status: ProcurementStatusHelper.fromString(status),
+      status: WorkflowStatusHelper.fromString(status),
       currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
       supplierLinks: _serverRFQ.supplierLinks,
@@ -362,10 +360,10 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         if (isFormValid) setState(() {});
 
         // Update the ProLineItem list
-        RFQFormInputs.updateListFromData<ProLineItem>(
+        RFQFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => ProLineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map, id: id),
         );
       },
     );

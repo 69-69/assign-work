@@ -17,8 +17,11 @@ class DiagnosticScreen extends StatelessWidget {
         length: 2,
         isVertical: true,
         tabs: [
-          {'label': 'App Issues', 'icon': Icons.bug_report_outlined},
-          {'label': 'Device Specs', 'icon': Icons.important_devices_outlined},
+          CustomTabModel(label: 'App Issues', icon: Icons.bug_report_outlined),
+          CustomTabModel(
+            label: 'Device Specs',
+            icon: Icons.important_devices_outlined,
+          ),
         ],
         children: [ErrorLogs(), UserDeviceSpec()],
       ),

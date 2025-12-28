@@ -45,13 +45,19 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 4,
       tabs: [
-        {'label': 'Products', 'icon': Icons.line_style},
-        {'label': 'Expired', 'icon': Icons.date_range},
-        {'label': 'Stock Level', 'icon': Icons.dashboard_customize_outlined},
-        {'label': 'Out-Stock', 'icon': Icons.space_dashboard_outlined},
+        CustomTabModel(label: 'Products', icon: Icons.line_style),
+        CustomTabModel(label: 'Expired', icon: Icons.date_range),
+        CustomTabModel(
+          label: 'Stock Level',
+          icon: Icons.dashboard_customize_outlined,
+        ),
+        CustomTabModel(
+          label: 'Out-Stock',
+          icon: Icons.space_dashboard_outlined,
+        ),
       ],
       children: [
         ListProducts(),

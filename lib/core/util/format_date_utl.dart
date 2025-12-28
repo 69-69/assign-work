@@ -128,7 +128,7 @@ extension DateFromTotalDays on int {
   DateTime get toDate => DateTime.now().add(Duration(days: this));
 }
 
-DateTime toDateTimeFn(dateTime) {
+DateTime toDateTimeFn(dynamic dateTime) {
   final today = DateTime.now();
 
   if (dateTime == null || '$dateTime'.trim().isNullOrEmpty) {

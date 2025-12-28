@@ -33,13 +33,13 @@ class PurchaseOrderScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 3,
       openThisTab: 0,
       tabs: [
-        {'label': 'POs', 'icon': Icons.shopping_cart},
-        {'label': 'Approved POs', 'icon': Icons.approval},
-        {'label': 'Fulfilled POs', 'icon': Icons.done_all_sharp},
+        CustomTabModel(label: 'POs', icon: Icons.shopping_cart),
+        CustomTabModel(label: 'Approved POs', icon: Icons.approval),
+        CustomTabModel(label: 'Fulfilled POs', icon: Icons.done_all_sharp),
       ],
       children: [
         ListPOByDate(),

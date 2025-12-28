@@ -29,13 +29,14 @@ class SaleScreen extends StatelessWidget {
   }
 
   CustomTab _buildBody() {
-    return const CustomTab(
+    return CustomTab(
       length: 4,
       tabs: [
-        {'label': 'Sales', 'icon': Icons.money},
-        {'label': 'Cheques', 'icon': Icons.check_box_outlined},
-        {'label': 'Installment', 'icon': Icons.compare},
-        {'label': 'Credit', 'icon': Icons.credit_card},
+        CustomTabModel(label: 'Sales', icon: Icons.money),
+        CustomTabModel(label: 'Cheque', icon: Icons.check_box_outlined),
+        CustomTabModel(label: 'Installment', icon: Icons.compare),
+        CustomTabModel(label: 'Credit', icon: Icons.credit_card),
+
         /*{'label': 'Accrual Basis', 'icon': Icons.ac_unit},
         {'label': 'Cash Basis', 'icon': Icons.sports_baseball},*/
       ],

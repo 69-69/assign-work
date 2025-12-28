@@ -6,8 +6,16 @@ import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:flutter/material.dart';
 
+class CustomTabModel {
+  final String label;
+  final IconData icon;
+
+  CustomTabModel({required this.label, required this.icon});
+}
+
 class CustomTab extends StatefulWidget {
-  final List<Map<String, dynamic>> tabs;
+  // final List<Map<String, dynamic>> tabs;
+  final List<CustomTabModel> tabs;
   final TabController? controller;
   final double indicatorWeight;
   final List<Widget> children;
@@ -197,7 +205,7 @@ class _CustomTabState extends State<CustomTab>
                 context.loader,
                 Text(
                   textAlign: TextAlign.center,
-                  'Loading ${widget.tabs[index]['label'].toString().toTitle}...',
+                  'Loading ${widget.tabs[index].label.toTitle}...',
                 ),
               ],
             ),
@@ -210,7 +218,8 @@ class _CustomTabState extends State<CustomTab>
 
 class _HorizontalTabBars extends StatelessWidget {
   final TabController tabController;
-  final List<Map<String, dynamic>> tabs;
+  // final List<Map<String, dynamic>> tabs;
+  final List<CustomTabModel> tabs;
   final Color? bgColor;
   final double indicatorWeight;
   final bool hideIcon;
@@ -263,7 +272,7 @@ class _HorizontalTabBars extends StatelessWidget {
       labelStyle: const TextStyle(fontWeight: FontWeight.w500),
       // labelColor: kPrimaryLightColor,
       tabs: tabs.map<Widget>((t) {
-        final label = t['label'].toString().toTitle;
+        final label = t.label.toTitle;
         final isActive = tabController.index == tabs.indexOf(t);
         return Tab(
           text: label,
@@ -272,7 +281,7 @@ class _HorizontalTabBars extends StatelessWidget {
               : Tooltip(
                   message: label,
                   child: Icon(
-                    t['icon'],
+                    t.icon,
                     color: isActive ? kPrimaryLightColor : null,
                   ),
                 ),
@@ -292,7 +301,8 @@ class _VerticalTabBars extends StatelessWidget {
   final bool isNavRailVisible; // State variable for toggle
   final bool showScrollUpButton;
   final Function()? toggleNavRail;
-  final List<Map<String, dynamic>> tabs;
+  // final List<Map<String, dynamic>> tabs;
+  final List<CustomTabModel> tabs;
   final void Function(int)? onDestinationSelected;
 
   const _VerticalTabBars({
@@ -371,8 +381,8 @@ class _VerticalTabBars extends StatelessWidget {
         fontWeight: FontWeight.w500,
       ),
       destinations: tabs.map<NavigationRailDestination>((t) {
-        final icon = t['icon'];
-        final label = t['label'].toString().toTitle;
+        final icon = t.icon;
+        final label = t.label.toTitle;
         return NavigationRailDestination(
           icon: Tooltip(message: label, child: Icon(icon)),
           label: Text(

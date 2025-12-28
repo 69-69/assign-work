@@ -8,8 +8,8 @@ class OrderDeliveryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScaffold(
       isGradientBg: true,
-      title: 'Delivery Screen',
-      body: Center(child: Text('Delivery Screen')),
+      title: 'Shipping & Delivery Screen',
+      body: Center(child: Text('Shipping & Delivery Screen')),
     );
   }
 }

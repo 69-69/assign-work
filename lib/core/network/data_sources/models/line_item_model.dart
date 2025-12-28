@@ -6,7 +6,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 
 /// Taxable Line Item
-mixin TaxableLineItem on ProLineItem {
+mixin TaxableLineItem on LineItem {
   /*List<String> get taxCodes;
   double get taxAmount;*/
 
@@ -40,31 +40,31 @@ mixin TaxableLineItem on ProLineItem {
       netBeforeTax + computeTaxAmount(taxMap);
 }
 
-/// [ProLineItem] Represents a line item in Procurement (e.g., product or service)
-abstract class ProLineItem {
+/// [LineItem] Represents a line item (e.g., product or service)
+abstract class LineItem {
   static get _today => DateTime.now();
 
   final String id;
-  final LineItemType type;
-  final String description;
-  final double quantity;
-  final ItemCategory category;
-  final UnitOfMeasure unitOfMeasure;
   final String notes;
-  final DateTime? requiredDate;
 
   /// [discount] Discount is in percentage
   final double discount;
+  final double quantity;
+  final LineItemType type;
+  final String description;
+  final ItemCategory category;
+  final DateTime? requiredDate;
+  final UnitOfMeasure unitOfMeasure;
 
-  ProLineItem({
+  LineItem({
     this.id = '',
+    this.notes = '',
     required this.type,
+    this.discount = 0.0,
     required this.quantity,
     required this.description,
     this.category = ItemCategory.unknown,
     this.unitOfMeasure = UnitOfMeasure.unknown,
-    this.discount = 0.0,
-    this.notes = '',
     DateTime? requiredDate,
   }) : requiredDate = requiredDate ?? _today;
 
@@ -102,14 +102,14 @@ abstract class ProLineItem {
       : ServiceLineItem.getDataTableHeader;*/
 
   /// Factory to rebuild correct subclass
-  factory ProLineItem.fromMap(
+  factory LineItem.fromMap(
     Map<String, dynamic> map, {
     String? lineType,
     String? id,
   }) {
     final typeStr = lineType ?? map['type'];
     if (typeStr == null) {
-      throw ArgumentError("Missing 'type' for Procurement-Line-Item");
+      throw ArgumentError("Missing 'type' for Line-Item");
     }
 
     final type = LineItemTypeHelper.fromString(typeStr.toLowerCase());
@@ -120,10 +120,10 @@ abstract class ProLineItem {
     };
   }
 
-  /// [lineItems] Converts a list of maps from the provided [map] under the given [key] into a list of [ProLineItem] objects.
-  static List<ProLineItem> lineItems(List<dynamic>? map) {
+  /// [lineItems] Converts a list of maps from the provided [map] under the given [key] into a list of [LineItem] objects.
+  static List<LineItem> lineItems(List<dynamic>? map) {
     return map
-            ?.map((i) => ProLineItem.fromMap(Map<String, dynamic>.from(i)))
+            ?.map((i) => LineItem.fromMap(Map<String, dynamic>.from(i)))
             .toList() ??
         [];
   }
@@ -145,7 +145,7 @@ abstract class ProLineItem {
   };
 
   /// Polymorphic cloning
-  ProLineItem copyWith({
+  LineItem copyWith({
     List<String>? taxCodes,
     double? taxAmount,
     String? taxNames,
@@ -165,7 +165,7 @@ abstract class ProLineItem {
       containsIgnoreCase('$quantity', filter);
 
   /// [updateTax] Returns a new instance with updated tax info if applicable
-  ProLineItem updateTax({required double taxAmount, required String taxNames}) {
+  LineItem updateTax({required double taxAmount, required String taxNames}) {
     if (this is! TaxableLineItem) return this;
 
     return switch (this) {
@@ -191,8 +191,8 @@ abstract class ProLineItem {
   ];
 }
 
-/// [MaterialLineItem] Represents an individual material line item in Procurement (e.g., product POs)
-class MaterialLineItem extends ProLineItem with TaxableLineItem {
+/// [MaterialLineItem] Represents a material line item (e.g., product POs)
+class MaterialLineItem extends LineItem with TaxableLineItem {
   final double _unitPrice;
 
   @override
@@ -356,8 +356,8 @@ class MaterialLineItem extends ProLineItem with TaxableLineItem {
   ];
 }
 
-/// [ServiceLineItem] Represents an individual service line item in Procurement (e.g., service POs)
-class ServiceLineItem extends ProLineItem with TaxableLineItem {
+/// [ServiceLineItem] Represents a service line item (e.g., service POs)
+class ServiceLineItem extends LineItem with TaxableLineItem {
   final double serviceRate;
 
   /// Use Case [limitAmount]:

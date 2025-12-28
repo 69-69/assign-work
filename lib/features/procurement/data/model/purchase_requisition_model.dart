@@ -6,11 +6,11 @@ Approved: If the requisition is approved, it triggers the creation of an RFQ or 
 Fulfilled: The order is fulfilled and the requisition is considered completed.
 Cancelled: If it’s canceled at any point before approval or fulfillment.*/
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:equatable/equatable.dart';
 
 /// [PurchaseRequisition] Workflow Example ([Purchase Requisition] → RFQ → PO):
@@ -27,8 +27,8 @@ class PurchaseRequisition extends Equatable {
 
   final String id;
 
-  /// Auto-Generate RFQ when PR is Approved
-  final bool autoCreateRfq;
+  /// Auto-Convert PR to RFQ after PR approval (if true)
+  final bool autoCreatePr;
   final String storeNumber;
   final String prNumber; // Purchase Requisition number
   /// [costCenterCode] Business Unit or Department paying for the purchase
@@ -43,9 +43,9 @@ class PurchaseRequisition extends Equatable {
   /// [purpose] Purpose / Justification (main reason for the PR)
   final String purpose;
   final ERPPriority priority;
-  final ProcurementWorkflowStatus status;
+  final WorkflowStatus status;
   final List<String> attachments;
-  final List<ProLineItem> lineItems;
+  final List<LineItem> lineItems;
 
   /// [requestDate] Business date when the requisition was initiated or intended
   final DateTime? requestDate;
@@ -64,11 +64,11 @@ class PurchaseRequisition extends Equatable {
 
   PurchaseRequisition({
     this.id = '',
-    this.autoCreateRfq = false,
+    this.autoCreatePr = false,
     required this.prNumber,
     required this.storeNumber,
     this.priority = ERPPriority.normal,
-    this.status = ProcurementWorkflowStatus.draft,
+    this.status = WorkflowStatus.draft,
     required this.purpose,
     required this.lineItems,
     this.attachments = const [],
@@ -94,13 +94,13 @@ class PurchaseRequisition extends Equatable {
       id: id ?? map['id'] ?? '',
       prNumber: map['prNumber'],
       storeNumber: map['storeNumber'] ?? '',
-      autoCreateRfq: map['autoCreateRfq'] ?? false,
+      autoCreatePr: map['autoCreatePr'] ?? false,
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
-      status: ProcurementStatusHelper.fromString(map['status']),
+      status: WorkflowStatusHelper.fromString(map['status']),
       priority: PriorityHelper.fromString(map['priority']),
       purpose: map['purpose'] ?? '',
-      lineItems: ProLineItem.lineItems(map['lineItems']),
+      lineItems: LineItem.lineItems(map['lineItems']),
       attachments: List<String>.from(map['attachments'] ?? []),
       requestedBy: map['requestedBy'] ?? '',
       requestDate: toDateTimeFn(map['requestDate']),
@@ -117,7 +117,7 @@ class PurchaseRequisition extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'prNumber': prNumber,
-    'autoCreateRfq': autoCreateRfq,
+    'autoCreatePr': autoCreatePr,
     'costCenterCode': costCenterCode,
     'departmentCode': departmentCode,
     'status': getPRStatus,
@@ -175,15 +175,15 @@ class PurchaseRequisition extends Equatable {
 
   bool get isNotEmpty => lineItems.isNotEmpty;
 
-  String get getAutoCreateRfq => autoCreateRfq ? 'Yes' : 'No';
+  String get getAutoCreatePr => autoCreatePr ? 'Yes' : 'No';
 
   String get getPriority => priority.getLabel;
 
   String get getPRStatus => status.getLabel;
 
-  bool get isApproved => status == ProcurementWorkflowStatus.approved;
+  bool get isApproved => status == WorkflowStatus.approved;
 
-  /// [isFullyApproved] Have all required authorities (managers, finance, procurement, etc.) approved the PR?
+  // Returns true if all authorities have approved the PR (based on history)
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getPRStatus);
 
@@ -227,15 +227,15 @@ class PurchaseRequisition extends Equatable {
     String? id,
     String? prNumber,
     String? storeNumber,
-    bool? autoCreateRfq,
+    bool? autoCreatePr,
     String? costCenterCode,
     String? departmentCode,
     String? requestedBy,
     String? purpose,
     ERPPriority? priority,
-    List<ProLineItem>? lineItems,
+    List<LineItem>? lineItems,
     List<String>? attachments,
-    ProcurementWorkflowStatus? status,
+    WorkflowStatus? status,
     DateTime? requestDate,
     DateTime? expectedDate,
     String? createdBy,
@@ -247,7 +247,7 @@ class PurchaseRequisition extends Equatable {
     id: id ?? this.id,
     prNumber: prNumber ?? this.prNumber,
     storeNumber: storeNumber ?? this.storeNumber,
-    autoCreateRfq: autoCreateRfq ?? this.autoCreateRfq,
+    autoCreatePr: autoCreatePr ?? this.autoCreatePr,
     status: status ?? this.status,
     priority: priority ?? this.priority,
     purpose: purpose ?? this.purpose,
@@ -270,7 +270,7 @@ class PurchaseRequisition extends Equatable {
     id,
     storeNumber,
     prNumber,
-    autoCreateRfq,
+    autoCreatePr,
     costCenterCode,
     departmentCode,
     priority,
@@ -291,7 +291,7 @@ class PurchaseRequisition extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getAutoCreateRfq,
+    getAutoCreatePr,
     prNumber,
     getPriority.toTitle,
     getPRStatus.toTitle,
@@ -309,7 +309,7 @@ class PurchaseRequisition extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'Auto RFQ',
+    'Auto PR',
     'PR Number',
     'Priority',
     'Status',

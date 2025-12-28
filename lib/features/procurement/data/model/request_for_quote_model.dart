@@ -1,11 +1,11 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/procurement/data/model/pro_line_item_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:equatable/equatable.dart';
@@ -24,13 +24,13 @@ class RequestForQuote extends Equatable {
   final String prNumber;
 
   final String rfqNumber; // Request for Quotation number
-  /// Auto-Generate PO when RFQ is Accepted
-  final bool autoCreatePo;
+  /// Auto-Convert RFQ to PO after RFQ Acceptance (if true)
+  final bool autoConvertRfq;
   final String storeNumber;
   final List<SupplierLink>
   supplierLinks; // List of invited suppliers for this RFQ
   final String requestedBy; // Who requested the RFQ
-  final ProcurementWorkflowStatus status;
+  final WorkflowStatus status;
   final String title;
   final String currencyCode;
 
@@ -38,7 +38,7 @@ class RequestForQuote extends Equatable {
   final String costCenterCode;
 
   final String departmentCode;
-  final List<ProLineItem> lineItems;
+  final List<LineItem> lineItems;
   final TaxMode taxMode;
 
   // final List<String> taxCodes;
@@ -69,12 +69,12 @@ class RequestForQuote extends Equatable {
   RequestForQuote({
     this.id = '',
     this.prNumber = '',
-    this.autoCreatePo = false,
+    this.autoConvertRfq = false,
     required this.title,
     required this.rfqNumber,
     required this.storeNumber,
     required this.supplierLinks,
-    this.status = ProcurementWorkflowStatus.draft,
+    this.status = WorkflowStatus.draft,
     required this.lineItems,
     required this.requestedBy,
     required this.costCenterCode,
@@ -103,16 +103,16 @@ class RequestForQuote extends Equatable {
     return RequestForQuote(
       id: docId ?? map['id'] ?? '',
       prNumber: map['prNumber'] ?? '',
-      autoCreatePo: map['autoCreatePo'] ?? false,
+      autoConvertRfq: map['autoConvertRfq'] ?? false,
       title: map['title'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       requestedBy: map['requestedBy'] ?? '',
       rfqNumber: map['rfqNumber'] ?? '',
       supplierLinks: SupplierLink.suppliers(map['supplierLinks']),
-      status: ProcurementStatusHelper.fromString(map['status']),
+      status: WorkflowStatusHelper.fromString(map['status']),
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
-      lineItems: ProLineItem.lineItems(map['lineItems']),
+      lineItems: LineItem.lineItems(map['lineItems']),
       notes: map['notes'],
       taxMode: TaxModeHelper.fromString(map['taxMode']),
       buyerContactPersonId: map['buyerContactPersonId'] ?? '',
@@ -137,7 +137,7 @@ class RequestForQuote extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'prNumber': prNumber,
-    'autoCreatePo': autoCreatePo,
+    'autoConvertRfq': autoConvertRfq,
     'title': title,
     'storeNumber': storeNumber,
     'rfqNumber': rfqNumber,
@@ -220,19 +220,19 @@ class RequestForQuote extends Equatable {
 
   bool get isNotEmpty => lineItems.isNotEmpty;
 
-  bool get isAwarded => status == ProcurementWorkflowStatus.convertedToPO;
+  bool get isAwarded => status == WorkflowStatus.convertedToPO;
 
   String get getRFQStatus => status.getLabel;
 
   String get getTaxMode => taxMode.getName;
 
-  bool get isApproved => status == ProcurementWorkflowStatus.approved;
+  bool get isApproved => status == WorkflowStatus.approved;
 
-  /// [isFullyApproved] Have all required authorities (managers, finance, procurement, etc.) approved the RFQ?
+  // Returns true if all authorities have approved the RFQ (based on history)
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getRFQStatus);
 
-  String get getAutoCreatePo => autoCreatePo ? 'Yes' : 'No';
+  String get getAutoConvertRfq => autoConvertRfq ? 'Yes' : 'No';
 
   String get getExpectedDate => expectedDate.dateOnly;
 
@@ -284,7 +284,7 @@ class RequestForQuote extends Equatable {
 
   RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
     // Calculate tax amounts for each line item (perLineTax)
-    List<ProLineItem> updatedItems = lineItems.map((item) {
+    List<LineItem> updatedItems = lineItems.map((item) {
       if (item is! TaxableLineItem) return item;
 
       final taxAmount = item.computeTaxAmount(taxMap);
@@ -336,7 +336,7 @@ class RequestForQuote extends Equatable {
   RequestForQuote copyWith({
     String? id,
     String? prNumber,
-    bool? autoCreatePo,
+    bool? autoConvertRfq,
     String? title,
     String? costCenterCode,
     String? departmentCode,
@@ -344,8 +344,8 @@ class RequestForQuote extends Equatable {
     String? requestedBy,
     String? rfqNumber,
     List<SupplierLink>? supplierLinks,
-    List<ProLineItem>? lineItems,
-    ProcurementWorkflowStatus? status,
+    List<LineItem>? lineItems,
+    WorkflowStatus? status,
     String? notes,
     TaxMode? taxMode,
     List<String>? attachments,
@@ -370,7 +370,7 @@ class RequestForQuote extends Equatable {
     return RequestForQuote(
       id: id ?? this.id,
       prNumber: prNumber ?? this.prNumber,
-      autoCreatePo: autoCreatePo ?? this.autoCreatePo,
+      autoConvertRfq: autoConvertRfq ?? this.autoConvertRfq,
       title: title ?? this.title,
       costCenterCode: costCenterCode ?? this.costCenterCode,
       departmentCode: departmentCode ?? this.departmentCode,
@@ -407,7 +407,7 @@ class RequestForQuote extends Equatable {
   List<Object?> get props => [
     id,
     prNumber,
-    autoCreatePo,
+    autoConvertRfq,
     title,
     storeNumber,
     requestedBy,
@@ -438,7 +438,7 @@ class RequestForQuote extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getAutoCreatePo,
+    getAutoConvertRfq,
     '$prNumber -> $rfqNumber',
     getRFQStatus.toTitle,
     costCenterCode,
@@ -454,7 +454,7 @@ class RequestForQuote extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'Auto PO',
+    'Auto RFQ',
     'PR -> RFQ Number',
     'Status',
     'Cost Center',

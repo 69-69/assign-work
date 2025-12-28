@@ -26,37 +26,33 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension NeededUpdateRequestForQuotationForm on BuildContext {
-  Future openNeededUpdateRequestForQuote({
-    required RequestForQuote quote,
-  }) async {
+extension UpdateSalesQuotationForm on BuildContext {
+  Future openUpdateSalesQuote({required RequestForQuote quote}) async {
     if (quote.id.isEmpty) return;
 
     return await openBottomSheet(
       isExpand: false,
       child: BottomSheetScaffold(
-        title: 'Edit Request For Quote',
+        title: 'Edit Sales Quote',
         subtitle: quote.rfqNumber.toUpperAll,
-        body: _NeededUpdateRequestForQuote(quote: quote),
+        body: _UpdateSalesQuote(quote: quote),
       ),
     );
   }
 }
 
-class _NeededUpdateRequestForQuote extends StatefulWidget {
+class _UpdateSalesQuote extends StatefulWidget {
   final RequestForQuote quote;
 
-  const _NeededUpdateRequestForQuote({required this.quote});
+  const _UpdateSalesQuote({required this.quote});
 
   @override
-  State<_NeededUpdateRequestForQuote> createState() =>
-      _NeededUpdateRequestForQuoteState();
+  State<_UpdateSalesQuote> createState() => _UpdateSalesQuoteState();
 }
 
-class _NeededUpdateRequestForQuoteState
-    extends State<_NeededUpdateRequestForQuote> {
+class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   final _formKey = GlobalKey<FormState>();
-  late RequestForQuote _cachedUpdatedRFQ;
+  late RequestForQuote _cachedUpdatedSQ;
 
   /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
   TaxMode? _taxModeToApply;
@@ -72,7 +68,6 @@ class _NeededUpdateRequestForQuoteState
   // Dates
   DateTime? _deadlineDate;
   DateTime? _expectedDate;
-  final _titleController = TextEditingController();
 
   final List<String> _taxCodes = [];
 
@@ -103,7 +98,6 @@ class _NeededUpdateRequestForQuoteState
   void initState() {
     super.initState();
     _taxModeToApply = _serverRFQ.taxMode;
-    _titleController.text = _serverRFQ.title;
     _additionalInfo.addAll({
       'notes': _serverRFQ.notes,
       'deliveryAddress': _serverRFQ.shippingAddress,
@@ -135,9 +129,6 @@ class _NeededUpdateRequestForQuoteState
       deadline: _deadlineDate ?? _serverRFQ.deadline,
       buyerContactPersonId: _paymentTerm ?? _serverRFQ.buyerContactPersonId,
       expectedDate: _expectedDate ?? _serverRFQ.expectedDate,
-      /*validityDate: _validityDate != null
-          ? '${_validityDate!.toDays} days'
-          : _serverRFQ.validityDate,*/
       updatedBy: _employeeName,
       history: [
         ..._serverRFQ.history, // keep all old logs
@@ -157,12 +148,12 @@ class _NeededUpdateRequestForQuoteState
     try {
       if (!isFormValid || _lineItems.isNullOrEmpty) return;
 
-      _cachedUpdatedRFQ = _sanitizeTaxCodes(_updatedRFQ);
+      _cachedUpdatedSQ = _sanitizeTaxCodes(_updatedRFQ);
 
       _bloc.add(
         UpdateProcurement<RequestForQuote>(
-          documentId: _cachedUpdatedRFQ.id,
-          data: _cachedUpdatedRFQ,
+          documentId: _cachedUpdatedSQ.id,
+          data: _cachedUpdatedSQ,
         ),
       );
 
@@ -426,17 +417,17 @@ class _NeededUpdateRequestForQuoteState
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
     final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(
-      _cachedUpdatedRFQ,
+      _cachedUpdatedSQ,
     );
     final supplier = await RFQFormInputs.getSupplier(
-      _cachedUpdatedRFQ.supplierLinks.first.supplierId,
+      _cachedUpdatedSQ.supplierLinks.first.supplierId,
     );
     if (supplier.isEmpty) return;
 
     // Log that details were printed
     if (mounted &&
         AuditTracker.shouldLog(
-          id: _cachedUpdatedRFQ.id,
+          id: _cachedUpdatedSQ.id,
           type: DocType.prs,
           action: AuditAction.printed,
         )) {

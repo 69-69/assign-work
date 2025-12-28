@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/procurement_workflow_status.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
+import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -127,14 +127,14 @@ class RequestedByAndDepartments extends StatelessWidget {
 /// Auto create RFQ when PR is Approved and cost center Department (Who pays for the Supplier)
 class AutoAndCostCenterDepartment extends StatelessWidget {
   final bool isSelected;
-  final void Function(bool) onChanged;
+  final void Function(bool) onAutoConvertChanged;
   final String? initialCostCenter;
   final void Function(String, String, String) onCostCenterChange;
 
   const AutoAndCostCenterDepartment({
     super.key,
     required this.isSelected,
-    required this.onChanged,
+    required this.onAutoConvertChanged,
     this.initialCostCenter,
     required this.onCostCenterChange,
   });
@@ -143,8 +143,11 @@ class AutoAndCostCenterDepartment extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       children: [
-        // Auto-Generate RFQ when PR is Approved
-        _AutoCreateRFQ(isSelected: isSelected, onChanged: onChanged),
+        // Auto-convert PR to RFQ after approval
+        _AutoCreatePr(
+          isSelected: isSelected,
+          onAutoConvertChanged: onAutoConvertChanged,
+        ),
         SearchDepartments(
           label: 'Cost Center...',
           initialValue: initialCostCenter,
@@ -265,27 +268,30 @@ class UnitOfMeasureDropdown extends StatelessWidget {
   }
 }
 
-/// [_AutoCreateRFQ] Auto create RFQ when PR is Approved
-class _AutoCreateRFQ extends StatelessWidget {
+/// [_AutoCreatePr] Auto-convert PR to RFQ after approval
+class _AutoCreatePr extends StatelessWidget {
   final bool isSelected;
-  final void Function(bool) onChanged;
+  final void Function(bool) onAutoConvertChanged;
 
-  const _AutoCreateRFQ({required this.isSelected, required this.onChanged});
+  const _AutoCreatePr({
+    required this.isSelected,
+    required this.onAutoConvertChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Auto-Generate RFQ when PR is Approved
+    // Auto-Convert RFQ to PR when PR is Approved
     return CustomCheckboxTile(
       title: Text(
-        'Auto Create RFQ?',
+        'Auto Convert PR?',
         style: context.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
         ),
       ),
-      subtitle: Text('Auto generate RFQ when PR is approved'),
+      subtitle: Text('Auto-convert PR to RFQ after approval'),
       contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
       value: isSelected,
-      onChanged: (v) => onChanged(v ?? false),
+      onChanged: (v) => onAutoConvertChanged(v ?? false),
     );
     /*CustomSwitchTile(
       title: 'Auto Create RFQ',
@@ -310,7 +316,7 @@ class _PRStatusDropdown extends StatelessWidget {
       key: key,
       label: 'PR status',
       initialValue: initialValue,
-      items: ProcurementStatusHelper.toStringList(type: ProcurementType.pr),
+      items: WorkflowStatusHelper.toStringList(type: WorkflowType.pr),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );

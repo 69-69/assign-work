@@ -15,8 +15,8 @@ class ProductConfigScreen extends StatelessWidget {
     return CustomTab(
       length: 2,
       tabs: [
-        {'label': 'Item Category', 'icon': Icons.category_outlined},
-        {'label': 'Any Widget here', 'icon': Icons.widgets},
+        CustomTabModel(label: 'Item Category', icon: Icons.category_outlined),
+        CustomTabModel(label: 'Any Widget here', icon: Icons.widgets),
       ],
       children: [
         ListCategories(),
