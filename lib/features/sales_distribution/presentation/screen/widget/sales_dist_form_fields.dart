@@ -101,7 +101,6 @@ class SalesDistFormFields {
         );
       },
     ),
-
     FieldGroupConfig(
       key: 'unitOfMeasure',
       label: 'Unit of Measure (e.g. box, kg)',
@@ -114,6 +113,12 @@ class SalesDistFormFields {
           onChanged: (String? selected) => onChanged(selected),
         );
       },
+    ),
+    FieldGroupConfig(
+      key: 'leadTimeDays',
+      label: 'Lead time (days)',
+      type: TextInputType.number,
+      isDisabled: isDisabled,
     ),
     FieldGroupConfig(
       key: 'requiredDate',
@@ -227,6 +232,12 @@ class SalesDistFormFields {
           onChanged: (String? selected) => onChanged(selected),
         );
       },
+    ),
+    FieldGroupConfig(
+      key: 'leadTimeDays',
+      label: 'Lead time (days)',
+      type: TextInputType.number,
+      isDisabled: isDisabled,
     ),
     FieldGroupConfig(
       key: 'requiredDate',

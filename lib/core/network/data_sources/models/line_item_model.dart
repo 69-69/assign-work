@@ -52,7 +52,14 @@ abstract class LineItem {
   final double quantity;
   final LineItemType type;
   final String description;
+
+  /// [leadTimeDays] How long it take to get this line item?
+  /// Used in PR, SO, SQ
+  final double leadTimeDays;
   final ItemCategory category;
+
+  /// [requiredDate] When do I need this line item?
+  /// Used in PR, PO, SO, SQ
   final DateTime? requiredDate;
   final UnitOfMeasure unitOfMeasure;
 
@@ -61,6 +68,7 @@ abstract class LineItem {
     this.notes = '',
     required this.type,
     this.discount = 0.0,
+    this.leadTimeDays = 0.0,
     required this.quantity,
     required this.description,
     this.category = ItemCategory.unknown,
@@ -82,9 +90,13 @@ abstract class LineItem {
 
   /// These are overridden in the subClass: MaterialLineItem & ServiceLineItem
   String get taxNames => '';
+
   double get taxAmount => 0.0;
+
   List<String> get taxCodes => const [];
+
   List<String> get itemAsList;
+
   List<String> get dataTableHeader;
 
   double get totalWithTaxes => netBeforeTax + taxAmount;
@@ -95,7 +107,7 @@ abstract class LineItem {
 
   String get getUnitOfMeasure => unitOfMeasure.getLabel;
 
-  String get getRequiredDate => requiredDate.toStandardDT;
+  String get getRequiredDate => requiredDate.dateOnly;
 
   /*=> type == LineItemType.material
       ? MaterialLineItem.getDataTableHeader
@@ -139,6 +151,7 @@ abstract class LineItem {
     'unitOfMeasure': getUnitOfMeasure,
     'discount': discount,
     'notes': notes,
+    'leadTimeDays': leadTimeDays,
     'requiredDate': isDate
         ? getRequiredDate
         : requiredDate?.millisecondsSinceEpoch,
@@ -155,14 +168,18 @@ abstract class LineItem {
       a.toLowerAll.contains(b.toLowerAll);
 
   bool filterByAny(String filter) =>
+      {
+        '$quantity',
+        '$discount',
+        '$quantity',
+        '$leadTimeDays',
+        getRequiredDate,
+      }.contains(filter) ||
       containsIgnoreCase(description, filter) ||
       containsIgnoreCase(notes, filter) ||
       containsIgnoreCase(getCategory, filter) ||
       containsIgnoreCase(getUnitOfMeasure, filter) ||
-      containsIgnoreCase(getTypeLabel, filter) ||
-      containsIgnoreCase('$discount', filter) ||
-      // containsIgnoreCase('$unitPrice', filter) ||
-      containsIgnoreCase('$quantity', filter);
+      containsIgnoreCase(getTypeLabel, filter);
 
   /// [updateTax] Returns a new instance with updated tax info if applicable
   LineItem updateTax({required double taxAmount, required String taxNames}) {
@@ -188,6 +205,8 @@ abstract class LineItem {
     unitOfMeasure,
     discount,
     notes,
+    leadTimeDays,
+    requiredDate,
   ];
 }
 
@@ -229,6 +248,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
 
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
+    super.leadTimeDays,
     super.requiredDate,
   }) : _unitPrice = unitPrice,
        super(type: LineItemType.material);
@@ -248,6 +268,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
         ).whereType<String>().toList(),
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
+        leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
         requiredDate: toDateTimeFn(map['requiredDate']),
       );
 
@@ -289,6 +310,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
 
     /// [taxNames] For UI tax names calculation only
     String? taxNames,
+    double? leadTimeDays,
     DateTime? requiredDate,
   }) => MaterialLineItem(
     id: id ?? this.id,
@@ -304,6 +326,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
 
     taxAmount: taxAmount ?? this.taxAmount,
     taxNames: taxNames ?? this.taxNames,
+    leadTimeDays: leadTimeDays ?? this.leadTimeDays,
     requiredDate: requiredDate ?? this.requiredDate,
   );
 
@@ -407,6 +430,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
 
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
+    super.leadTimeDays,
     super.requiredDate,
   }) : super(type: LineItemType.service);
 
@@ -430,6 +454,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
         ).whereType<String>().toList(),
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
+        leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
         requiredDate: toDateTimeFn(map['requiredDate']),
       );
 
@@ -451,12 +476,14 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
   bool filterByAny(String filter) =>
       super.filterByAny(filter) ||
       containsIgnoreCase(taxNames, filter) ||
-      taxCodes.contains(filter) ||
-      containsIgnoreCase('$taxAmount', filter) ||
-      containsIgnoreCase('$serviceRate', filter) ||
-      containsIgnoreCase('$limitAmount', filter) ||
-      containsIgnoreCase('$limitQuantity', filter) ||
-      containsIgnoreCase('$requiredDate', filter);
+      {
+        taxCodes,
+        '$taxAmount',
+        '$serviceRate',
+        '$limitAmount',
+        '$limitQuantity',
+        '$requiredDate',
+      }.contains(filter);
 
   @override
   ServiceLineItem copyWith({
@@ -478,6 +505,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
 
     /// [taxNames] For UI tax names calculation only
     String? taxNames,
+    double? leadTimeDays,
     DateTime? requiredDate,
   }) => ServiceLineItem(
     id: id ?? this.id,
@@ -493,6 +521,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
 
     taxAmount: taxAmount ?? this.taxAmount,
     taxNames: taxNames ?? this.taxNames,
+    leadTimeDays: leadTimeDays ?? this.leadTimeDays,
     requiredDate: requiredDate ?? this.requiredDate,
   );
 

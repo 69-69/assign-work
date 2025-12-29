@@ -166,6 +166,7 @@ class StaticDropdown<T> extends StatelessWidget {
 ///
 /// Provides search, custom filter logic, validation, and no-data callbacks.
 class AsyncSearchDropdown<T> extends StatelessWidget {
+  final bool isAutoApply;
   final bool isMultiSelect;
   final String labelText;
   final T? selectedItem;
@@ -183,6 +184,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
 
   const AsyncSearchDropdown({
     super.key,
+    this.isAutoApply = true,
     this.isMultiSelect = false,
     required this.labelText,
     required this.filterFn,
@@ -230,7 +232,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
     return DropdownSearch<T>.multiSelection(
       selectedItems: selectedMultiItems ?? [],
       autoValidateMode: AutovalidateMode.onUserInteraction,
-      popupProps: const PopupPropsMultiSelection.menu(showSearchBox: true),
+      popupProps: _popupPropsMulti(),
       filterFn: (obj, filter) => filterFn(obj, filter),
       // for filtering by user string
       compareFn: (obj1, obj2) => obj1 == obj2,
@@ -244,6 +246,41 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
       validator:
           validatorMulti ?? (List<T>? obj) => obj == null ? labelText : null,
+    );
+  }
+
+  PopupPropsMultiSelection<T> _popupPropsMulti() {
+    return PopupPropsMultiSelection.menu(
+      showSearchBox: true,
+      showSelectedItems: true,
+      onItemAdded: (items, item) => onMultiChanged!(items),
+      onItemRemoved: (items, item) => onMultiChanged!(items),
+      validationBuilder: _manualApply,
+    );
+  }
+
+  Widget _manualApply(context, List<T> obj) {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: isAutoApply
+          ? null
+          : Wrap(
+              spacing: 10,
+              alignment: WrapAlignment.spaceBetween,
+              children: [
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancel"),
+                ),
+                OutlinedButton(
+                  onPressed: () {
+                    onMultiChanged!(obj);
+                    Navigator.pop(context);
+                  },
+                  child: Text("Apply"),
+                ),
+              ],
+            ),
     );
   }
 

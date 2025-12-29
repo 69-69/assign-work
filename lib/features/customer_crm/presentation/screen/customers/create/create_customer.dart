@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -10,7 +9,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/create_acc/customer_acc_bloc.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/customer_bloc.dart';
-import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/form_inputs.dart';
+import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/crm_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -33,6 +32,7 @@ class _AddCustomerBody extends StatefulWidget {
 
 class _AddCustomerBodyState extends State<_AddCustomerBody> {
   bool _isEnabledCustomerId = false;
+  String _customerId = '';
 
   DateTime? _selectedBirthday;
   final _formKey = GlobalKey<FormState>();
@@ -50,33 +50,23 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
     _generateCustomerID();
   }
 
-  @override
-  void dispose() {
-    _altPhoneController.dispose();
-    _customerIdController.dispose();
-    _phoneController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _companyNameController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
   void _toggleEditCustomerId() =>
       setState(() => _isEnabledCustomerId = !_isEnabledCustomerId);
 
   void _generateCustomerID() async {
     await DocType.customer.getShortUID(
-      onChanged: (s) => setState(() => _customerIdController.text = s),
+      onChanged: (s) {
+        if (mounted) setState(() => _customerId = s);
+      },
     );
   }
 
   void _onSubmit() {
     if (_formKey.currentState!.validate()) {
       final item = Customer(
+        customerId: _customerId,
         name: _nameController.text,
         birthDay: _selectedBirthday,
-        customerId: _customerIdController.text,
         phone: _phoneController.text,
         altPhone: _altPhoneController.text,
         email: _emailController.text,
@@ -114,7 +104,11 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text('Customer Info', style: context.textTheme.titleLarge),
+        CRMFormInputs.buildCustNumber(
+          context,
+          what: 'RFQ',
+          onPressed: _generateCustomerID,
+        ),
         const SizedBox(height: 20.0),
         CustomerIdInput(
           customerIdController: _customerIdController,

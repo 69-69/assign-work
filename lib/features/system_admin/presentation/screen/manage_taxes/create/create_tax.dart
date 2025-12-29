@@ -132,9 +132,11 @@ class _AddTaxFormState extends State<_AddTaxForm> {
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isValid) setState(() {});
 
-                _taxList
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => TaxFormInputs.toTax(e)));
+                TaxFormInputs.updateListFromData<Tax>(
+                  _taxList,
+                  map: data,
+                  fromMap: (map, id) => Tax.fromMap(map),
+                );
               },
             ),
           ],

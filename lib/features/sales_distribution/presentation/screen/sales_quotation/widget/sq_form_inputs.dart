@@ -10,10 +10,12 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/form/currency_selection.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
+import 'package:assign_erp/core/widgets/form/sales_channel_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/search_customer.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
@@ -62,7 +64,7 @@ class SQFormInputs {
   }
 
   /// Build RFQ Number (using the parent method)
-  static Widget buildRFQNumber(
+  static Widget buildSQNumber(
     BuildContext context,
     String count,
     void Function()? onPressed,
@@ -109,17 +111,65 @@ class SQFormInputs {
     ];
   }
 
-  /// Buyer Terms and Conditions for RFQ
-  static List<FieldGroupConfig> get buyerTermsFields => [
+  /// Currency & Pricing Fields
+  static List<FieldGroupConfig> get currencyPricingFields => [
     FieldGroupConfig(
-      key: 'buyerContactPerson',
-      label: 'Contact Person',
+      key: 'exchangeRate',
+      label: 'Exchange Rate',
+      type: TextInputType.number,
+      widgetType: FieldWidgetType.textField,
+    ),
+    FieldGroupConfig(
+      key: 'shippingAmount',
+      label: 'Shipping Amount',
+      type: TextInputType.number,
+      widgetType: FieldWidgetType.textField,
+    ),
+    FieldGroupConfig(
+      key: 'currencyCode',
+      label: 'Currency',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _BuyerContactPerson(
-          initialValue: initialData,
-          onChanged: (id, firstName, lastName) => onChanged(id),
+        return CurrencySelection(
+          initialCurrency: initialData,
+          onChanged: (({String code, String symbol})? s) => onChanged(s!.code),
+        );
+      },
+    ),
+  ];
+
+  /// Dates & Validity
+  static List<FieldGroupConfig> get validityDateFields => [
+    FieldGroupConfig(
+      key: 'validFrom',
+      label: 'Valid from',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return DatePicker(
+          inLabel: false,
+          initialDate: initialData,
+          label: 'Valid from',
+          restorationId: 'Valid from',
+          selectedDate: (DateTime date) => onChanged(date.dateOnly),
+          helperText: 'When Sales Quotation validity start',
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'validUntil',
+      label: 'Valid until',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return DatePicker(
+          inLabel: false,
+          initialDate: initialData,
+          label: 'Valid until',
+          restorationId: 'Valid until',
+          selectedDate: (DateTime date) => onChanged(date.dateOnly),
+          helperText: 'When Sales Quotation expires',
         );
       },
     ),
@@ -135,42 +185,35 @@ class SQFormInputs {
           label: 'Expected date',
           restorationId: 'Expected date',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'Expected delivery date after order confirmation',
+          helperText: 'Earliest delivery date for the entire order.',
         );
       },
-    ),
-    FieldGroupConfig(
-      key: 'deadline',
-      label: 'Deadline date',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return DatePicker(
-          inLabel: false,
-          initialDate: initialData,
-          label: 'Deadline date',
-          restorationId: 'Deadline date',
-          selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'Final date for supplier to submit quote.',
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'notes',
-      label: 'Additional Notes (if any)...',
-      type: TextInputType.multiline,
-      isTextArea: true,
-      isAutoGrow: true,
-      minLines: null,
-      validator: (_) => null,
     ),
   ];
 
-  /// NOT-Needed: Delivery Address and Notes for RFQ
-  static List<FieldGroupConfig> get deliveryFields => [
+  /// Terms & Conditions
+  static List<FieldGroupConfig> get supplierTermsFields => [
     FieldGroupConfig(
-      key: 'deliveryAddress',
-      label: 'Delivery address (if any)...',
+      key: 'paymentTerms',
+      label: 'Payment terms (if any)...',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      validator: (_) => null,
+    ),
+    FieldGroupConfig(
+      key: 'warrantyTerms',
+      label: 'Warranty Terms (if any)...',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      validator: (_) => null,
+    ),
+    FieldGroupConfig(
+      key: 'returnPolicy',
+      label: 'Return Policy (if any)...',
       type: TextInputType.multiline,
       isTextArea: true,
       isAutoGrow: true,
@@ -180,15 +223,6 @@ class SQFormInputs {
     FieldGroupConfig(
       key: 'notes',
       label: 'Additional Notes (if any)...',
-      type: TextInputType.multiline,
-      isTextArea: true,
-      isAutoGrow: true,
-      minLines: null,
-      validator: (_) => null,
-    ),
-    FieldGroupConfig(
-      key: 'termsAndConditions',
-      label: 'Terms & Conditions (if any)...',
       type: TextInputType.multiline,
       isTextArea: true,
       isAutoGrow: true,
@@ -203,7 +237,7 @@ class SQFormInputs {
 
   /// Addresses (e.g., Buyer Shipping Address)
   static List<FieldGroupConfig> get shippingAddressFields =>
-      SalesDistFormFields.addressFields(initialValue: 'Shipping');
+      SalesDistFormFields.addressFields();
 
   static AuditProcurement<RequestForQuote> updateHistory({
     required String empId,
@@ -318,9 +352,9 @@ class CurrencyAndCostCenterDepartment extends StatelessWidget {
   }
 }
 
-/// Auto Convert PO & RFQStatus Dropdown TextField [AutoCreateAndRFQStatus]
-class AutoCreateAndRFQStatus extends StatelessWidget {
-  const AutoCreateAndRFQStatus({
+/// Auto Convert PO & RFQStatus Dropdown TextField [AutoCreateAndSQStatus]
+class AutoCreateAndSQStatus extends StatelessWidget {
+  const AutoCreateAndSQStatus({
     super.key,
     this.initialStatus,
     required this.onStatusChanged,
@@ -502,18 +536,18 @@ class DeliveryAddressAndNotes extends StatelessWidget {
 /// [RequestedByAndDepartments]
 class RequestedByAndDepartments extends StatelessWidget {
   final bool isDisabled;
-  final String? initialDepartment;
-  final String? initialRequestedBy;
-  final void Function(String, String, String) onRequestedChanged;
-  final void Function(String, String, String) onDepartmentChange;
+  final String? initialCustomer;
+  final String? initialSalesRep;
+  final void Function(String, String, String) onSalesRepChanged;
+  final void Function(String, String) onCustomerChange;
 
   const RequestedByAndDepartments({
     super.key,
     this.isDisabled = false,
-    this.initialDepartment,
-    this.initialRequestedBy,
-    required this.onRequestedChanged,
-    required this.onDepartmentChange,
+    this.initialCustomer,
+    this.initialSalesRep,
+    required this.onSalesRepChanged,
+    required this.onCustomerChange,
   });
 
   @override
@@ -526,15 +560,41 @@ class RequestedByAndDepartments extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SearchEmployees(
-          labelText: 'requested by',
-          initialValue: initialRequestedBy,
-          onChanged: onRequestedChanged,
+          labelText: 'Sales Person',
+          initialValue: initialSalesRep,
+          onChanged: onSalesRepChanged,
         ),
-        SearchDepartments(
-          initialValue: initialDepartment,
-          onChanged: (id, code, name) => onDepartmentChange(id, code, name),
+        SearchCustomer(
+          allowManualEntry: true,
+          initialValue: initialCustomer,
+          onChanged: (id, name) => onCustomerChange(id, name),
         ),
       ],
+    );
+  }
+}
+
+/// [SalesChannelChoice]
+class SalesChannelChoice extends StatelessWidget {
+  final bool isDisabled;
+  final String? initialChannel;
+  final void Function(String) onChannelChange;
+
+  const SalesChannelChoice({
+    super.key,
+    this.isDisabled = false,
+    this.initialChannel,
+    required this.onChannelChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      ignoring: isDisabled,
+      child: SalesChannelDropdown(
+        initialValue: initialChannel,
+        onChanged: (s) => onChannelChange.call(s),
+      ),
     );
   }
 }
@@ -564,7 +624,7 @@ class _BuyerContactPerson extends StatelessWidget {
   }
 }
 
-/// Request for Price Quote Status [RFQStatusDropdown]
+/// Sales Quotation Status [RFQStatusDropdown]
 class _SQStatusDropdown extends StatelessWidget {
   final String? initialValue;
   final void Function(dynamic s) onChange;
@@ -575,9 +635,9 @@ class _SQStatusDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return StaticDropdown<String>(
       key: key,
-      label: 'RFQ Status',
+      label: 'SQ Status',
       initialValue: initialValue,
-      items: WorkflowStatusHelper.toStringList(type: WorkflowType.rfq),
+      items: WorkflowStatusHelper.toStringList(type: WorkflowType.sq),
       getDisplayText: (status) => status,
       onChanged: onChange,
     );

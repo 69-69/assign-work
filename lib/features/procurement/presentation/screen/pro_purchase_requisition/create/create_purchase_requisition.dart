@@ -187,6 +187,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         PRFormInputs.buildPRNumber(context, _prNumber, _generatePRNumber),
 
         FormGroupCard(
+          isExpanded: true,
           title: 'Requisition Overview',
           children: [
             _buildRequesterAndDepartment(),
@@ -194,11 +195,13 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
           ],
         ),
         FormGroupCard(
+          isExpanded: false,
           title: 'Cost Center & Auto RFQ',
           children: [_buildAutoCreateAndCostCenter()],
         ),
 
         FormGroupCard(
+          isExpanded: false,
           title: '${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
@@ -206,10 +209,12 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         ),
 
         FormGroupCard(
+          isExpanded: false,
           title: 'Request & Expected Dates',
           children: [_buildDates()],
         ),
         FormGroupCard(
+          isExpanded: false,
           title: 'PR Justification',
           children: [_buildJustification()],
         ),

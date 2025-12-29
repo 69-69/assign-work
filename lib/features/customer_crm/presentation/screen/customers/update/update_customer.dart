@@ -6,7 +6,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/create_acc/customer_acc_bloc.dart';
 import 'package:assign_erp/features/customer_crm/presentation/bloc/customer_bloc.dart';
-import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/form_inputs.dart';
+import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/crm_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

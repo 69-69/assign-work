@@ -8,24 +8,22 @@ import 'package:flutter/material.dart';
 extension SalesDistributionTiles on dynamic {
   List<DashboardTile> get salesDistributionTiles {
     final tilesData = [
-      /*Sales databases do NOT duplicate full item master data.
-        They store references (foreign keys) + a small snapshot.*/
-      {
-        'label': 'sales . order',
-        'icon': Icons.shopping_bag,
-        'action': RouteNames.salesOrders2,
-        'param': {},
-        'access': _getName(SalesDistributionPermission.manageSOs),
-        'description': 'Create and manage customer sales orders efficiently.',
-      },
       // sales quotation tab
       {
-        'label': 'Sales . Quotation',
+        'label': 'Sales . Quotations',
         'icon': Icons.notes,
         'action': RouteNames.salesQuotation,
         'param': {},
         'access': _getName(SalesDistributionPermission.manageSalesQuotation),
         'description': 'Draft and control customer sales quotations with ease.',
+      },
+      {
+        'label': 'sales . orders',
+        'icon': Icons.shopping_bag,
+        'action': RouteNames.salesOrders2,
+        'param': {},
+        'access': _getName(SalesDistributionPermission.manageSOs),
+        'description': 'Create and manage customer sales orders efficiently.',
       },
       {
         'label': 'shipping . delivery',

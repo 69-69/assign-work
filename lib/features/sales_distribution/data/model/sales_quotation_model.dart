@@ -25,6 +25,9 @@ class SalesQuotation extends Equatable {
 
   /// 2. Customer & Sales Context
   final String customerId;
+  // Snapshot (Historical accuracy): The name could change later.
+  // The quote should reflect the name at the time of creation.
+  final String customerName;
   final String salesRepId; // Who generated the Sales Quotation
   final SalesChannel salesChannel;
   final List<AddressInfo> addresses;
@@ -33,11 +36,10 @@ class SalesQuotation extends Equatable {
   final String currencyCode;
   // The rate used for currency conversion (if applicable).
   final double exchangeRate;
+  final double shippingAmount;
 
   /// 4. Line Items & Shipping
   final List<LineItem> lineItems;
-  final double shippingAmount;
-  final int leadTimeDays; //The number of days required to fulfill the order.
   final TaxMode taxMode;
 
   // final List<String> taxCodes; (This is already in lineItems)
@@ -46,7 +48,7 @@ class SalesQuotation extends Equatable {
   final String paymentTerms;
   final String warrantyTerms;
   final String returnPolicy;
-  final String? notes;
+  final String notes;
   final List<String> attachments;
 
   /// Dates & Validity
@@ -68,6 +70,7 @@ class SalesQuotation extends Equatable {
     this.status = WorkflowStatus.draft,
 
     required this.customerId,
+    required this.customerName,
     required this.salesRepId,
     this.salesChannel = SalesChannel.inStore,
     required this.addresses,
@@ -78,13 +81,12 @@ class SalesQuotation extends Equatable {
     // this.taxCodes = const [],
     required this.lineItems,
     this.shippingAmount = 0.0,
-    this.leadTimeDays = 0,
     this.taxMode = TaxMode.perLineTax,
 
     this.paymentTerms = '',
     this.warrantyTerms = '',
     this.returnPolicy = '',
-    this.notes,
+    this.notes = '',
     this.attachments = const [],
 
     this.expectedDate,
@@ -107,6 +109,7 @@ class SalesQuotation extends Equatable {
       quoteNumber: map['quoteNumber'] ?? '',
       autoCreateSq: map['autoCreateSo'] ?? false,
       customerId: map['customerId'] ?? '',
+      customerName: map['customerName'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
       salesChannel: SalesChannelHelper.fromString(map['SalesChannel']),
       lineItems: LineItem.lineItems(map['lineItems']),
@@ -121,7 +124,6 @@ class SalesQuotation extends Equatable {
       returnPolicy: map['returnPolicy'] ?? '',
       paymentTerms: map['paymentTerms'] ?? '',
       warrantyTerms: map['warrantyTerms'] ?? '',
-      leadTimeDays: int.tryParse('${map['leadTimeDays']}') ?? 0,
       validFrom: toDateTimeFn(map['validFrom']),
       validUntil: toDateTimeFn(map['validUntil']),
       expectedDate: toDateTimeFn(map['expectedDate']),
@@ -139,6 +141,7 @@ class SalesQuotation extends Equatable {
     'quoteNumber': quoteNumber,
     'autoCreateSo': autoCreateSq,
     'customerId': customerId,
+    'customerName': customerName,
     'status': getSQStatus,
     'SalesChannel': salesChannel,
     'salesRepId': salesRepId,
@@ -152,7 +155,6 @@ class SalesQuotation extends Equatable {
     'returnPolicy': returnPolicy,
     'paymentTerms': paymentTerms,
     'warrantyTerms': warrantyTerms,
-    'leadTimeDays': leadTimeDays,
     'attachments': attachments,
     'addresses': addresses.map((i) => i.toMap()).toList(),
     'createdBy': createdBy,
@@ -202,6 +204,7 @@ class SalesQuotation extends Equatable {
     quoteNumber: '',
     storeNumber: '',
     customerId: '',
+    customerName: '',
     salesRepId: '',
     shippingAmount: 0.0,
     lineItems: const [],
@@ -250,6 +253,8 @@ class SalesQuotation extends Equatable {
       {
         salesRepId,
         customerId,
+        customerName,
+        quoteNumber,
         currencyCode,
         returnPolicy,
         notes ?? '',
@@ -301,6 +306,7 @@ class SalesQuotation extends Equatable {
     String? salesRepId,
     String? quoteNumber,
     String? customerId,
+    String? customerName,
     List<LineItem>? lineItems,
     WorkflowStatus? status,
     List<AddressInfo>? addresses,
@@ -313,7 +319,6 @@ class SalesQuotation extends Equatable {
     String? paymentTerms,
     String? warrantyTerms,
     String? returnPolicy,
-    int? leadTimeDays,
     double? exchangeRate,
     String? notes,
     String? createdBy,
@@ -331,12 +336,12 @@ class SalesQuotation extends Equatable {
       autoCreateSq: autoCreateSq ?? this.autoCreateSq,
       quoteNumber: quoteNumber ?? this.quoteNumber,
       customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
       lineItems: lineItems ?? this.lineItems,
       shippingAmount: shippingAmount ?? this.shippingAmount,
       returnPolicy: returnPolicy ?? this.returnPolicy,
       paymentTerms: paymentTerms ?? this.paymentTerms,
       warrantyTerms: warrantyTerms ?? this.warrantyTerms,
-      leadTimeDays: leadTimeDays ?? this.leadTimeDays,
       exchangeRate: exchangeRate ?? this.exchangeRate,
       notes: notes ?? this.notes,
       addresses: addresses ?? this.addresses,
@@ -362,6 +367,10 @@ class SalesQuotation extends Equatable {
     salesRepId,
     quoteNumber,
     customerId,
+    customerName,
+    exchangeRate,
+    shippingAmount,
+    returnPolicy,
     '$ghanaCedis$shippingAmount',
     returnPolicy,
     status,
@@ -369,7 +378,6 @@ class SalesQuotation extends Equatable {
     notes,
     salesChannel,
     validUntil,
-    leadTimeDays,
     paymentTerms,
     warrantyTerms,
     validFrom,
@@ -393,6 +401,7 @@ class SalesQuotation extends Equatable {
     id,
     storeNumber,
     quoteNumber,
+    customerName,
     getSQStatus.toTitle,
     getSalesChannel.toTitle,
     getValidFromDate,
@@ -407,6 +416,7 @@ class SalesQuotation extends Equatable {
     'ID',
     'Store No.',
     'Quote Number',
+    'Customer Name',
     'Status',
     'Sales Channel',
     'validFrom',

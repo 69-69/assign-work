@@ -304,36 +304,38 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
           .toList();
 
       setState(() => _taxes = filteredTaxes);
+      return filteredTaxes;
     }
-    return _taxes ?? taxes;
+    return taxes;
   }
 
   @override
   Widget build(BuildContext context) {
-    return _buildMultiSelectDropdown(context);
+    return AsyncSearchDropdown<Tax>(
+      isMultiSelect: true,
+      selectedMultiItems: _taxes,
+      labelText: '$_labelText...',
+      asyncItems: (String filter, loadProps) async =>
+          await _loadTaxes(filter: filter),
+      filterFn: _filterTax,
+      itemAsString: (Tax tax) => tax.itemAsString.toTitle,
+      onMultiChanged: (List<Tax> taxes) {
+        // Ensure _taxes is updated even if empty
+        setState(() => _taxes = List<Tax>.from(taxes));
+        widget.onMultiChanged?.call(taxes);
+      },
+      validatorMulti: (taxes) => taxes.isNullOrEmpty ? _labelText : null,
+      onNoDataFound: () {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _handleNoDataFound(context),
+        );
+      },
+      helperText:
+          'If Tax type is not listed, please contact your system admin.',
+    );
   }
 
-  Widget _buildMultiSelectDropdown(BuildContext context) =>
-      AsyncSearchDropdown<Tax>(
-        isMultiSelect: true,
-        selectedMultiItems: _taxes,
-        labelText: '$_labelText...',
-        asyncItems: (String filter, loadProps) async =>
-            await _loadTaxes(filter: filter),
-        filterFn: (tax, filter) => _filterTax(filter, tax, context),
-        itemAsString: (Tax tax) => tax.itemAsString.toTitle,
-        onMultiChanged: (List<Tax> taxes) => widget.onMultiChanged?.call(taxes),
-        validatorMulti: (taxes) => taxes.isNullOrEmpty ? _labelText : null,
-        onNoDataFound: () {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _handleNoDataFound(context),
-          );
-        },
-        helperText:
-            'If Tax type is not listed, please contact your system admin.',
-      );
-
-  bool _filterTax(String filter, Tax tax, BuildContext cxt) {
+  bool _filterTax(Tax tax, String filter) {
     final term = (filter.isEmpty && (_initialValues?.isEmpty ?? true))
         ? '' // Use empty string if no filter and initial values are empty
         : filter.isEmpty

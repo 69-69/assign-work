@@ -270,7 +270,7 @@ class CustomerIdDropdown extends StatelessWidget {
     return SearchCustomer(
       initialValue: initialValue,
       onChanged: onChanged,
-      isPOS: true,
+      allowManualEntry: true,
     );
   }
 }

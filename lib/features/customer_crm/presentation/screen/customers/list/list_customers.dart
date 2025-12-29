@@ -56,8 +56,8 @@ class _ListCustomersState extends State<ListCustomers> {
       maskAtIndex: 1,
       headers: Customer.dataTableHeader,
       toolbar: _buildToolbar(customers),
-      rows: todayCustomers.map((o) => o.itemAsList()).toList(),
-      childrenRow: pastCustomers.map((o) => o.itemAsList()).toList(),
+      rows: todayCustomers.map((o) => o.itemAsList).toList(),
+      childrenRow: pastCustomers.map((o) => o.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(context, customers, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(customers, row.first),
     );

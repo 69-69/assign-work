@@ -232,7 +232,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     _supplierLinks.clear();
     _shippingAddress.clear();
     _buyerTerms.clear();
-    _useDefaultAddress = true;
+    _useDefaultAddress = false;
 
     _generateRFQNumber();
   }
@@ -270,11 +270,13 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         ),
 
         FormGroupCard(
+          isExpanded: false,
           title: 'Cost Center',
           children: [_buildCurrencyAndCostCenter()],
         ),
 
         FormGroupCard(
+          isExpanded: false,
           title: '${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
@@ -282,15 +284,21 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         ),
 
         FormGroupCard(
+          isExpanded: false,
           title: 'Invite Suppliers',
           subTitle:
               '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
           children: [_buildSuppliers()],
         ),
 
-        FormGroupCard(title: 'Buyer\'s Terms', children: [_buildBuyerTerms()]),
+        FormGroupCard(
+          isExpanded: false,
+          title: 'Buyer\'s Terms',
+          children: [_buildBuyerTerms()],
+        ),
 
         FormGroupCard(
+          isExpanded: false,
           title: 'Shipping Address',
           children: [
             SizedBox(
@@ -338,6 +346,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
           'limitAmount',
           'limitQuantity',
           'taxCodes',
+          'leadTimDays',
         ],
       ),
       initialData:

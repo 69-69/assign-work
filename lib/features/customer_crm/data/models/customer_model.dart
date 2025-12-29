@@ -1,7 +1,10 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
+
+import 'crm_customer_helper.dart';
 
 class Customer extends Equatable {
   static get _today => DateTime.now();
@@ -218,7 +221,7 @@ class Customer extends Equatable {
   ];
 
   /// ToList for Customers [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     customerId,
     storeNumber,
@@ -250,3 +253,406 @@ class Customer extends Equatable {
     'Updated At',
   ];
 }
+
+class Customers extends Equatable {
+  static get _today => DateTime.now();
+
+  /// 1. Identification: These identify the customer.
+  final String id;
+  final String storeNumber;
+  final String customerId;
+  final String name; // Company name or Individual name
+  final CustomerType type;
+  final CustomerStatus status;
+  final String industry;
+  final CustomerCategory category;
+
+  /// 2. Contact Information Fields: How the company communicates with the customer.
+  final String contactName; // Primary Contact Name
+  final String phone;
+  final String mobile;
+  final String email;
+  final String website;
+
+  /// 3. Address Fields: Often multiple addresses are supported.
+  final List<AddressInfo> addresses;
+
+  /// 4. Relationship & Sales Fields: Used by sales and account managers.
+  final String
+  salesRepId; // Account Owner / Sales Representative handling this customer
+  final LeadSource leadSource;
+  final CustomerPriority priority;
+
+  /// 5. Financial & ERP-Linked Fields: These connect CRM with ERP functions.
+  final double creditLimit;
+  final String paymentTerms;
+  final String currency;
+  final String taxId;
+
+  final String createdBy;
+  final DateTime createdAt;
+  final String updatedBy;
+  final DateTime updatedAt;
+
+  Customers({
+    this.id = '',
+    required this.storeNumber,
+    required this.customerId,
+    required this.name,
+    required this.type,
+    required this.status,
+    this.industry = '',
+    required this.category,
+    this.contactName = '',
+    required this.phone,
+    required this.mobile,
+    required this.email,
+    this.website = '',
+    required this.addresses,
+    required this.salesRepId,
+    required this.leadSource,
+    required this.priority,
+    this.creditLimit = 0.0,
+    this.paymentTerms = '',
+    required this.currency,
+    this.taxId = '',
+    required this.createdBy,
+    DateTime? createdAt,
+    required this.updatedBy,
+    DateTime? updatedAt,
+  }) : createdAt = createdAt ?? _today,
+       updatedAt = updatedAt ?? _today; // Set default value
+
+  factory Customers.fromMap(Map<String, dynamic> data, {String? docId}) {
+    return Customers(
+      id: docId ?? data['id'] ?? '',
+      storeNumber: data['storeNumber'] ?? '',
+      customerId: data['customerId'] ?? '',
+      name: data['name'] ?? '',
+      type: CrmCustomerHelper.typeFromString(data['type']),
+      status: CrmCustomerHelper.statusFromString(data['status']),
+      industry: data['industry'] ?? '',
+      category: CrmCustomerHelper.categoryFromString(data['category']),
+      phone: data['phone'] ?? '',
+      mobile: data['mobile'] ?? '',
+      email: data['email'] ?? '',
+      website: data['website'] ?? '',
+      addresses: AddressInfo.addresses(data['addresses']),
+      salesRepId: data['salesRepId'] ?? '',
+      leadSource: CrmCustomerHelper.leadSourceFromString(data['leadSource']),
+      priority: CrmCustomerHelper.priorityFromString(data['priority']),
+      creditLimit: double.tryParse(data['creditLimit']) ?? 0.0,
+      paymentTerms: data['paymentTerms'] ?? '',
+      currency: data['currency'] ?? '',
+      taxId: data['taxId'] ?? '',
+      createdBy: data['createdBy'] ?? '',
+      createdAt: toDateTimeFn(data['createdAt']),
+      updatedBy: data['updatedBy'] ?? '',
+      updatedAt: toDateTimeFn(data['updatedAt']),
+    );
+  }
+
+  Map<String, dynamic> _mapTemp() => {
+    'id': id,
+    'storeNumber': storeNumber,
+    'customerId': customerId,
+    'name': name,
+    'type': type.getName,
+    'status': status.getName,
+    'industry': industry,
+    'category': category.getName,
+    'phone': phone,
+    'mobile': mobile,
+    'email': email,
+    'website': website,
+    'addresses': addresses,
+    'salesRepId': salesRepId,
+    'leadSource': leadSource.getName,
+    'priority': priority.getName,
+    'creditLimit': creditLimit,
+    'paymentTerms': paymentTerms,
+    'currency': currency,
+    'taxId': taxId,
+    'createdBy': createdBy,
+    'updatedBy': updatedBy,
+  };
+
+  Map<String, dynamic> toMap() {
+    var newMap = _mapTemp();
+    newMap['createdAt'] = createdAt.toISOString;
+    newMap['updatedAt'] = updatedAt.toISOString;
+
+    return newMap;
+  }
+
+  Map<String, dynamic> toCache() {
+    var newMap = _mapTemp();
+    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
+    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+
+    return {'id': id, 'data': newMap};
+  }
+
+  bool get isEmpty => customerId.isEmpty;
+
+  bool get isNotEmpty => !isEmpty;
+
+  /// [findCustomerById]
+  static Iterable<Customer> findCustomerById(
+    List<Customer> customers,
+    String customerId,
+  ) => customers.where((customer) => customer.customerId == customerId);
+
+  /// [filterCustomersByDate]
+  static List<Customer> filterCustomersByDate(
+    List<Customer> customers, {
+    bool isSameDay = true,
+  }) {
+    // If customer-name isNotEqual Auto-ID, & isToday or not isToday
+    return customers
+        .where(
+          (c) =>
+              !c.name.contains(autoID) && (isSameDay ? c.isToday : !c.isToday),
+        )
+        .toList();
+  }
+
+  /// Filter
+  bool filterByAny(String filter) => {
+    name,
+    storeNumber,
+    customerId,
+    phone,
+    mobile,
+    email,
+    name,
+  }.contains(filter);
+
+  Customers copyWith({
+    String? id,
+    String? storeNumber,
+    String? customerId,
+    String? name,
+    CustomerType? type,
+    CustomerStatus? status,
+    String? industry,
+    CustomerCategory? category,
+    String? contactName,
+    String? phone,
+    String? mobile,
+    String? email,
+    String? website,
+    List<AddressInfo>? addresses,
+    String? salesRepId,
+    LeadSource? leadSource,
+    CustomerPriority? priority,
+    double? creditLimit,
+    String? paymentTerms,
+    String? currency,
+    String? taxId,
+    String? createdBy,
+    DateTime? createdAt,
+    String? updatedBy,
+    DateTime? updatedAt,
+  }) {
+    return Customers(
+      id: id ?? this.id,
+      storeNumber: storeNumber ?? this.storeNumber,
+      name: name ?? this.name,
+      customerId: customerId ?? this.customerId,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      industry: industry ?? this.industry,
+      category: category ?? this.category,
+      contactName: contactName ?? this.contactName,
+      phone: phone ?? this.phone,
+      mobile: mobile ?? this.mobile,
+      email: email ?? this.email,
+      website: website ?? this.website,
+      addresses: addresses ?? this.addresses,
+      salesRepId: salesRepId ?? this.salesRepId,
+      leadSource: leadSource ?? this.leadSource,
+      priority: priority ?? this.priority,
+      creditLimit: creditLimit ?? this.creditLimit,
+      paymentTerms: paymentTerms ?? this.paymentTerms,
+      currency: currency ?? this.currency,
+      taxId: taxId ?? this.taxId,
+      createdBy: createdBy ?? this.createdBy,
+      createdAt: createdAt ?? this.createdAt,
+      updatedBy: updatedBy ?? this.updatedBy,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  /// ToList for Customers [itemAsList]
+  List<String> get itemAsList => [
+    id,
+    customerId,
+    storeNumber,
+    name.toTitle,
+    phone,
+    mobile,
+    email,
+    createdBy.toTitle,
+    updatedBy.toTitle,
+  ];
+
+  static List<String> get dataTableHeader => const [
+    'ID',
+    'Customer ID',
+    'Store Number',
+    'Name',
+    'Phone',
+    'Mobile',
+    'Email',
+    'Created By',
+    'Updated By',
+  ];
+
+  @override
+  List<Object?> get props => [
+    id,
+    storeNumber,
+    name,
+    customerId,
+    type,
+    status,
+    industry,
+    category,
+    phone,
+    mobile,
+    email,
+    website,
+    addresses,
+    salesRepId,
+    leadSource,
+    priority,
+    creditLimit,
+    paymentTerms,
+    currency,
+    taxId,
+    createdBy,
+    createdAt,
+    updatedBy,
+    updatedAt,
+  ];
+}
+
+/*In a **CRM system**, the **Customer (or Account) model** stores all key information needed to manage a customer relationship. The exact fields vary by CRM (Salesforce, SAP CRM, Dynamics, Odoo, etc.), but most systems share common core fields.
+
+Below is a **standard, ERP/CRM-agnostic view**.
+
+---
+
+## 1. Basic / Identification Fields
+
+These identify the customer.
+
+* Customer ID / Account ID
+* Customer Name (Company name or Individual name)
+* Customer Type (Individual / Company)
+* Status (Lead, Prospect, Active, Inactive)
+* Industry
+* Customer Category / Segment
+
+---
+
+## 2. Contact Information Fields
+
+How the company communicates with the customer.
+
+* Primary Contact Name
+* Email Address
+* Phone Number
+* Mobile Number
+* Website
+* Fax (less common now)
+
+---
+
+## 3. Address Fields
+
+Often multiple addresses are supported.
+
+* Billing Address
+* Shipping Address
+* Street
+* City
+* State / Province
+* Postal Code
+* Country
+
+---
+
+## 4. Relationship & Sales Fields
+
+Used by sales and account managers.
+
+* Account Owner / Sales Representative
+* Lead Source (Referral, Website, Campaign, etc.)
+* Account Priority
+* Customer Lifetime Value (CLV)
+* Opportunity History (linked records)
+* Last Contact Date
+
+---
+
+## 5. Financial & ERP-Linked Fields
+
+These connect CRM with ERP functions.
+
+* Credit Limit
+* Payment Terms
+* Currency
+* Tax ID / VAT Number
+* Price List
+* Customer Group (Retail, Wholesale, Corporate)
+* Linked ERP Customer Number
+
+---
+
+## 6. Marketing Fields
+
+Used for campaigns and segmentation.
+
+* Marketing Preferences (Email/SMS consent)
+* Campaign Membership
+* Communication Preferences
+* Newsletter Subscription
+
+---
+
+## 7. Support & Service Fields
+
+Used for after-sales service.
+
+* Support Level / SLA
+* Open Cases / Tickets (linked)
+* Customer Satisfaction Score
+* Warranty Information
+
+---
+
+## 8. System & Audit Fields
+
+Automatically managed by the system.
+
+* Created Date
+* Last Modified Date
+* Created By
+* Last Updated By
+* Notes / Activity History
+
+---
+
+## Simple summary
+**Customer model =**
+> Identity + Contact info + Relationship data + Financial link + Support history
+
+---
+
+## If you want, I can:
+* Map these fields to a **specific CRM** (like Salesforce or SAP)
+* Draw a **simple data model diagram**
+* Explain the difference between **Lead vs Customer vs Account** in CRM systems
+*/

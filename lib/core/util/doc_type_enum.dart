@@ -9,6 +9,7 @@ enum DocType {
   rfq,
   prs,
   sale,
+  sQuote,
   delivery,
   invoice,
   customer,

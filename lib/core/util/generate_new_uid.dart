@@ -16,6 +16,7 @@ extension GenerateUID on DocType {
     DocType.rfq: requestPriceQuoteDBCollectionPath,
     DocType.prs: purchaseRequisitionDBCollectionPath,
     DocType.sale: salesDBCollectionPath,
+    DocType.sQuote: salesQuotationDBCollectionPath,
     DocType.delivery: deliveryDBCollectionPath,
     DocType.invoice: invoiceDBCollectionPath,
     DocType.customer: customersDBCollectionPath,

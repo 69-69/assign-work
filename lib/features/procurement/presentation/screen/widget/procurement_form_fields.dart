@@ -101,7 +101,6 @@ class ProcurementForm {
         );
       },
     ),
-
     FieldGroupConfig(
       key: 'unitOfMeasure',
       label: 'Unit of Measure (e.g. box, kg)',
@@ -112,6 +111,22 @@ class ProcurementForm {
           isDisabled: isDisabled,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'requiredDate',
+      label: 'Required Date',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return DatePicker(
+          inLabel: false,
+          label: 'Required Date',
+          initialDate: initialData,
+          selectedDate: (DateTime date) => onChanged(date.dateOnly),
+          restorationId: 'Required Date',
+          helperText: 'When a specific service is needed.',
         );
       },
     ),
@@ -225,6 +240,22 @@ class ProcurementForm {
           initialValue: initialData,
           isDisabled: isDisabled,
           onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'requiredDate',
+      label: 'Required Date',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return DatePicker(
+          inLabel: false,
+          label: 'Required Date',
+          initialDate: initialData,
+          selectedDate: (DateTime date) => onChanged(date.dateOnly),
+          restorationId: 'Required Date',
+          helperText: 'When a specific service is needed.',
         );
       },
     ),

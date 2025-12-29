@@ -193,7 +193,10 @@ extension InventoryTiles on dynamic {
         Key objects:
         Delivery Issues
         Picking Lists
-        Issue Notes*/
+        Issue Notes
+
+        NOTE: Good Issue databases do NOT duplicate full item master data.
+        They store references (foreign keys) + a small snapshot.*/
       {
         'label': 'Goods Issue',
         'icon': Icons.call_made,

@@ -14,6 +14,7 @@
   - Linking it with PO
   - RFQ Update Form
   - Sales Quotation (Sales & Distribution)
+  - CRM - Customer
   - ~~Linking it with RFQ~~
   - ~~Item Category~~
   - ~~Company Setup with address (issue: address not saving multiple data)~~
@@ -21,7 +22,7 @@
 ```shell
 git init
 git add .
-git commit -m "Working on Creating Sales Quotation (Sales & Distribution)"
+git commit -m "On SQuote"
 git branch -M main
 git push -u origin main
 ```

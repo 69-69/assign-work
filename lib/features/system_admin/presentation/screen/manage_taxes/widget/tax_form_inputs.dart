@@ -93,10 +93,33 @@ class TaxFormInputs {
       },
     ),
   ];
+
+  /// Updates the [list] with objects of type [T] from a list of maps.
+  /// Clears the list first to prevent duplication, then adds new objects.
+  /// [fromMap] converts each map entry into an object with the index as the ID.
+  static updateListFromData<T>(
+    List<T> list, {
+    required List<Map<String, dynamic>> map,
+    required T Function(Map<String, dynamic>, String) fromMap,
+  }) {
+    return list
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(
+        map
+            .asMap()
+            .entries
+            .map((e) => fromMap(e.value, '${e.key + 1}'))
+            .toList(),
+      );
+
+    /* _taxList
+        ..clear() // Clear previous entries to prevent duplication
+        ..addAll(data.map((e) => TaxFormInputs.toTax(e)));*/
+  }
 }
 
 /// TaxContexts: Auto Apply Tax On Dropdown [AutoApplyTaxOnDropdown]
-class AutoApplyTaxOnDropdown extends StatelessWidget {
+class AutoApplyTaxOnDropdown extends StatefulWidget {
   final Function(List<TaxContext>) onMultiChanged;
   final List<TaxContext>? initialValues;
 
@@ -107,39 +130,48 @@ class AutoApplyTaxOnDropdown extends StatelessWidget {
   });
 
   @override
+  State<AutoApplyTaxOnDropdown> createState() => _AutoApplyTaxOnDropdownState();
+}
+
+class _AutoApplyTaxOnDropdownState extends State<AutoApplyTaxOnDropdown> {
+  late List<TaxContext> _taxContexts;
+
+  @override
+  void initState() {
+    super.initState();
+    _taxContexts = widget.initialValues ?? TaxContext.values;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<TaxContext>(
+      isAutoApply: false,
       isMultiSelect: true,
-      selectedMultiItems: initialValues ?? TaxContext.values,
+      selectedMultiItems: _taxContexts,
       labelText: 'Auto apply tax on...',
-      asyncItems: (String filter, loadProps) async =>
-          await _loadTaxContexts(filter),
-      filterFn: (cxt, filter) => _filterTaxContexts(filter, cxt),
-      itemAsString: (TaxContext taxCxt) => taxCxt.getName.separateWord.toTitle,
-      onMultiChanged: (List<TaxContext> taxCts) => onMultiChanged.call(taxCts),
-      validatorMulti: (taxCts) =>
-          taxCts.isNullOrEmpty ? 'Select where to auto-apply tax' : null,
+      asyncItems: (String filter, loadProps) async => _loadTaxContexts(filter),
+      filterFn: _filterTaxContexts,
+      itemAsString: (TaxContext t) => t.getName.separateWord.toTitle,
+      onMultiChanged: (List<TaxContext> t) {
+        setState(() => _taxContexts = List.from(t));
+        widget.onMultiChanged.call(t); // notify parent
+      },
+      validatorMulti: (t) =>
+          t.isNullOrEmpty ? 'Select where to auto-apply tax' : null,
       helperText: 'Enter to search, select to apply',
     );
   }
 
   // Load auto apply tax on (tax contexts)
-  Future<List<TaxContext>> _loadTaxContexts(String filter) {
-    return Future.delayed(Duration.zero, () {
-      return TaxContext.values
-          .where((i) => i.getName.toLowerAll.contains(filter.toLowerAll))
-          .toList();
-    });
+  List<TaxContext> _loadTaxContexts(String filter) {
+    return TaxContext.values.where((i) => _find(i, filter)).toList();
   }
 
-  // Filter auto apply tax on (tax contexts)
-  bool _filterTaxContexts(String filter, TaxContext autoOn) {
-    final term = (filter.isEmpty && (initialValues?.isEmpty ?? true))
-        ? '' // Use empty string if no filter and initial values are empty
-        : filter.isEmpty
-        ? (initialValues?.join(' ') ?? '') // Join the list into a single string
-        : filter;
-    final matches = TaxContextHelper.isAutoAppliedTo(term);
-    return matches;
+  bool _filterTaxContexts(TaxContext autoOn, String filter) {
+    if (filter.isEmpty) return true; // Show all when nothing typed
+    return _find(autoOn, filter);
   }
+
+  bool _find(TaxContext t, String filter) =>
+      t.getName.toLowerAll.contains(filter.toLowerAll);
 }

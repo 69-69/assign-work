@@ -438,7 +438,6 @@ class RequestForQuote extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getAutoConvertRfq,
     '$prNumber -> $rfqNumber',
     getRFQStatus.toTitle,
     costCenterCode,
@@ -454,7 +453,6 @@ class RequestForQuote extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'Auto RFQ',
     'PR -> RFQ Number',
     'Status',
     'Cost Center',

@@ -51,14 +51,12 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   String? get _title => widget.title;
   bool get _showButton => widget.showButton;
   String? get _fullWidthKey => widget.fullWidthKey;
+  int? get _groupsLimit => widget.fieldGroupsLimit;
+  int get _fieldGroupsLength => _fieldGroups.length;
   List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
   Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
-  int get _fieldGroupsLength => _fieldGroups.length;
 
-  bool get _canAddMoreGroups {
-    final limit = widget.fieldGroupsLimit;
-    return limit == null || _fieldGroupsLength < (limit - 1);
-  }
+  bool _canAddMoreGroups = true;
 
   @override
   void initState() {
@@ -287,7 +285,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
             borderColor: addColor,
             tooltip: _canAddMoreGroups
                 ? 'Add more ${_title ?? 'field'} group'.toSentence
-                : '',
+                : 'Can\'t add',
             onPressed: _canAddMoreGroups ? _addTextField : _onLimitReached,
           ),
           if (_fieldGroupsLength > 1) ...{
@@ -311,13 +309,21 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     // Enforce limit strictly
     if (!_canAddMoreGroups) return;
 
-    setState(() => _fieldGroups.add(FieldGroup(_fieldsConfig)));
+    setState(() {
+      _fieldGroups.add(FieldGroup(_fieldsConfig));
+      // Check if we can add more groups: either by limit or by length
+      _canAddMoreGroups =
+          _groupsLimit == null || _fieldGroupsLength < _groupsLimit!;
+    });
     _notifyParent();
   }
 
   // Remove the last set of fields
   void _removeTextField() {
-    setState(() => _fieldGroups.removeLast());
+    setState(() {
+      _fieldGroups.removeLast();
+      _canAddMoreGroups = true;
+    });
     _notifyParent();
   }
 

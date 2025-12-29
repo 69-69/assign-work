@@ -1,7 +1,48 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
+
+class CRMFormInputs {
+  static Widget buildCustNumber(
+    BuildContext context, {
+    String count = '',
+    String what = 'Customer',
+    void Function()? onPressed,
+  }) => Align(
+    alignment: Alignment.topLeft,
+    child: FittedBox(
+      child: context.actionInfoButton(
+        'Refresh $what ID',
+        count: count,
+        isTotal: false,
+        onPressed: onPressed,
+        bgColor: kPrimaryColor,
+      ),
+    ),
+  );
+
+  /// Updates the [list] with objects of type [T] from a list of maps.
+  /// Clears the list first to prevent duplication, then adds new objects.
+  /// [fromMap] converts each map entry into an object with the index as the ID.
+  static updateListFromData<T>(
+    List<T> list, {
+    required List<Map<String, dynamic>> map,
+    required T Function(Map<String, dynamic>, String) fromMap,
+  }) {
+    return list
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(
+        map
+            .asMap()
+            .entries
+            .map((e) => fromMap(e.value, '${e.key + 1}'))
+            .toList(),
+      );
+  }
+}
 
 /// Phone & ltPhone TextField [PhoneAndAltPhoneInput]
 class PhoneAndAltPhoneInput extends StatelessWidget {

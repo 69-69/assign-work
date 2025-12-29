@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class FormGroupCard extends StatefulWidget {
   final String title;
   final String subTitle;
+  final bool isExpanded;
   final Color? bgColor;
   final Color? textColor;
   final List<Widget> children;
@@ -20,6 +21,7 @@ class FormGroupCard extends StatefulWidget {
     this.textColor,
     this.title = '',
     this.subTitle = '',
+    this.isExpanded = true,
     this.scrollDirection,
     required this.children,
     this.showCollapseButton = true,
@@ -38,6 +40,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
 
+  bool get _isExpanded => widget.isExpanded;
   String get _title => widget.title;
   String get _subTitle => widget.subTitle;
 
@@ -59,13 +62,13 @@ class _FormGroupCardState extends State<FormGroupCard> {
   void initState() {
     super.initState();
     // Initialize visibility map with the title as the key and true as the default visibility
-    cardVisibility = {_collapseKey: true};
+    cardVisibility = {_collapseKey: _isExpanded};
   }
 
   // Toggle visibility based on the card title
   void toggleCardVisibility(String title) {
     setState(() {
-      cardVisibility[title] = !(cardVisibility[title] ?? true);
+      cardVisibility[title] = !(cardVisibility[title] ?? _isExpanded);
     });
   }
 

@@ -291,7 +291,6 @@ class PurchaseRequisition extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getAutoCreatePr,
     prNumber,
     getPriority.toTitle,
     getPRStatus.toTitle,
@@ -309,7 +308,6 @@ class PurchaseRequisition extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store No.',
-    'Auto PR',
     'PR Number',
     'Priority',
     'Status',

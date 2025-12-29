@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 
 /// Search Customer to place an Order [SearchCustomer]
 class SearchCustomer extends StatefulWidget {
-  final bool isPOS;
+  final bool allowManualEntry;
   final String? initialValue;
   final Function(String, String) onChanged;
 
@@ -18,7 +18,7 @@ class SearchCustomer extends StatefulWidget {
     super.key,
     this.initialValue,
     required this.onChanged,
-    this.isPOS = false,
+    this.allowManualEntry = false,
   });
 
   @override
@@ -50,11 +50,12 @@ class _SearchCustomerState extends State<SearchCustomer> {
     return customers;
   }
 
-  get _isPOS => widget.isPOS;
+  get _allowManualEntry => widget.allowManualEntry;
 
   @override
   Widget build(BuildContext context) {
-    return _isNotFound && _isPOS
+    // If not found & allowManual = true, show manual entry field
+    return _isNotFound && _allowManualEntry
         ? _buildManualEntryField(context)
         : _buildDropdown(context);
   }
@@ -71,7 +72,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
           widget.onChanged(customer!.customerId, customer.name),
       validator: (customer) => customer == null ? 'Select customer' : null,
       onNoDataFound: () {
-        if (_isPOS) {
+        if (_allowManualEntry) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _handleNoDataFound(context),
           );
@@ -83,7 +84,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
   bool _filterCustomer(String filter, Customer customer) {
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = customer.filterByAny(term);
-    if ((!matches && filter.isNotEmpty) && _isPOS) _toggleManualEntry();
+    if ((!matches && filter.isNotEmpty) && _allowManualEntry)
+      _toggleManualEntry();
     return matches;
   }
 

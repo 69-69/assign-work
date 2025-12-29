@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -24,6 +25,10 @@ import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_re
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/widget/sq_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -67,48 +72,34 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   bool _autoConvertSO = true; // If approved, auto-convert SQ to SO
   bool _isSubmitting = false;
   String _customerId = '';
-  bool _useDefaultAddress = false;
 
-  /// Line Items & Additional Info
+  final List<String> _taxCodes = [];
   final List<LineItem> _lineItems = [];
-  final Map<String, dynamic> _buyerTerms = {};
+  final Map<String, dynamic> _validityDate = {};
+  final Map<String, dynamic> _currencyPricing = {};
+  final Map<String, dynamic> _supplierTerms = {};
   final List<SupplierLink> _supplierLinks = [];
-  final List<AddressInfo> _shippingAddress = [];
+  final List<AddressInfo> _addresses = [];
+
+  /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
+  TaxMode? _taxModeToApply;
+  late RequestForQuote _cachedUpdatedSQ;
 
   bool get isFormValid => _formKey.currentState!.validate();
 
+  Employee? get _employee => context.employee;
+
   /// Current employee info
-  String get _employeeId => context.employee!.employeeId;
-
-  String get _employeeName => context.employee!.fullName;
-
-  String get _employeeStore => context.employee!.storeNumber;
+  String get _employeeId => _employee!.employeeId;
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
-  void _generateRFQNumber() async {
-    await DocType.sale.getShortUID(
+  void _generateSQNumber() async {
+    await DocType.sQuote.getShortUID(
       onChanged: (s) {
         if (mounted) setState(() => _quoteNumber = s);
       },
     );
-  }
-
-  Future<void> _getDefaultShippingAddress() async {
-    if (!_useDefaultAddress) {
-      setState(() => _shippingAddress.clear());
-      return;
-    }
-
-    final shippingAddress = await SQFormInputs.getCompanyAddress();
-
-    if (!mounted || shippingAddress == null) return;
-
-    setState(() {
-      _shippingAddress
-        ..clear()
-        ..add(shippingAddress);
-    });
   }
 
   /// Construct RequestForQuote object
@@ -116,22 +107,23 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     /// [prNumber] FOREIGN KEY (purchase requisition) else its new RFQ (Not generated from PR)
     prNumber: 'N/A',
     rfqNumber: _quoteNumber,
-    storeNumber: _employeeStore,
+    storeNumber: _employee!.storeNumber,
     autoConvertRfq: _autoConvertSO,
     title: _rfqTitle,
     status: WorkflowStatusHelper.fromString(_sqStatus ?? ''),
     supplierLinks: List.from(_supplierLinks),
     currencyCode: _currencyCode,
-    notes: _buyerTerms['notes'],
+    notes: _validityDate['notes'],
     lineItems: List.from(_lineItems),
-    shippingAddress: _shippingAddress.first,
-    deadline: toDateTimeFn(_buyerTerms['deadline']),
-    expectedDate: toDateTimeFn(_buyerTerms['expectedDate']),
-    buyerContactPersonId: _buyerTerms['buyerContactPerson'],
+    taxMode: _taxModeToApply ?? TaxMode.headerTax,
+    shippingAddress: _addresses.first,
+    deadline: toDateTimeFn(_validityDate['deadline']),
+    expectedDate: toDateTimeFn(_validityDate['expectedDate']),
+    buyerContactPersonId: _validityDate['buyerContactPerson'],
     requestedBy: _salesRepId,
     costCenterCode: _costCenterCode,
     departmentCode: _customerId,
-    createdBy: _employeeName,
+    createdBy: _employee!.fullName,
     history: [
       AuditLog(
         action: AuditAction.created,
@@ -154,7 +146,9 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         return;
       }
 
-      _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
+      _cachedUpdatedSQ = _sanitizeTaxCodes(_newRFQ);
+
+      _bloc.add(AddProcurement<RequestForQuote>(data: _cachedUpdatedSQ));
 
       context.showAlertOverlay('RFQ successfully created');
 
@@ -164,6 +158,33 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         await _rebuildForm(); // rebuild fresh form
       }
     }
+  }
+
+  /// Ensures tax codes are correctly applied to RFQ line items
+  /// based on the selected tax mode [_sanitizeTaxCodes].
+  ///
+  /// - For Header Tax:
+  ///   Tax codes are selected once at the header level but must be
+  ///   propagated to every line item before sending data to the server.
+  ///   This guarantees backend consistency and correct tax calculation.
+  ///
+  /// - For Per-Line Tax:
+  ///   Line items already carry their own tax codes, so no modification
+  ///   is required.
+  RequestForQuote _sanitizeTaxCodes(RequestForQuote quote) {
+    // If Header Tax is selected, apply the same tax codes
+    // to all line items to ensure backend compatibility.
+    if (quote.taxMode.isHeaderTax) {
+      // Apply tax codes to each line item in the quote object
+      final updatedItems = quote.lineItems
+          .map((e) => e.copyWith(taxCodes: _taxCodes))
+          .toList();
+      // Return a new RFQ object with updated line items
+      return quote.copyWith(lineItems: updatedItems);
+    }
+    // For Per-Line Tax mode, return the RFQ unchanged since
+    // tax codes are managed individually per line item.
+    return quote;
   }
 
   Future<void> _rebuildForm() async {
@@ -196,23 +217,22 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _costCenterCode = '';
       _customerId = '';
       _lineItems.clear();
-      _shippingAddress.clear();
+      _addresses.clear();
       _sqStatus = null;
     });
 
     // Reset dynamic fields
     _lineItems.clear();
     _supplierLinks.clear();
-    _shippingAddress.clear();
-    _buyerTerms.clear();
-    _useDefaultAddress = true;
+    _addresses.clear();
+    _validityDate.clear();
 
-    _generateRFQNumber();
+    _generateSQNumber();
   }
 
   @override
   void initState() {
-    _generateRFQNumber();
+    _generateSQNumber();
     super.initState();
   }
 
@@ -229,42 +249,54 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        SQFormInputs.buildRFQNumber(context, _quoteNumber, _generateRFQNumber),
+        SQFormInputs.buildSQNumber(context, _quoteNumber, _generateSQNumber),
+
         FormGroupCard(
           title: 'Quotation Overview',
+          children: [_buildAutoCreateAndStatus()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: 'Customer & Sales',
+          children: [_buildSalesChannel(), _buildRequesterAndDepartment()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: 'Currency & Pricing',
           children: [
-            _buildAutoCreateAndStatus(),
-            const HorizontalDivider(space: 0.4),
-            _buildTitleField(),
-            _buildRequesterAndDepartment(),
+            _buildCurrencyPricing(),
+            HorizontalDivider(space: 0.4),
+            _buildTaxModeSelector(),
           ],
         ),
 
         FormGroupCard(
-          title: 'Cost Center',
-          children: [_buildCurrencyAndCostCenter()],
-        ),
-
-        FormGroupCard(
+          isExpanded: false,
           title: '${_lineItemType.toSentence} Line Items',
-          subTitle:
-              '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
+          subTitle: '\nYou can add more ${_lineItemType}s to the Quotation.',
           children: [_buildLineItems()],
         ),
 
         FormGroupCard(
-          title: 'Invite Suppliers',
-          subTitle:
-              '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
-          children: [_buildSuppliers()],
+          isExpanded: false,
+          title: 'Dates & Validity',
+          children: [_buildDateValidity()],
         ),
 
-        FormGroupCard(title: 'Buyer\'s Terms', children: [_buildBuyerTerms()]),
-
         FormGroupCard(
+          isExpanded: false,
           title: 'Addresses',
           subTitle: '\nCustomer shipping & billing address.',
           children: [_buildShippingAddress()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: 'Terms & Conditions',
+          subTitle: '\nPayment & warranty terms for the Quotation.',
+          children: [_buildSupplierTerms()],
         ),
 
         context.confirmableActionButton(
@@ -282,17 +314,11 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      fullWidthKey: 'description',
+      showButton: true,
       fieldsConfig: SQFormInputs.fields(
         _lineItemType ?? '',
-        keysToExclude: [
-          'discount',
-          'unitPrice',
-          'serviceRate',
-          'limitAmount',
-          'limitQuantity',
-          'taxCodes',
-        ],
+        isHidden: _taxModeToApply != TaxMode.perLineTax,
+        keysToExclude: ['limitAmount', 'limitQuantity'],
       ),
       initialData: [{}],
       onChanged: (List<Map<String, dynamic>> data) {
@@ -311,17 +337,16 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   // Addresses (e.g., Buyer Shipping Address)
   DynamicTextFields _buildShippingAddress() {
     return DynamicTextFields(
-      key: Key('default_${_useDefaultAddress.hashCode}'),
-      initialData: _shippingAddress.isNotEmpty
-          ? [_shippingAddress.first.toMap()]
-          : [{}], // empty form
+      initialData: [{}],
+      showButton: true,
+      fieldGroupsLimit: 2,
       fieldsConfig: SQFormInputs.shippingAddressFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
         // Update the address list
         SQFormInputs.updateListFromData<AddressInfo>(
-          _shippingAddress,
+          _addresses,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
         );
@@ -329,57 +354,52 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     );
   }
 
-  DynamicTextFields _buildBuyerTerms() {
+  DynamicTextFields _buildCurrencyPricing() {
     return DynamicTextFields(
       initialData: [{}],
-      fullWidthKey: 'buyerContactPerson',
-      fieldsConfig: SQFormInputs.buyerTermsFields,
+      fullWidthKey: 'currencyPricing',
+      fieldsConfig: SQFormInputs.currencyPricingFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        _buyerTerms
+        _currencyPricing
           ..clear()
           ..addAll(data.first);
       },
     );
   }
 
-  DynamicTextFields _buildSuppliers() {
+  DynamicTextFields _buildDateValidity() {
     return DynamicTextFields(
       initialData: [{}],
-      showButton: true,
-      fullWidthKey: 'supplierLinks',
-      fieldsConfig: SQFormInputs.suppliersFields,
+      fieldsConfig: SQFormInputs.validityDateFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        final supplierLinks = data.map((e) {
-          final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
-          // Merge the status from the top-level map
-          copy['status'] = e['status'];
-          return copy;
-        }).toList();
-
-        // Update the RFQSupplier list
-        SQFormInputs.updateListFromData<SupplierLink>(
-          _supplierLinks,
-          map: supplierLinks,
-          fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
-        );
+        _validityDate
+          ..clear()
+          ..addAll(data.first);
       },
     );
   }
 
-  CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
-    return CurrencyAndCostCenterDepartment(
-      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+  DynamicTextFields _buildSupplierTerms() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fullWidthKey: 'supplierTerms',
+      fieldsConfig: SQFormInputs.supplierTermsFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _supplierTerms
+          ..clear()
+          ..addAll(data.first);
+      },
     );
   }
 
-  AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
-    return AutoCreateAndRFQStatus(
+  AutoCreateAndSQStatus _buildAutoCreateAndStatus() {
+    return AutoCreateAndSQStatus(
       onStatusChanged: (s) => setState(() => _sqStatus = s),
       isSelected: _autoConvertSO,
       onAutoConvertChanged: (bool? v) {
@@ -390,30 +410,46 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   RequestedByAndDepartments _buildRequesterAndDepartment() {
     return RequestedByAndDepartments(
-      onRequestedChanged: (id, code, name) =>
-          setState(() => _salesRepId = name),
-      onDepartmentChange: (id, code, name) =>
-          setState(() => _customerId = code),
+      onSalesRepChanged: (id, code, name) => setState(() => _salesRepId = name),
+      onCustomerChange: (id, name) => setState(() => _customerId = id),
     );
   }
 
-  DynamicTextFields _buildTitleField() {
-    return DynamicTextFields(
-      initialData: [{}],
-      fieldsConfig: [
-        FieldGroupConfig(
-          key: 'title',
-          label: 'Title or subject',
-          type: TextInputType.text,
-          minLines: 1,
-        ),
-      ],
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+  SalesChannelChoice _buildSalesChannel() {
+    return SalesChannelChoice(
+      onChannelChange: (s) => setState(() => _customerId = s),
+    );
+  }
 
-        _rfqTitle = data.first['title'];
+  Widget _buildTaxModeSelector() {
+    return TaxModeSelector(
+      initialValues: [],
+      onRadioChanged: _onSelectTaxMode,
+      defaultTaxMode: _taxModeToApply,
+      onCheckChanged: (List<Map<String, dynamic>> data) {
+        // if (isFormValid) setState(() {});
+
+        List<String> taxCodes = data
+            .where((e) => e['selected'] == true)
+            .map((m) => Tax.fromMap(m['data']).code)
+            .toList();
+
+        _taxCodes
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(taxCodes);
       },
     );
+  }
+
+  // -------------------------
+  // Tax, Print & History Logic
+  // -------------------------
+  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
+    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
+    final selectedKey = selected?['key'];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
+    });
   }
 
   // -------------------------
@@ -469,5 +505,39 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       empId: _employeeId,
     );
     _bloc.add(up);
+  }
+
+  DynamicTextFields _buildSuppliers() {
+    return DynamicTextFields(
+      initialData: [{}],
+      showButton: true,
+      fullWidthKey: 'supplierLinks',
+      fieldsConfig: SQFormInputs.suppliersFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        final supplierLinks = data.map((e) {
+          final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
+          // Merge the status from the top-level map
+          copy['status'] = e['status'];
+          return copy;
+        }).toList();
+
+        // Update the RFQSupplier list
+        SQFormInputs.updateListFromData<SupplierLink>(
+          _supplierLinks,
+          map: supplierLinks,
+          fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
+        );
+      },
+    );
+  }
+
+  CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
+    return CurrencyAndCostCenterDepartment(
+      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
+      onCostCenterChange: (id, code, name) =>
+          setState(() => _costCenterCode = code),
+    );
   }
 }
