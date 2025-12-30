@@ -67,7 +67,7 @@ class POSOrderBloc extends POSBloc<POSOrder> {
   Future<void> _updateItemQty(String itemId, int orderQuantity) async {
     try {
       // Construct a reference to the document of the product in Firestore
-      final docRef = _firestore.collection(itemsDBCollectionPath).doc(itemId);
+      final docRef = _firestore.collection(itemsDBColPath).doc(itemId);
 
       // Retrieve the current data of the product document from Firestore
       final docSnapshot = await docRef.get();

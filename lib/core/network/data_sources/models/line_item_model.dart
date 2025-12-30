@@ -53,7 +53,7 @@ abstract class LineItem {
   final LineItemType type;
   final String description;
 
-  /// [leadTimeDays] How long it take to get this line item?
+  /// [leadTimeDays] How long it take to get/fulfill this line item?
   /// Used in PR, SO, SQ
   final double leadTimeDays;
   final ItemCategory category;

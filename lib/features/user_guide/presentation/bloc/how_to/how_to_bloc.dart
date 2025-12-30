@@ -7,7 +7,7 @@ class HowToBloc extends GuideBloc<UserGuide> {
   HowToBloc({required super.firestore})
     : super(
         collectionType: CollectionType.global,
-        collectionPath: userGuideDBCollectionPath,
+        collectionPath: userGuideDBColPath,
         fromFirestore: (data, id) => UserGuide.fromMap(data, id: id),
         toFirestore: (guide) => guide.toMap(),
         toCache: (guide) => guide.toCache(),

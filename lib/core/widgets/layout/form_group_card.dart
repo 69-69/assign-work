@@ -17,19 +17,18 @@ class FormGroupCard extends StatefulWidget {
 
   const FormGroupCard({
     super.key,
+    this.formKey,
     this.bgColor,
     this.textColor,
     this.title = '',
     this.subTitle = '',
-    this.isExpanded = true,
-    this.scrollDirection,
-    required this.children,
-    this.showCollapseButton = true,
     this.contentMargin,
-
-    this.formKey,
     this.crossAlignment,
     this.contentPadding,
+    this.scrollDirection,
+    this.isExpanded = true,
+    required this.children,
+    this.showCollapseButton = true,
   });
 
   @override
@@ -41,20 +40,30 @@ class _FormGroupCardState extends State<FormGroupCard> {
   late Map<String, bool> cardVisibility;
 
   bool get _isExpanded => widget.isExpanded;
+
   String get _title => widget.title;
+
   String get _subTitle => widget.subTitle;
 
   // Generate a unique key for each card based on the title
   String get _collapseKey => _title.isEmpty ? '' : _title.replaceAll(' ', '_');
+
   List<Widget> get _children => widget.children;
+
   Color? get _textColor => widget.textColor;
+
   Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+
   Axis get _scrollDirection => widget.scrollDirection ?? Axis.horizontal;
+
   bool get _showCollapseButton => widget.showCollapseButton;
+
   EdgeInsetsGeometry get _contentPadding =>
       widget.contentPadding ?? const EdgeInsets.all(10);
+
   CrossAxisAlignment get _crossAlignment =>
       widget.crossAlignment ?? CrossAxisAlignment.start;
+
   EdgeInsetsGeometry get _contentMargin =>
       widget.contentMargin ?? const EdgeInsets.symmetric(vertical: 8);
 
@@ -72,6 +81,21 @@ class _FormGroupCardState extends State<FormGroupCard> {
     });
   }
 
+  // 1340826115
+  (String?, String?) get _getTitleInfo {
+    if (_title.isEmpty) return ('', '');
+
+    // Match leading number (without dot) and capture the remaining title
+    final match = RegExp(r'^(\d+)\.\s*(.+)$').firstMatch(_title);
+
+    if (match == null) return ('', _title);
+
+    final prefix = match.group(1); // "3."
+    final suffix = match.group(2); // "Title"
+
+    return (prefix, suffix);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -83,12 +107,17 @@ class _FormGroupCardState extends State<FormGroupCard> {
         child: Column(
           crossAxisAlignment: _crossAlignment,
           children: [
-            if (_title.isNotEmpty) ...{_buildHeader(context)},
+            if (_title.isNotEmpty) ...{
+              _buildHeader(context),
+              const SizedBox(height: 10.0),
+            },
             Visibility(
               visible: cardVisibility[_collapseKey] ?? true,
-              maintainState: true, // KEEP the state of children
+              maintainState: true,
+              // KEEP the state of children
               maintainAnimation: false,
-              maintainSize: false, // Prevent layout jump
+              maintainSize: false,
+              // Prevent layout jump
               child: Wrap(
                 runSpacing: 14.0,
                 direction: _scrollDirection,
@@ -101,49 +130,68 @@ class _FormGroupCardState extends State<FormGroupCard> {
     );
   }
 
-  Row _buildHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              text: _title,
-              children: _subTitle.isEmpty
-                  ? null
-                  : [
-                      TextSpan(
-                        text: _subTitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.normal,
-                          color: _textColor ?? context.onSecondaryContainer,
-                        ),
-                      ),
-                    ],
-              style: context.textTheme.titleMedium?.copyWith(
-                color: _textColor ?? context.onPrimaryContainer.toAlpha(0.8),
+  Widget _buildHeader(BuildContext context) {
+    final (count, title) = _getTitleInfo;
+
+    return InkWell(
+      onTap: () => toggleCardVisibility(_collapseKey),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: EdgeInsets.all(3),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: _buildTitle(context, count, title)),
+
+            // Only show the collapse button if showCollapseButton is true
+            if (_showCollapseButton) ...{_buildExpandIcon()},
+          ],
+        ),
+      ),
+    );
+  }
+
+  RichText _buildTitle(BuildContext context, String? count, String? title) {
+    return RichText(
+      text: TextSpan(
+        style: context.textTheme.titleMedium?.copyWith(
+          color: _textColor ?? context.onPrimaryContainer.toAlpha(0.8),
+        ),
+        children: [
+          if (count != null && count.isNotEmpty) ...{
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              baseline: TextBaseline.alphabetic,
+              child: Badge.count(
+                count: int.parse(count),
+                backgroundColor: context.onPrimaryContainer.toAlpha(0.2),
               ),
             ),
-          ),
-        ),
-
-        // Only show the collapse button if showCollapseButton is true
-        if (_showCollapseButton) ...{
-          IconButton(
-            tooltip: (cardVisibility[_collapseKey] ?? true)
-                ? 'Collapse'
-                : 'Expand',
-            onPressed: () => toggleCardVisibility(_collapseKey),
-            icon: Icon(
-              cardVisibility[_collapseKey] ?? true
-                  ? Icons.keyboard_arrow_up
-                  : Icons.keyboard_arrow_down,
+          },
+          TextSpan(text: ' $title'),
+          if (_subTitle.isNotEmpty) ...{
+            TextSpan(
+              text: _subTitle,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.normal,
+                color: _textColor ?? context.onSecondaryContainer,
+              ),
             ),
-            hoverColor: kLightBlueColor.toAlpha(0.3),
-          ),
-        },
-      ],
+          },
+        ],
+      ),
+    );
+  }
+
+  Tooltip _buildExpandIcon() {
+    return Tooltip(
+      message: (cardVisibility[_collapseKey] ?? true) ? 'Collapse' : 'Expand',
+      child: Icon(
+        cardVisibility[_collapseKey] ?? true
+            ? Icons.keyboard_arrow_up
+            : Icons.keyboard_arrow_down,
+      ),
     );
   }
 }

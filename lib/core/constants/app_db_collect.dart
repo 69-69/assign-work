@@ -1,5 +1,4 @@
 /// HIVE BOX CACHE NAMES
-///
 // Base Directory path for app-level cache files related to ERP assignment
 const appCacheDirectory = 'loc_os_third_as_dir';
 
@@ -18,118 +17,170 @@ const printoutSetupCache = 'setup_print_out_cache_db';
 // Logs app errors or crash-related data for debugging
 const appErrorLogsCache = 'app_error_logs_cache_db';
 
-/// FIREBASE DATABASE COLLECTION NAMES & HIVE BOX TABLE NAMES
+/// FIREBASE DATABASE COLLECTION PATH NAMES & HIVE BOX CACHE NAMES
 
 // ---------------------------
-// 🔐 Authentication Collections
+// 🔐 Authentication Collections Path
 // ---------------------------
 
-/// Firebase collection for workspace user authentication records
-const workspaceAccDBCollectionPath = 'workspace_auth_db';
+// workspace user authentication records
+const workspaceAccDBColPath = 'workspace_auth_db';
 // Logs workspace signIn/signOut sessions for tracking and analytics
-const workspaceSessionLogsCollectionPath = 'workspace_session_logs';
+const workspaceSessionLogsColPath = 'workspace_session_logs';
 
 // ---------------------------
-// 💰 Subscription Licenses Collections
+// 💰 Subscription Licenses Collections Path
 // ---------------------------
 
-/// Firebase collection for Subscription Licenses
-const subscriptionDBCollectionPath = 'subscription_licenses_db';
+// Subscription Licenses
+const subscriptionDBColPath = 'subscription_licenses_db';
 
 // ---------------------------
-// 🔐 Roles Collections
+// 🔐 Roles Collections Path
 // ---------------------------
 
-/// Firebase collection for employee's roles and permissions
-const rolesDBCollectionPath = 'roles_db';
+// Employee's roles and permissions
+const rolesDBColPath = 'roles_db';
 
 // ---------------------------
-// 📦 Inventory Management System (IMS) Collections
+// 📦 Inventory Management System (IMS) Collections Path
 // ---------------------------
 
-/// Firebase collection for invoices
-const invoiceDBCollectionPath = 'invoice_inventory_db';
-
-/// Firebase collection for items
-const itemsDBCollectionPath = 'items_inventory_db';
-
-/// Firebase collection for sales records
-const salesDBCollectionPath = 'sales_inventory_db';
-
-/// Firebase collection for delivery records
-const deliveryDBCollectionPath = 'delivery_inventory_db';
-
-/// Firebase collection for standard sales orders
-const ordersDBCollectionPath = 'so_orders_inventory_db';
-
-/// Firebase collection for miscellaneous/custom orders
-const miscOrdersDBCollectionPath = 'misc_orders_inventory_db';
-
-/// Firebase collection for purchase orders
-const purchaseOrdersDBCollectionPath = 'purchase_orders_inventory_db';
-
-/// Firebase collection for purchase requisition
-const purchaseRequisitionDBCollectionPath = 'purchase_requisition_inventory_db';
-
-/// Firebase collection for Request for Quotation (Procurement: Supplier → Company)
-const requestPriceQuoteDBCollectionPath = 'request_price_quote_inventory_db';
-
-/// Firebase collection for Quotation (Sales / Distribution: Company → Customer)
-const salesQuotationDBCollectionPath = 'sales_quotation_inventory_db';
+// Invoices
+const invoiceDBColPath = 'invoice_inventory_db';
+// Items
+const itemsDBColPath = 'items_inventory_db';
+// Sales records
+const salesDBColPath = 'sales_inventory_db';
+// Delivery records
+const deliveryDBColPath = 'delivery_inventory_db';
+// Standard sales orders
+const ordersDBColPath = 'so_orders_inventory_db';
+// Miscellaneous/custom orders
+const miscOrdersDBColPath = 'misc_orders_inventory_db';
+// Purchase orders
+const purchaseOrdersDBColPath = 'purchase_orders_inventory_db';
+// Purchase requisition
+const purchaseRequisitionDBColPath = 'purchase_requisition_inventory_db';
+// Request for Quotation (Procurement: Supplier → Company)
+const requestPriceQuoteDBColPath = 'request_price_quote_inventory_db';
+// Quotation (Sales / Distribution: Company → Customer)
+const salesQuotationDBColPath = 'sales_quotation_inventory_db';
+const salesShippingDelDBColPath = 'sales_shipping_delivery_inventory_db';
 
 // ---------------------------
-// 💬 Live Customer Support Collections
+// 💬 Live Customer Support Collections Path
 // ---------------------------
 
-/// Firebase collection for Workspaces live customer chat support
-const liveChatSupportDBCollectionPath = 'live_chat_support_db';
+// Workspaces live customer chat support
+const liveChatSupportDBColPath = 'live_chat_support_db';
 
 // ---------------------------
-// ⚙️ Setup & Configuration Collections
+// ⚙️ Setup & Configuration Collections Path
 // ---------------------------
 
-/// Firebase Collection to associate agents with their clients
-const agentClientsDBCollection = 'agents_clients_mapping_db';
-
-/// Firebase collection for user guides/manuals and documentation
-const userGuideDBCollectionPath = 'user_guide_db';
-
-/// Firebase collection for employee accounts
-const employeesDBCollectionPath = 'employee_account_db';
-// for tracking employees auth sessions
-const employeeSessionLogsCollectionPath = 'employee_session_logs';
-
-/// Firebase collection for company departments
-const departmentsDBCollectionPath = 'departments_db';
-
-/// Firebase collection for company store locations/branches (Multi-Locations Feature)
-const storeLocationsDBCollectionPath = 'store_locations_db';
-
-/// Firebase collection for company tax rates
-const taxesDBCollectionPath = 'taxes_db';
-
-/// Firebase collection for general company information setup: logo, name, address, etc.
-const companyInfoDBCollectionPath = 'company_info_db';
-
-/// Firebase collection for item/product suppliers
-const supplierDBCollectionPath = 'item_suppliers_db';
-
-/// Firebase collection for item/product categories
-const categoryDBCollectionPath = 'item_categories_db';
+// Associate agents with their clients
+const agentClientsDBColPath = 'agents_clients_mapping_db';
+// User guides/manuals and documentation
+const userGuideDBColPath = 'user_guide_db';
+// Employee accounts
+const employeesDBColPath = 'employee_account_db';
+// Tracking employees auth sessions
+const employeeSessionLogsColPath = 'employee_session_logs';
+// Company internal departments
+const departmentsDBColPath = 'departments_db';
+// Company store locations/branches (Multi-Locations Feature)
+const storeLocationsDBColPath = 'store_locations_db';
+// company tax rates
+const taxesDBColPath = 'taxes_db';
+// Company setup: logo, name, address, etc.
+const companyInfoDBColPath = 'company_info_db';
+// Item/product suppliers
+const supplierDBColPath = 'item_suppliers_db';
+// Item/product categories
+const categoryDBColPath = 'item_categories_db';
 
 // ---------------------------
-// 🧾 POS (Point of Sale) System
+// 🧾 POS (Point of Sale) System Path
 // ---------------------------
 
-/// Firebase collection for POS sales records
+// POS sales records
 const posSalesDBCollectionPath = 'pos_sales_db';
-
-/// Firebase collection for POS orders
+// POS orders
 const posOrdersDBCollectionPath = 'pos_orders_db';
 
 // ---------------------------
-// 👥 Customer Relationship Management (CRM)
+// 👥 Customer Relationship Management (CRM) Path
 // ---------------------------
 
-/// Firebase collection for customer records
+// Customer records
 const customersDBCollectionPath = 'customers_crm_db';
+
+// Define filenames to skip while zipping(backup)
+final skipFilesBeforeZip = {
+  '$userAuthCache.hive',
+  '$userAuthCache.lock',
+  '$deviceInfoCache.hive',
+  '$deviceInfoCache.lock',
+  '$rolesDBColPath.hive',
+  '$rolesDBColPath.lock',
+  '$workspaceAccDBColPath.hive',
+  '$workspaceAccDBColPath.lock',
+  '$subscriptionDBColPath.hive',
+  '$subscriptionDBColPath.lock',
+};
+
+// 🧾 ERP / Business Data Cache
+const erpCacheBoxes = [
+  // Core setup & master data
+  employeesDBColPath,
+  rolesDBColPath,
+  employeeSessionLogsColPath,
+  storeLocationsDBColPath,
+  companyInfoDBColPath,
+  departmentsDBColPath,
+  supplierDBColPath,
+  categoryDBColPath,
+  taxesDBColPath,
+
+  // CRM
+  customersDBCollectionPath,
+
+  // Inventory / Sales / Procurement
+  itemsDBColPath,
+  invoiceDBColPath,
+  salesDBColPath,
+  deliveryDBColPath,
+  ordersDBColPath,
+  miscOrdersDBColPath,
+  purchaseOrdersDBColPath,
+  purchaseRequisitionDBColPath,
+  requestPriceQuoteDBColPath,
+  salesQuotationDBColPath,
+
+  // POS
+  posSalesDBCollectionPath,
+  posOrdersDBCollectionPath,
+
+  // Support & guides
+  userGuideDBColPath,
+  liveChatSupportDBColPath,
+
+  // Agent / client mapping
+  agentClientsDBColPath,
+];
+
+// ⚙️ System / App-Level Cache
+const systemCacheBoxes = [
+  // deviceInfoCache,
+  // printoutSetupCache,
+  backupFileNamesCache,
+  appErrorLogsCache,
+];
+
+// 🔐 Session / Auth Cache
+const sessionCacheBoxes = [
+  // userAuthCache,
+  workspaceAccDBColPath,
+  workspaceSessionLogsColPath,
+];

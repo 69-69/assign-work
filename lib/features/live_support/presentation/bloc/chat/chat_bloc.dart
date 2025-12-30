@@ -7,7 +7,7 @@ class ChatBloc extends LiveChatBloc<LiveChatMessage> {
   ChatBloc({required super.firestore})
     : super(
         collectionType: CollectionType.chats,
-        collectionPath: liveChatSupportDBCollectionPath,
+        collectionPath: liveChatSupportDBColPath,
         fromFirestore: (data, id) => LiveChatMessage.fromMap(data, id: id),
         toFirestore: (chat) => chat.toMap(),
         toCache: (chat) => chat.toCache(),
@@ -18,7 +18,7 @@ class ChatOverviewBloc extends LiveChatBloc<LiveChatOverview> {
   ChatOverviewBloc({required super.firestore})
     : super(
         collectionType: CollectionType.chats,
-        collectionPath: liveChatSupportDBCollectionPath,
+        collectionPath: liveChatSupportDBColPath,
         fromFirestore: (data, id) => LiveChatOverview.fromMap(data),
         toFirestore: (chat) => chat.toMap(),
         toCache: (chat) => chat.toCache(),

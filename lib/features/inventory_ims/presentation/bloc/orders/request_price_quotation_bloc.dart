@@ -5,7 +5,7 @@ import 'package:assign_erp/features/procurement/data/model/request_for_quote_mod
 class RequestForQuoteBloc extends InventoryBloc<RequestForQuote> {
   RequestForQuoteBloc({required super.firestore})
     : super(
-        collectionPath: requestPriceQuoteDBCollectionPath,
+        collectionPath: requestPriceQuoteDBColPath,
         fromFirestore: (data, id) => RequestForQuote.fromMap(data, docId: id),
         toFirestore: (req) => req.toMap(),
         toCache: (req) => req.toCache(),

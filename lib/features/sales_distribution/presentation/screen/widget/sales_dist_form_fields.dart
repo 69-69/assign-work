@@ -117,8 +117,10 @@ class SalesDistFormFields {
     FieldGroupConfig(
       key: 'leadTimeDays',
       label: 'Lead time (days)',
+      helperText: 'How long it takes to fulfill this item',
       type: TextInputType.number,
       isDisabled: isDisabled,
+      validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'requiredDate',
@@ -236,8 +238,10 @@ class SalesDistFormFields {
     FieldGroupConfig(
       key: 'leadTimeDays',
       label: 'Lead time (days)',
+      helperText: 'How long it takes to fulfill this item',
       type: TextInputType.number,
       isDisabled: isDisabled,
+      validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'requiredDate',

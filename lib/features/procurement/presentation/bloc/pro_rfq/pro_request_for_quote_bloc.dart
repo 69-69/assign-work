@@ -5,7 +5,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 class ProRequestForQuoteBloc extends ProcurementBloc<RequestForQuote> {
   ProRequestForQuoteBloc({required super.firestore})
     : super(
-        collectionPath: requestPriceQuoteDBCollectionPath,
+        collectionPath: requestPriceQuoteDBColPath,
         fromFirestore: (data, id) => RequestForQuote.fromMap(data, docId: id),
         toFirestore: (rfq) => rfq.toMap(),
         toCache: (rfq) => rfq.toCache(),

@@ -21,6 +21,7 @@ class DatePicker extends StatefulWidget {
     this.helperText,
     this.isButton = false,
     this.inLabel = true,
+    this.showAlert = false,
   });
 
   final String? label;
@@ -28,6 +29,7 @@ class DatePicker extends StatefulWidget {
 
   /// [inLabel] If TRUE `helperText` is applied to the label, else to the input field.
   final bool inLabel;
+  final bool showAlert;
   final String? helperText;
   final String? initialDate;
   final String? restorationId;
@@ -104,11 +106,13 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
         // Return DateTime
         widget.selectedDate(_selectedDate.value);
 
-        context.showAlertOverlay(
-          'Selected: ${_selectedDate.value.day}/'
-          '${_selectedDate.value.month}/'
-          '${_selectedDate.value.year}',
-        );
+        if (widget.showAlert) {
+          context.showAlertOverlay(
+            'Selected: ${_selectedDate.value.day}/'
+            '${_selectedDate.value.month}/'
+            '${_selectedDate.value.year}',
+          );
+        }
       });
     }
   }
@@ -177,8 +181,10 @@ class TimePicker extends StatefulWidget {
     required this.selectedTime,
     required this.validator,
     this.helperText,
+    this.showAlert = false,
   });
 
+  final bool showAlert;
   final String? serverTime;
   final String? helperText;
   final Function(String) selectedTime;
@@ -207,7 +213,9 @@ class _TimePickerState extends State<TimePicker> {
         // Return input value
         widget.selectedTime(picked.format(context));
 
-        context.showAlertOverlay('Selected: ${picked.format(context)}');
+        if (widget.showAlert) {
+          context.showAlertOverlay('Selected: ${picked.format(context)}');
+        }
       });
     }
   }

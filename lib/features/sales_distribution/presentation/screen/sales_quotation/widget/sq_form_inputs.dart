@@ -15,13 +15,13 @@ import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/customer_crm/data/data_sources/remote/get_customers.dart';
 import 'package:assign_erp/features/customer_crm/presentation/screen/customers/widget/search_customer.dart';
-import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
-import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
-import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/search_purchase_requisitions.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
+import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/widget/sales_dist_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_company.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
@@ -44,15 +44,15 @@ class SQFormInputs {
   );
 
   /// Apply taxes to RFQ
-  static Future<RequestForQuote> applyTaxesToQuote(RequestForQuote rfq) async {
+  static Future<SalesQuotation> applyTaxesToQuote(SalesQuotation rfq) async {
     final taxMap = await GetTaxes.loadAllTaxRates();
     return rfq.computeTaxAmounts(taxMap);
   }
 
-  /// Get Supplier by ID
-  static Future getSupplier(String supplierId) async {
-    final supplier = await GetSuppliers.bySupplierId(supplierId);
-    return supplier.isEmpty ? null : supplier;
+  /// Get Customer by ID
+  static Future getCustomer(String custId) async {
+    final customer = await GetAllCustomers.byCustomerId(custId);
+    return customer.isEmpty ? null : customer;
   }
 
   /// Get Company Info and Addresses
@@ -70,7 +70,7 @@ class SQFormInputs {
     void Function()? onPressed,
   ) => SalesDistFormFields.buildNumber(
     context,
-    what: 'RFQ',
+    what: 'quote',
     count: count,
     onPressed: onPressed,
   );
@@ -153,7 +153,7 @@ class SQFormInputs {
           label: 'Valid from',
           restorationId: 'Valid from',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'When Sales Quotation validity start',
+          helperText: 'Start date of the sales quotation',
         );
       },
     ),
@@ -169,7 +169,7 @@ class SQFormInputs {
           label: 'Valid until',
           restorationId: 'Valid until',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'When Sales Quotation expires',
+          helperText: 'Expiry date of the sales quotation',
         );
       },
     ),
@@ -236,22 +236,22 @@ class SQFormInputs {
       SalesDistFormFields.suppliersFields();
 
   /// Addresses (e.g., Buyer Shipping Address)
-  static List<FieldGroupConfig> get shippingAddressFields =>
+  static List<FieldGroupConfig> get addressesFields =>
       SalesDistFormFields.addressFields();
 
-  static AuditProcurement<RequestForQuote> updateHistory({
+  static AuditSalesDistribution<SalesQuotation> updateHistory({
     required String empId,
     required AuditAction action,
-    required RequestForQuote rfq,
+    required SalesQuotation quote,
   }) {
-    final up = AuditProcurement<RequestForQuote>(
-      documentId: rfq.id,
+    final up = AuditSalesDistribution<SalesQuotation>(
+      documentId: quote.id,
       log: AuditLog.logScaffold(
-        oldLogs: rfq.history,
+        oldLogs: quote.history,
         newLog: AuditLog(
           action: action,
           actionBy: empId,
-          statusAfterAction: rfq.getRFQStatus,
+          statusAfterAction: quote.getSQStatus,
         ),
       ),
     );
@@ -533,15 +533,15 @@ class DeliveryAddressAndNotes extends StatelessWidget {
   }
 }
 
-/// [RequestedByAndDepartments]
-class RequestedByAndDepartments extends StatelessWidget {
+/// [SalesRepAndCustomer]
+class SalesRepAndCustomer extends StatelessWidget {
   final bool isDisabled;
   final String? initialCustomer;
   final String? initialSalesRep;
   final void Function(String, String, String) onSalesRepChanged;
   final void Function(String, String) onCustomerChange;
 
-  const RequestedByAndDepartments({
+  const SalesRepAndCustomer({
     super.key,
     this.isDisabled = false,
     this.initialCustomer,
@@ -635,7 +635,7 @@ class _SQStatusDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return StaticDropdown<String>(
       key: key,
-      label: 'SQ Status',
+      label: 'Quote Status',
       initialValue: initialValue,
       items: WorkflowStatusHelper.toStringList(type: WorkflowType.sq),
       getDisplayText: (status) => status,

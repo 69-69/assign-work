@@ -12,7 +12,7 @@ class LiveSupportService {
     String workspaceId,
   ) {
     return _firestore
-        .collection(liveChatSupportDBCollectionPath) // Top-level collection
+        .collection(liveChatSupportDBColPath) // Top-level collection
         .doc(workspaceId)
         .collection('chats'); // Nested under each workspace
   }
@@ -78,7 +78,7 @@ class LiveSupportService {
     );
 
     final chatDoc = _firestore
-        .collection(liveChatSupportDBCollectionPath) // Top-level collection
+        .collection(liveChatSupportDBColPath) // Top-level collection
         .doc(workspaceId)
         .collection('chats')
         .doc(chatId);

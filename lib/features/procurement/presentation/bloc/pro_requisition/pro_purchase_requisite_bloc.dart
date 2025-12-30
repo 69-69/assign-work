@@ -5,7 +5,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 class ProPurchaseRequisiteBloc extends ProcurementBloc<PurchaseRequisition> {
   ProPurchaseRequisiteBloc({required super.firestore})
     : super(
-        collectionPath: purchaseRequisitionDBCollectionPath,
+        collectionPath: purchaseRequisitionDBColPath,
         fromFirestore: (data, id) => PurchaseRequisition.fromMap(data, id: id),
         toFirestore: (pr) => pr.toMap(),
         toCache: (pr) => pr.toCache(),

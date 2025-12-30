@@ -55,7 +55,7 @@ class AuthRepository extends FirestoreRepository {
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
        super(
          firestore: firestore,
-         collectionRef: firestore.collection(workspaceAccDBCollectionPath),
+         collectionRef: firestore.collection(workspaceAccDBColPath),
        );
 
   /// A temporary variable to hold new-user's Workspace ID & Agent ID
@@ -283,7 +283,7 @@ class AuthRepository extends FirestoreRepository {
         workspace.id,
         'sign-in',
         name: workspace.name,
-        colPath: workspaceSessionLogsCollectionPath,
+        colPath: workspaceSessionLogsColPath,
       );
 
       _controller.add(AuthStatus.workspaceAuthenticated);
@@ -573,7 +573,7 @@ class AuthRepository extends FirestoreRepository {
       /// NOTE: workspaceId is used as agentId
       await _genericCollection(
         collectionType: CollectionType.clients,
-        collectionPath: agentClientsDBCollection,
+        collectionPath: agentClientsDBColPath,
       ).doc(clientWorkspaceId).set({
         'commission': [],
         'clientWorkspaceId': clientWorkspaceId,
@@ -727,7 +727,7 @@ class AuthRepository extends FirestoreRepository {
     final docRef = _genericCollection(
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
-      collectionPath: rolesDBCollectionPath,
+      collectionPath: rolesDBColPath,
     ).doc();
 
     final defaultPerm = businessOwnerDefaultPermissions(id: docRef.id);
@@ -753,7 +753,7 @@ class AuthRepository extends FirestoreRepository {
     final docRef = _genericCollection(
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
-      collectionPath: departmentsDBCollectionPath,
+      collectionPath: departmentsDBColPath,
     ).doc();
 
     final defaultDepart = businessOwnerDefaultDepartment(id: docRef.id);
@@ -785,7 +785,7 @@ class AuthRepository extends FirestoreRepository {
     final docRef = _genericCollection(
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
-      collectionPath: storeLocationsDBCollectionPath,
+      collectionPath: storeLocationsDBColPath,
     ).doc();
 
     final defaultBranch = businessOwnerDefaultStoreLocation(
@@ -816,7 +816,7 @@ class AuthRepository extends FirestoreRepository {
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
     );
-    final cPath = collectionPath ?? employeesDBCollectionPath;
+    final cPath = collectionPath ?? employeesDBColPath;
 
     return fireHelper.getCollectionRef(collectionType: collectionType, cPath);
   }
@@ -981,7 +981,7 @@ class AuthRepository extends FirestoreRepository {
       name: data['fullName'],
       workspaceId: workId,
       workspaceRole: workRole,
-      colPath: employeeSessionLogsCollectionPath,
+      colPath: employeeSessionLogsColPath,
     );
 
     return Success(data: doc);
@@ -1138,7 +1138,7 @@ class AuthRepository extends FirestoreRepository {
       name: cacheEmp?.fullName,
       workspaceId: workId,
       workspaceRole: workRole,
-      colPath: employeeSessionLogsCollectionPath,
+      colPath: employeeSessionLogsColPath,
     );
   }
 

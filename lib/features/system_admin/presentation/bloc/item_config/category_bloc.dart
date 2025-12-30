@@ -5,7 +5,7 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 class CategoryBloc extends SetupBloc<Category> {
   CategoryBloc({required super.firestore})
     : super(
-        collectionPath: categoryDBCollectionPath,
+        collectionPath: categoryDBColPath,
         fromFirestore: (data, id) => Category.fromMap(data, id: id),
         toFirestore: (info) => info.toMap(),
         toCache: (info) => info.toCache(),

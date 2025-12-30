@@ -12,7 +12,7 @@ class AllTenantsBloc extends TenantBloc<Workspace> {
     : _firestore = firestore,
       super(
         collectionType: CollectionType.global,
-        collectionPath: workspaceAccDBCollectionPath,
+        collectionPath: workspaceAccDBColPath,
         fromFirestore: (data, id) => Workspace.fromMap(data, id: id),
         toFirestore: (workspace) => workspace.toMap(),
         toCache: (workspace) => workspace.toCache(),

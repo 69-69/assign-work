@@ -7,7 +7,7 @@ class SupplierBloc extends ProcurementBloc<Supplier> {
   SupplierBloc({required super.firestore})
     : super(
         collectionType: CollectionType.workspace,
-        collectionPath: supplierDBCollectionPath,
+        collectionPath: supplierDBColPath,
         fromFirestore: (data, id) => Supplier.fromMap(data, id: id),
         toFirestore: (info) => info.toMap(),
         toCache: (info) => info.toCache(),

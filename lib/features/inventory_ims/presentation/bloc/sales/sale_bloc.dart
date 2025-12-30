@@ -4,10 +4,10 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 
 class SaleBloc extends InventoryBloc<Sale> {
   SaleBloc({required super.firestore})
-      : super(
-          collectionPath: salesDBCollectionPath,
-          fromFirestore: (data, id) => Sale.fromMap(data, id),
-          toFirestore: (sale) => sale.toMap(),
-          toCache: (sale) => sale.toCache(),
-        );
+    : super(
+        collectionPath: salesDBColPath,
+        fromFirestore: (data, id) => Sale.fromMap(data, id),
+        toFirestore: (sale) => sale.toMap(),
+        toCache: (sale) => sale.toCache(),
+      );
 }

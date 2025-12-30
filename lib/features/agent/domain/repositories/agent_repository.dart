@@ -215,7 +215,7 @@ class AgentRepository extends FirestoreRepository {
 
     final collectionRef = fireHelper.getCollectionRef(
       collectionType: CollectionType.global,
-      workspaceAccDBCollectionPath,
+      workspaceAccDBColPath,
     );
 
     final repo = await collectionRef

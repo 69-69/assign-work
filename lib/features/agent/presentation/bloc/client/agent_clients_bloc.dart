@@ -6,7 +6,7 @@ import 'package:assign_erp/features/agent/presentation/bloc/agent_bloc.dart';
 class AgentClientBloc extends AgentBloc<AgentClient> {
   AgentClientBloc({required super.firestore})
     : super(
-        collectionPath: agentClientsDBCollection,
+        collectionPath: agentClientsDBColPath,
         fromFirestore: (data, id) => AgentClient.fromMap(data, id: id),
         toFirestore: (client) => client.toMap(),
         toCache: (client) => client.toCache(),

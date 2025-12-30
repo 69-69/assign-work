@@ -75,7 +75,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   String? get _lineItemType =>
       widget.lineItemType ?? _initialPR?.lineItems.first.getTypeLabel;
   final _formKey = GlobalKey<FormState>();
-  bool _isRebuilding = false;
+  Key _formResetKey = UniqueKey();
 
   // Basic fields
   String? _rfqStatus;
@@ -185,35 +185,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _confirmPrintoutDialog();
     } finally {
       if (mounted && isFormValid) {
-        await _rebuildForm(); // rebuild fresh form
+        _resetForm(); // rebuild fresh form
       }
     }
   }
 
-  Future<void> _rebuildForm() async {
-    _resetForm();
-    if (_isRebuilding) return;
-    _isRebuilding = true;
-    // 1️⃣ Close current bottom sheet and WAIT
-    await Navigator.of(context).maybePop();
-
-    // 2️⃣ Wait one frame (critical)
-    await Future.delayed(Duration.zero);
-
-    // 3️⃣ Open fresh form
-    if (mounted) {
-      await context.openCreateRFQForm(
-        data: widget.initialPRData,
-        type: widget.lineItemType,
-      );
-    }
-    _isRebuilding = false;
-  }
-
   void _resetForm() {
-    _formKey.currentState?.reset();
-
     setState(() {
+      _formKey.currentState?.reset();
+      _formResetKey = UniqueKey(); // 💥 full rebuild
+
       _isSubmitting = false;
       _rfqTitle = '';
       _autoCreateRfq = false;
@@ -225,14 +206,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _lineItems.clear();
       _shippingAddress.clear();
       _rfqStatus = null;
+      _buyerTerms.clear();
+      _useDefaultAddress = false;
+      _lineItems.clear();
+      _supplierLinks.clear();
+      _shippingAddress.clear();
+      _buyerTerms.clear();
+      _useDefaultAddress = false;
     });
-
-    // Reset dynamic fields
-    _lineItems.clear();
-    _supplierLinks.clear();
-    _shippingAddress.clear();
-    _buyerTerms.clear();
-    _useDefaultAddress = false;
 
     _generateRFQNumber();
   }
@@ -250,7 +231,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
     );
   }
 
@@ -260,7 +241,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       children: <Widget>[
         RFQFormInputs.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
         FormGroupCard(
-          title: 'Quotation Overview',
+          title: '1. Quotation Overview',
           children: [
             _buildAutoCreateAndStatus(),
             const HorizontalDivider(space: 0.4),
@@ -271,13 +252,13 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: 'Cost Center',
+          title: '2. Cost Center',
           children: [_buildCurrencyAndCostCenter()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '${_lineItemType.toSentence} Line Items',
+          title: '3. ${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
           children: [_buildLineItems()],
@@ -285,7 +266,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: 'Invite Suppliers',
+          title: '4. Invite Suppliers',
           subTitle:
               '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
           children: [_buildSuppliers()],
@@ -293,13 +274,13 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: 'Buyer\'s Terms',
+          title: '5. Buyer\'s Terms',
           children: [_buildBuyerTerms()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: 'Shipping Address',
+          title: '6. Shipping Address',
           children: [
             SizedBox(
               width: context.dynamicWidth(0.48),

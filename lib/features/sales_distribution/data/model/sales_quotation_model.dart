@@ -21,7 +21,7 @@ class SalesQuotation extends Equatable {
   final WorkflowStatus status;
   // If true, system is allowed to auto-convert this SQ to Sales order once customer
   // acceptance is confirmed AND a conversion action is explicitly invoked.
-  final bool autoCreateSq;
+  final bool autoConvertSq;
 
   /// 2. Customer & Sales Context
   final String customerId;
@@ -66,7 +66,7 @@ class SalesQuotation extends Equatable {
     this.id = '',
     required this.storeNumber,
     required this.quoteNumber,
-    this.autoCreateSq = false,
+    this.autoConvertSq = false,
     this.status = WorkflowStatus.draft,
 
     required this.customerId,
@@ -107,7 +107,7 @@ class SalesQuotation extends Equatable {
       storeNumber: map['storeNumber'] ?? '',
       salesRepId: map['salesRepId'] ?? '',
       quoteNumber: map['quoteNumber'] ?? '',
-      autoCreateSq: map['autoCreateSo'] ?? false,
+      autoConvertSq: map['autoCreateSo'] ?? false,
       customerId: map['customerId'] ?? '',
       customerName: map['customerName'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
@@ -139,7 +139,7 @@ class SalesQuotation extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'quoteNumber': quoteNumber,
-    'autoCreateSo': autoCreateSq,
+    'autoCreateSo': autoConvertSq,
     'customerId': customerId,
     'customerName': customerName,
     'status': getSQStatus,
@@ -302,7 +302,7 @@ class SalesQuotation extends Equatable {
     SalesChannel? salesChannel,
     double? shippingAmount,
     String? storeNumber,
-    bool? autoCreateSq,
+    bool? autoConvertSq,
     String? salesRepId,
     String? quoteNumber,
     String? customerId,
@@ -333,7 +333,7 @@ class SalesQuotation extends Equatable {
       salesChannel: salesChannel ?? this.salesChannel,
       salesRepId: salesRepId ?? this.salesRepId,
       storeNumber: storeNumber ?? this.storeNumber,
-      autoCreateSq: autoCreateSq ?? this.autoCreateSq,
+      autoConvertSq: autoConvertSq ?? this.autoConvertSq,
       quoteNumber: quoteNumber ?? this.quoteNumber,
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,

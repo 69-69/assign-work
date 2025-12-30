@@ -7,7 +7,7 @@ class SubscriptionBloc extends TenantBloc<Subscription> {
   SubscriptionBloc({required super.firestore})
     : super(
         collectionType: CollectionType.global,
-        collectionPath: subscriptionDBCollectionPath,
+        collectionPath: subscriptionDBColPath,
         fromFirestore: (data, id) => Subscription.fromMap(data, id: id),
         toFirestore: (sub) => sub.toMap(),
         toCache: (sub) => sub.toCache(),

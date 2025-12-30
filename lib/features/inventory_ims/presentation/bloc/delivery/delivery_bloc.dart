@@ -11,7 +11,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
   DeliveryBloc({required super.firestore})
     : _firestore = firestore,
       super(
-        collectionPath: deliveryDBCollectionPath,
+        collectionPath: deliveryDBColPath,
         fromFirestore: (data, id) => Delivery.fromMap(data, id),
         toFirestore: (delivery) => delivery.toMap(),
         toCache: (delivery) => delivery.toCache(),
@@ -31,7 +31,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
   Future<void> _updateOrderAndItemAndRecordSales(String orderNumber) async {
     try {
       // Get a reference to the 'orders' collection in Firestore
-      final orderColRef = _firestore.collection(ordersDBCollectionPath);
+      final orderColRef = _firestore.collection(ordersDBColPath);
 
       // Query Firestore for documents where the 'orderNumber' matches the provided order number
       final querySnapshot = await orderColRef
@@ -76,9 +76,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
       int orderQuantity = order['quantity'];
 
       // Construct a reference to the document of the product in Firestore
-      final docRef = _firestore
-          .collection(itemsDBCollectionPath)
-          .doc(order['itemId']);
+      final docRef = _firestore.collection(itemsDBColPath).doc(order['itemId']);
 
       // Retrieve the current data of the product document from Firestore
       final docSnapshot = await docRef.get();
@@ -134,7 +132,7 @@ class DeliveryBloc extends InventoryBloc<Delivery> {
       final saleData = newSale.toMap();
 
       // Get a reference to the 'sales' collection in Firestore
-      final colRef = _firestore.collection(salesDBCollectionPath);
+      final colRef = _firestore.collection(salesDBColPath);
 
       // Query Firestore to check if a sale with the same invoice number already exists
       final querySnap = await colRef

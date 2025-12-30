@@ -11,9 +11,10 @@ class BottomSheetScaffold extends StatelessWidget {
   final String title;
   final String? tooltip;
   final Widget body;
-  final double? initialSize;
   final String? btnText;
+  final bool confirmOnClose; // Confirm on accidental close of bottom sheet
   final String? subtitle;
+  final double? initialSize;
   final Color? subTitleColor;
 
   /// [onPrint] For printing out purposes only.
@@ -22,6 +23,7 @@ class BottomSheetScaffold extends StatelessWidget {
   const BottomSheetScaffold({
     super.key,
     this.isDetails = false,
+    this.confirmOnClose = true,
     this.initialSize,
     required this.title,
     required this.body,
@@ -37,6 +39,7 @@ class BottomSheetScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = isDetails ? 0.92 : 0.98;
     return CustomDraggableBottomSheet(
+      confirmOnClose: confirmOnClose,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       initialChildSize: initialSize ?? size,
       maxChildSize: size,

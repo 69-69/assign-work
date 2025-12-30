@@ -10,9 +10,12 @@ import 'package:assign_erp/core/widgets/layout/column_row_builder.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
+import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/refresh_entire_app.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/restore_backup_preference_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class UserDeviceSpec extends StatefulWidget {
   const UserDeviceSpec({super.key});
@@ -85,9 +88,10 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
         HorizontalDivider(thickness: 8.0),
         _buildCopyAppDataDirectoryPath(context),
         _buildCopyLocalBackupPath(context),
-        _buildDeleteDeviceInfo(context),
-        _buildDeleteAppData(context),
-        _buildRestoreAppDataLocally(context),
+        _ClearSessionCache(),
+        _DeleteDeviceInfo(),
+        _DeleteAppData(),
+        _RestoreAppDataLocally(),
       ],
     );
   }
@@ -148,9 +152,47 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     );
   }
+}
 
-  // Widget to reset user device info
-  Widget _buildDeleteDeviceInfo(BuildContext context) {
+// Delete user device info
+class _ClearSessionCache extends StatelessWidget {
+  const _ClearSessionCache();
+
+  @override
+  Widget build(BuildContext context) {
+    return context.optCardBuilder(
+      icon: Icons.delete,
+      buttonLabel: 'Delete Session',
+      borderColor: kPrimaryAccentColor,
+      label: 'Clear Session Info',
+      desc: 'Clears all locally cached user\'s session information.',
+      onPressed: () async {
+        final isConfirmed = await context.confirmAction<bool>(
+          const Text('Do you want to proceed with clearing the session?'),
+          onAcceptLabel: "Clear Session",
+          onRejectLabel: "Cancel",
+        );
+
+        if (isConfirmed) {
+          final AuthCacheService authCache = AuthCacheService();
+          authCache.deleteWorkspace();
+          authCache.deleteEmployee();
+          if (context.mounted) {
+            context.read<AuthBloc>().add(AuthSignOutRequested());
+          }
+        }
+      },
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    );
+  }
+}
+
+// Delete user device info
+class _DeleteDeviceInfo extends StatelessWidget {
+  const _DeleteDeviceInfo();
+
+  @override
+  Widget build(BuildContext context) {
     return context.optCardBuilder(
       icon: Icons.lock_reset,
       buttonLabel: 'Delete Info',
@@ -174,8 +216,14 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     );
   }
+}
 
-  Widget _buildDeleteAppData(BuildContext context) {
+// Factory Reset app data (clear all local storage)
+class _DeleteAppData extends StatelessWidget {
+  const _DeleteAppData();
+
+  @override
+  Widget build(BuildContext context) {
     return context.optCardBuilder(
       icon: Icons.reset_tv,
       buttonLabel: 'Factory Reset',
@@ -199,9 +247,14 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
     );
   }
+}
 
-  // Widget to locally restore app data from previous backups
-  Widget _buildRestoreAppDataLocally(BuildContext context) {
+// Locally restore app data from previous backups
+class _RestoreAppDataLocally extends StatelessWidget {
+  const _RestoreAppDataLocally();
+
+  @override
+  Widget build(BuildContext context) {
     return context.optCardBuilder(
       label: 'Restore Data',
       borderColor: kSuccessColor,

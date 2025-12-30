@@ -5,7 +5,7 @@ import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_d
 class SalesQuotationBloc extends SalesDistributionBloc<SalesQuotation> {
   SalesQuotationBloc({required super.firestore})
     : super(
-        collectionPath: salesQuotationDBCollectionPath,
+        collectionPath: salesQuotationDBColPath,
         fromFirestore: (data, id) => SalesQuotation.fromMap(data, docId: id),
         toFirestore: (quote) => quote.toMap(),
         toCache: (quote) => quote.toCache(),

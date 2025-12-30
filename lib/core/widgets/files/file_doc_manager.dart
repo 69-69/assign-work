@@ -66,19 +66,7 @@ class FileDocManager {
     final inputDir = (await getLocalBackupDir()).dirObj;
 
     // Define filenames to skip while zipping(backup)
-    final skipFiles = {
-      '$userAuthCache.hive',
-      '$userAuthCache.lock',
-      '$deviceInfoCache.hive',
-      '$deviceInfoCache.lock',
-      '$rolesDBCollectionPath.hive',
-      '$rolesDBCollectionPath.lock',
-      '$workspaceAccDBCollectionPath.hive',
-      '$workspaceAccDBCollectionPath.lock',
-      '$subscriptionDBCollectionPath.hive',
-      '$subscriptionDBCollectionPath.lock',
-      ...skipFileNames,
-    };
+    final skipFiles = {...skipFilesBeforeZip, ...skipFileNames};
 
     // Add all files in the directory to the archive
     for (final entity in inputDir.listSync(recursive: true)) {

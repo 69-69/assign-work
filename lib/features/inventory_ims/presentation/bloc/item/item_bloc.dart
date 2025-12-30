@@ -5,7 +5,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 class ItemBloc extends InventoryBloc<Item> {
   ItemBloc({required super.firestore})
     : super(
-        collectionPath: itemsDBCollectionPath,
+        collectionPath: itemsDBColPath,
         fromFirestore: (data, id) => Item.fromMap(data, id),
         toFirestore: (product) => product.toMap(),
         toCache: (product) => product.toCache(),

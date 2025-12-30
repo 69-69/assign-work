@@ -5,7 +5,7 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 class TaxBloc extends SetupBloc<Tax> {
   TaxBloc({required super.firestore})
     : super(
-        collectionPath: taxesDBCollectionPath,
+        collectionPath: taxesDBColPath,
         fromFirestore: (data, id) => Tax.fromMap(data, id: id),
         toFirestore: (tax) => tax.toMap(),
         toCache: (tax) => tax.toCache(),

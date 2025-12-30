@@ -8,21 +8,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 extension GenerateUID on DocType {
   static final _dbCollectionPaths = {
-    DocType.work: workspaceAccDBCollectionPath,
-    DocType.item: itemsDBCollectionPath,
-    DocType.order: ordersDBCollectionPath,
-    DocType.purchase: purchaseOrdersDBCollectionPath,
-    DocType.misc: miscOrdersDBCollectionPath,
-    DocType.rfq: requestPriceQuoteDBCollectionPath,
-    DocType.prs: purchaseRequisitionDBCollectionPath,
-    DocType.sale: salesDBCollectionPath,
-    DocType.sQuote: salesQuotationDBCollectionPath,
-    DocType.delivery: deliveryDBCollectionPath,
-    DocType.invoice: invoiceDBCollectionPath,
+    DocType.work: workspaceAccDBColPath,
+    DocType.item: itemsDBColPath,
+    DocType.order: ordersDBColPath,
+    DocType.purchase: purchaseOrdersDBColPath,
+    DocType.misc: miscOrdersDBColPath,
+    DocType.rfq: requestPriceQuoteDBColPath,
+    DocType.prs: purchaseRequisitionDBColPath,
+    DocType.sale: salesDBColPath,
+    DocType.sQuote: salesQuotationDBColPath,
+    DocType.delivery: deliveryDBColPath,
+    DocType.invoice: invoiceDBColPath,
     DocType.customer: customersDBCollectionPath,
     DocType.pOrder: posOrdersDBCollectionPath,
     DocType.pSale: posSalesDBCollectionPath,
-    DocType.employee: employeesDBCollectionPath,
+    DocType.employee: employeesDBColPath,
   };
 
   String get _dbCollectionPath => _dbCollectionPaths[this] ?? 'unknownPath';

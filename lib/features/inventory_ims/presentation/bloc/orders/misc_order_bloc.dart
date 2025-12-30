@@ -5,7 +5,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bl
 class MiscOrderBloc extends InventoryBloc<MiscOrder> {
   MiscOrderBloc({required super.firestore})
     : super(
-        collectionPath: purchaseOrdersDBCollectionPath,
+        collectionPath: purchaseOrdersDBColPath,
         fromFirestore: (data, id) => MiscOrder.fromMap(data, id),
         toFirestore: (misc) => misc.toMap(),
         toCache: (misc) => misc.toCache(),

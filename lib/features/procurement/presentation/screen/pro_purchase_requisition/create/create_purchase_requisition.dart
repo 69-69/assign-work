@@ -178,7 +178,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: _buildBody(),
     );
-  }
+  } // 1866-638-7668 - kay
 
   Column _buildBody() {
     return Column(
@@ -188,7 +188,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
         FormGroupCard(
           isExpanded: true,
-          title: 'Requisition Overview',
+          title: '1. Requisition Overview',
           children: [
             _buildRequesterAndDepartment(),
             _buildPriorityAndPRStatus(),
@@ -196,13 +196,13 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         ),
         FormGroupCard(
           isExpanded: false,
-          title: 'Cost Center & Auto RFQ',
+          title: '2. Cost Center & Auto RFQ',
           children: [_buildAutoCreateAndCostCenter()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '${_lineItemType.toSentence} Line Items',
+          title: '3. ${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
           children: [_buildLineItems()],
@@ -210,12 +210,12 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: 'Request & Expected Dates',
+          title: '4. Request & Expected Dates',
           children: [_buildDates()],
         ),
         FormGroupCard(
           isExpanded: false,
-          title: 'PR Justification',
+          title: '6. PR Justification',
           children: [_buildJustification()],
         ),
 

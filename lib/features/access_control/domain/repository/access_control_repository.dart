@@ -16,7 +16,7 @@ class AccessControlRepository {
     final noData = LoadResult<String, String>(meta: 'unknown', data: {});
 
     final doc = await _genericCollection(
-      subscriptionDBCollectionPath,
+      subscriptionDBColPath,
       collectionType: CollectionType.global,
     ).doc(subscriptionId).get();
 
@@ -57,7 +57,7 @@ class AccessControlRepository {
     }
 
     final doc = await _genericCollection(
-      rolesDBCollectionPath,
+      rolesDBColPath,
       workspaceId: workspaceId,
       workspaceRole: workspaceRole,
     ).doc(roleId).get();

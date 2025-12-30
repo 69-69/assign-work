@@ -10,7 +10,7 @@ class OrderBloc extends InventoryBloc<Orders> {
   OrderBloc({required super.firestore})
     : _firestore = firestore,
       super(
-        collectionPath: ordersDBCollectionPath,
+        collectionPath: ordersDBColPath,
         fromFirestore: (data, id) => Orders.fromMap(data, id),
         toFirestore: (so) => so.toMap(),
         toCache: (so) => so.toCache(),
@@ -34,7 +34,7 @@ class OrderBloc extends InventoryBloc<Orders> {
     final toDelivery = fromDelivery.toMap();
 
     // Adds the new delivery information to Firestore
-    await _firestore.collection(deliveryDBCollectionPath).add(toDelivery);
+    await _firestore.collection(deliveryDBColPath).add(toDelivery);
 
     // Triggers an event to update the state or UI with the new order data
     add(GetInventories<Orders>());

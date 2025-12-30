@@ -22,7 +22,7 @@
 ```shell
 git init
 git add .
-git commit -m "On SQuote"
+git commit -m "Done: Create Sales Quote"
 git branch -M main
 git push -u origin main
 ```

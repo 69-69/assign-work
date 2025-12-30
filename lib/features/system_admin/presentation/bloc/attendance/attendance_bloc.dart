@@ -5,7 +5,7 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 class AttendanceBloc extends SetupBloc<Attendance> {
   AttendanceBloc({required super.firestore})
     : super(
-        collectionPath: employeeSessionLogsCollectionPath,
+        collectionPath: employeeSessionLogsColPath,
         fromFirestore: (data, id) => Attendance.fromMap(data, id: id),
         toFirestore: (log) => log.toMap(),
         toCache: (log) => log.toCache(),

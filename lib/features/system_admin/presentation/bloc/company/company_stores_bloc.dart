@@ -5,7 +5,7 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 class CompanyStoresBloc extends SetupBloc<CompanyStores> {
   CompanyStoresBloc({required super.firestore})
     : super(
-        collectionPath: storeLocationsDBCollectionPath,
+        collectionPath: storeLocationsDBColPath,
         fromFirestore: (data, id) => CompanyStores.fromMap(data, id: id),
         toFirestore: (store) => store.toMap(),
         toCache: (store) => store.toCache(),

@@ -113,10 +113,12 @@ class CustomDraggableBottomSheet extends StatelessWidget {
   final EdgeInsets? padding;
   final bool isScrollable;
   final Color? sheetBgColor;
+  final bool confirmOnClose; // Confirm on accidental close of bottom sheet
 
   const CustomDraggableBottomSheet({
     super.key,
     required this.child,
+    this.confirmOnClose = true,
     this.onPress,
     this.padding,
     this.isScrollable = true,
@@ -150,14 +152,13 @@ class CustomDraggableBottomSheet extends StatelessWidget {
   }
 
   Widget makeDismissible(BuildContext context, {required Widget child}) {
-    return _buildWillPopScope(
-      context,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onPress ?? () => Navigator.of(context).pop(),
-        child: GestureDetector(onTap: () {}, child: child),
-      ),
+    final body = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onPress ?? () => Navigator.of(context).pop(),
+      child: GestureDetector(onTap: () {}, child: child),
     );
+
+    return confirmOnClose ? _buildWillPopScope(context, child: body) : body;
   }
 
   PopScope<Object> _buildWillPopScope(
