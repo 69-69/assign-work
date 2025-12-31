@@ -16,6 +16,7 @@ class SubscriptionOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subscriptions = subs.map((sub) => Feature.fromMap(sub)).toList();
+
     return Padding(
       padding: EdgeInsets.all(16.0),
       child: Column(
@@ -29,7 +30,7 @@ class SubscriptionOverview extends StatelessWidget {
           Text(
             'Subscription Licenses Overview',
             style: context.textTheme.titleMedium?.copyWith(
-              color: kDarkTextColor,
+              color: context.outlineColor,
             ),
             textScaler: TextScaler.linear(context.textScaleFactor),
           ),

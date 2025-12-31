@@ -15,9 +15,12 @@ class CustomTabModel {
 
 class CustomTab extends StatefulWidget {
   // final List<Map<String, dynamic>> tabs;
+  /// [tabs] TabBarView tabs/navigation bar
   final List<CustomTabModel> tabs;
   final TabController? controller;
   final double indicatorWeight;
+
+  /// [children] TabBarView contents
   final List<Widget> children;
   final bool isScrollable;
   final Color? bgColor;
@@ -55,6 +58,7 @@ class CustomTab extends StatefulWidget {
 class _CustomTabState extends State<CustomTab>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
   // late List<bool> _loadedTabs;
   Set<int> loadedTabs = {};
   bool _isNavigationRailVisible = false; // State variable for toggle
@@ -218,6 +222,7 @@ class _CustomTabState extends State<CustomTab>
 
 class _HorizontalTabBars extends StatelessWidget {
   final TabController tabController;
+
   // final List<Map<String, dynamic>> tabs;
   final List<CustomTabModel> tabs;
   final Color? bgColor;
@@ -301,6 +306,7 @@ class _VerticalTabBars extends StatelessWidget {
   final bool isNavRailVisible; // State variable for toggle
   final bool showScrollUpButton;
   final Function()? toggleNavRail;
+
   // final List<Map<String, dynamic>> tabs;
   final List<CustomTabModel> tabs;
   final void Function(int)? onDestinationSelected;

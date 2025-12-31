@@ -49,11 +49,17 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   final List<FieldGroup> _fieldGroups = [];
 
   String? get _title => widget.title;
+
   bool get _showButton => widget.showButton;
+
   String? get _fullWidthKey => widget.fullWidthKey;
+
   int? get _groupsLimit => widget.fieldGroupsLimit;
+
   int get _fieldGroupsLength => _fieldGroups.length;
+
   List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
+
   Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
 
   bool _canAddMoreGroups = true;
@@ -278,16 +284,6 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           const SizedBox(height: 10),
         ],
         if (_showButton) ...[
-          context.iconButton(
-            Icons.add,
-            isCard: true,
-            iconColor: addColor,
-            borderColor: addColor,
-            tooltip: _canAddMoreGroups
-                ? 'Add more ${_title ?? 'field'} group'.toSentence
-                : 'Can\'t add',
-            onPressed: _canAddMoreGroups ? _addTextField : _onLimitReached,
-          ),
           if (_fieldGroupsLength > 1) ...{
             context.iconButton(
               Icons.remove,
@@ -299,6 +295,16 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
               onPressed: _removeTextField,
             ),
           },
+          context.iconButton(
+            Icons.add,
+            isCard: true,
+            iconColor: addColor,
+            borderColor: addColor,
+            tooltip: _canAddMoreGroups
+                ? 'Add more ${_title ?? 'field'} group'.toSentence
+                : 'Can\'t add',
+            onPressed: _canAddMoreGroups ? _addTextField : _onLimitReached,
+          ),
         ],
       ],
     );

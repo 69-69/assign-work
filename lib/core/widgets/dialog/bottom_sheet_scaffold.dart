@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 
 class BottomSheetScaffold extends StatelessWidget {
   final bool isDetails;
-  final String title;
+  final dynamic title;
   final String? tooltip;
   final Widget body;
-  final String? btnText;
+  final dynamic btnText;
   final bool confirmOnClose; // Confirm on accidental close of bottom sheet
   final String? subtitle;
   final double? initialSize;
@@ -43,9 +43,11 @@ class BottomSheetScaffold extends StatelessWidget {
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       initialChildSize: initialSize ?? size,
       maxChildSize: size,
-      header: isDetails
-          ? _buildViewDetailsHeader(context)
-          : _buildHeader(context),
+      header: title is Widget
+          ? title
+          : (isDetails
+                ? _buildViewDetailsHeader(context)
+                : _buildHeader(context)),
       child: _buildBody(context),
     );
   }
@@ -108,7 +110,7 @@ class BottomSheetScaffold extends StatelessWidget {
         : null;
   }
 
-  Text _buildTitle(BuildContext context) {
+  Widget _buildTitle(BuildContext context) {
     return Text(
       title,
       semanticsLabel: title,

@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:equatable/equatable.dart';
 
@@ -12,6 +13,7 @@ class UserGuide extends Equatable {
     required this.description,
     DateTime? createdAt,
     DateTime? updatedAt,
+    this.history = const [],
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
@@ -22,17 +24,19 @@ class UserGuide extends Equatable {
   final String description;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   /// fromFirestore / fromJson Function [UserGuide.fromMap]
   factory UserGuide.fromMap(Map<String, dynamic> map, {String? id}) {
     return UserGuide(
       id: (id ?? map['id']) ?? '',
-      url: map['url'] as String,
-      title: map['title'] as String,
-      category: map['category'] as String,
-      description: map['description'] as String,
+      url: map['url'] ?? '',
+      title: map['title'] ?? '',
+      category: map['category'] ?? '',
+      description: map['description'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -45,6 +49,7 @@ class UserGuide extends Equatable {
     'description': description,
     'createdAt': createdAt,
     'updatedAt': updatedAt,
+    'history': history.map((e) => e.toMap()).toList(),
   };
 
   /// Convert Model to toFirestore / toJson Function [toMap]
@@ -65,7 +70,15 @@ class UserGuide extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && title.isEmpty;
+  static final UserGuide empty = UserGuide(
+    id: '',
+    url: '',
+    title: '',
+    category: '',
+    description: '',
+  );
+
+  bool get isEmpty => identical(this, UserGuide.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -78,6 +91,7 @@ class UserGuide extends Equatable {
     String? description,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return UserGuide(
       id: id ?? this.id,
@@ -87,6 +101,7 @@ class UserGuide extends Equatable {
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
 
@@ -99,5 +114,6 @@ class UserGuide extends Equatable {
     description,
     createdAt,
     updatedAt,
+    history,
   ];
 }

@@ -12,69 +12,78 @@ import 'package:assign_erp/features/pos_system/data/permission/pos_permission.da
 import 'package:assign_erp/features/procurement/data/permission/procurement_permission.dart';
 import 'package:assign_erp/features/sales_distribution/data/permission/sales_distribution_permission.dart';
 import 'package:assign_erp/features/system_admin/data/models/permission_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/tab_content_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/permission_tab_content_model.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:assign_erp/features/trouble_shooting/data/permission/trouble_shoot_permission.dart';
+import 'package:assign_erp/features/user_guide/data/permission/user_guide_permission.dart';
 import 'package:assign_erp/features/warehouse_wms/data/permission/warehouse_permission.dart';
 import 'package:flutter/material.dart';
 
 final _tabContent = [
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'IMS',
     icon: Icons.inventory_sharp,
     accessEnum: SubscriptionLicenses.inventory,
     displayName: inventoryDisplayName,
     permissions: inventoryPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'PSM',
     icon: Icons.shopping_cart,
     accessEnum: SubscriptionLicenses.procurement,
     displayName: procurementDisplayName,
     permissions: procurementPermission,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'POS',
     icon: Icons.point_of_sale,
     accessEnum: SubscriptionLicenses.pos,
     displayName: posDisplayName,
     permissions: posPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'SD',
     icon: Icons.local_shipping,
     accessEnum: SubscriptionLicenses.salesDistribution,
     displayName: salesDistributionDisplayName,
     permissions: salesDistributionPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'WMS',
     icon: Icons.warehouse,
     accessEnum: SubscriptionLicenses.warehouse,
     displayName: wmsDisplayName,
     permissions: warehousePermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'CRM',
     icon: Icons.group,
     accessEnum: SubscriptionLicenses.crm,
     displayName: crmDisplayName,
     permissions: crmPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'Setup',
     icon: Icons.settings,
     displayName: systemAdminDisplayName,
     permissions: setupPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'Agent',
     icon: Icons.real_estate_agent_outlined,
     accessEnum: SubscriptionLicenses.agent,
     displayName: agentDisplayName,
     permissions: agentPermissions,
   ),
-  TabContent<SubscriptionLicenses>(
+  PermissionTabContent<SubscriptionLicenses>(
+    label: 'User Guide',
+    icon: Icons.menu_book,
+    accessEnum: SubscriptionLicenses.paidTraining,
+    displayName: tManualDisplayName,
+    permissions: tManualPermission,
+    highRiskPermissions: highRiskPermissions,
+  ),
+  PermissionTabContent<SubscriptionLicenses>(
     label: 'Trouble Shoot',
     icon: Icons.troubleshoot,
     accessEnum: SubscriptionLicenses.dev,
@@ -98,12 +107,16 @@ class PermissionCard extends StatelessWidget {
     return _buildPermission(context);
   }
 
+  /// Only grant access to PERMISSION TABS if license is granted
+  bool _hasTabAccess(PermissionTabContent tab, BuildContext context) {
+    return tab.access == null || context.isLicensed(tab.access!);
+  }
+
   _buildPermission(BuildContext context) {
-    // Filter tabs based on access/license
-    final filteredTabs = _tabContent.where((tab) {
-      if (tab.access == null) return true;
-      return context.isLicensed(tab.access!); // Check access for licensed tabs
-    }).toList();
+    // Filter permissions tabs based on subscription license permissions
+    final filteredTabs = _tabContent
+        .where((tab) => _hasTabAccess(tab, context))
+        .toList();
 
     return SizedBox(
       height: context.screenHeight * 0.6,
@@ -125,7 +138,7 @@ class PermissionCard extends StatelessWidget {
 
   List<Widget> _buildEntitlementSelectors(
     BuildContext context,
-    List<TabContent> filteredTabs,
+    List<PermissionTabContent> filteredTabs,
   ) {
     return filteredTabs.map((tab) {
       // Only generate the selector if the tab is accessible based on the license
@@ -142,6 +155,7 @@ class PermissionCard extends StatelessWidget {
         onSelected: (permissions, module) =>
             onSelectedFunc(permissions, module),
         sectionColor: kPrimaryAccentColor,
+        highRiskAccesses: tab.highRiskPermissions,
       );
     }).toList();
   }

@@ -90,8 +90,8 @@ class _FormGroupCardState extends State<FormGroupCard> {
 
     if (match == null) return ('', _title);
 
-    final prefix = match.group(1); // "3."
-    final suffix = match.group(2); // "Title"
+    final prefix = match.group(1)?.trim(); // "3."
+    final suffix = match.group(2)?.trim(); // "Title"
 
     return (prefix, suffix);
   }
@@ -159,16 +159,9 @@ class _FormGroupCardState extends State<FormGroupCard> {
         ),
         children: [
           if (count != null && count.isNotEmpty) ...{
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              baseline: TextBaseline.alphabetic,
-              child: Badge.count(
-                count: int.parse(count),
-                backgroundColor: context.onPrimaryContainer.toAlpha(0.2),
-              ),
-            ),
+            _buildNumber(count, context),
           },
-          TextSpan(text: ' $title'),
+          TextSpan(text: '$title'),
           if (_subTitle.isNotEmpty) ...{
             TextSpan(
               text: _subTitle,
@@ -180,6 +173,22 @@ class _FormGroupCardState extends State<FormGroupCard> {
             ),
           },
         ],
+      ),
+    );
+  }
+
+  // Numbering: Add a badge to the title if count is provided
+  WidgetSpan _buildNumber(String count, BuildContext context) {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      baseline: TextBaseline.alphabetic,
+      child: Padding(
+        padding: EdgeInsets.only(right: 5),
+        child: Badge.count(
+          count: int.parse(count),
+          backgroundColor: context.onPrimaryContainer.toAlpha(0.2),
+          textColor: context.onSurfaceColor,
+        ),
       ),
     );
   }

@@ -6,19 +6,7 @@ import 'package:flutter/material.dart';
 
 /// Settings Navigation Links [SetupTiles]
 extension SetupTiles on dynamic {
-  /// Header-Level [homeSetupTiles] Used for system setup and configuration of Tenant organization\'s workspace
-  get homeSetupTiles => {
-    'label': 'system . administration',
-    'icon': Icons.settings,
-    'action': RouteNames.systemAdminApp,
-    'param': {},
-    'access': _getName(SetupPermission.manageSetup),
-    'description':
-        'system settings, configs, company, backups, and general maintenance',
-    // 'company, employees, taxes, roles, permissions, backups, licensing',
-  };
-
-  /// Sub Menu Tiles under [homeSetupTiles]
+  /// Sub Menu Tiles under homeSetupTiles
   List<DashboardTile> get setupTiles {
     final tilesData = [
       {

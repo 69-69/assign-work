@@ -10,14 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Body extends StatelessWidget {
-  final String guideCategory;
+  final String guideType;
   final bool isDeveloper;
 
-  const Body({
-    super.key,
-    required this.guideCategory,
-    this.isDeveloper = false,
-  });
+  const Body({super.key, required this.guideType, this.isDeveloper = false});
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +43,13 @@ class Body extends StatelessWidget {
     if (results.isEmpty) {
       return canAccessDev
           ? context.buildAddButton(
-              'Add New Guide',
-              onPressed: () => context.openAddGuide(category: guideCategory),
+              'Create New Manual',
+              onPressed: () => context.openCreateGuide(),
             )
           : _buildEmptyMessage(context);
     }
     final guides = results
-        .where((UserGuide result) => result.category == guideCategory)
+        .where((UserGuide result) => result.category == guideType)
         .toList();
 
     return GuideCard(guides: guides, isEdit: canAccessDev);
@@ -62,7 +58,7 @@ class Body extends StatelessWidget {
   Center _buildEmptyMessage(BuildContext context) {
     return Center(
       child: Text(
-        '${guideCategory.toUpperAll}: No guides found.',
+        '${guideType.toUpperAll}: No guides found.',
         textScaler: TextScaler.linear(context.textScaleFactor),
       ),
     );

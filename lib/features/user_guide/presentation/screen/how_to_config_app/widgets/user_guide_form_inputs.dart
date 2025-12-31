@@ -1,8 +1,72 @@
-import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/constants/main_modules.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:flutter/material.dart';
+
+class UserGuideConfig {
+  static updateListFromData<T>(
+    List<T> list, {
+    required List<Map<String, dynamic>> map,
+    required T Function(Map<String, dynamic>, String) fromMap,
+  }) {
+    return list
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(
+        map
+            .asMap()
+            .entries
+            .map((e) => fromMap(e.value, '${e.key + 1}'))
+            .toList(),
+      );
+  }
+
+  static List<String> tabContents(bool canAccessAgent) =>
+      _list(canAccessAgent).map((entry) => entry.first.label).toList();
+
+  static List<CustomTabModel> sideTabs(bool canAccessAgent) =>
+      _list(canAccessAgent)
+          .map((e) => CustomTabModel(label: e.first.label, icon: e.first.icon))
+          .toList();
+
+  static List<Set<({IconData icon, String label})>> _list(bool canAccessAgent) {
+    return MainModulesHelper.toStringList(
+      keysToExclude: [
+        if (!canAccessAgent) MainModuleId.agent,
+        MainModuleId.trouble,
+        MainModuleId.guide,
+      ],
+    );
+  }
+
+  static List<FieldGroupConfig> get formFields => [
+    FieldGroupConfig(key: 'title', label: 'Title', type: TextInputType.text),
+    FieldGroupConfig(key: 'url', label: 'Youtube URL', type: TextInputType.url),
+    FieldGroupConfig(
+      key: 'category',
+      label: 'Guide Category',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return GuideCategoryDropdown(
+          initialValue: initialData,
+          onChanged: onChanged,
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'description',
+      label: 'Description...',
+      type: TextInputType.multiline,
+      isTextArea: true,
+      isAutoGrow: true,
+      minLines: null,
+      validator: (_) => null,
+    ),
+  ];
+}
 
 /// Title & Category TextField [TitleCategoryInput]
 class TitleCategoryInput extends StatelessWidget {
@@ -26,8 +90,8 @@ class TitleCategoryInput extends StatelessWidget {
       children: [
         TitleTextField(controller: titleController, onChanged: onTitleChanged),
         GuideCategoryDropdown(
-          serverCategory: serverCategory,
-          onCategoryChange: onCategoryChange,
+          initialValue: serverCategory,
+          onChanged: onCategoryChange,
         ),
       ],
     );
@@ -36,29 +100,29 @@ class TitleCategoryInput extends StatelessWidget {
 
 /// Guide Type Dropdown [GuideCategoryDropdown]
 class GuideCategoryDropdown extends StatelessWidget {
-  final void Function(dynamic s) onCategoryChange;
-  final String? serverCategory;
+  final void Function(dynamic s) onChanged;
+  final String? initialValue;
 
   const GuideCategoryDropdown({
     super.key,
-    required this.onCategoryChange,
-    this.serverCategory,
+    required this.onChanged,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
     final List<String> categoryList = [
       'Select guide category',
-      ...userGuideCategories,
+      ...UserGuideConfig.tabContents(false),
     ];
 
     return StaticDropdown<String>(
       key: key,
       items: categoryList,
-      label: 'Select guide category',
-      initialValue: serverCategory,
+      label: 'Guide category',
+      initialValue: initialValue,
       getDisplayText: (category) => category,
-      onChanged: onCategoryChange,
+      onChanged: onChanged,
     );
   }
 }

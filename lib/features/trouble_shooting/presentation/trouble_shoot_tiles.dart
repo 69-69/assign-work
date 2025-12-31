@@ -40,6 +40,3 @@ extension TroubleShootTiles on dynamic {
 
 // Get name from enum
 String _getName(e) => EnumHelper<TroubleShootPermission>(e).getName;
-
-// Get name from enum
-// String _getName(e) => getEnumName<TroubleShootPermission>(e);

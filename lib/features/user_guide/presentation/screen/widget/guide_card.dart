@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/util/url_launcher_helper.dart';
 import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
-import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/update/update_user_guide.dart';
+import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/create/create_user_guide.dart';
 import 'package:flutter/material.dart';
 
 class GuideCard extends StatefulWidget {
@@ -111,7 +111,7 @@ class _CardContent extends StatelessWidget {
     context,
     icon: Icons.edit_note,
     tooltip: 'Edit ${guide.title} guide',
-    onPressed: () async => await context.openUpdateUserGuide(guide: guide),
+    onPressed: () async => await context.openCreateGuide(serverGuide: guide),
   );
 
   Widget _buildPlayButton(BuildContext context) => _buildActionButton(
@@ -124,6 +124,10 @@ class _CardContent extends StatelessWidget {
     onPressed: () async => await _launchUrl(),
     label: Text('Watch Video', style: _titleStyle.copyWith(color: kWhiteColor)),
     icon: const Icon(Icons.link_outlined, color: kWhiteColor),
+    style: TextButton.styleFrom(
+      backgroundColor: kModelColor.toAlpha(0.1),
+      textStyle: _titleStyle.copyWith(color: kWhiteColor),
+    ),
   );
 
   Widget _buildActionButton(

@@ -440,17 +440,6 @@ final List<String> departmentsList = [
   'other',
 ];
 
-/// User Guide Categories
-final List<String> userGuideCategories = [
-  'agent',
-  'system admin',
-  'pos',
-  'crm',
-  'inventory',
-  'procurement',
-  'warehouse',
-];
-
 const workspaceCategories = [
   'Select Business type',
   'Retail Stores',

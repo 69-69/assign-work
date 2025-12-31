@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 
 /// [SubscriptionLicenses] Enum representing different subscription licenses available
@@ -37,9 +38,17 @@ enum SubscriptionLicenses {
   /// [cloudBackup] Cloud Backup License: Grants customers access to the Cloud Backup system.
   cloudBackup,
 
-  /// [training] Training License: Grants customers access to the Training materials (like tutorials).
-  training,
+  /// [paidTraining] Training License: Grants customers access to the Training materials (like tutorials).
+  paidTraining,
 }
+
+/// [highRiskLicenses] Unique Subscription Licenses that trigger a warning dialog,
+/// prompting the admin to reconsider before assigning them.
+final highRiskLicenses = [
+  EnumHelper(SubscriptionLicenses.dev).getName,
+  EnumHelper(SubscriptionLicenses.agent).getName,
+  EnumHelper(SubscriptionLicenses.onboarding).getName,
+];
 
 /// Example list of [AccessControl] objects representing the various
 /// subscription licenses that can be associated with a workspace.
@@ -134,11 +143,11 @@ final List<AccessControl> addonsLicenses = [
   ),
 
   AccessControl(
-    module: 'training',
+    module: 'paid training',
     title: 'Training License',
     description:
         'Provides access to training materials, including tutorials and employee training resources.',
-    access: SubscriptionLicenses.training,
+    access: SubscriptionLicenses.paidTraining,
   ),
 ];
 

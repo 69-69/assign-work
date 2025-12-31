@@ -1,5 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
+import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/features/user_guide/data/permission/user_guide_permission.dart';
 import 'package:flutter/material.dart';
 
 extension UserGuideTiles on dynamic {
@@ -11,16 +13,16 @@ extension UserGuideTiles on dynamic {
         'icon': Icons.how_to_reg,
         'action': RouteNames.howToConfigApp,
         'param': {},
-        'access': '',
+        'access': _getName(UserGuidePermission.userGuide),
         'description':
-            'software user guide providing instructions on software usage and configuration',
+            'User manual with step-by-step instructions for software usage and configuration.',
       },
       {
         'label': 'license renewal',
         'icon': Icons.local_police,
         'action': RouteNames.howToRenewLicense,
         'param': {},
-        'access': '',
+        'access': _getName(UserGuidePermission.licenseRenewalGuide),
         'description': 'guide on renewing or activating software',
       },
     ];
@@ -28,3 +30,6 @@ extension UserGuideTiles on dynamic {
     return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
   }
 }
+
+// Get name from enum
+String _getName(e) => EnumHelper<UserGuidePermission>(e).getName;

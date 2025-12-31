@@ -1,6 +1,4 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -10,6 +8,7 @@ import 'package:assign_erp/features/user_guide/presentation/bloc/how_to/how_to_b
 import 'package:assign_erp/features/user_guide/presentation/bloc/user_guide_bloc.dart';
 import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/create/create_user_guide.dart';
 import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/widgets/body.dart';
+import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/widgets/user_guide_form_inputs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,9 +40,9 @@ class HowToConfigAppScreen extends StatelessWidget {
   Widget? _buildBuildFloatingBtn(BuildContext context, bool canAccessDev) {
     return canAccessDev
         ? context.buildFloatingBtn(
-            'New Guide',
+            'New Manual',
             icon: Icons.note_add_outlined,
-            onPressed: () async => await context.openAddGuide(),
+            onPressed: () async => await context.openCreateGuide(),
           )
         : null;
   }
@@ -51,45 +50,19 @@ class HowToConfigAppScreen extends StatelessWidget {
   CustomTab _buildBody(BuildContext context, bool canAccessDev) {
     // Check if the user has access to the Agent dashboard
     final canAccessAgent = WorkspaceRoleGuard.canAccessAgentDashboard(context);
+    final guideTypes = UserGuideConfig.tabContents(canAccessAgent);
 
-    final openThisTab = int.tryParse(openTab) ?? 0;
-
-    final guideCategories = _getFilterGuideCategories(canAccessAgent);
-
-    final tabs = guideCategories.map((type) {
-      final label = type[0].toUpperAll + type.substring(1);
-      final icon = _iconForType(type);
-      return CustomTabModel(label: label, icon: icon);
-    }).toList();
-
-    final children = guideCategories
-        .map((type) => Body(guideCategory: type, isDeveloper: canAccessDev))
+    final children = guideTypes
+        .map((type) => Body(guideType: type, isDeveloper: canAccessDev))
         .toList();
+    // prettyPrint('total ${children.length}=', guideTypes.length);
 
     return CustomTab(
       isVertical: true,
-      openThisTab: openThisTab,
-      length: guideCategories.length,
-      tabs: tabs,
+      openThisTab: int.tryParse(openTab) ?? 0,
+      length: guideTypes.length,
+      tabs: UserGuideConfig.sideTabs(canAccessAgent),
       children: children,
     );
-  }
-
-  IconData _iconForType(String type) {
-    return switch (type) {
-      'agent' => Icons.real_estate_agent,
-      'setup admin' => Icons.settings,
-      'pos' => Icons.point_of_sale,
-      'crm' => Icons.group,
-      'inventory' => Icons.inventory_sharp,
-      'warehouse' => Icons.warehouse,
-      _ => Icons.help_outline,
-    };
-  }
-
-  List<String> _getFilterGuideCategories(bool canAccessAgent) {
-    return canAccessAgent
-        ? userGuideCategories
-        : userGuideCategories.where((type) => type != 'agent').toList();
   }
 }

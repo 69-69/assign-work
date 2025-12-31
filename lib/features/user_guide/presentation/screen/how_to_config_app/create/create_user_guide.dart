@@ -1,105 +1,155 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
+import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/user_guide_bloc.dart';
-import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/widgets/form_inputs.dart';
+import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/widgets/user_guide_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension AddGuideForm<T> on BuildContext {
-  Future<void> openAddGuide({String? category}) => openBottomSheet(
+extension CreateGuideForm<T> on BuildContext {
+  Future<void> openCreateGuide({UserGuide? serverGuide}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create User Guide',
-      body: _AddGuideForm(),
+      title: serverGuide != null
+          ? 'Edit ${serverGuide.category} Manual'
+          : 'Create User Guide',
+      btnText: _deleteButton(serverGuide?.id),
+      body: _GuideForm(serverGuide: serverGuide),
     ),
   );
+
+  Widget _deleteButton(String? id) {
+    return textButton(
+      'Delete',
+      txtColor: kDangerColor,
+      onPressed: () async {
+        final isConfirmed = await confirmUserActionDialog();
+
+        if (id != null && mounted && isConfirmed) {
+          // Dispatch the delete event
+          read<HowToBloc>().add(DeleteGuide<UserGuide>(documentId: id));
+          showAlertOverlay(
+            'Successfully deleted',
+            popContext: () => Navigator.pop(this),
+          );
+        }
+      },
+    );
+  }
 }
 
-class _AddGuideForm extends StatefulWidget {
-  const _AddGuideForm();
+class _GuideForm extends StatefulWidget {
+  final UserGuide? serverGuide;
+
+  const _GuideForm({this.serverGuide});
 
   @override
-  State<_AddGuideForm> createState() => _AddGuideFormState();
+  State<_GuideForm> createState() => _GuideFormState();
 }
 
-class _AddGuideFormState extends State<_AddGuideForm> {
-  final ScrollController _scrollController = ScrollController();
-  bool isMultipleGuides = false;
+class _GuideFormState extends State<_GuideForm> {
+  Key _formResetKey = UniqueKey();
   final List<UserGuide> _userGuides = [];
   final _formKey = GlobalKey<FormState>();
-  String _selectedCategory = '';
-  final _urlController = TextEditingController();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
+
+  HowToBloc get _bloc => context.read<HowToBloc>();
+
+  Employee? get _employee => context.employee;
+
+  UserGuide? get _serverGuide => widget.serverGuide;
+
+  bool get _nullServer => _serverGuide == null;
+
+  void _onSubmit() {
+    // Case 1: Update existing department
+    if (_serverGuide != null) {
+      _updateManual();
+      return;
+    }
+
+    // Case 2: Form validation or empty departments
+    if (!_isFormValid && _userGuides.isNotEmpty) {
+      _showErrorAlert('Please enter all required fields', kDangerColor);
+      return;
+    }
+
+    // Case 3: Add new departments
+    _addNewDManual();
+  }
+
+  List<AuditLog> history([action = AuditAction.created]) => [
+    AuditLog(action: action, actionBy: _employee!.employeeId),
+  ];
+
+  void _updateManual() {
+    final updated = _userGuides.first.copyWith(
+      id: _serverGuide!.id,
+      url: _serverGuide!.url,
+      title: _serverGuide!.title,
+      category: _serverGuide!.category,
+      description: _serverGuide!.description,
+      history: history(),
+    );
+
+    _bloc.add(UpdateGuide<UserGuide>(documentId: updated.id, data: updated));
+
+    _showSuccessAlert('Changes successfully saved');
+  }
+
+  void _addNewDManual() {
+    // Append history to each guide
+    final manuals = _userGuides
+        .map((e) => e.copyWith(history: history(AuditAction.updated)))
+        .toList();
+
+    _bloc.add(AddGuide<List<UserGuide>>(data: manuals));
+
+    _formKey.currentState!.reset();
+    _showSuccessAlert('Department(s) successfully created');
+  }
+
+  void _showSuccessAlert(String message) {
+    context.showAlertOverlay(message, popContext: () => _resetForm());
+  }
+
+  void _showErrorAlert(String message, Color bgColor) {
+    context.showAlertOverlay(message, bgColor: bgColor);
+  }
+
+  void _resetForm() {
+    setState(() {
+      _formKey.currentState?.reset();
+      _formResetKey = UniqueKey(); // 💥 full rebuild
+      _userGuides.clear();
+    });
+  }
+
+  // load existing Guides/Manuals
+  void _loadExistingManuals() {
+    if (_serverGuide != null) {
+      _userGuides
+        ..clear()
+        ..add(_serverGuide!);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _urlController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
-  }
-
-  UserGuide get _guideData => UserGuide(
-    url: _urlController.text,
-    title: _titleController.text,
-    category: _selectedCategory,
-    description: _descriptionController.text,
-  );
-
-  void _onSubmit() {
-    if (_formKey.currentState!.validate()) {
-      /// Added Multiple Products Simultaneously
-      _userGuides.add(_guideData);
-
-      // Create New Guide
-      context.read<HowToBloc>().add(
-        AddGuide<List<UserGuide>>(data: _userGuides),
-      );
-
-      _formKey.currentState!.reset();
-      context.showAlertOverlay(
-        '${_titleController.text.toTitle} successfully created',
-      );
-
-      Navigator.of(context).pop();
-    }
-  }
-
-  /// Adds the current Guide form data to the batch list for later submission
-  void _addGuideToList() {
-    if (_formKey.currentState!.validate()) {
-      setState(() => isMultipleGuides = true);
-      _userGuides.add(_guideData);
-
-      context.showAlertOverlay(
-        '${_titleController.text.toTitle} added to batch',
-      );
-      _clearFields();
-    }
-  }
-
-  void _clearFields() {
-    _titleController.clear();
-    _urlController.clear();
-    _descriptionController.clear();
-    _selectedCategory = '';
-  }
-
-  void _removeGuide(UserGuide guide) {
-    setState(() => _userGuides.remove(guide));
+    _loadExistingManuals();
   }
 
   @override
@@ -107,51 +157,7 @@ class _AddGuideFormState extends State<_AddGuideForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: Wrap(
-        // runSpacing: 20,
-        alignment: WrapAlignment.center,
-        children: [
-          if (isMultipleGuides && _userGuides.isNotEmpty) ...[
-            SizedBox(height: 60, child: _buildGuidePreviewChips()),
-          ],
-          _buildBody(),
-        ],
-      ),
-    );
-  }
-
-  // Horizontal scrollable row of chips representing the List of batch of Guides
-  Widget _buildGuidePreviewChips() {
-    return CustomScrollBar(
-      controller: _scrollController,
-      padding: EdgeInsets.zero,
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _userGuides.map((o) {
-          return o.isEmpty
-              ? const SizedBox.shrink()
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Chip(
-                    padding: EdgeInsets.zero,
-                    label: Text(
-                      o.title.toTitle,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    deleteButtonTooltipMessage: 'Remove ${o.title}',
-                    backgroundColor: kGrayColor.toAlpha(0.3),
-                    deleteIcon: const Icon(
-                      size: 16,
-                      Icons.clear,
-                      color: kGrayColor,
-                    ),
-                    onDeleted: () => _removeGuide(o),
-                  ),
-                );
-        }).toList(),
-      ),
+      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
     );
   }
 
@@ -159,41 +165,39 @@ class _AddGuideFormState extends State<_AddGuideForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Text('Create Guide', style: context.textTheme.titleLarge),
-        TitleCategoryInput(
-          titleController: _titleController,
-          onCategoryChange: (t) => setState(() => _selectedCategory = t),
-          onTitleChanged: (s) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 20.0),
-        UrlTextField(
-          controller: _urlController,
-          onChanged: (t) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 20.0),
-        DescTextField(
-          descController: _descriptionController,
-          onDescChanged: (v) {
-            if (_formKey.currentState!.validate()) setState(() {});
-          },
-        ),
-        const SizedBox(height: 20.0),
-        context.elevatedIconBtn(
-          Icons.add,
-          onPressed: _addGuideToList,
-          label: 'Add to List',
+        FormGroupCard(
+          showCollapseButton: _nullServer,
+          title: _serverGuide?.title.toTitle ?? 'User Manual',
+          subTitle:
+              '\nA guide to help users understand and use the ${_serverGuide?.category ?? 'software'}.',
+          children: [_buildForm()],
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: isMultipleGuides ? 'Create All Guides' : 'Create Guide',
+          label: _nullServer ? 'Create Manual' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],
+    );
+  }
+
+  DynamicTextFields _buildForm() {
+    return DynamicTextFields(
+      fullWidthKey: 'title',
+      showButton: _nullServer,
+      initialData: [?_serverGuide?.toMap()],
+      fieldsConfig: UserGuideConfig.formFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (_isFormValid) setState(() {});
+
+        // Update the ProLineItem list
+        UserGuideConfig.updateListFromData<UserGuide>(
+          _userGuides,
+          map: data,
+          fromMap: (map, id) => UserGuide.fromMap(map),
+        );
+      },
     );
   }
 }

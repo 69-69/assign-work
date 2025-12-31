@@ -5,8 +5,8 @@ class DialogHeader extends StatelessWidget {
   const DialogHeader({
     super.key,
     this.isBackButton = true,
-    this.title = "",
-    this.btnText = "",
+    this.title,
+    this.btnText,
     this.color,
     this.fontSize,
     this.onCancel,

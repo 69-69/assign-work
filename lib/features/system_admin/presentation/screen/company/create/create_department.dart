@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -37,49 +38,55 @@ class _AddDepartmentForm extends StatefulWidget {
 }
 
 class _AddDepartmentFormState extends State<_AddDepartmentForm> {
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   final List<Department> _departments = [];
+
   Department? get _serverDepart => widget.serverDepart;
-  bool get _isValid => _formKey.currentState?.validate() ?? false;
+
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
+
   Employee? get _employee => context.employee;
 
+  DepartmentBloc get _bloc => context.read<DepartmentBloc>();
+
+  bool get _nullServer => _serverDepart == null;
+
   void _onSubmit() {
-    if (_isValid && _departments.isNotEmpty) {
-      final bloc = context.read<DepartmentBloc>();
-
-      if (_serverDepart != null) {
-        final updated = _prepareUpdatedDepartment();
-
-        bloc.add(
-          UpdateSetup<Department>(documentId: updated.id, data: updated),
-        );
-        context.showAlertOverlay('Changes successfully saved');
-      } else {
-        final newDepartments = _prepareNewDepartments();
-        bloc.add(AddSetup<List<Department>>(data: newDepartments));
-
-        _formKey.currentState!.reset();
-        context.showAlertOverlay('Department(s) successfully created');
-        Navigator.pop(context);
-      }
+    // Case 1: Update existing department
+    if (_serverDepart != null) {
+      _updateDepartment();
+      return;
     }
+
+    // Case 2: Form validation or empty departments
+    if (!_isFormValid && _departments.isNotEmpty) {
+      _showErrorAlert('Please enter all required fields', kDangerColor);
+      return;
+    }
+
+    // Case 3: Add new departments
+    _addNewDepartments();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
     AuditLog(action: action, actionBy: _employee!.employeeId),
   ];
 
-  Department _prepareUpdatedDepartment() {
+  void _updateDepartment() {
     final updated = _departments.first.copyWith(
       id: _serverDepart!.id,
       code: _serverDepart!.code,
       updatedBy: _employee!.fullName,
       history: history(),
     );
-    return updated;
+
+    _bloc.add(UpdateSetup<Department>(documentId: updated.id, data: updated));
+
+    _showSuccessAlert('Changes successfully saved');
   }
 
-  List<Department> _prepareNewDepartments() {
+  void _addNewDepartments() {
     // Append department code to each department
     final newDeparts = _departments
         .map(
@@ -90,7 +97,26 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           ),
         )
         .toList();
-    return newDeparts;
+    _bloc.add(AddSetup<List<Department>>(data: newDeparts));
+
+    _formKey.currentState!.reset();
+    _showSuccessAlert('Department(s) successfully created');
+  }
+
+  void _showSuccessAlert(String message) {
+    context.showAlertOverlay(message, popContext: () => _resetForm());
+  }
+
+  void _showErrorAlert(String message, Color bgColor) {
+    context.showAlertOverlay(message, bgColor: bgColor);
+  }
+
+  void _resetForm() {
+    setState(() {
+      _formKey.currentState?.reset();
+      _formResetKey = UniqueKey(); // 💥 full rebuild
+      _departments.clear();
+    });
   }
 
   // load existing departments
@@ -113,7 +139,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+      child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
     );
   }
 
@@ -122,14 +148,15 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
+          showCollapseButton: _nullServer,
           children: [
             DynamicTextFields(
-              showButton: _serverDepart == null,
+              showButton: _nullServer,
               title: 'Company\'s Department(s)',
               fieldsConfig: CompanyFormInputs.departmentsFields,
               initialData: [?_serverDepart?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
 
                 // Create a new line item
                 _departments
@@ -140,7 +167,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           ],
         ),
         context.confirmableActionButton(
-          label: _serverDepart == null ? 'Create Department' : null,
+          label: _nullServer ? 'Create Department' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

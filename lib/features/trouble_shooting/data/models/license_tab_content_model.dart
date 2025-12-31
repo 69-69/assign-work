@@ -7,13 +7,16 @@ class LicenseTabContent {
   final IconData icon;
   final String displayName;
   final List<AccessControl> licenses;
-  final List<String>? restrictedAccess;
+
+  /// [highRiskLicenses] Unique Subscription Licenses that trigger a warning dialog,
+  /// prompting the admin to reconsider before assigning them.
+  final List<String>? highRiskLicenses;
 
   LicenseTabContent({
     required this.label,
     required this.icon,
     required this.displayName,
     required this.licenses,
-    this.restrictedAccess,
+    this.highRiskLicenses,
   });
 }

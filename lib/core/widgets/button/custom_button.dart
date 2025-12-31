@@ -137,6 +137,28 @@ extension Custombutton on BuildContext {
     );
   }
 
+  // Text button
+  Widget textButton(
+    String label, {
+    VoidCallback? onPressed,
+    Color? txtColor,
+    String? tooltip,
+    ButtonStyle? style,
+  }) {
+    return TextButton(
+      onPressed: onPressed,
+      style: style,
+      child: Tooltip(
+        message: tooltip ?? label,
+        child: Text(
+          label,
+          style: TextStyle(color: txtColor, overflow: TextOverflow.ellipsis),
+          semanticsLabel: label,
+        ),
+      ),
+    );
+  }
+
   /// [elevatedButton] A customizable elevated button widget.
   ///
   Widget elevatedButton(

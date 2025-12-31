@@ -17,7 +17,10 @@ class EntitlementSelector<T> extends StatefulWidget {
   final bool selectAllByDefault;
   final T Function(AccessControl) toValue;
   final String entitlementType;
-  final List<String>? restrictedAccess;
+
+  /// [highRiskAccesses] Unique Accesses that trigger a warning dialog,
+  /// prompting the admin to reconsider before assigning them.
+  final List<String>? highRiskAccesses;
 
   const EntitlementSelector({
     super.key,
@@ -29,7 +32,7 @@ class EntitlementSelector<T> extends StatefulWidget {
     this.selectAllByDefault = false,
     required this.toValue,
     this.entitlementType = 'Permissions',
-    this.restrictedAccess,
+    this.highRiskAccesses,
   });
 
   @override
@@ -47,12 +50,13 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
   late List<AccessControl> _filteredEntitlements;
   final TextEditingController _searchController = TextEditingController();
 
-  String get _displayName =>
-      '${widget.displayName.toTitle} ${widget.entitlementType}';
+  String get _entitlementType => widget.entitlementType;
 
-  String get _subTitle => widget.entitlementType.isEmpty ? 'license' : 'role';
+  String get _displayName => '${widget.displayName.toTitle} $_entitlementType';
 
-  get _keywords => widget.restrictedAccess;
+  String get _subTitle => _entitlementType.isEmpty ? 'license' : 'role';
+
+  List<String> get _keywords => widget.highRiskAccesses ?? [];
 
   @override
   void initState() {
@@ -130,7 +134,6 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
 
     return Column(
       children: [
-        const SizedBox(height: 16),
         Text(
           "$_displayName ${selectedLength > 0 ? "($selectedLength)" : ""}",
           // ad selected length
@@ -139,7 +142,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         CustomRadioList<AccessMode>(
           groupValue: _mode,
           onChanged: (value) {
@@ -162,9 +165,9 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
           ],
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         FilterEntitlements(controller: _searchController, title: _subTitle),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
 
         // Entitlement Toggles
         Expanded(child: _buildListView(grouped)),
@@ -191,7 +194,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
                 onChanged: _mode == AccessMode.select
                     ? (value) async {
                         final shouldProceed = await _shouldProceedWithToggle(
-                          item.accessName,
+                          item,
                           value,
                         );
                         if (!shouldProceed) return;
@@ -211,7 +214,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
   }
 
   Future<bool> _shouldProceedWithToggle(
-    String accessName,
+    AccessControl access,
     bool isEnabled,
   ) async {
     if (_keywords == null || !isEnabled) {
@@ -223,10 +226,12 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
       caseSensitive: false,
     );
 
-    if (regExp.hasMatch(accessName.toLowerAll)) {
+    if (regExp.hasMatch(access.accessName.toLowerAll)) {
+      final label = access.accessLabel.toUpperAll;
+      final title = _entitlementType.isEmpty ? 'License' : _entitlementType;
       final confirm = await context.confirmAction(
         Text(
-          'Are you sure you want to toggle this license? This is for ${accessName.toUpperAll} only.',
+          'Are you sure you want to toggle this $title? This is for $label only.',
         ),
       );
       return confirm;
@@ -325,6 +330,7 @@ class FilterEntitlements extends StatelessWidget {
         focusedBorder: InputBorder.none,
         enabledBorder: InputBorder.none,
         border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 6.0),
       ),
     );
   }

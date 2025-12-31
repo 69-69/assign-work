@@ -27,9 +27,9 @@ class DashboardTileCard extends StatefulWidget {
   final Map<String, int>? metrics;
 
   /*USAGE:
-  canAccess: (perm) {
-    return context.isLicensed(perm) || context.hasPermission(perm);
-  },*/
+    canAccess: (perm) {
+      return context.isLicensed(perm) || context.hasPermission(perm);
+    },*/
   final bool Function(String)? canAccess;
 
   const DashboardTileCard({
@@ -50,6 +50,7 @@ class DashboardTileCard extends StatefulWidget {
 class _DashboardTileCardState extends State<DashboardTileCard> {
   // late List<DashboardTile> _visibleTiles;
   late double maxCrossAxisExtent;
+
   bool get isMetricsVisible => _sharedToggleState['visible'] ?? true;
 
   void _toggleMetricsVisibility() {
@@ -80,8 +81,11 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
 
   void _handleHover(bool isHovering) =>
       isHovering ? TooltipController.enable() : TooltipController.disable();
+
   void _handleTapDown(TapDownDetails _) => TooltipController.enable();
+
   void _handleTapUp(TapUpDetails _) => TooltipController.disable();
+
   void _handleFocusChange(bool hasFocus) =>
       hasFocus ? TooltipController.enable() : TooltipController.disable();
 

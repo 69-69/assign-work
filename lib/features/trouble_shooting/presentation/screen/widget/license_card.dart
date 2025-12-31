@@ -1,12 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/entitlement/entitlement_selector.dart';
 import 'package:assign_erp/core/widgets/entitlement/entitlement_tab_view.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/license_model.dart';
-import 'package:assign_erp/features/trouble_shooting/data/models/tab_content_model.dart';
+import 'package:assign_erp/features/trouble_shooting/data/models/license_tab_content_model.dart';
 import 'package:flutter/material.dart';
 
 final _tabContent = [
@@ -15,11 +14,7 @@ final _tabContent = [
     icon: Icons.security,
     displayName: licenseDisplayName,
     licenses: subscriptionLicenses,
-    restrictedAccess: [
-      EnumHelper(SubscriptionLicenses.dev).getName,
-      EnumHelper(SubscriptionLicenses.agent).getName,
-      EnumHelper(SubscriptionLicenses.onboarding).getName,
-    ],
+    highRiskLicenses: highRiskLicenses,
   ),
   LicenseTabContent(
     label: 'Addons',
@@ -68,18 +63,18 @@ class LicenseCard extends StatelessWidget {
 
   List<Widget> _buildEntitlementSelectors(
     BuildContext context,
-    List<LicenseTabContent> filteredTabs,
+    List<LicenseTabContent> tabs,
   ) {
-    return filteredTabs.map((tab) {
+    return tabs.map((tab) {
       return EntitlementSelector<License>(
-        entitlementType: '',
+        entitlementType: 'license',
         displayName: tab.displayName,
         entitlements: tab.licenses,
         initialEntitlements: initialLicenses,
         toValue: (access) => _toValue(access),
         onSelected: (licenses, module) => onSelectedFunc(licenses, module),
         sectionColor: kPrimaryAccentColor,
-        restrictedAccess: tab.restrictedAccess,
+        highRiskAccesses: tab.highRiskLicenses,
       );
     }).toList();
   }

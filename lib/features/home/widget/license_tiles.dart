@@ -1,8 +1,9 @@
 import 'package:assign_erp/config/routes/route_names.dart';
+import 'package:assign_erp/core/constants/main_modules.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
 import 'package:assign_erp/core/util/enum_helper.dart';
-import 'package:assign_erp/features/system_admin/presentation/setup_tiles.dart';
+import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:flutter/material.dart';
 
 /// Returns a list of Main-Dashboard-Tiles based on the specified license package [LicenseTiles]
@@ -12,8 +13,8 @@ extension LicenseTiles on BuildContext {
     final appPackages = [
       // Inventory Package
       {
-        'label': 'inventory',
-        'icon': Icons.inventory_sharp,
+        'label': MainModuleId.invent.getLabel,
+        'icon': MainModuleId.invent.getIcon,
         'action': RouteNames.inventoryApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.inventory),
@@ -22,8 +23,8 @@ extension LicenseTiles on BuildContext {
       },
       // Procurement Package
       {
-        'label': 'procurement & supplier',
-        'icon': Icons.add_shopping_cart,
+        'label': MainModuleId.procure.getLabel,
+        'icon': MainModuleId.procure.getIcon,
         'action': RouteNames.procurementApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.procurement),
@@ -32,8 +33,8 @@ extension LicenseTiles on BuildContext {
       },
       // POS Package
       {
-        'label': 'POS',
-        'icon': Icons.point_of_sale,
+        'label': MainModuleId.pos.getLabel,
+        'icon': MainModuleId.pos.getIcon,
         'action': RouteNames.posApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.pos),
@@ -42,8 +43,8 @@ extension LicenseTiles on BuildContext {
       },
       // Sales Distribution Package
       {
-        'label': 'sales & distribution',
-        'icon': Icons.local_shipping,
+        'label': MainModuleId.sales.getLabel,
+        'icon': MainModuleId.sales.getIcon,
         'action': RouteNames.salesDistributionApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.salesDistribution),
@@ -51,8 +52,8 @@ extension LicenseTiles on BuildContext {
       },
       // Warehouse Package
       {
-        'label': 'warehouse',
-        'icon': Icons.warehouse,
+        'label': MainModuleId.warehouse.getLabel,
+        'icon': MainModuleId.warehouse.getIcon,
         'action': RouteNames.warehouseApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.warehouse),
@@ -61,8 +62,8 @@ extension LicenseTiles on BuildContext {
       },
       // Customer Package
       {
-        'label': 'crm',
-        'icon': Icons.group,
+        'label': MainModuleId.crm.getLabel,
+        'icon': MainModuleId.crm.getIcon,
         'action': RouteNames.customersApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.crm),
@@ -70,30 +71,41 @@ extension LicenseTiles on BuildContext {
             'Manage customer relationships, profiles, and communication history.',
       },
 
-      /// Not-A-License - Only used for system setup and configuration of Tenant organization\'s workspace.
-      homeSetupTiles,
+      /// Not-A-License - Only used for system setup and configuration of Tenant organization\'s workspace
       {
-        'label': 'user . guide',
-        'icon': Icons.library_books,
+        'label': MainModuleId.system.getLabel,
+        'icon': MainModuleId.system.getIcon,
+        'action': RouteNames.systemAdminApp,
+        'param': {},
+        'access': EnumHelper<SetupPermission>(
+          SetupPermission.manageSetup,
+        ).getName,
+        'description':
+            'system settings, configs, company, backups, and general maintenance',
+        // 'company, employees, taxes, roles, permissions, backups, licensing',
+      },
+      {
+        'label': MainModuleId.guide.getLabel,
+        'icon': MainModuleId.guide.getIcon,
         'action': RouteNames.userGuideApp,
         'param': {},
-        'access': _getName(SubscriptionLicenses.training),
+        'access': _getName(SubscriptionLicenses.paidTraining),
         'description':
             'Video guides: setting up & managing key parts of the software',
       },
       // Live Chat Support Package
       {
-        'label': 'support . (Live Chat)',
-        'icon': Icons.support_agent,
+        'label': MainModuleId.support.getLabel,
+        'icon': MainModuleId.support.getIcon,
         'action': RouteNames.liveChatSupport,
         'param': {},
-        'access': _getName(SubscriptionLicenses.training),
+        'access': _getName(SubscriptionLicenses.paidTraining),
         'description': 'Get 24/7 live chat support from our agents and experts',
       },
       // Agent Package
       {
-        'label': 'agent',
-        'icon': Icons.real_estate_agent_outlined,
+        'label': MainModuleId.agent.getLabel,
+        'icon': MainModuleId.agent.getIcon,
         'action': RouteNames.agent,
         'param': {},
         'access': _getName(SubscriptionLicenses.agent),
@@ -101,8 +113,8 @@ extension LicenseTiles on BuildContext {
       },
       // Troubleshoot Package
       {
-        'label': 'troubleshoot',
-        'icon': Icons.troubleshoot,
+        'label': MainModuleId.trouble.getLabel,
+        'icon': MainModuleId.trouble.getIcon,
         'action': RouteNames.troubleShootingApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.dev),
@@ -121,126 +133,5 @@ extension LicenseTiles on BuildContext {
 }
 
 // Get name from enum
-String _getName(e) => EnumHelper<SubscriptionLicenses>(e).getName;
-
-/*extension LicenseTiles on dynamic {
-  Map<SubscriptionLicenses, List<DashboardTile>> get _licensePackages {
-    /// Agent / Developer license (includes all individual packages plus agent/dev package)
-    final appPackages = [
-      // Agent Package
-      {
-        'label': 'agent',
-        'icon': Icons.real_estate_agent_outlined,
-        'action': RouteNames.agent,
-        'param': {},
-        'access': SubscriptionLicenses.agent.name,
-        'description': 'setup, oversee, and monitor workspaces for clients',
-      },
-      // Inventory Package
-      {
-        'label': 'inventory',
-        'icon': Icons.inventory_sharp,
-        'action': RouteNames.inventoryApp,
-        'param': {},
-        'access': SubscriptionLicenses.inventory.name,
-        'description': 'stocks, orders, deliveries, sales, invoices, tracking',
-      },
-      // POS Package
-      {
-        'label': 'pos',
-        'icon': Icons.point_of_sale,
-        'action': RouteNames.posApp,
-        'param': {},
-        'access': SubscriptionLicenses.pos.name,
-        'description':
-            'Provides access to point of sale tools for transaction processing and sales management.',
-      },
-      // Warehouse Package
-      {
-        'label': 'warehouse',
-        'icon': Icons.warehouse,
-        'action': RouteNames.warehouseApp,
-        'param': {},
-        'access': SubscriptionLicenses.warehouse.name,
-        'description':
-            'Grants access to warehouse management tools for inventory control and order processing.',
-      },
-      // Customer Package
-      {
-        'label': 'crm',
-        'icon': Icons.group,
-        'action': RouteNames.customersApp,
-        'param': {},
-        'access': SubscriptionLicenses.crm.name,
-        'description':
-            'Provides access to CRM features for managing customer interactions, sales, and support.',
-      },
-      // Troubleshoot Package
-      {
-        'label': 'troubleshoot',
-        'icon': Icons.troubleshoot,
-        'action': RouteNames.troubleShootingApp,
-        'param': {},
-        'access': SubscriptionLicenses.dev.name,
-        'description':
-            'Provides access to troubleshooting tools and diagnostics.',
-      },
-      {
-        'label': 'user - guide',
-        'icon': Icons.library_books,
-        'action': RouteNames.userGuideApp,
-        'param': {},
-        'access': SubscriptionLicenses.training.name,
-        'description':
-            'Video guides: setting up & managing key parts of the software',
-      },
-    ];
-
-    final defaultPackages = appPackages
-        .map((e) => DashboardTile.fromMap(e))
-        .toList();
-
-    // Index references for clarity
-    final inventoryAppPackage = defaultPackages[1];
-    final posAppPackage = defaultPackages[2];
-    final warehouseAppPackage = defaultPackages[3];
-    final customerAppPackage = defaultPackages[4];
-    final liveChatSupport = defaultPackages[6];
-    // Agent: excludes troubleshoot & live support
-    final agentAppPackage = DashboardTile.filter(defaultPackages, [
-      'troubleshoot',
-      'live chat support',
-    ], exclude: true);
-
-    // Subscription Licenses Package Restrictions
-    return {
-      SubscriptionLicenses.onboarding: [],
-
-      SubscriptionLicenses.dev: defaultPackages,
-
-      SubscriptionLicenses.agent: agentAppPackage,
-
-      SubscriptionLicenses.pos: [posAppPackage, liveChatSupport],
-
-      SubscriptionLicenses.crm: [customerAppPackage, liveChatSupport],
-
-      SubscriptionLicenses.inventory: [inventoryAppPackage, liveChatSupport],
-
-      SubscriptionLicenses.warehouse: [warehouseAppPackage, liveChatSupport],
-
-      SubscriptionLicenses.full: [
-        inventoryAppPackage,
-        posAppPackage,
-        warehouseAppPackage,
-        customerAppPackage,
-        liveChatSupport,
-      ],
-    };
-  }
-
-  /// Returns structured dashboard tiles based on the license type.
-  Map<SubscriptionLicenses, RoleBasedDashboardTile<SubscriptionLicenses>>
-  get licenseTiles => DashboardTileManager<SubscriptionLicenses>(
-    tiles: _licensePackages,
-  ).create();
-}*/
+String _getName(SubscriptionLicenses e) =>
+    EnumHelper<SubscriptionLicenses>(e).getName;
