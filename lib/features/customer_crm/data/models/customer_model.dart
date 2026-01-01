@@ -101,7 +101,16 @@ class Customer extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => customerId.isEmpty;
+  static get empty => Customer(
+    customerId: '',
+    storeNumber: '',
+    name: '',
+    phone: '',
+    createdBy: '',
+  );
+
+  /// Use this to check if the Customer is the empty (e.g., not found).
+  bool get isEmpty => identical(this, Customer.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -123,19 +132,7 @@ class Customer extends Equatable {
         dt.day == _today.day;
   }
 
-  static get notFound => Customer(
-    customerId: '',
-    storeNumber: 'No Data',
-    name: 'No Data',
-    phone: 'No Data',
-    createdBy: 'No Data',
-  );
-
-  String get itemAsString => name.contains(autoID)
-      ? name.toUpperAll
-      : isEmpty
-      ? 'No Data'
-      : '$name - $customerId'.toTitle;
+  String get itemAsString => '$name - $customerId'.toTitle;
 
   /// [findCustomerById]
   static Iterable<Customer> findCustomerById(
@@ -157,15 +154,9 @@ class Customer extends Equatable {
         .toList();
   }
 
-  /// Filter
+  /// Filter/search
   bool filterByAny(String filter) =>
-      name.contains(filter) ||
-      storeNumber.contains(filter) ||
-      customerId.contains(filter) ||
-      phone.contains(filter) ||
-      altPhone.contains(filter) ||
-      email.contains(filter) ||
-      companyName.contains(filter);
+      itemAsList.filterAny(filter) || id.filterAny(filter);
 
   /// copyWith method
   Customer copyWith({

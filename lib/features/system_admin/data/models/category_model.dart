@@ -95,9 +95,8 @@ class Category extends Equatable {
 
   static get notFound => Category(name: 'No Data', createdBy: 'No Data');
 
-  /// Filter Search
-  bool filterByAny(String filter) =>
-      name.contains(filter) || id.contains(filter);
+  /// Filter/Search
+  bool filterByAny(String filter) => {name, id}.filterAny(filter);
 
   /// [findCategoriesById]
   static Iterable<Category> findCategoriesById(

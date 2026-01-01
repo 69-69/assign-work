@@ -9,6 +9,7 @@ extension CustomerTiles on dynamic {
   List<DashboardTile> get customerTiles {
     final tilesData = [
       {
+        'hasSplit': true,
         'label': 'manage - account',
         'icon': Icons.group,
         'action': RouteNames.createCustomer,
@@ -26,6 +27,7 @@ extension CustomerTiles on dynamic {
         'description': 'track customer activities throughout the software',
       },
       {
+        'hasSplit': true,
         'label': 'Statement - of Account',
         'icon': Icons.pending_actions,
         'action': RouteNames.createCustomer,

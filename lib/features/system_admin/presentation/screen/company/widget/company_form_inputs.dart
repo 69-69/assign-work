@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
 import 'package:flutter/material.dart';
 
 class CompanyFormInputs {
@@ -105,10 +106,17 @@ class CompanyFormInputs {
       helperText: 'Department name',
     ),
     FieldGroupConfig(
-      key: 'lead',
+      key: 'leadId',
       label: 'Department Lead',
       type: TextInputType.text,
-      helperText: 'Department Lead name',
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return SearchEmployees(
+          labelText: 'Department Lead',
+          initialValue: initialData,
+          onChanged: (id, code, name) => onChanged(id),
+        );
+      },
     ),
     FieldGroupConfig(
       key: 'description',
@@ -138,20 +146,5 @@ class CompanyFormInputs {
             .map((e) => fromMap(e.value, '${e.key + 1}'))
             .toList(),
       );
-
-    /* // Alternative-1 approach (now commented out)
-    _lineItems
-      ..clear() // Clear previous entries to prevent duplication
-      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
-   // Alternative-1
-    _lineItems
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(
-            data
-                .asMap()
-                .entries
-                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
-                .toList(),
-          );*/
   }
 }

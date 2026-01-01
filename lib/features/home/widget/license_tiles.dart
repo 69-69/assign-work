@@ -23,6 +23,7 @@ extension LicenseTiles on BuildContext {
       },
       // Procurement Package
       {
+        'hasSplit': true,
         'label': MainModuleId.procure.getLabel,
         'icon': MainModuleId.procure.getIcon,
         'action': RouteNames.procurementApp,
@@ -43,6 +44,7 @@ extension LicenseTiles on BuildContext {
       },
       // Sales Distribution Package
       {
+        'hasSplit': true,
         'label': MainModuleId.sales.getLabel,
         'icon': MainModuleId.sales.getIcon,
         'action': RouteNames.salesDistributionApp,
@@ -73,6 +75,7 @@ extension LicenseTiles on BuildContext {
 
       /// Not-A-License - Only used for system setup and configuration of Tenant organization\'s workspace
       {
+        'hasSplit': true,
         'label': MainModuleId.system.getLabel,
         'icon': MainModuleId.system.getIcon,
         'action': RouteNames.systemAdminApp,
@@ -85,6 +88,7 @@ extension LicenseTiles on BuildContext {
         // 'company, employees, taxes, roles, permissions, backups, licensing',
       },
       {
+        'hasSplit': true,
         'label': MainModuleId.guide.getLabel,
         'icon': MainModuleId.guide.getIcon,
         'action': RouteNames.userGuideApp,

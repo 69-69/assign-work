@@ -252,17 +252,19 @@ class RequestForQuote extends Equatable {
   }
 
   bool filterByAny(String filter) =>
-      itemAsList.any((item) => item.contains(filter)) ||
-      prNumber.contains(filter) ||
-      requestedBy.contains(filter) ||
-      title.contains(filter) ||
-      supplierLinks.any((e) => e.filterByAny(filter)) ||
-      currencyCode.contains(filter) ||
-      buyerContactPersonId.contains(filter) ||
-      (notes ?? '').contains(filter) ||
-      (shippingAddress?.filterByAny(filter) ?? false) ||
-      getExpectedDate.contains(filter) ||
-      lineItems.any((e) => e.filterByAny(filter));
+      itemAsList.filterAny(filter) ||
+      {
+        prNumber,
+        requestedBy,
+        title,
+        supplierLinks,
+        currencyCode,
+        buyerContactPersonId,
+        notes ?? '',
+        shippingAddress ?? '',
+        getExpectedDate,
+      }.filterAny(filter) ||
+      lineItems.filterAny(filter);
 
   static RequestForQuote findRFQById(
     List<RequestForQuote> rfqs,

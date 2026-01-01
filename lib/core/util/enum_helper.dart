@@ -62,7 +62,7 @@ class EnumHelper<T extends Enum> {
   ]) {
     if (enumValues.isEmpty) return [];
 
-    final list = enumValues.map((e) => _getEnumName(e)).toList();
+    final list = enumValues.map((e) => _getEnumName(e).separateWord).toList();
     return header.isEmpty ? list : [header, ...list];
   }
 }

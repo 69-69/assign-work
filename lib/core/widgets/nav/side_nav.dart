@@ -323,7 +323,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
       label: _shouldExpand
           ? Text(
               softWrap: false,
-              tile.label.toUpperAll,
+              tile.getTitle.toUpperAll,
               style: context.textTheme.bodySmall?.copyWith(
                 color: kWhiteColor,
                 overflow: TextOverflow.ellipsis,

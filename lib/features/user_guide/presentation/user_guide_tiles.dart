@@ -15,15 +15,16 @@ extension UserGuideTiles on dynamic {
         'param': {},
         'access': _getName(UserGuidePermission.userGuide),
         'description':
-            'User manual with step-by-step instructions for software usage and configuration.',
+            'Add manual with step-by-step instructions for software usage & configuration.',
       },
       {
-        'label': 'license renewal',
+        'hasSplit': true,
+        'label': 'license . renewal',
         'icon': Icons.local_police,
         'action': RouteNames.howToRenewLicense,
         'param': {},
         'access': _getName(UserGuidePermission.licenseRenewalGuide),
-        'description': 'guide on renewing or activating software',
+        'description': 'create user-manual on renewing or activating software',
       },
     ];
 

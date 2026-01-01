@@ -11,8 +11,8 @@ class Department extends Equatable {
   final String id;
   final String name;
 
-  /// Department lead/manager's name [lead]
-  final String lead;
+  /// Department lead/manager's Id [leadId]
+  final String leadId;
 
   /// Departmental Unique Code/ID [code]
   final String code;
@@ -27,7 +27,7 @@ class Department extends Equatable {
     this.id = '',
     required this.code,
     required this.name,
-    this.lead = '',
+    this.leadId = '',
     this.description = '',
     required this.createdBy,
     DateTime? createdAt,
@@ -44,7 +44,7 @@ class Department extends Equatable {
       id: id ?? map['id'] ?? '',
       code: map['code'] ?? '',
       name: map['name'] ?? '',
-      lead: map['lead'] ?? '',
+      leadId: map['leadId'] ?? '',
       description: map['description'] ?? '',
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
@@ -59,7 +59,7 @@ class Department extends Equatable {
     'id': id,
     'code': code,
     'name': name,
-    'lead': lead,
+    'leadId': leadId,
     'description': description,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
@@ -86,12 +86,7 @@ class Department extends Equatable {
 
   /// A singleton instance representing an empty/default Department.
   /// Used as a fallback when no matching Department is found.
-  static final Department empty = Department(
-    id: '',
-    name: '',
-    code: '',
-    createdBy: '',
-  );
+  static get empty => Department(id: '', name: '', code: '', createdBy: '');
 
   /// Returns true if this instance is the singleton [empty] Department.
   /// Use this to check if the Department is the default/fallback (e.g., not found).
@@ -107,12 +102,9 @@ class Department extends Equatable {
 
   String get itemAsString => name.toTitle;
 
-  /// Filter Search
+  /// Filter/search
   bool filterByAny(String filter) =>
-      name.contains(filter) ||
-      code.contains(filter) ||
-      description.contains(filter) ||
-      createdBy.contains(filter);
+      itemAsList.filterAny(filter) || description.filterAny(filter);
 
   /// [findById]
   static Department? findById(List<Department> departs, String id) =>
@@ -123,7 +115,7 @@ class Department extends Equatable {
     String? id,
     String? code,
     String? name,
-    String? lead,
+    String? leadId,
     String? description,
     String? createdBy,
     DateTime? createdAt,
@@ -135,7 +127,7 @@ class Department extends Equatable {
       id: id ?? this.id,
       code: code ?? this.code,
       name: name ?? this.name,
-      lead: lead ?? this.lead,
+      leadId: leadId ?? this.leadId,
       description: description ?? this.description,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
@@ -150,7 +142,7 @@ class Department extends Equatable {
     id,
     code,
     name,
-    lead,
+    leadId,
     description,
     createdBy,
     createdAt,
@@ -159,12 +151,11 @@ class Department extends Equatable {
     history,
   ];
 
-  /// ToList for StoreLocation [toListL]
-  List<String> toListL() => [
+  /// ToList for StoreLocation [itemAsList]
+  List<String> get itemAsList => [
     id,
     code,
     name.toTitle,
-    lead.toTitle,
     createdBy.toTitle,
     getCreatedAt,
     updatedBy.toTitle,
@@ -175,7 +166,6 @@ class Department extends Equatable {
     'ID',
     'Code',
     'Department',
-    'Lead (Manager)',
     'Created By',
     'Created At',
     'Updated By',
@@ -189,7 +179,7 @@ Map<String, dynamic> businessOwnerDefaultDepartment({required String id}) =>
     Department(
       id: id,
       name: 'executive office',
-      lead: 'ceo',
+      leadId: 'ceo',
       code: 'ceo'.generateUniqueCode(),
       description: 'this is the ceo\'s executive office department',
       createdBy: 'system',

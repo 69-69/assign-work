@@ -75,7 +75,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
           BlockQuote(
             blockColor: context.errorColor,
             child: Text(
-              'If Tax type is not listed, please contact your system admin.',
+              'If Tax category is not listed, please contact your system admin.',
               textAlign: TextAlign.justify,
             ),
           ),
@@ -331,7 +331,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
         );
       },
       helperText:
-          'If Tax type is not listed, please contact your system admin.',
+          'If Tax category is not listed, please contact your system admin.',
     );
   }
 

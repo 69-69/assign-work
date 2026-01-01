@@ -52,7 +52,7 @@ class _ListRolesState extends State<ListRoles> {
       headers: Role.dataTableHeader,
       toolbar: _buildToolbar(),
       toolbarAlignment: WrapAlignment.start,
-      rows: roles.map((d) => d.itemAsList()).toList(),
+      rows: roles.map((d) => d.itemAsList).toList(),
       onEditTap: (List<String> row) async => _onEditTap(roles, row.first),
       onDeleteTap: (List<String> row) async => _onDeleteTap(roles, row.first),
       onChecked: (bool? isChecked, List<String> row) =>

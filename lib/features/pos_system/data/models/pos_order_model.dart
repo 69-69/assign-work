@@ -234,7 +234,7 @@ class POSOrder extends Equatable {
   ];
 
   /// ToList for POS-ORDER [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     storeNumber,
     itemId.toUpperAll,

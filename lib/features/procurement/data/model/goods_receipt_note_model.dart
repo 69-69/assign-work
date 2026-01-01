@@ -109,12 +109,10 @@ class GoodsReceiptNote extends Equatable {
 
   String get getGRNStatus => status.getLabel;
 
-  bool filterByAny(String filter) => itemAsList.any(
-    (item) =>
-        item.contains(filter) ||
-        notes!.contains(filter) ||
-        lineItems.any((e) => e.filterByAny(filter)),
-  );
+  bool filterByAny(String filter) =>
+      itemAsList.filterAny(filter) ||
+      notes.filterAny(filter) ||
+      lineItems.filterAny(filter);
 
   /// For UI display only
   List<String> get itemAsList => [
@@ -230,8 +228,8 @@ class GRNLineItem extends Equatable {
 
   String get getUnitOfMeasure => unitOfMeasure.getLabel;
 
-  bool filterByAny(String filter) =>
-      itemAsList.any((item) => item.contains(filter));
+  /// Filter/search
+  bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
   /// For UI display only
   List<String> get itemAsList => [

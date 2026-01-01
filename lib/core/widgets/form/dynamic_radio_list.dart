@@ -66,12 +66,12 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
         if (_title != null) ...[
           Text(_title!, style: context.textTheme.titleMedium),
         ],
-        _buildCustomRadioList(),
+        _buildCustomRadioList(context),
       ],
     );
   }
 
-  Widget _buildCustomRadioList() {
+  Widget _buildCustomRadioList(BuildContext cxt) {
     // Map RadioGroupConfig to CustomRadioModel<String>
     final options = _radiosConfig.map((config) {
       return CustomRadioModel<String>(
@@ -81,12 +81,15 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
             Expanded(
               child: Text(
                 config.label,
-                style: const TextStyle(fontWeight: FontWeight.w400),
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: cxt.onPrimaryContainer,
+                ),
               ),
             ),
             InkWell(
               onTap: () =>
-                  _showInfoDialog(context, config.label, config.description),
+                  _showInfoDialog(cxt, config.label, config.description),
               child: Tooltip(
                 message: config.tooltip ?? 'Info',
                 child: const Icon(Icons.info_outline, size: 18),

@@ -73,6 +73,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   String? get _lineItemType =>
       widget.lineItemType ?? _initialRFQ?.lineItems.first.getTypeLabel;
   final _formKey = GlobalKey<FormState>();
+  Key _formResetKey = UniqueKey();
 
   // Basic fields
   bool _isSubmitting = false;
@@ -173,19 +174,22 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       _bloc.add(AddProcurement<ProPurchaseOrder>(data: _newPO));
 
-      context.showAlertOverlay('PO successfully created');
+      context.showAlertOverlay(
+        'PO successfully created',
+        popContext: () => _resetForm(),
+      );
 
-      _confirmPrintoutDialog();
+      await _confirmPrintoutDialog();
     } finally {
-      _resetForm();
+      setState(() => _isSubmitting = false);
     }
   }
 
   void _resetForm() {
     if (mounted) {
-      _formKey.currentState?.reset();
-
       setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
         _isSubmitting = false;
         _currencyCode = '';
         _poNumber = '';
@@ -206,7 +210,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
     );
   }
 

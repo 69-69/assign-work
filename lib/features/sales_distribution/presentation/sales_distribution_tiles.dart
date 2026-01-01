@@ -10,6 +10,7 @@ extension SalesDistributionTiles on dynamic {
     final tilesData = [
       // sales quotation tab
       {
+        'hasSplit': true,
         'label': 'Sales . Quotations',
         'icon': Icons.notes,
         'action': RouteNames.salesQuotation,
@@ -18,6 +19,7 @@ extension SalesDistributionTiles on dynamic {
         'description': 'Draft and control customer sales quotations with ease.',
       },
       {
+        'hasSplit': true,
         'label': 'sales . orders',
         'icon': Icons.shopping_bag,
         'action': RouteNames.salesOrders2,
@@ -26,6 +28,7 @@ extension SalesDistributionTiles on dynamic {
         'description': 'Create and manage customer sales orders efficiently.',
       },
       {
+        'hasSplit': true,
         'label': 'shipping . delivery',
         'icon': Icons.all_inbox,
         'action': RouteNames.shippingDelivery,

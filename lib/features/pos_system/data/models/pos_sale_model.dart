@@ -265,7 +265,7 @@ class POSSale extends Equatable {
   ];
 
   /// ToList for SALES [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     storeNumber,
     itemId.toUpperAll,

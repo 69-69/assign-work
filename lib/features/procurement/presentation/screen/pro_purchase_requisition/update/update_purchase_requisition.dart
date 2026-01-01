@@ -54,7 +54,6 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   final _formKey = GlobalKey<FormState>();
 
   // Basic fields
-  bool _isSubmitting = false;
   String? _priority;
   String? _prStatus;
   bool? _autoCreatePr;
@@ -62,8 +61,9 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   String? _costCenterCode;
   String? _departmentCode;
   // Dates
-  DateTime? _expectedDate;
   DateTime? _requestDate;
+  DateTime? _expectedDate;
+  bool _isSubmitting = false;
 
   /// Line Items & purpose/reason for PR
   final List<LineItem> _lineItems = [];
@@ -71,6 +71,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
   PurchaseRequisition get _serverPR => widget.requisite;
+  String get _lineItemType => _serverPR.lineItems.first.getTypeLabel;
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -86,7 +87,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
   /// Construct Purchase Requisite object
   PurchaseRequisition get _updatedPR {
-    final status = _prStatus ?? _serverPR.status.getName;
+    final status = _prStatus ?? _serverPR.getPRStatus;
 
     return _serverPR.copyWith(
       autoCreatePr: _autoCreatePr,
@@ -152,11 +153,6 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
@@ -166,8 +162,6 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   }
 
   Column _buildBody() {
-    final lineItemType = _serverPR.lineItems.first.getTypeLabel;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -184,10 +178,10 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         ),
 
         FormGroupCard(
-          title: '$lineItemType Line Items',
+          title: '$_lineItemType Line Items',
           subTitle:
-              '\nYou can add more ${lineItemType}s to the Requisition (PR).',
-          children: [_buildLineItems(lineItemType)],
+              '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
+          children: [_buildLineItems(_lineItemType)],
         ),
 
         FormGroupCard(
@@ -244,11 +238,11 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        // Update the ProLineItem list
+        // Update the LineItem list
         PRFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => LineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map),
         );
       },
     );

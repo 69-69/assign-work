@@ -106,6 +106,21 @@ extension UniversalIsNullOrEmpty on Object? {
   bool get isNotNullNorEmpty => !isNullOrEmpty;
 }
 
+// Filter or search a Iterable or String
+extension FilterExtension on dynamic {
+  bool filterAny(String filter) {
+    final regex = RegExp(
+      filter, // Pass the filter as the pattern
+      caseSensitive: false, // Makes it case-insensitive
+    );
+
+    // Use regex to check if Iterable (List or Set), or String and if matches
+    return this is Iterable
+        ? any((i) => regex.hasMatch(i))
+        : regex.hasMatch(this);
+  }
+}
+
 /// Check if s STRING is empty or null [isNullOrEmpty]
 extension SanitizeExtensions on String? {
   /*bool get isNullOrEmpty =>

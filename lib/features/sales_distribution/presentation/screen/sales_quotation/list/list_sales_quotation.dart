@@ -16,6 +16,7 @@ import 'package:assign_erp/features/sales_distribution/data/model/sales_quotatio
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/create/create_sales_quotation.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/update/update_sales_quotation.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -240,7 +241,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   Future<void> _onViewDetails(List<SalesQuotation> quotes, String id) async {
-    await _withCustomerInfo(
+    await _withTaxOrCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.viewed,
@@ -271,7 +272,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   Future<void> _printout(List<SalesQuotation> quotes, String id) async {
     await Future.delayed(kRProgressDelay);
 
-    await _withCustomerInfo(
+    await _withTaxOrCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.printed,
@@ -286,7 +287,18 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     final quote = _getSQById(quotes, id);
     if (quote == null) return;
 
-    // await context.openUpdateSalesQuote(quote: quote);
+    final quoteWithTaxes = await _applyTaxesToSQ(quote);
+    if (!mounted) return;
+
+    await context.openUpdateSalesQuote(serverQuote: quoteWithTaxes);
+    await _withTaxAndCustomerInfo(
+      id,
+      quotes,
+      auditAction: AuditAction.viewed,
+      onQuoteProcessed: (quoteWithTaxes, _) async {
+        return await context.openUpdateSalesQuote(serverQuote: quoteWithTaxes);
+      },
+    );
   }
 
   Future<void> _onDeleteTap(List<SalesQuotation> quotes, String id) async {
@@ -321,9 +333,42 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     );
   }
 
-  Future<void> _withCustomerInfo(
+  Future<void> _withTaxAndCustomerInfo(
+    String quoteId,
+    List<SalesQuotation> quotes, {
+    bool shouldProcessCustomerInfo = true,
+    required AuditAction auditAction,
+    required Future<void> Function(
+      SalesQuotation quoteWithTaxes,
+      Customer customer,
+    )
+    onQuoteProcessed,
+  }) async {
+    final quote = _getSQById(quotes, quoteId); // Get quote by ID
+    if (!mounted || quote == null || quote.customerId.isNullOrEmpty) return;
+
+    final quoteWithTaxes = await _applyTaxesToSQ(quote); // Apply taxes
+    if (!mounted) return;
+
+    // Update history with the audit action
+    _readBloc.add(_updateHistory(quote, action: auditAction));
+
+    if (!shouldProcessCustomerInfo) {
+      return onQuoteProcessed(quoteWithTaxes, Customer.empty);
+    }
+
+    // Fetch customer information
+    final customer = await _getCustomer(quote.customerId);
+    if (!mounted || customer == null) return;
+
+    // Process quote with customer data
+    await onQuoteProcessed(quoteWithTaxes, customer);
+  }
+
+  Future<void> _withTaxOrCustomerInfo(
     String id,
     List<SalesQuotation> quotes, {
+    bool hasCustomer = true,
     required AuditAction auditAction,
     required Future<void> Function(
       SalesQuotation quoteWithTaxes,
@@ -338,6 +383,8 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     if (!mounted) return;
 
     _readBloc.add(_updateHistory(quote, action: auditAction));
+
+    if (!hasCustomer) return onSingleCustomer(quoteWithTaxes, Customer.empty);
 
     final customer = await _getCustomer(quote.customerId);
     if (!mounted || customer == null) return;

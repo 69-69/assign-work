@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/util/enum_helper.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
 /// Supplier Link Status
@@ -84,14 +85,15 @@ class SupplierLink extends Equatable {
 
   String get getRespondedAt => respondedAt.dateOnly;
 
-  bool filterByAny(String filter) =>
-      id.contains(filter) ||
-      quoteId.contains(filter) ||
-      supplierId.contains(filter) ||
-      supplierRepId!.contains(filter) ||
-      getStatus.contains(filter) ||
-      getInvitedAt.contains(filter) ||
-      getRespondedAt.contains(filter);
+  bool filterByAny(String filter) => {
+    id,
+    quoteId,
+    supplierId,
+    supplierRepId!,
+    getStatus,
+    getInvitedAt,
+    getRespondedAt,
+  }.filterAny(filter);
 
   SupplierLink copyWith({
     String? id,

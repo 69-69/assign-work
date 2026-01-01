@@ -104,15 +104,8 @@ class CompanyStores extends Equatable {
 
   String get itemAsString => '$name - $storeNumber'.toTitle;
 
-  /// Filter Search
-  bool filterByAny(String filter) {
-    final f = filter.toLowerAll;
-
-    return name.toLowerAll.contains(f) ||
-        location.toLowerAll.contains(f) ||
-        storeNumber.contains(f) ||
-        phone.contains(f);
-  }
+  /// Filter/Search
+  bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
   /// [findStoresById]
   static Iterable<CompanyStores> findStoresById(

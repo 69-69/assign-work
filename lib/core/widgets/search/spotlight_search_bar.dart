@@ -245,11 +245,6 @@ class _GridViewResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildSearchResultsGrid(context);
-  }
-
-  /// GridView Builder for tiles
-  GridView _buildSearchResultsGrid(BuildContext context) {
     return GridView.builder(
       primary: false,
       itemCount: filteredTiles.length,
@@ -265,34 +260,36 @@ class _GridViewResults extends StatelessWidget {
         // Ratio between the width and height of grid items
         childAspectRatio: 1,
       ),
-      itemBuilder: (cxt, index) {
-        final tile = filteredTiles[index];
+      itemBuilder: (cxt, index) => _itemBuilder(cxt, index),
+    );
+  }
 
-        return InkWell(
-          onTap: () {
-            final hasPerm = canAccess(tile.access, cxt);
-            if (!hasPerm) {
-              cxt.showAlertOverlay(
-                "You don't have permission to use this feature",
-                bgColor: kWarningColor,
-                label: "OK",
-              );
-              return;
-            }
-            if (tile.param.entries.isEmpty) {
-              cxt.goNamed(tile.action);
-            } else {
-              cxt.goNamed(
-                tile.action,
-                extra: tile.param,
-                pathParameters: tile.param,
-              );
-            }
-            triggerSearchBar();
-          },
-          child: _buildGridCard(index, tile, context),
-        );
+  Widget _itemBuilder(BuildContext cxt, int index) {
+    final tile = filteredTiles[index];
+
+    return InkWell(
+      onTap: () {
+        final hasPerm = canAccess(tile.access, cxt);
+        if (!hasPerm) {
+          cxt.showAlertOverlay(
+            "You don't have permission to use this feature",
+            bgColor: kWarningColor,
+            label: "OK",
+          );
+          return;
+        }
+        if (tile.param.entries.isEmpty) {
+          cxt.goNamed(tile.action);
+        } else {
+          cxt.goNamed(
+            tile.action,
+            extra: tile.param,
+            pathParameters: tile.param,
+          );
+        }
+        triggerSearchBar();
       },
+      child: _buildGridCard(index, tile, cxt),
     );
   }
 
@@ -311,13 +308,18 @@ class _GridViewResults extends StatelessWidget {
     );
   }
 
+  /*String _getTitle(DashboardTile tile) {
+    final bool = tile.hasSplit && tile.label.contains('.');
+    final title = bool ? '${tile.title} ${tile.subTitle}' : tile.label;
+    return title;
+  }*/
+
   _buildGridTile(BuildContext context, DashboardTile tile, Color ranColor) {
-    final parts = tile.label.split(' - ');
-    final title = parts.first;
+    // final title = _getTitle(tile);
 
     return GridTile(
       header: _HighlightedText(
-        text: tile.label,
+        text: tile.getTitle,
         query: query,
         isUppercase: true,
         style: context.textTheme.titleSmall?.copyWith(
@@ -340,7 +342,7 @@ class _GridViewResults extends StatelessWidget {
         tile.icon,
         size: 80,
         color: kLightBlueColor.toAlpha(0.6),
-        semanticLabel: title,
+        semanticLabel: tile.getTitle,
       ),
     );
     /*Column(
@@ -392,8 +394,15 @@ class _ListViewResults extends StatelessWidget {
     );
   }
 
+  /*String _getTitle(DashboardTile tile) {
+    final bool = tile.hasSplit && tile.label.contains('.');
+    final title = bool ? '${tile.title} ${tile.subTitle}' : tile.label;
+    return title;
+  }*/
+
   Card _buildListCard(BuildContext cxt, DashboardTile tile, int index) {
     final ranColor = randomBgColors[index]; // kLightBlueColor
+    // final title = _getTitle(tile);
 
     return Card(
       elevation: 30,
@@ -403,7 +412,7 @@ class _ListViewResults extends StatelessWidget {
         dense: true,
         title: _HighlightedText(
           query: query,
-          text: tile.label,
+          text: tile.getTitle,
           isUppercase: true,
           style: cxt.textTheme.titleSmall,
         ),

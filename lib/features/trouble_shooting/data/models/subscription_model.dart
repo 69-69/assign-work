@@ -146,16 +146,9 @@ class Subscription extends Equatable {
 
   String get itemAsString => name.toTitle;
 
-  /// Filter
-  bool filterByAny(String filter) {
-    final f = filter.toLowerAll;
-
-    return id.contains(f) ||
-        name.toLowerAll.contains(f) ||
-        licenses.any(
-          (p) => p.license.toLowerAll == f || p.module.toLowerAll == f,
-        );
-  }
+  /// Filter/search
+  bool filterByAny(String filter) =>
+      itemAsList.filterAny(filter) || licenses.filterAny(filter);
 
   @override
   List<Object?> get props => [
@@ -172,7 +165,7 @@ class Subscription extends Equatable {
   ];
 
   /// ToList for PRODUCTS [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     '$fee',
     name.toTitle,

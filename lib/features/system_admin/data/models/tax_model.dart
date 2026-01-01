@@ -137,22 +137,8 @@ class Tax extends Equatable {
         (autoApplyOn.contains(context) || autoApplyOn.contains(TaxContext.all));
   }
 
-  /// Filter Search
-  bool filterByAny(String filter) {
-    // Split the filter into separate terms if it contains spaces
-    final terms = filter.split(' ');
-
-    // Check if any term matches any of the properties
-    return terms.any(
-      (term) =>
-          id.contains(term) ||
-          code.contains(term) ||
-          name.contains(term) ||
-          '$rate'.contains(term) ||
-          notes.contains(term) ||
-          createdBy.contains(term),
-    );
-  }
+  /// Filter/search
+  bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
   /// [findById]
   static Tax? findById(List<Tax> departs, String id) =>

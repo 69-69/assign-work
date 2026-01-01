@@ -162,17 +162,15 @@ class Supplier extends Equatable {
 
   /// Filter Search
   bool filterByAny(String filter) =>
-      id.contains(filter) ||
-      code.contains(filter) ||
-      name.contains(filter) ||
-      phone.contains(filter) ||
-      email!.contains(filter) ||
-      address.contains(filter) ||
-      items.contains(filter) ||
-      businessType.contains(filter) ||
-      bankDetails!.contains(filter) ||
-      taxDetails!.contains(filter) ||
-      contactPersons.any((e) => e.filterByAny(filter));
+      itemAsList.filterAny(filter) ||
+      {
+        code,
+        items,
+        businessType,
+        bankDetails!,
+        taxDetails!,
+      }.filterAny(filter) ||
+      contactPersons.filterAny(filter);
 
   /// [findById]
   static Supplier findById(List<Supplier> suppliers, String id) =>
@@ -233,8 +231,8 @@ class Supplier extends Equatable {
     updatedAt,
   ];
 
-  /// ToList for Items/Products-Supplier address [toListL]
-  List<String> toListL() => [
+  /// ToList for Items/Products-Supplier address [itemAsList]
+  List<String> get itemAsList => [
     id,
     name.toTitle,
     phone,

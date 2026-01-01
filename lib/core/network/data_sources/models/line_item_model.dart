@@ -164,22 +164,19 @@ abstract class LineItem {
     String? taxNames,
   });
 
-  bool containsIgnoreCase(String a, String b) =>
-      a.toLowerAll.contains(b.toLowerAll);
-
-  bool filterByAny(String filter) =>
-      {
-        '$quantity',
-        '$discount',
-        '$quantity',
-        '$leadTimeDays',
-        getRequiredDate,
-      }.contains(filter) ||
-      containsIgnoreCase(description, filter) ||
-      containsIgnoreCase(notes, filter) ||
-      containsIgnoreCase(getCategory, filter) ||
-      containsIgnoreCase(getUnitOfMeasure, filter) ||
-      containsIgnoreCase(getTypeLabel, filter);
+  /// Filter/Search
+  bool filterByAny(String filter) => {
+    '$quantity',
+    '$discount',
+    '$quantity',
+    '$leadTimeDays',
+    getRequiredDate,
+    description,
+    notes,
+    getCategory,
+    getUnitOfMeasure,
+    getTypeLabel,
+  }.filterAny(filter);
 
   /// [updateTax] Returns a new instance with updated tax info if applicable
   LineItem updateTax({required double taxAmount, required String taxNames}) {
@@ -287,9 +284,8 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
   @override
   bool filterByAny(String filter) =>
       super.filterByAny(filter) ||
-      containsIgnoreCase(taxNames, filter) ||
-      containsIgnoreCase('$taxAmount', filter) ||
-      taxCodes.contains(filter);
+      taxCodes.filterAny(filter) ||
+      {'$unitPrice', taxNames, '$taxAmount'}.contains(filter);
 
   @override
   MaterialLineItem copyWith({
@@ -475,7 +471,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
   @override
   bool filterByAny(String filter) =>
       super.filterByAny(filter) ||
-      containsIgnoreCase(taxNames, filter) ||
+      taxCodes.filterAny(filter) ||
       {
         taxCodes,
         '$taxAmount',

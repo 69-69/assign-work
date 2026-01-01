@@ -97,6 +97,12 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
     return can;
   }
 
+  /*String _getTitle(DashboardTile tile) {
+    final bool = tile.hasSplit && tile.label.contains('.');
+    final title = bool ? '${tile.title} ${tile.subTitle}' : tile.label;
+    return title;
+  }*/
+
   @override
   Widget build(BuildContext context) {
     double pad = 20;
@@ -304,7 +310,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
   GridTile _buildGridTile(DashboardTile tile, BuildContext context, viewCard) {
     return GridTile(
       header: Text(
-        tile.label.toUpperAll,
+        tile.getTitle.toUpperAll,
         textAlign: TextAlign.center,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(color: kWhiteColor),
@@ -323,10 +329,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
   }
 
   _buildIconCard(DashboardTile tile, BuildContext context) {
-    // Split on multiple separators like '- _ . & + /'
-    final parts = tile.label.split(RegExp(r'\s*[-_.&+/]\s*'));
-    final title = parts.first;
-    final subTitle = parts.length > 1 ? parts[1] : '';
+    // final title = _getTitle(tile);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -339,12 +342,12 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
                 tile.icon,
                 color: kLightBlueColor,
                 size: context.screenWidth * 0.1,
-                semanticLabel: title,
+                semanticLabel: tile.getTitle,
               ),
             ),
             label: context.isMobile
                 ? const SizedBox.shrink()
-                : _buildListTile(title, context, subTitle),
+                : _buildListTile(tile.title!, context, tile.subTitle!),
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
@@ -405,6 +408,8 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
   }
 
   _buildLogoCard(BuildContext context, DashboardTile tile) {
+    // final title = _getTitle(tile);
+
     return Wrap(
       runAlignment: WrapAlignment.center,
       alignment: WrapAlignment.center,
@@ -418,7 +423,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         if (!context.isMobile) ...[
           const SizedBox(width: 10),
           Text(
-            tile.label.toUpperAll,
+            tile.getTitle.toUpperAll,
             textAlign: TextAlign.center,
             style: context.textTheme.titleMedium?.copyWith(color: kWhiteColor),
             textScaler: TextScaler.linear(context.textScaleFactor),

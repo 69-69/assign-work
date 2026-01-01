@@ -196,19 +196,11 @@ class Employee extends Equatable {
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
-  String get itemAsString => '$fullName $role'.toTitle;
+  String get itemAsString => '$fullName - $role'.toTitle;
 
-  /// Filter Search
+  /// Filter/Search
   bool filterByAny(String filter) =>
-      fullName.contains(filter) ||
-      role.contains(filter) ||
-      departmentCode.contains(filter) ||
-      mobileNumber.contains(filter) ||
-      email.contains(filter) ||
-      employeeId.contains(filter) ||
-      status.contains(filter) ||
-      storeNumber.contains(filter) ||
-      username.contains(filter);
+      itemAsList.filterAny(filter) || {email, username}.filterAny(filter);
 
   /// [findById]
   static Iterable<Employee> findById(List<Employee> employees, String id) =>

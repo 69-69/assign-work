@@ -10,7 +10,8 @@ extension ProcurementTiles on dynamic {
   List<DashboardTile> get supplierManagementTiles {
     final tilesData = [
       {
-        'label': 'suppliers - account',
+        'hasSplit': true,
+        'label': 'suppliers . account',
         'icon': Icons.account_balance,
         'action': RouteNames.supplierAccount,
         'param': {},
@@ -18,7 +19,8 @@ extension ProcurementTiles on dynamic {
         'description': 'create and manage supplier accounts',
       },
       {
-        'label': 'suppliers - evaluation',
+        'hasSplit': true,
+        'label': 'suppliers . evaluation',
         'icon': Icons.star_half_outlined,
         'action': RouteNames.supplierEvaluation,
         'param': {},
@@ -27,7 +29,8 @@ extension ProcurementTiles on dynamic {
             'track and rate supplier performance: quality, delivery, and communication',
       },
       {
-        'label': 'contract - management',
+        'hasSplit': true,
+        'label': 'contract . management',
         'icon': Icons.assignment_outlined,
         'action': RouteNames.contractManagement,
         'param': {},
@@ -69,6 +72,7 @@ extension ProcurementTiles on dynamic {
   List<DashboardTile> get procurementTiles {
     final tilesData = [
       {
+        'hasSplit': true,
         'label': 'purchase . requisition',
         'icon': Icons.edit_document,
         'action': RouteNames.purchaseRequisition,
@@ -78,6 +82,7 @@ extension ProcurementTiles on dynamic {
             'manage internal request by departments for needed items before a PO is created',
       },
       {
+        'hasSplit': true,
         'label': 'request . for quotes',
         'icon': Icons.request_page_outlined,
         'action': RouteNames.proRequestForQuote,
@@ -87,6 +92,7 @@ extension ProcurementTiles on dynamic {
             'manage quotation requests to suppliers for pricing and terms',
       },
       {
+        'hasSplit': true,
         'label': 'purchase . orders',
         'icon': Icons.paypal,
         'action': RouteNames.proPurchaseOrders,
@@ -110,7 +116,8 @@ extension ProcurementTiles on dynamic {
       // GOODS RECEIPT
       // -------------------------
       {
-        'label': 'GRN: goods receipt note',
+        'hasSplit': true,
+        'label': 'GRN: goods . receipt note',
         'icon': Icons.receipt_long,
         'action': RouteNames.goodsReceiptNote,
         'param': {},
@@ -122,7 +129,8 @@ extension ProcurementTiles on dynamic {
       // SERVICE ENTRY SHEET
       // -------------------------
       {
-        'label': 'SES: service entry sheet',
+        'hasSplit': true,
+        'label': 'SES: service . entry sheet',
         'icon': Icons.assignment_turned_in_outlined,
         'action': RouteNames.serviceEntrySheet,
         'param': {},
@@ -131,7 +139,8 @@ extension ProcurementTiles on dynamic {
             'Confirm and approve completion of vendor-provided services.\nUsed for service POs—no inventory impact.',
       },
       {
-        'label': 'suppliers - management',
+        'hasSplit': true,
+        'label': 'suppliers . management',
         'icon': Icons.store_mall_directory_outlined,
         // local_shipping
         'action': RouteNames.supplierManagement,

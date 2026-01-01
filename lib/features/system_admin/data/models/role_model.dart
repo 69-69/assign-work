@@ -110,9 +110,9 @@ class Role extends Equatable {
 
   String get itemAsString => name.toTitle;
 
-  /// Filter
+  /// Filter/search
   bool filterByAny(String filter) =>
-      name.contains(filter) || permissions.any((p) => p.filterByAny(filter));
+      itemAsList.filterAny(filter) || permissions.filterAny(filter);
 
   @override
   List<Object?> get props => [
@@ -126,7 +126,7 @@ class Role extends Equatable {
   ];
 
   /// ToList for PRODUCTS [itemAsList]
-  List<String> itemAsList() => [
+  List<String> get itemAsList => [
     id,
     name.toTitle,
     permissions.length.toString(),

@@ -39,8 +39,9 @@ enum AuditAction {
   fulfilled,
   invoiced,
   paid,
-  convertedToRFQ, // Converted to Request For Quotation
-  convertedToPO, // Converted to Purchase Order
+  convertedToRFQ, // Converted PR to Request For Quotation
+  convertedToPO, // Converted RFQ to Purchase Order
+  convertedToSO, // Converted Sales Quote to Sales Order
 }
 
 /* USAGE:

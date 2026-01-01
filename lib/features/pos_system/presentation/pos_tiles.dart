@@ -29,6 +29,7 @@ extension POSTiles on dynamic {
         'description': 'keep track of, and oversee the progress of sales.',
       },
       {
+        'hasSplit': true,
         'label': 'report - Analytics',
         'icon': Icons.add_chart,
         'action': RouteNames.posReports,

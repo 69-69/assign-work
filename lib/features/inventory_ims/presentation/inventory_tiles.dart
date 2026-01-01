@@ -10,7 +10,8 @@ extension InventoryTiles on dynamic {
   List<DashboardTile> get ordersTiles {
     final tilesData = [
       {
-        'label': 'sales - order',
+        'hasSplit': true,
+        'label': 'sales . order',
         'icon': Icons.trending_up,
         'action': RouteNames.salesOrders,
         'param': {},
@@ -18,7 +19,8 @@ extension InventoryTiles on dynamic {
         'description': 'Create orders for customers or clients',
       },
       {
-        'label': 'purchase - order',
+        'hasSplit': true,
+        'label': 'purchase . order',
         'icon': Icons.paypal,
         'action': RouteNames.imsPurchaseOrders,
         'param': {},
@@ -65,6 +67,7 @@ extension InventoryTiles on dynamic {
         /// NOTE: There'll be Horizonal-tabs under the Item/Product Master tab (for: Items Stocking, Expiry, Warranty start/end).
         */
       {
+        'hasSplit': true,
         'label': 'Item . Master',
         'icon': Icons.inventory_2,
         'action': RouteNames.items,
@@ -94,6 +97,7 @@ extension InventoryTiles on dynamic {
           This module is core to preventing overselling. It helps balance sales, production, and
           procurement by providing real-time visibility into what’s actually available and what’s already committed elsewhere in the system.*/
       {
+        'hasSplit': true,
         'label': 'Stock . Management',
         'icon': Icons.receipt_long,
         'action': RouteNames.items, // Temporal Placeholder
@@ -170,14 +174,15 @@ extension InventoryTiles on dynamic {
         /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
         /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
         /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
+        'hasSplit': true,
         'label': 'Goods / Service Receipt',
         'icon': Icons.assignment_returned,
-        'action': RouteNames.items, // Temporal Placeholder
+        'action': RouteNames.items,
+        // Temporal Placeholder
         // 'action': RouteNames.goodsReceipt,
         'param': {},
-        'access': _getName(
-          InventoryPermission.manageStock,
-        ), // Temporal Placeholder
+        'access': _getName(InventoryPermission.manageStock),
+        // Temporal Placeholder
         // 'access': _getName(InventoryPermission.manageGoodsReceipt),
         'description':
             'Record goods/services from suppliers, returns, or production into inventory.',
@@ -198,7 +203,8 @@ extension InventoryTiles on dynamic {
         NOTE: Good Issue databases do NOT duplicate full item master data.
         They store references (foreign keys) + a small snapshot.*/
       {
-        'label': 'Goods Issue',
+        'hasSplit': true,
+        'label': 'Goods . Issue',
         'icon': Icons.call_made,
         // 'action': RouteNames.goodsIssue,
         'action': RouteNames.items, // Temporal Placeholder
@@ -225,15 +231,16 @@ extension InventoryTiles on dynamic {
         Improves purchasing and stocking decisions
         Supports strategic planning and audits*/
       {
+        'hasSplit': true,
         'label': 'Inventory . Reports',
         'icon': Icons.bar_chart,
         // 'action': RouteNames.inventoryReports,
-        'action': RouteNames.items, // Temporal Placeholder
+        'action': RouteNames.items,
+        // Temporal Placeholder
         'param': {},
         // 'access': _getName(InventoryPermission.viewInventoryReports),
-        'access': _getName(
-          InventoryPermission.manageStock,
-        ), // Temporal Placeholder
+        'access': _getName(InventoryPermission.manageStock),
+        // Temporal Placeholder
         'description':
             'Visual insights of stock levels, movement, aging, and inventory performance.',
         // Visual insights into stock levels, movement trends, aging analysis, and overall inventory performance.
@@ -261,7 +268,8 @@ extension InventoryTiles on dynamic {
       },
       // for inventory
       {
-        'label': 'misc - order',
+        'hasSplit': true,
+        'label': 'misc . order',
         'icon': Icons.payments_outlined,
         'action': RouteNames.miscOrders,
         'param': {},
@@ -338,7 +346,8 @@ extension InventoryTiles on dynamic {
       },
       // report analytics tab
       {
-        'label': 'report - Analytics',
+        'hasSplit': true,
+        'label': 'report . Analytics',
         'icon': Icons.add_chart,
         'action': RouteNames.inventReports,
         'param': {},
@@ -369,307 +378,307 @@ String _getName(e) => EnumHelper<InventoryPermission>(e).getName;
 
 /**In a **full ERP**, **Inventory** is not just “stock in / stock out”. It’s a **core operational domain** with multiple tightly related **sub-modules** that support Sales, Procurement, POS, Manufacturing, and Finance.
 
-Below is a **clean, enterprise-grade breakdown** of what typically falls **under the Inventory module**, with practical ERP context.
+    Below is a **clean, enterprise-grade breakdown** of what typically falls **under the Inventory module**, with practical ERP context.
 
----
+    ---
 
-# @TODO Core Inventory Modules
+    # @TODO Core Inventory Modules
 
-## 1️⃣ Item / Product Master
+    ## 1️⃣ Item / Product Master
 
-**Purpose:** Central definition of everything that can be stocked.
+ **Purpose:** Central definition of everything that can be stocked.
 
-**Key objects:**
+ **Key objects:**
 
-* Items / Products
-* Item Categories
-* Units of Measure (UOM)
-* Barcodes / SKUs
-* Variants (size, color, model)
-* Lot / Serial tracking flags
+ * Items / Products
+ * Item Categories
+ * Units of Measure (UOM)
+ * Barcodes / SKUs
+ * Variants (size, color, model)
+ * Lot / Serial tracking flags
 
-📌 Shared across **Sales, Procurement, POS, Manufacturing**.
+    📌 Shared across **Sales, Procurement, POS, Manufacturing**.
 
----
+    ---
 
-## 2️⃣ Stock Management
+    ## 2️⃣ Stock Management
 
-**Purpose:** Real-time stock control.
+ **Purpose:** Real-time stock control.
 
-**Key objects:**
+ **Key objects:**
 
-* Stock On Hand
-* Available Quantity
-* Reserved Quantity
-* Damaged / Blocked Stock
+ * Stock On Hand
+ * Available Quantity
+ * Reserved Quantity
+ * Damaged / Blocked Stock
 
-📌 Core for preventing overselling.
+    📌 Core for preventing overselling.
 
----
+    ---
 
-## 3️⃣ Warehouse Management
+    ## 3️⃣ Warehouse Management
 
-**Purpose:** Physical stock organization.
+ **Purpose:** Physical stock organization.
 
-**Key objects:**
+ **Key objects:**
 
-* Warehouses
-* Locations / Bins
-* Zones / Racks
-* Put-away rules
-* Picking strategies
+ * Warehouses
+ * Locations / Bins
+ * Zones / Racks
+ * Put-away rules
+ * Picking strategies
 
-📌 Scales from simple warehouse → WMS-level complexity.
+    📌 Scales from simple warehouse → WMS-level complexity.
 
----
+    ---
 
-## 4️⃣ Goods Receipt (Inbound)
+    ## 4️⃣ Goods Receipt (Inbound)
 
-**Purpose:** Increase inventory from external sources.
+ **Purpose:** Increase inventory from external sources.
 
-**Sources:**
+ **Sources:**
 
-* Purchase Orders
-* Customer Returns
-* Production Output
+ * Purchase Orders
+ * Customer Returns
+ * Production Output
 
-**Key objects:**
+ **Key objects:**
 
-* Goods Receipt Notes (GRN)
-* Receiving Inspection
-* Partial Receipts
+ * Goods Receipt Notes (GRN)
+ * Receiving Inspection
+ * Partial Receipts
 
----
+    ---
 
-## 5️⃣ Goods Issue (Outbound)
+    ## 5️⃣ Goods Issue (Outbound)
 
-**Purpose:** Decrease inventory.
+ **Purpose:** Decrease inventory.
 
-**Sources:**
+ **Sources:**
 
-* Sales Orders
-* POS Sales
-* Transfers
-* Write-offs
+ * Sales Orders
+ * POS Sales
+ * Transfers
+ * Write-offs
 
-**Key objects:**
+ **Key objects:**
 
-* Delivery Issues
-* Picking Lists
-* Issue Notes
+ * Delivery Issues
+ * Picking Lists
+ * Issue Notes
 
----
+    ---
 
-## 6️⃣ Inventory Transfers
+    ## 6️⃣ Inventory Transfers
 
-**Purpose:** Move stock internally.
+ **Purpose:** Move stock internally.
 
-**Types:**
+ **Types:**
 
-* Warehouse → Warehouse
-* Bin → Bin
-* Store → Store
+ * Warehouse → Warehouse
+ * Bin → Bin
+ * Store → Store
 
-**Key objects:**
+ **Key objects:**
 
-* Transfer Orders
-* In-Transit Stock
+ * Transfer Orders
+ * In-Transit Stock
 
----
+    ---
 
-## 7️⃣ Inventory Adjustments
+    ## 7️⃣ Inventory Adjustments
 
-**Purpose:** Correct discrepancies.
+ **Purpose:** Correct discrepancies.
 
-**Reasons:**
+ **Reasons:**
 
-* Damage
-* Theft
-* Shrinkage
-* Counting errors
+ * Damage
+ * Theft
+ * Shrinkage
+ * Counting errors
 
-**Key objects:**
+ **Key objects:**
 
-* Adjustment Documents
-* Reason Codes
-* Approval Workflow
+ * Adjustment Documents
+ * Reason Codes
+ * Approval Workflow
 
-📌 Strong audit requirement.
+    📌 Strong audit requirement.
 
----
+    ---
 
-## 8️⃣ Cycle Counting & Physical Inventory
+    ## 8️⃣ Cycle Counting & Physical Inventory
 
-**Purpose:** Stock accuracy.
+ **Purpose:** Stock accuracy.
 
-**Key objects:**
+ **Key objects:**
 
-* Physical Count Documents
-* Variance Reports
-* Reconciliation Entries
+ * Physical Count Documents
+ * Variance Reports
+ * Reconciliation Entries
 
-📌 Essential for compliance and accuracy.
+    📌 Essential for compliance and accuracy.
 
----
+    ---
 
-## 9️⃣ Lot / Batch Management
+    ## 9️⃣ Lot / Batch Management
 
-**Purpose:** Traceability.
+ **Purpose:** Traceability.
 
-**Used in:**
+ **Used in:**
 
-* Food
-* Pharma
-* Manufacturing
+ * Food
+ * Pharma
+ * Manufacturing
 
-**Key objects:**
+ **Key objects:**
 
-* Lot Numbers
-* Expiry Dates
-* Batch History
+ * Lot Numbers
+ * Expiry Dates
+ * Batch History
 
----
+    ---
 
-## 🔟 Serial Number Tracking
+    ## 🔟 Serial Number Tracking
 
-**Purpose:** Individual item traceability.
+ **Purpose:** Individual item traceability.
 
-**Used for:**
+ **Used for:**
 
-* Electronics
-* Appliances
-* Assets
+ * Electronics
+ * Appliances
+ * Assets
 
-**Key objects:**
+ **Key objects:**
 
-* Serial Numbers
-* Warranty Tracking
-* Ownership History
+ * Serial Numbers
+ * Warranty Tracking
+ * Ownership History
 
----
+    ---
 
-## 1️⃣1️⃣ Inventory Valuation
+    ## 1️⃣1️⃣ Inventory Valuation
 
-**Purpose:** Financial impact of stock.
+ **Purpose:** Financial impact of stock.
 
-**Methods:**
+ **Methods:**
 
-* FIFO
-* LIFO
-* Weighted Average
-* Standard Cost
+ * FIFO
+ * LIFO
+ * Weighted Average
+ * Standard Cost
 
-**Key objects:**
+ **Key objects:**
 
-* Stock Value
-* Cost Layers
-* GL Postings
+ * Stock Value
+ * Cost Layers
+ * GL Postings
 
-📌 Deep integration with Finance.
+    📌 Deep integration with Finance.
 
----
+    ---
 
-## 1️⃣2️⃣ Reordering & Stock Planning
+    ## 1️⃣2️⃣ Reordering & Stock Planning
 
-**Purpose:** Prevent stockouts and overstocking.
+ **Purpose:** Prevent stockouts and overstocking.
 
-**Key objects:**
+ **Key objects:**
 
-* Reorder Levels
-* Safety Stock
-* Min / Max Rules
-* Demand Forecast (optional)
+ * Reorder Levels
+ * Safety Stock
+ * Min / Max Rules
+ * Demand Forecast (optional)
 
-📌 Feeds into Procurement.
+    📌 Feeds into Procurement.
 
----
+    ---
 
-## 1️⃣3️⃣ Inventory Reservations
+    ## 1️⃣3️⃣ Inventory Reservations
 
-**Purpose:** Protect stock for specific orders.
+ **Purpose:** Protect stock for specific orders.
 
-**Sources:**
+ **Sources:**
 
-* Sales Orders
-* Production Orders
-* Transfers
+ * Sales Orders
+ * Production Orders
+ * Transfers
 
-📌 Critical for ERP sales integrity.
+    📌 Critical for ERP sales integrity.
 
----
+    ---
 
-## 1️⃣4️⃣ Inventory Reports & Analytics
+    ## 1️⃣4️⃣ Inventory Reports & Analytics
 
-**Purpose:** Visibility and control.
+ **Purpose:** Visibility and control.
 
-**Reports:**
+ **Reports:**
 
-* Stock Aging
-* Inventory Turnover
-* Dead Stock
-* Fast / Slow Moving Items
-* Warehouse Utilization
+ * Stock Aging
+ * Inventory Turnover
+ * Dead Stock
+ * Fast / Slow Moving Items
+ * Warehouse Utilization
 
----
+    ---
 
-# Inventory Module → Integration Map
+    # Inventory Module → Integration Map
 
-| Inventory Sub-Module | Integrates With    |
-| -------------------- | ------------------ |
-| Goods Receipt        | Procurement        |
-| Goods Issue          | Sales / POS        |
-| Valuation            | Finance (GL, COGS) |
-| Reordering           | Procurement        |
-| Serial / Lot         | Sales, Returns     |
-| Transfers            | Logistics          |
+    | Inventory Sub-Module | Integrates With    |
+    | -------------------- | ------------------ |
+    | Goods Receipt        | Procurement        |
+    | Goods Issue          | Sales / POS        |
+    | Valuation            | Finance (GL, COGS) |
+    | Reordering           | Procurement        |
+    | Serial / Lot         | Sales, Returns     |
+    | Transfers            | Logistics          |
 
----
+    ---
 
-# High-Level Inventory Flow
+    # High-Level Inventory Flow
 
-```
-Item Master
-     ↓
-Goods Receipt
-     ↓
-Stock On Hand
-     ↓
-Reservation
-     ↓
-Goods Issue
-     ↓
-Valuation Posting
-```
+    ```
+    Item Master
+    ↓
+    Goods Receipt
+    ↓
+    Stock On Hand
+    ↓
+    Reservation
+    ↓
+    Goods Issue
+    ↓
+    Valuation Posting
+    ```
 
----
+    ---
 
-# Architecture Tip (From Your ERP Experience)
+    # Architecture Tip (From Your ERP Experience)
 
-Best practice is to separate:
+    Best practice is to separate:
 
-* **Inventory Core Service** (stock, reservations)
-* **Warehouse Service** (bins, picking)
-* **Valuation Service** (costing, GL entries)
+ * **Inventory Core Service** (stock, reservations)
+ * **Warehouse Service** (bins, picking)
+ * **Valuation Service** (costing, GL entries)
 
-Even in a monolith, keep **clear boundaries**.
+    Even in a monolith, keep **clear boundaries**.
 
----
+    ---
 
-## Final takeaway
+    ## Final takeaway
 
-✔ Inventory is a **domain**, not a table
-✔ Every movement is a **document + ledger entry**
-✔ Accuracy and auditability are more important than speed
-✔ POS is just another consumer of inventory
+    ✔ Inventory is a **domain**, not a table
+    ✔ Every movement is a **document + ledger entry**
+    ✔ Accuracy and auditability are more important than speed
+    ✔ POS is just another consumer of inventory
 
-If you want next, I can:
+    If you want next, I can:
 
-* Design **Inventory DB schema**
-* Show **event-driven inventory updates**
-* Explain **reservation vs deduction timing**
+ * Design **Inventory DB schema**
+ * Show **event-driven inventory updates**
+ * Explain **reservation vs deduction timing**
 
-Just tell me.
-*/
+    Just tell me.
+ */
 
 /*/// Returns a list of Inventory-Dashboard-Tiles based on the Inventory license [inventoryTiles]
   Map<EmployeeRole, List<DashboardTile>> get _rbcInventoryTiles {

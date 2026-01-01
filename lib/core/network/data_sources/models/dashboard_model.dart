@@ -9,10 +9,15 @@ class DashboardTile {
     this.param = const {},
     required this.access,
     this.description,
-  });
+    this.hasSplit = false,
+  }) : title = _splitLabel(label, hasSplit).$1 ?? label,
+       subTitle = _splitLabel(label, hasSplit).$2 ?? '';
 
   final String label;
   final dynamic icon;
+
+  /// Boolean flag indicating if the title want to be split into two parts(title & subtitle)
+  final bool hasSplit;
 
   /// [access] Access level required to use this tile: Permission/License checks
   final String access;
@@ -20,8 +25,35 @@ class DashboardTile {
   final String? description;
   final Map<String, String> param;
 
+  /// Parsed values
+  final String? title;
+  final String? subTitle;
+
+  /// Split once, return structured result
+  static (String? title, String? subTitle) _splitLabel(
+    String label,
+    bool isSplit,
+  ) {
+    if (!isSplit) return (null, null);
+
+    // Split on multiple separators like '- _ . & + /'
+    final parts = label.split(RegExp(r'\s*[-_.&+/]\s*'));
+
+    final title = parts.isNotEmpty ? parts.first.trim() : '';
+    final subTitle = parts.length > 1 && parts[1].trim().isNotEmpty
+        ? parts[1].trim()
+        : null;
+
+    return (title, subTitle);
+  }
+
+  // RegExp to check if the label contains either . or -
+  String get getTitle =>
+      hasSplit && RegExp(r'[.-]').hasMatch(label) ? '$title $subTitle' : label;
+
   factory DashboardTile.fromMap(Map<String, dynamic> map) {
     return DashboardTile(
+      hasSplit: map['hasSplit'] ?? false,
       icon: map['icon'] as IconData,
       label: map['label'] as String,
       action: map['action'] as String,
@@ -31,15 +63,6 @@ class DashboardTile {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'icon': icon,
-    'label': label,
-    'action': action,
-    'param': param,
-    'access': access,
-    'description': description,
-  };
-
   /*
   * Filter tiles: matching or excluding labels or patterns.
   * USAGE:
@@ -47,7 +70,7 @@ class DashboardTile {
   * --OR--
   * filter(tiles, [RegExp(r'^Admin'), RegExp(r'log$', caseSensitive: false)]);
   * --OR--
-  * filter(tiles, ['Admin', 'log'], exclude: true);*/
+  * filter(tiles, ['Admin', 'log'], exclude: true);
 
   static List<DashboardTile> filter(
     List<DashboardTile> tiles,
@@ -67,10 +90,10 @@ class DashboardTile {
         (tile) => exclude ? !matches(tile.label) : matches(tile.label),
       ),
     );
-  }
+  }*/
 }
 
-class RoleBasedDashboardTile<T> {
+/*class RoleBasedDashboardTile<T> {
   final T roleInfo;
   final List<DashboardTile> tiles;
 
@@ -91,4 +114,4 @@ class DashboardTileManager<T> {
         tiles: entry.value,
       ),
   };
-}
+}*/

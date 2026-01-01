@@ -201,9 +201,9 @@ class PurchaseRequisition extends Equatable {
   bool get isOverdue => expectedDate != null && expectedDate!.isBefore(_today);
 
   bool filterByAny(String filter) =>
-      itemAsList.any((item) => item.contains(filter)) ||
-      purpose.contains(filter) ||
-      lineItems.any((e) => e.filterByAny(filter));
+      itemAsList.filterAny(filter) ||
+      purpose.filterAny(filter) ||
+      lineItems.filterAny(filter);
 
   /// Approved PRs
   static List<PurchaseRequisition> filterApprovedPR(

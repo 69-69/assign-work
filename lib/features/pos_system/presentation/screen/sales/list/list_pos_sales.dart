@@ -68,8 +68,8 @@ class _ListPOSSalesState extends State<ListPOSSales> {
       maskAtIndex: 2,
       headers: POSSale.dataTableHeader,
       toolbar: _buildToolbar(sales),
-      rows: todaySales.map((s) => s.itemAsList()).toList(),
-      childrenRow: pastSales.map((s) => s.itemAsList()).toList(),
+      rows: todaySales.map((s) => s.itemAsList).toList(),
+      childrenRow: pastSales.map((s) => s.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(sales, isChecked, row.first),
       onAllChecked:

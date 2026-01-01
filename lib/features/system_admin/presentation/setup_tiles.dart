@@ -10,6 +10,7 @@ extension SetupTiles on dynamic {
   List<DashboardTile> get setupTiles {
     final tilesData = [
       {
+        'hasSplit': true,
         'label': 'company . setup',
         'icon': Icons.home_work,
         'action': RouteNames.companyInfo,
@@ -27,6 +28,7 @@ extension SetupTiles on dynamic {
             'create staff attendance, accounts, assign roles for their utilization of the software',
       },
       {
+        'hasSplit': true,
         'label': 'roles . permissions',
         'icon': Icons.admin_panel_settings,
         'action': RouteNames.manageRoles,
@@ -36,6 +38,7 @@ extension SetupTiles on dynamic {
             'Create, edit, assign roles with specific permissions to control access within your team.',
       },
       {
+        'hasSplit': true,
         'label': 'workflow . approval rules',
         'icon': Icons.approval,
         'action': RouteNames.workflowApprovalRules,
@@ -46,6 +49,7 @@ extension SetupTiles on dynamic {
         // 'description': 'Define and manage approval workflows by document type, role, and approval level to ensure proper authorization across your organization.',
       },
       {
+        'hasSplit': true,
         'label': 'Tax . Rates',
         'icon': Icons.calculate,
         'action': RouteNames.manageTaxes,
@@ -55,6 +59,7 @@ extension SetupTiles on dynamic {
             'Manage tax rates (VAT or sales tax). Apply them to items, services, and invoices as needed.',
       },
       {
+        'hasSplit': true,
         'label': 'Items . Preference',
         'icon': Icons.category,
         'action': RouteNames.productConfig,

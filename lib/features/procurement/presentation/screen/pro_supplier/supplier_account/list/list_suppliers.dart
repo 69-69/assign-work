@@ -51,7 +51,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
       headers: Supplier.dataHeader,
       toolbarAlignment: WrapAlignment.spaceBetween,
       toolbar: _buildToolbar(suppliers),
-      rows: suppliers.map((d) => d.toListL()).toList(),
+      rows: suppliers.map((d) => d.itemAsList).toList(),
       onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.first),
       onEditTap: (row) async => _onEditTap(suppliers, row.first),
       onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),

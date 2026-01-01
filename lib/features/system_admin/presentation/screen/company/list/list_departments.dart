@@ -55,7 +55,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
       maskAtIndex: 1,
       headers: Department.dataHeader,
       toolbar: _buildToolbar(departments),
-      rows: departments.map((d) => d.toListL()).toList(),
+      rows: departments.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(departments, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(departments, row.first),
     );

@@ -51,8 +51,8 @@ class ErrorLog extends Equatable {
     'Created At',
   ];
 
-  /// ToList for Logs [toListL]
-  List<String> toListL() => [id!, error, fileName, getErrorDate];
+  /// ToList for Logs [itemAsList]
+  List<String> get itemAsList => [id!, error, fileName, getErrorDate];
 
   /// [findLogsById]
   static Iterable<ErrorLog> findLogsById(List<ErrorLog> logs, String id) =>

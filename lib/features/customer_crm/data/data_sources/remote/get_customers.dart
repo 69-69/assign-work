@@ -70,6 +70,6 @@ class GetAllCustomers {
             )
             as CustomerLoaded<Customer>;
 
-    return state.data.isEmpty ? Customer.notFound : state.data;
+    return state.data.isEmpty ? Customer.empty : state.data;
   }
 }

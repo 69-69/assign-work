@@ -69,23 +69,6 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     _addNewDepartments();
   }
 
-  List<AuditLog> history([action = AuditAction.created]) => [
-    AuditLog(action: action, actionBy: _employee!.employeeId),
-  ];
-
-  void _updateDepartment() {
-    final updated = _departments.first.copyWith(
-      id: _serverDepart!.id,
-      code: _serverDepart!.code,
-      updatedBy: _employee!.fullName,
-      history: history(),
-    );
-
-    _bloc.add(UpdateSetup<Department>(documentId: updated.id, data: updated));
-
-    _showSuccessAlert('Changes successfully saved');
-  }
-
   void _addNewDepartments() {
     // Append department code to each department
     final newDeparts = _departments
@@ -93,18 +76,37 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           (e) => e.copyWith(
             code: e.name.generateUniqueCode(),
             createdBy: _employee!.fullName,
-            history: history(AuditAction.updated),
+            history: history(),
           ),
         )
         .toList();
-    _bloc.add(AddSetup<List<Department>>(data: newDeparts));
 
-    _formKey.currentState!.reset();
+    _bloc.add(AddSetup<List<Department>>(data: newDeparts));
     _showSuccessAlert('Department(s) successfully created');
   }
 
+  void _updateDepartment() {
+    final updated = _departments.first.copyWith(
+      id: _serverDepart!.id,
+      code: _serverDepart!.code,
+      updatedBy: _employee!.fullName,
+      history: history(AuditAction.updated),
+    );
+
+    _bloc.add(UpdateSetup<Department>(documentId: updated.id, data: updated));
+    _showSuccessAlert('Changes successfully saved');
+  }
+
+  List<AuditLog> history([action = AuditAction.created]) => [
+    AuditLog(action: action, actionBy: _employee!.employeeId),
+  ];
+
   void _showSuccessAlert(String message) {
-    context.showAlertOverlay(message, popContext: () => _resetForm());
+    context.showAlertOverlay(
+      message,
+      popContext: () =>
+          _serverDepart != null ? Navigator.pop(context) : _resetForm(),
+    );
   }
 
   void _showErrorAlert(String message, Color bgColor) {
@@ -119,20 +121,14 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     });
   }
 
-  // load existing departments
+  /*// load existing departments
   void _loadExistingDeparts() {
     if (_serverDepart != null) {
       _departments
         ..clear()
         ..add(_serverDepart!);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadExistingDeparts();
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -149,22 +145,9 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
       children: [
         FormGroupCard(
           showCollapseButton: _nullServer,
-          children: [
-            DynamicTextFields(
-              showButton: _nullServer,
-              title: 'Company\'s Department(s)',
-              fieldsConfig: CompanyFormInputs.departmentsFields,
-              initialData: [?_serverDepart?.toMap()],
-              onChanged: (List<Map<String, dynamic>> data) {
-                if (_isFormValid) setState(() {});
-
-                // Create a new line item
-                _departments
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Department.fromMap(e)));
-              },
-            ),
-          ],
+          title: 'Department(s)',
+          subTitle: '\nInternal departments within your company',
+          children: [_buildForm()],
         ),
         context.confirmableActionButton(
           label: _nullServer ? 'Create Department' : null,
@@ -172,6 +155,23 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         ),
         const SizedBox(height: 20.0),
       ],
+    );
+  }
+
+  DynamicTextFields _buildForm() {
+    return DynamicTextFields(
+      showButton: _nullServer,
+      fieldsConfig: CompanyFormInputs.departmentsFields,
+      initialData: [?_serverDepart?.toMap()],
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (_isFormValid) setState(() {});
+
+        CompanyFormInputs.updateListFromData<Department>(
+          _departments,
+          map: data,
+          fromMap: (map, id) => Department.fromMap(map),
+        );
+      },
     );
   }
 }

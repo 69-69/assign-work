@@ -64,8 +64,8 @@ class _ListPOSOrdersState extends State<ListPOSOrders> {
       omitAtIndex: 0,
       toolbar: _buildToolbar(orders),
       headers: POSOrder.dataTableHeader,
-      rows: todayOrders.map((o) => o.itemAsList()).toList(),
-      childrenRow: pastOrders.map((o) => o.itemAsList()).toList(),
+      rows: todayOrders.map((o) => o.itemAsList).toList(),
+      childrenRow: pastOrders.map((o) => o.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
           _onChecked(orders, isChecked, row.first),
       onAllChecked:

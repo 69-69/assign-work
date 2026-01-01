@@ -55,7 +55,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
       toolbar: _buildToolbar(context),
       toolbarAlignment: WrapAlignment.end,
       headers: Subscription.dataTableHeader,
-      rows: subscriptions.map((d) => d.itemAsList()).toList(),
+      rows: subscriptions.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(subscriptions, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(row.first),
       onChecked: (bool? isChecked, List<String> row) =>

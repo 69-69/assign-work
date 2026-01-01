@@ -88,13 +88,9 @@ class ContactPerson extends Equatable {
 
   String get getCreatedAt => createdAt.toStandardDT;
 
+  /// Filter/search
   bool filterByAny(String filter) =>
-      id.contains(filter) ||
-      name.contains(filter) ||
-      email.contains(filter) ||
-      phone.contains(filter) ||
-      department.contains(filter) ||
-      position.contains(filter);
+      itemAsList.filterAny(filter) || id.filterAny(filter);
 
   @override
   List<Object?> get props => [

@@ -80,13 +80,12 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
   TaxMode? _taxModeToApply;
-  late SalesQuotation _cachedUpdatedSQ;
+  late SalesQuotation _finalizedQuote;
 
   bool get isFormValid => _formKey.currentState!.validate();
 
-  Employee? get _employee => context.employee;
-
   /// Current employee info
+  Employee? get _employee => context.employee;
   String get _employeeId => _employee!.employeeId;
 
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
@@ -150,17 +149,17 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         return;
       }
 
-      _cachedUpdatedSQ = _sanitizeTaxCodes(_newQuote);
+      _finalizedQuote = _sanitizeTaxCodes(_newQuote);
 
-      _bloc.add(AddSalesDistribution<SalesQuotation>(data: _cachedUpdatedSQ));
+      _bloc.add(AddSalesDistribution<SalesQuotation>(data: _finalizedQuote));
+      context.showAlertOverlay(
+        'Quote successfully created',
+        popContext: () => _resetForm(),
+      );
 
-      context.showAlertOverlay('Quote successfully created');
-
-      _confirmPrintoutDialog();
+      await _confirmPrintoutDialog();
     } finally {
-      if (mounted && isFormValid) {
-        _resetForm(); // rebuild fresh form
-      }
+      setState(() => _isSubmitting = false);
     }
   }
 
@@ -208,7 +207,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _termsConditions.clear();
       _taxCodes.clear();
       _taxModeToApply = null;
-      _cachedUpdatedSQ = SalesQuotation.empty;
+      _finalizedQuote = SalesQuotation.empty;
 
       _lineItems.clear();
       _addresses.clear();
@@ -287,6 +286,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
           children: [_buildTermsConditions()],
         ),
 
+        const SizedBox(height: 20.0),
         context.confirmableActionButton(
           label: 'Create Quote',
           onPressed: _onSubmit,
@@ -465,16 +465,18 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_newQuote.isEmpty) return;
+    if (_finalizedQuote.isEmpty) return;
 
-    final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(_newQuote);
-    final supplier = await SQFormInputs.getCustomer(_newQuote.customerId);
+    final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(
+      _finalizedQuote,
+    );
+    final supplier = await SQFormInputs.getCustomer(_finalizedQuote.customerId);
     if (supplier.isEmpty) return;
 
     // Log that details were printed
     if (mounted &&
         AuditTracker.shouldLog(
-          id: '${_newQuote.id}::$_employeeId',
+          id: '${_finalizedQuote.id}::$_employeeId',
           type: DocType.rfq,
           action: AuditAction.printed,
         )) {
@@ -487,7 +489,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   void _updateHistory([AuditAction action = AuditAction.printed]) {
     final up = SQFormInputs.updateHistory(
       action: action,
-      quote: _newQuote,
+      quote: _finalizedQuote,
       empId: _employeeId,
     );
     _bloc.add(up);

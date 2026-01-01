@@ -133,22 +133,26 @@ class _FormGroupCardState extends State<FormGroupCard> {
   Widget _buildHeader(BuildContext context) {
     final (count, title) = _getTitleInfo;
 
-    return InkWell(
-      onTap: () => toggleCardVisibility(_collapseKey),
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: EdgeInsets.all(3),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(child: _buildTitle(context, count, title)),
+    final header = Padding(
+      padding: EdgeInsets.all(3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: _buildTitle(context, count, title)),
 
-            // Only show the collapse button if showCollapseButton is true
-            if (_showCollapseButton) ...{_buildExpandIcon()},
-          ],
-        ),
+          // Only show the collapse button if showCollapseButton is true
+          if (_showCollapseButton) ...{_buildExpandIcon()},
+        ],
       ),
     );
+
+    return _showCollapseButton
+        ? InkWell(
+            onTap: () => toggleCardVisibility(_collapseKey),
+            borderRadius: BorderRadius.circular(10),
+            child: header,
+          )
+        : header;
   }
 
   RichText _buildTitle(BuildContext context, String? count, String? title) {

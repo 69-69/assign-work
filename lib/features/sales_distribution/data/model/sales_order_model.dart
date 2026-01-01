@@ -225,10 +225,10 @@ class SalesOrder extends Equatable {
         currencyCode,
         returnPolicy,
         getExpectedDate,
-      }.contains(filter) ||
-      addresses.any((a) => a.filterByAny(filter)) ||
-      itemAsList.any((a) => a.contains(filter)) ||
-      lineItems.any((a) => a.filterByAny(filter));
+      }.filterAny(filter) ||
+      addresses.filterAny(filter) ||
+      itemAsList.contains(filter) ||
+      lineItems.filterAny(filter);
 
   static SalesOrder findSOById(List<SalesOrder> rfqs, String rfqId) =>
       rfqs.firstWhere((rfq) => rfq.id == rfqId, orElse: () => SalesOrder.empty);

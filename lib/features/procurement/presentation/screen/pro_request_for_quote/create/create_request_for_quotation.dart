@@ -180,13 +180,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
       _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
 
-      context.showAlertOverlay('RFQ successfully created');
+      context.showAlertOverlay(
+        'RFQ successfully created',
+        popContext: () => _resetForm(),
+      );
 
-      _confirmPrintoutDialog();
+      await _confirmPrintoutDialog();
     } finally {
-      if (mounted && isFormValid) {
-        _resetForm(); // rebuild fresh form
-      }
+      setState(() => _isSubmitting = false);
     }
   }
 

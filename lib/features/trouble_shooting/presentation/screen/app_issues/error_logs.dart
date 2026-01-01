@@ -39,7 +39,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
       maskAtIndex: 0,
       toolbar: _buildToolbar(),
       headers: ErrorLog.dataTableHeader,
-      rows: _logs.map((l) => l.toListL()).toList(),
+      rows: _logs.map((l) => l.itemAsList).toList(),
       onDeleteTap: (row) async => await _onDeleteTap(row.first),
       onAllChecked:
           (

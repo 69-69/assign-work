@@ -370,21 +370,6 @@ class SalesDistFormFields {
             .map((e) => fromMap(e.value, '${e.key + 1}'))
             .toList(),
       );
-
-    /* // Alternative-1 approach (now commented out)
-    _lineItems
-      ..clear() // Clear previous entries to prevent duplication
-      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
-   // Alternative-1
-    _lineItems
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(
-            data
-                .asMap()
-                .entries
-                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
-                .toList(),
-          );*/
   }
 }
 

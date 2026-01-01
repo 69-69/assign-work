@@ -53,7 +53,9 @@ class _PurchaseRequisiteForm extends StatefulWidget {
 }
 
 class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+
   String get _lineItemType => widget.type;
 
   // Basic fields
@@ -65,6 +67,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   String _departmentCode = '';
   String? _priority;
   String? _prStatus;
+
   // Dates
   DateTime? _expectedDate;
   DateTime? _requestDate;
@@ -77,7 +80,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
+
   String get _employeeName => context.employee!.fullName;
+
   String get _employeeStore => context.employee!.storeNumber;
 
   ProPurchaseRequisiteBloc get _bloc =>
@@ -142,20 +147,22 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
       _bloc.add(AddProcurement<PurchaseRequisition>(data: _newPR));
 
-      context.showAlertOverlay('PR successfully created');
+      context.showAlertOverlay(
+        'PR successfully created',
+        popContext: () => _resetForm(),
+      );
 
-      _confirmPrintoutDialog();
+      await _confirmPrintoutDialog();
     } finally {
-      _resetForm();
+      setState(() => _isSubmitting = false);
     }
   }
 
   void _resetForm() {
     if (mounted) {
-      _generatePRNumber(); // fresh PR number
-
-      _formKey.currentState?.reset();
       setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
         _isSubmitting = false;
         _autoCreatePr = false;
         _costCenterCode = '';
@@ -168,6 +175,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         _lineItems.clear();
         _purposeForPR.clear();
       });
+      _generatePRNumber(); // fresh PR number
     }
   }
 
@@ -176,9 +184,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
     );
-  } // 1866-638-7668 - kay
+  }
 
   Column _buildBody() {
     return Column(

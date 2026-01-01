@@ -23,7 +23,7 @@ extension CreateGuideForm<T> on BuildContext {
     child: BottomSheetScaffold(
       title: serverGuide != null
           ? 'Edit ${serverGuide.category} Manual'
-          : 'Create User Guide',
+          : 'Create User Manual',
       btnText: _deleteButton(serverGuide?.id),
       body: _GuideForm(serverGuide: serverGuide),
     ),
@@ -74,55 +74,52 @@ class _GuideFormState extends State<_GuideForm> {
   bool get _nullServer => _serverGuide == null;
 
   void _onSubmit() {
-    // Case 1: Update existing department
+    // Case 1: Update existing Guides/Manuals
     if (_serverGuide != null) {
       _updateManual();
       return;
     }
 
-    // Case 2: Form validation or empty departments
+    // Case 2: Form validation or empty _userGuides
     if (!_isFormValid && _userGuides.isNotEmpty) {
       _showErrorAlert('Please enter all required fields', kDangerColor);
       return;
     }
 
-    // Case 3: Add new departments
+    // Case 3: Add new Guides/Manuals
     _addNewDManual();
+  }
+
+  void _addNewDManual() {
+    // Append history to each guide
+    final manuals = _userGuides
+        .map((e) => e.copyWith(history: history()))
+        .toList();
+
+    _bloc.add(AddGuide<List<UserGuide>>(data: manuals));
+    _showSuccessAlert('Manual(s) successfully created');
+  }
+
+  void _updateManual() {
+    final updated = _userGuides.first.copyWith(
+      id: _serverGuide!.id,
+      history: history(AuditAction.updated),
+    );
+
+    _bloc.add(UpdateGuide<UserGuide>(documentId: updated.id, data: updated));
+    _showSuccessAlert('Changes successfully saved');
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
     AuditLog(action: action, actionBy: _employee!.employeeId),
   ];
 
-  void _updateManual() {
-    final updated = _userGuides.first.copyWith(
-      id: _serverGuide!.id,
-      url: _serverGuide!.url,
-      title: _serverGuide!.title,
-      category: _serverGuide!.category,
-      description: _serverGuide!.description,
-      history: history(),
-    );
-
-    _bloc.add(UpdateGuide<UserGuide>(documentId: updated.id, data: updated));
-
-    _showSuccessAlert('Changes successfully saved');
-  }
-
-  void _addNewDManual() {
-    // Append history to each guide
-    final manuals = _userGuides
-        .map((e) => e.copyWith(history: history(AuditAction.updated)))
-        .toList();
-
-    _bloc.add(AddGuide<List<UserGuide>>(data: manuals));
-
-    _formKey.currentState!.reset();
-    _showSuccessAlert('Department(s) successfully created');
-  }
-
   void _showSuccessAlert(String message) {
-    context.showAlertOverlay(message, popContext: () => _resetForm());
+    context.showAlertOverlay(
+      message,
+      popContext: () =>
+          _serverGuide != null ? Navigator.pop(context) : _resetForm(),
+    );
   }
 
   void _showErrorAlert(String message, Color bgColor) {
@@ -137,20 +134,14 @@ class _GuideFormState extends State<_GuideForm> {
     });
   }
 
-  // load existing Guides/Manuals
+  /*// load existing Guides/Manuals
   void _loadExistingManuals() {
     if (_serverGuide != null) {
       _userGuides
         ..clear()
         ..add(_serverGuide!);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadExistingManuals();
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +182,6 @@ class _GuideFormState extends State<_GuideForm> {
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
 
-        // Update the ProLineItem list
         UserGuideConfig.updateListFromData<UserGuide>(
           _userGuides,
           map: data,

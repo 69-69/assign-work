@@ -111,14 +111,14 @@ class SalesQuotation extends Equatable {
       customerId: map['customerId'] ?? '',
       customerName: map['customerName'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
-      salesChannel: SalesChannelHelper.fromString(map['SalesChannel']),
+      salesChannel: SalesChannelHelper.fromString(map['salesChannel']),
       lineItems: LineItem.lineItems(map['lineItems']),
       notes: map['notes'],
       taxMode: TaxModeHelper.fromString(map['taxMode']),
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currencyCode: map['currencyCode'] ?? '',
       exchangeRate: double.tryParse('${map['exchangeRate']}') ?? 0.0,
-      shippingAmount: (map['shippingAmount'] ?? 0).toDouble(),
+      shippingAmount: double.tryParse('${map['shippingAmount']}') ?? 0.0,
       addresses: AddressInfo.addresses(map['addresses']),
       attachments: List<String>.from(map['attachments'] ?? []),
       returnPolicy: map['returnPolicy'] ?? '',
@@ -143,7 +143,7 @@ class SalesQuotation extends Equatable {
     'customerId': customerId,
     'customerName': customerName,
     'status': getSQStatus,
-    'SalesChannel': salesChannel,
+    'SalesChannel': getSalesChannel,
     'salesRepId': salesRepId,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     // 'taxCodes': taxCodes,
@@ -184,19 +184,22 @@ class SalesQuotation extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  // Computed fields for Financial Summary calculations
+  // Computed fields for Financial Summary calculations (Base amount)
   double get subTotalAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
 
+  // Subtract from subtotal
   double get discountAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
 
+  // Add tax based on the subtotal (after discount)
   double get taxAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
-  // subTotal - discountAmount;
+  // Subtotal - Discount (Before Tax)
   double get netTotalAmount => (subTotalAmount - discountAmount) + taxAmount;
 
+  // Final amount (after Discount + Tax)
   double get totalAmount => netTotalAmount + shippingAmount;
 
   // Singleton instance for fallback (empty SalesQuotation)
@@ -221,6 +224,7 @@ class SalesQuotation extends Equatable {
 
   String get getSalesChannel => salesChannel.getLabel;
 
+  // The name is needed not label
   String get getTaxMode => taxMode.getName;
 
   bool get isApproved => status == WorkflowStatus.approved;
@@ -237,6 +241,7 @@ class SalesQuotation extends Equatable {
   String get getExpectedDate => expectedDate.dateOnly;
 
   String get getValidFromDate => validFrom.dateOnly;
+  String get getValidToDate => validUntil.dateOnly;
 
   String get getCreatedAt => createdAt.toStandardDT;
 
@@ -257,12 +262,12 @@ class SalesQuotation extends Equatable {
         quoteNumber,
         currencyCode,
         returnPolicy,
-        notes ?? '',
+        notes,
         getExpectedDate,
-      }.contains(filter) ||
-      addresses.any((a) => a.filterByAny(filter)) ||
-      itemAsList.any((a) => a.contains(filter)) ||
-      lineItems.any((a) => a.filterByAny(filter));
+      }.filterAny(filter) ||
+      addresses.filterAny(filter) ||
+      itemAsList.contains(filter) ||
+      lineItems.filterAny(filter);
 
   static SalesQuotation findSQById(
     List<SalesQuotation> quotes,

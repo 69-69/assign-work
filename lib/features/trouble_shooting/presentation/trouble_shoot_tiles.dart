@@ -9,7 +9,8 @@ extension TroubleShootTiles on dynamic {
   List<DashboardTile> get troubleShootTiles {
     final tilesData = [
       {
-        'label': 'Diagnose Issues',
+        'hasSplit': true,
+        'label': 'Diagnose . Issues',
         'icon': Icons.bug_report_outlined,
         'action': RouteNames.diagnoseIssues,
         'param': {},
@@ -17,7 +18,8 @@ extension TroubleShootTiles on dynamic {
         'description': 'View error logs and diagnose issues in the system.',
       },
       {
-        'label': 'Tenant Workspaces',
+        'hasSplit': true,
+        'label': 'Tenant . Workspaces',
         'icon': Icons.workspaces_outline,
         'action': RouteNames.allTenantWorkspaces,
         'param': {},
@@ -25,7 +27,8 @@ extension TroubleShootTiles on dynamic {
         'description': 'Manage and monitor all tenant workspaces.',
       },
       {
-        'label': 'Subscription Management',
+        'hasSplit': true,
+        'label': 'Subscription . Management',
         'icon': Icons.subscriptions,
         'action': RouteNames.manageSubscriptions,
         'param': {},

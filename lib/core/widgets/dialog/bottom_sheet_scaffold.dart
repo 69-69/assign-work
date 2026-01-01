@@ -13,7 +13,7 @@ class BottomSheetScaffold extends StatelessWidget {
   final Widget body;
   final dynamic btnText;
   final bool confirmOnClose; // Confirm on accidental close of bottom sheet
-  final String? subtitle;
+  final dynamic subtitle;
   final double? initialSize;
   final Color? subTitleColor;
 
@@ -97,17 +97,26 @@ class BottomSheetScaffold extends StatelessWidget {
     );
   }
 
-  Text? _buildSubtitle(BuildContext context) {
-    return subtitle != null
-        ? Text(
-            subtitle!.toTitle,
-            semanticsLabel: subtitle,
-            textAlign: TextAlign.center,
-            style: context.textTheme.titleMedium?.copyWith(
-              color: subTitleColor ?? kGrayColor,
-            ),
-          )
-        : null;
+  Widget _buildSubtitle(BuildContext context) {
+    // Check if subtitle is a Widget first
+    if (subtitle is Widget) {
+      return subtitle as Widget;
+    }
+
+    // If subtitle is a String (or can be converted), handle it properly
+    if (subtitle != null) {
+      return Text(
+        '$subtitle'.toTitle, // Ensure subtitle is converted to String safely
+        semanticsLabel: subtitle,
+        textAlign: TextAlign.center,
+        style: context.textTheme.titleMedium?.copyWith(
+          color: subTitleColor ?? kGrayColor,
+        ),
+      );
+    }
+
+    // If subtitle is null, return an empty container or handle as needed
+    return SizedBox.shrink(); // Or you can return an empty Container()
   }
 
   Widget _buildTitle(BuildContext context) {

@@ -213,14 +213,16 @@ class ProPurchaseOrder extends Equatable {
 
   /// Filter
   bool filterByAny(String filter) =>
-      itemAsList.any((item) => item.contains(filter)) ||
-      requestedBy.contains(filter) ||
-      supplierLink.filterByAny(filter) ||
-      costCenterCode.contains(filter) ||
-      currencyCode.contains(filter) ||
-      paymentTerm.contains(filter) ||
-      paymentMethod.contains(filter) ||
-      lineItems.any((e) => e.filterByAny(filter));
+      itemAsList.filterAny(filter) ||
+      {
+        requestedBy,
+        supplierLink,
+        costCenterCode,
+        currencyCode,
+        paymentTerm,
+        paymentMethod,
+      }.filterAny(filter) ||
+      lineItems.filterAny(filter);
 
   /// [findPOById]
   static ProPurchaseOrder findPOById(List<ProPurchaseOrder> po, String poId) =>
