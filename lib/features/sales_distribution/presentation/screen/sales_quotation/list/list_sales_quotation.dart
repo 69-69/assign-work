@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -16,6 +17,7 @@ import 'package:assign_erp/features/sales_distribution/data/model/sales_quotatio
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/create/create_sales_quotation.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/list/see_sales_quote_details.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/update/update_sales_quotation.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
@@ -241,17 +243,17 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   Future<void> _onViewDetails(List<SalesQuotation> quotes, String id) async {
-    await _withTaxOrCustomerInfo(
+    prettyPrint('steve', id);
+    await _withTaxAndCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.viewed,
-      onSingleCustomer: (quote, customer) async {
-        return Future.delayed(kRProgressDelay); // temporal placeholder
-        /*return await context.openSQDetails(
-          quote: quote,
+      onQuoteProcessed: (quoteWithTaxes, customer) async {
+        return await context.openSQDetails(
+          salesQuote: quoteWithTaxes,
           customer: customer,
           bloc: _readBloc,
-        );*/
+        );
       },
     );
   }
@@ -284,17 +286,11 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   Future<void> _onEditTap(List<SalesQuotation> quotes, String id) async {
-    final quote = _getSQById(quotes, id);
-    if (quote == null) return;
-
-    final quoteWithTaxes = await _applyTaxesToSQ(quote);
-    if (!mounted) return;
-
-    await context.openUpdateSalesQuote(serverQuote: quoteWithTaxes);
     await _withTaxAndCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.viewed,
+      shouldProcessCustomerInfo: false,
       onQuoteProcessed: (quoteWithTaxes, _) async {
         return await context.openUpdateSalesQuote(serverQuote: quoteWithTaxes);
       },

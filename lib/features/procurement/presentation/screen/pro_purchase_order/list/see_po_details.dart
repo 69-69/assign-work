@@ -31,11 +31,11 @@ extension PRDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
-      isDetails: true,
+      isDetailMode: true,
       title: 'Purchase Order (${po.lineItems.first.getTypeLabel})',
       subtitle: po.prNumber.toUpperAll,
       body: _PRInfoPage(requisite: po, employee: employee.fullName),
-      onPrint: () async => await _printRFQ(po, bloc, employee),
+      onSecondaryTap: () async => await _printRFQ(po, bloc, employee),
     ),
   );
 

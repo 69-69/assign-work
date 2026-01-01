@@ -32,11 +32,11 @@ extension RFQDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
-      isDetails: true,
+      isDetailMode: true,
       title: 'Request for Quotation (RFQ)',
       subtitle: rfq.rfqNumber.toUpperAll,
       body: _RFQInfoPage(rfq: rfq, supplier: supplier.name),
-      onPrint: () async => await _printRFQ(supplier, bloc, rfq),
+      onSecondaryTap: () async => await _printRFQ(supplier, bloc, rfq),
     ),
   );
 
@@ -47,7 +47,7 @@ extension RFQDetails on BuildContext {
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
-      isDetails: true,
+      isDetailMode: true,
       title: 'Compare Suppliers RFQ',
       subtitle: 'AI-powered cost-value analysis',
       body: _CompareTwoRFQ(rfqs: rfqs, suppliers: suppliers),

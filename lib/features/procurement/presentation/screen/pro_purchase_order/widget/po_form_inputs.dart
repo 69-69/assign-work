@@ -171,7 +171,7 @@ class FindApprovedRFQ extends StatelessWidget {
       title: 'Create Purchase Order',
       body: FormGroupCard(
         title: '[Request for Quote] → PO',
-        subTitle: '\nSearch & then select a RFQ below to create a new PO.\n',
+        subTitle: '\nSearch for and select a RFQ to convert into a new PO.\n',
         children: [
           SearchRFQs(
             actionButtonText: 'Create New PO',

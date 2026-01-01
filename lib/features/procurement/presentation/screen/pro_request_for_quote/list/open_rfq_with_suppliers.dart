@@ -22,7 +22,7 @@ extension ChooseSuppliersForRFQExt on BuildContext {
     showZoomIcon: false,
     constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
     child: BottomSheetScaffold(
-      isDetails: true,
+      isDetailMode: true,
       initialSize: 0.7,
       title: 'Suppliers Invited to RFQ',
       body: FormGroupCard(

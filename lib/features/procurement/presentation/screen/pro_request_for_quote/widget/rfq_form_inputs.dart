@@ -239,7 +239,7 @@ class FindApprovedPR extends StatelessWidget {
       title: 'Create Request for Quote',
       body: FormGroupCard(
         title: '[Purchase Requisition] → RFQ',
-        subTitle: '\nSearch & then select a PR to create a new RFQ.\n',
+        subTitle: '\nSearch for and select a PR to convert into a new RFQ.\n',
         children: [
           SearchPRs(
             actionButtonText: 'Create New RFQ',

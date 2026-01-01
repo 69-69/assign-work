@@ -34,7 +34,7 @@ extension HistoryViewExtensions on BuildContext {
     constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
     child: BottomSheetScaffold(
       title: title,
-      isDetails: true,
+      isDetailMode: true,
       initialSize: 0.6,
       body: InlineHistoryTable<T>(
         items: items,

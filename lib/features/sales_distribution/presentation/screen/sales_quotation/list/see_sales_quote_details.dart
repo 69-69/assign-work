@@ -1,7 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -13,60 +11,58 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
-import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
-import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_printer.dart';
-import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
+import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
+import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';*/
 
-extension PRDetails on BuildContext {
-  Future openPRDetails({
-    required Employee employee,
-    required ProcurementBloc bloc,
-    required PurchaseRequisition requisite,
+extension SalesQuoteDetails on BuildContext {
+  Future openSQDetails({
+    required Customer customer,
+    required SalesQuotationBloc bloc,
+    required SalesQuotation salesQuote,
   }) async => await openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
       isDetailMode: true,
-      title: 'Purchase Requisition (${requisite.lineItems.first.getTypeLabel})',
-      subtitle: requisite.prNumber.toUpperAll,
-      body: _PRInfoPage(requisite: requisite, employee: employee.fullName),
-      onSecondaryTap: () async => await _printRFQ(requisite, bloc, employee),
+      title: 'Sales Quotation (${salesQuote.lineItems.first.getTypeLabel})',
+      subtitle: salesQuote.quoteNumber.toUpperAll,
+      body: _SQInfoPage(salesQuote: salesQuote, customer: customer.name),
+      onSecondaryTap: () async => await _printSQ(salesQuote, bloc, customer),
     ),
   );
 
-  _printRFQ(
-    PurchaseRequisition requisite,
-    ProcurementBloc bloc,
-    Employee employee,
+  _printSQ(
+    SalesQuotation salesQuote,
+    SalesQuotationBloc bloc,
+    Customer customer,
   ) async {
     await progressBarDialog(
       request: Future.delayed(kRProgressDelay, () async {
-        await PRPrinter(requisite: requisite, employee: employee).printPR();
-        bloc.add(_updateHistory(requisite));
+        // await PRPrinter(salesQuote: salesQuote, customer: customer).printPR();
+        bloc.add(_updateHistory(salesQuote));
       }),
-      onSuccess: (_) => showAlertOverlay('PR printout successful'),
+      onSuccess: (_) => showAlertOverlay('SQ printout successful'),
       onError: (e) =>
-          showAlertOverlay('PR printout failed', bgColor: kDangerColor),
+          showAlertOverlay('SQ printout failed', bgColor: kDangerColor),
     );
   }
 
   /// Audit Log Entry (Tracking actions)
-  AuditProcurement<PurchaseRequisition> _updateHistory(
-    PurchaseRequisition requisite,
-  ) {
-    return AuditProcurement<PurchaseRequisition>(
-      documentId: requisite.id,
+  AuditSalesDistribution<SalesQuotation> _updateHistory(SalesQuotation quote) {
+    return AuditSalesDistribution<SalesQuotation>(
+      documentId: quote.id,
       log: AuditLog.logScaffold(
-        oldLogs: requisite.history,
+        oldLogs: quote.history,
         newLog: AuditLog(
           action: AuditAction.printed,
           actionBy: employee!.employeeId,
-          statusAfterAction: requisite.getPRStatus,
+          statusAfterAction: quote.getSQStatus,
         ),
       ),
     );
@@ -103,24 +99,24 @@ Widget _buildInfoRow(
   );
 }
 
-class _PRInfoPage extends StatelessWidget {
+class _SQInfoPage extends StatelessWidget {
   final String _requestBy;
-  final PurchaseRequisition? _requisite;
+  final SalesQuotation? _salesQuote;
   final Color? _textColor;
 
-  const _PRInfoPage({
-    PurchaseRequisition? requisite,
-    String employee = '',
+  const _SQInfoPage({
+    SalesQuotation? salesQuote,
+    String customer = '',
     Color? textColor,
-  }) : _requisite = requisite,
-       _requestBy = employee,
+  }) : _salesQuote = salesQuote,
+       _requestBy = customer,
        _textColor = textColor;
 
-  List<LineItem> get _items => _requisite?.lineItems ?? [];
+  List<LineItem> get _items => _salesQuote?.lineItems ?? [];
 
   @override
   Widget build(BuildContext context) {
-    if (_requisite == null) {
+    if (_salesQuote == null) {
       return const Center(child: Text("PR not available."));
     }
 
@@ -128,7 +124,7 @@ class _PRInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBody(context),
-        _Footer(requisite: _requisite),
+        _Footer(salesQuote: _salesQuote),
       ],
     );
   }
@@ -169,7 +165,8 @@ class _PRInfoPage extends StatelessWidget {
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,
-          items: _items, // list of requisitions
+          items: _items,
+          // list of Sales Quotes
           rowBuilder: (entry) {
             return DataRow(
               cells: entry.itemAsList
@@ -187,8 +184,8 @@ class _PRInfoPage extends StatelessWidget {
 
         AdaptiveLayout(
           children: [
-            _LeftSummary(requisite: _requisite, textColor: _textColor),
-            _RightSummary(requisite: _requisite, textColor: _textColor),
+            _LeftSummary(salesQuote: _salesQuote, textColor: _textColor),
+            _RightSummary(salesQuote: _salesQuote, textColor: _textColor),
           ],
         ),
         const SizedBox(height: 20),
@@ -199,12 +196,12 @@ class _PRInfoPage extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     // Build the list of header entries first
     final headerItems = <(String, String)>[
-      ('PR#', _requisite?.prNumber ?? 'N/A'),
-      ('Store ID', _requisite?.storeNumber.toUpperAll ?? 'N/A'),
-      ('Status', _requisite?.status.getLabel.toSentence ?? 'N/A'),
-      ('Priority', _requisite?.priority.getName.toTitle ?? 'N/A'),
-      ('Department', _requisite!.departmentCode.toTitle),
-      ('Request By', _requestBy.toTitle),
+      ('SQ#', _salesQuote?.quoteNumber ?? 'N/A'),
+      ('Store ID', _salesQuote?.storeNumber.toUpperAll ?? 'N/A'),
+      ('Status', _salesQuote?.getSQStatus.toSentence ?? 'N/A'),
+      ('Sales Channel', _salesQuote?.getSalesChannel.toTitle ?? 'N/A'),
+      ('Customer', _salesQuote!.customerName.toTitle),
+      ('Sales Person', _requestBy.toTitle),
     ];
 
     return Column(
@@ -212,7 +209,7 @@ class _PRInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Text('Purchase Requisition', style: context.textTheme.headlineSmall),
+        // Text('sales Quote', style: context.textTheme.headlineSmall),
         // const SizedBox(height: 8),
         ...headerItems.map(
           (item) => _buildInfoRow(
@@ -282,21 +279,21 @@ class _PRInfoPage extends StatelessWidget {
       Icon(Icons.explore_outlined, color: kPrimaryAccentColor),
       borderColor: kPrimaryAccentColor,
       onPressed: () async => await _onOpenHistory(context),
-      tooltip: 'View PR History',
+      tooltip: 'View Sales Quote History',
       label: Text(
-        'PR History',
+        'SQ History',
         style: const TextStyle(color: kPrimaryAccentColor),
       ),
     );
   }
 
   Future<void> _onOpenHistory(BuildContext cxt) async {
-    if (_requisite == null) return;
+    if (_salesQuote == null) return;
 
     await cxt.showInlineHistorySheet<AuditLog>(
       title: 'Workflow History',
       columnLabels: AuditLog.dataTableHeader,
-      items: _requisite.history, // list of PR history
+      items: _salesQuote.history, // list of SQ history
       rowBuilder: (entry) {
         return DataRow(
           cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
@@ -307,14 +304,17 @@ class _PRInfoPage extends StatelessWidget {
 }
 
 class _LeftSummary extends StatelessWidget {
-  final PurchaseRequisition? requisite;
+  final SalesQuotation? salesQuote;
   final Color? textColor;
 
-  const _LeftSummary({this.requisite, required this.textColor});
+  const _LeftSummary({this.salesQuote, required this.textColor});
 
   get _summaryItems => <(String, String)>[
-    ('Request Date', '${requisite?.getRequestDate}'),
-    ('Expected Date', '${requisite?.getExpectedDate}'),
+    (
+      'Valid Date',
+      '${salesQuote?.getValidFromDate} - ${salesQuote?.getValidToDate}',
+    ),
+    ('Expected Date', '${salesQuote?.getExpectedDate}'),
   ];
 
   @override
@@ -352,8 +352,8 @@ class _LeftSummary extends StatelessWidget {
             context,
             separator: '\n',
             textColor: textColor,
-            title: 'Purpose / Reason:',
-            value: requisite!.purpose.toSentence,
+            title: 'Additional notes:',
+            value: salesQuote!.notes.toSentence,
           ),
           const SizedBox(height: 10),
           // HorizontalDivider(),
@@ -372,10 +372,10 @@ class _LeftSummary extends StatelessWidget {
 }
 
 class _RightSummary extends StatelessWidget {
-  final PurchaseRequisition? requisite;
+  final SalesQuotation? salesQuote;
   final Color? textColor;
 
-  const _RightSummary({this.requisite, required this.textColor});
+  const _RightSummary({this.salesQuote, required this.textColor});
 
   @override
   Widget build(BuildContext context) {
@@ -383,7 +383,7 @@ class _RightSummary extends StatelessWidget {
   }
 
   Widget _buildRightSummary(BuildContext context) {
-    final history = _prHistory(requisite!);
+    final history = _prHistory(salesQuote!);
 
     return Align(
       alignment: Alignment.centerRight,
@@ -406,7 +406,7 @@ class _RightSummary extends StatelessWidget {
   }
 
   /// Get the last approved PR entry and the date it was approved [_prHistory]
-  (String?, String?) _prHistory(PurchaseRequisition? req) {
+  (String?, String?) _prHistory(SalesQuotation? req) {
     if (req == null) return (null, null);
 
     // Find the most recent approved PR entry
@@ -423,15 +423,15 @@ class _RightSummary extends StatelessWidget {
 }
 
 class _Footer extends StatelessWidget {
-  final PurchaseRequisition? requisite;
+  final SalesQuotation? salesQuote;
 
-  const _Footer({this.requisite});
+  const _Footer({this.salesQuote});
 
   String? get _updatedBy =>
-      requisite!.updatedBy.isNullOrEmpty ? 'N/A' : requisite?.updatedBy;
+      salesQuote!.updatedBy.isNullOrEmpty ? 'N/A' : salesQuote?.updatedBy;
 
   String? get _createdBy =>
-      requisite!.createdBy.isNullOrEmpty ? 'N/A' : requisite?.createdBy;
+      salesQuote!.createdBy.isNullOrEmpty ? 'N/A' : salesQuote?.createdBy;
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +452,7 @@ class _Footer extends StatelessWidget {
               context,
               title: 'Created',
               value:
-                  '${requisite?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
+                  '${salesQuote?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
             ),
           ),
           Align(
@@ -461,7 +461,7 @@ class _Footer extends StatelessWidget {
               context,
               title: 'Updated',
               value:
-                  '${requisite!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
+                  '${salesQuote!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
             ),
           ),
         ],

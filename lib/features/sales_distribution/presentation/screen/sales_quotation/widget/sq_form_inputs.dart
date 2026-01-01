@@ -274,10 +274,11 @@ class FindApprovedPR extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomSheetScaffold(
-      title: 'Create Request for Quote',
+      title: 'Create Sales Orders',
       body: FormGroupCard(
-        title: '[Purchase Requisition] → RFQ',
-        subTitle: '\nSearch & then select a PR to create a new RFQ.\n',
+        title: '[Sales Quotation] → SO',
+        subTitle:
+            '\nSearch for and select a Quote to convert into a new Orders.\n',
         children: [
           SearchPRs(
             actionButtonText: 'Create New RFQ',

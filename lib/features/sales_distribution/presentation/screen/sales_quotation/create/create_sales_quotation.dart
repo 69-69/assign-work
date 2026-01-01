@@ -103,7 +103,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     quoteNumber: _quoteNumber,
     autoConvertSq: _autoConvertSO,
     storeNumber: _employee!.storeNumber,
-    status: WorkflowStatusHelper.fromString(_sqStatus ?? ''),
+    status: WorkflowStatusHelper.fromString(_sqStatus),
 
     salesRepId: _salesRepId,
     customerId: _customerId ?? 'new',
@@ -299,7 +299,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   // -------------------------
   // Section Builders
   // -------------------------
-
   AutoCreateAndSQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndSQStatus(
       onStatusChanged: (s) => setState(() => _sqStatus = s),

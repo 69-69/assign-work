@@ -22,11 +22,11 @@ extension SupplierDetails on BuildContext {
       isExpand: true,
       showZoomIcon: false,
       child: BottomSheetScaffold(
-        isDetails: true,
+        isDetailMode: true,
         title: supplier.name.toTitle,
         subtitle: supplier.businessType.toUpperAll,
         body: _SupplierInfoPage(supplier: supplier),
-        onPrint: () async => await _printRFQ(this, supplier),
+        onSecondaryTap: () async => await _printRFQ(this, supplier),
       ),
     );
   }

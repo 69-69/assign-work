@@ -7,22 +7,23 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
 class BottomSheetScaffold extends StatelessWidget {
-  final bool isDetails;
-  final dynamic title;
-  final String? tooltip;
   final Widget body;
+  final dynamic title;
   final dynamic btnText;
-  final bool confirmOnClose; // Confirm on accidental close of bottom sheet
+  final String? tooltip;
   final dynamic subtitle;
+  final bool isDetailMode;
+  final bool confirmOnClose; // Confirm on accidental close of bottom sheet
   final double? initialSize;
   final Color? subTitleColor;
+  final Widget? secondaryWidget;
 
-  /// [onPrint] For printing out purposes only.
-  final Function()? onPrint, onBackPress;
+  /// [onSecondaryTap] For printing out purposes only.
+  final Function()? onSecondaryTap, onBackPress;
 
   const BottomSheetScaffold({
     super.key,
-    this.isDetails = false,
+    this.isDetailMode = false,
     this.confirmOnClose = true,
     this.initialSize,
     required this.title,
@@ -31,13 +32,14 @@ class BottomSheetScaffold extends StatelessWidget {
     this.btnText,
     this.tooltip,
     this.subTitleColor,
-    this.onPrint,
+    this.onSecondaryTap,
+    this.secondaryWidget,
     this.onBackPress,
   });
 
   @override
   Widget build(BuildContext context) {
-    final size = isDetails ? 0.92 : 0.98;
+    final size = isDetailMode ? 0.92 : 0.98;
     return CustomDraggableBottomSheet(
       confirmOnClose: confirmOnClose,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
@@ -45,7 +47,7 @@ class BottomSheetScaffold extends StatelessWidget {
       maxChildSize: size,
       header: title is Widget
           ? title
-          : (isDetails
+          : (isDetailMode
                 ? _buildViewDetailsHeader(context)
                 : _buildHeader(context)),
       child: _buildBody(context),
@@ -77,15 +79,11 @@ class BottomSheetScaffold extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8.0,
         children: [
-          if (onPrint != null) ...{
-            context.iconButton(
-              Icons.print,
-              iconColor: kWarningColor,
-              bgColor: kWarningColor.toAlpha(0.1),
-              tooltip: tooltip ?? 'Print out',
-              onPressed: onPrint!,
-            ),
-          },
+          if (secondaryWidget != null)
+            secondaryWidget!
+          else if (onSecondaryTap != null)
+            _secondaryWidget(context),
+
           IconButton(
             icon: Icon(Icons.close),
             tooltip: 'Close',
@@ -94,6 +92,16 @@ class BottomSheetScaffold extends StatelessWidget {
         ],
       ),
       onCancel: () => Navigator.pop(context),
+    );
+  }
+
+  Widget _secondaryWidget(BuildContext context) {
+    return context.iconButton(
+      Icons.print,
+      iconColor: kWarningColor,
+      bgColor: kWarningColor.toAlpha(0.1),
+      tooltip: tooltip ?? 'Print out',
+      onPressed: onSecondaryTap!,
     );
   }
 

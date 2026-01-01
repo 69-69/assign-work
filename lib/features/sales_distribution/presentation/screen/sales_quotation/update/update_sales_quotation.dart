@@ -7,7 +7,6 @@ import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -35,13 +34,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension UpdateSalesQuotationForm on BuildContext {
   Future openUpdateSalesQuote({required SalesQuotation serverQuote}) async {
     if (serverQuote.id.isEmpty) return;
-    prettyPrint('serverQuote', serverQuote.taxMode);
 
     return await openBottomSheet(
       isExpand: false,
       child: BottomSheetScaffold(
         title: 'Edit Sales Quote',
-        subtitle: 'Quote No: ${serverQuote.quoteNumber}',
+        subtitle: 'Quotation #: ${serverQuote.quoteNumber}',
         body: _UpdateSalesQuote(serverQuote: serverQuote),
       ),
     );
@@ -272,19 +270,16 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
           children: [
             HorizontalDivider(space: 0.4),
-            _buildText('SubTotal:', _serverQuote.subTotalAmount),
-            _buildText('Discount:', _serverQuote.discountAmount),
-            _buildText('Tax:', _serverQuote.taxAmount),
-            _buildText('Net Total:', _serverQuote.netTotalAmount),
-            _buildText('Grand Total:', _serverQuote.totalAmount),
+            _buildTextSummary('SubTotal:', _serverQuote.subTotalAmount),
+            _buildTextSummary('Discount:', _serverQuote.discountAmount),
+            _buildTextSummary('Tax:', _serverQuote.taxAmount),
+            _buildTextSummary('Net Total:', _serverQuote.netTotalAmount),
+            _buildTextSummary('Grand Total:', _serverQuote.totalAmount),
           ],
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(
-          label: 'Create Quote',
-          onPressed: _onSubmit,
-        ),
+        context.confirmableActionButton(onPressed: _onSubmit),
         const SizedBox(height: 20.0),
       ],
     );
@@ -293,7 +288,11 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   // -------------------------
   // Section Builders
   // -------------------------
-  Widget _buildText(String label, double amount) {
+  Widget _buildTextSummary(String label, double amount) {
+    if (amount.isNaN || amount == 0.0) {
+      amount = 0.0; // Set a default value if the amount is invalid
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

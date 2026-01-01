@@ -24,15 +24,18 @@ extension CreateGuideForm<T> on BuildContext {
       title: serverGuide != null
           ? 'Edit ${serverGuide.category} Manual'
           : 'Create User Manual',
-      btnText: _deleteButton(serverGuide?.id),
+      isDetailMode: true,
+      secondaryWidget: _deleteButton(serverGuide?.id),
       body: _GuideForm(serverGuide: serverGuide),
     ),
   );
 
   Widget _deleteButton(String? id) {
-    return textButton(
-      'Delete',
-      txtColor: kDangerColor,
+    return iconButton(
+      Icons.delete,
+      iconColor: kDangerColor,
+      bgColor: kDangerColor.toAlpha(0.1),
+      tooltip: 'Delete manual',
       onPressed: () async {
         final isConfirmed = await confirmUserActionDialog();
 

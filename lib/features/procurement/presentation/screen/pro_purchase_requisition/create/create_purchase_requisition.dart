@@ -227,6 +227,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
           children: [_buildJustification()],
         ),
 
+        const SizedBox(height: 20.0),
         context.confirmableActionButton(
           label: 'Create PR',
           onPressed: _onSubmit,

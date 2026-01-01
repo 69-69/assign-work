@@ -252,6 +252,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           children: [_buildTermsAndConditions(), _buildDeliveryDate()],
         ),
 
+        const SizedBox(height: 20.0),
         context.confirmableActionButton(
           label: 'Create PO',
           onPressed: _onSubmit,
