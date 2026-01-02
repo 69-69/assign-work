@@ -1,5 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -11,7 +13,6 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
 import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
@@ -22,7 +23,7 @@ import 'package:printing/printing.dart';*/
 
 extension SalesQuoteDetails on BuildContext {
   Future openSQDetails({
-    required Customer customer,
+    // required Customer customer,
     required SalesQuotationBloc bloc,
     required SalesQuotation salesQuote,
   }) async => await openBottomSheet(
@@ -32,15 +33,16 @@ extension SalesQuoteDetails on BuildContext {
       isDetailMode: true,
       title: 'Sales Quotation (${salesQuote.lineItems.first.getTypeLabel})',
       subtitle: salesQuote.quoteNumber.toUpperAll,
-      body: _SQInfoPage(salesQuote: salesQuote, customer: customer.name),
-      onSecondaryTap: () async => await _printSQ(salesQuote, bloc, customer),
+      secondaryWidget: _showHistory(salesQuote),
+      body: _SQInfoPage(salesQuote: salesQuote),
+      onPrint: () async => await _printSQ(salesQuote, bloc /*customer*/),
     ),
   );
 
   _printSQ(
     SalesQuotation salesQuote,
     SalesQuotationBloc bloc,
-    Customer customer,
+    // Customer customer,
   ) async {
     await progressBarDialog(
       request: Future.delayed(kRProgressDelay, () async {
@@ -50,6 +52,31 @@ extension SalesQuoteDetails on BuildContext {
       onSuccess: (_) => showAlertOverlay('SQ printout successful'),
       onError: (e) =>
           showAlertOverlay('SQ printout failed', bgColor: kDangerColor),
+    );
+  }
+
+  Widget _showHistory(SalesQuotation? salesQuote) {
+    return iconButton(
+      Icons.history,
+      iconColor: kPrimaryAccentColor,
+      bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      tooltip: 'View Sales Quote History',
+      onPressed: () async => await _onOpenHistory(salesQuote),
+    );
+  }
+
+  Future<void> _onOpenHistory(SalesQuotation? salesQuote) async {
+    if (salesQuote == null) return;
+
+    await showHistoryBottomSheet<AuditLog>(
+      title: 'Workflow History',
+      columnLabels: AuditLog.dataTableHeader,
+      items: salesQuote.history, // list of SQ history
+      rowBuilder: (entry) {
+        return DataRow(
+          cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
+        );
+      },
     );
   }
 
@@ -100,19 +127,17 @@ Widget _buildInfoRow(
 }
 
 class _SQInfoPage extends StatelessWidget {
-  final String _requestBy;
   final SalesQuotation? _salesQuote;
   final Color? _textColor;
 
-  const _SQInfoPage({
-    SalesQuotation? salesQuote,
-    String customer = '',
-    Color? textColor,
-  }) : _salesQuote = salesQuote,
-       _requestBy = customer,
-       _textColor = textColor;
+  const _SQInfoPage({SalesQuotation? salesQuote, Color? textColor})
+    : _salesQuote = salesQuote,
+      _textColor = textColor;
 
   List<LineItem> get _items => _salesQuote?.lineItems ?? [];
+
+  String? get _currencySign =>
+      getCurrencySign(_salesQuote?.currencyCode ?? ghanaCedis);
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +150,7 @@ class _SQInfoPage extends StatelessWidget {
       children: [
         _buildBody(context),
         _Footer(salesQuote: _salesQuote),
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -133,37 +159,10 @@ class _SQInfoPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AdaptiveLayout(
-          children: [
-            _buildHeader(context),
+        _buildHeader(context),
 
-            Align(
-              alignment: Alignment.topRight,
-              child: _buildHistoryButton(context),
-            ),
-          ],
-        ),
-
-        /*Align(
-          alignment: Alignment.center,
-          child: Text(
-            'Line Items (${_items.length})',
-            style: context.textTheme.titleLarge?.copyWith(
-              color: _textColor ?? kPrimaryAccentColor,
-            ),
-          ),
-        ),
-        HorizontalDivider(),
-
-        Table Headers
-        _buildItemTableHeader(context),
-        ..._items.asMap().entries.map(
-          (item) => _buildItemRow(item.value, item.key),
-        ),
-        HorizontalDivider(),*/
-        InlineHistoryTable<LineItem>(
+        SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
-          // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,
           items: _items,
           // list of Sales Quotes
@@ -184,10 +183,21 @@ class _SQInfoPage extends StatelessWidget {
 
         AdaptiveLayout(
           children: [
-            _LeftSummary(salesQuote: _salesQuote, textColor: _textColor),
-            _RightSummary(salesQuote: _salesQuote, textColor: _textColor),
+            _LeftSummary(
+              salesQuote: _salesQuote,
+              textColor: _textColor,
+              currencySign: _currencySign,
+            ),
+            _RightSummary(
+              salesQuote: _salesQuote,
+              textColor: _textColor,
+              currencySign: _currencySign,
+            ),
           ],
         ),
+        const SizedBox(height: 20),
+
+        _termsAndConditions(context),
         const SizedBox(height: 20),
       ],
     );
@@ -200,8 +210,9 @@ class _SQInfoPage extends StatelessWidget {
       ('Store ID', _salesQuote?.storeNumber.toUpperAll ?? 'N/A'),
       ('Status', _salesQuote?.getSQStatus.toSentence ?? 'N/A'),
       ('Sales Channel', _salesQuote?.getSalesChannel.toTitle ?? 'N/A'),
-      ('Customer', _salesQuote!.customerName.toTitle),
-      ('Sales Person', _requestBy.toTitle),
+      ('Tax Mode', _salesQuote?.getName.separateWord.toTitle ?? 'N/A'),
+      ('Customer', _salesQuote?.customerName.toTitle ?? 'N/A'),
+      ('Sales Person', _salesQuote?.salesRepId.toTitle ?? 'N/A'),
     ];
 
     return Column(
@@ -223,8 +234,38 @@ class _SQInfoPage extends StatelessWidget {
     );
   }
 
-  /*
-  Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
+  Widget _termsAndConditions(BuildContext context) {
+    return AdaptiveLayout(
+      children: [
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Payment Terms:',
+          value: _salesQuote?.paymentTerms.toSentence ?? 'N/A',
+        ),
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Warranty:',
+          value: _salesQuote?.warrantyTerms.toSentence ?? 'N/A',
+        ),
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Return Policy:',
+          value: _salesQuote?.returnPolicy.toSentence ?? 'N/A',
+        ),
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Additional Notes:',
+          value: _salesQuote?.notes.toSentence ?? 'N/A',
+        ),
+      ],
+    );
+  }
+
+  /* Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
     child: Text(
       text,
       style: TextStyle(
@@ -273,48 +314,31 @@ class _SQInfoPage extends StatelessWidget {
       ),
     );
   }*/
-
-  Widget _buildHistoryButton(BuildContext context) {
-    return context.outlinedIconBtn(
-      Icon(Icons.explore_outlined, color: kPrimaryAccentColor),
-      borderColor: kPrimaryAccentColor,
-      onPressed: () async => await _onOpenHistory(context),
-      tooltip: 'View Sales Quote History',
-      label: Text(
-        'SQ History',
-        style: const TextStyle(color: kPrimaryAccentColor),
-      ),
-    );
-  }
-
-  Future<void> _onOpenHistory(BuildContext cxt) async {
-    if (_salesQuote == null) return;
-
-    await cxt.showInlineHistorySheet<AuditLog>(
-      title: 'Workflow History',
-      columnLabels: AuditLog.dataTableHeader,
-      items: _salesQuote.history, // list of SQ history
-      rowBuilder: (entry) {
-        return DataRow(
-          cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
-        );
-      },
-    );
-  }
 }
 
 class _LeftSummary extends StatelessWidget {
   final SalesQuotation? salesQuote;
   final Color? textColor;
+  final String? currencySign;
 
-  const _LeftSummary({this.salesQuote, required this.textColor});
+  const _LeftSummary({
+    this.salesQuote,
+    required this.textColor,
+    this.currencySign,
+  });
+
+  TaxMode? get _taxMode => salesQuote?.taxMode;
+  bool get _isPerLineTax => _taxMode?.isPerLineTax ?? false;
 
   get _summaryItems => <(String, String)>[
-    (
-      'Valid Date',
-      '${salesQuote?.getValidFromDate} - ${salesQuote?.getValidToDate}',
-    ),
+    ('Currency', '${salesQuote?.currencyCode} ($currencySign)'),
+    ('Valid From', '${salesQuote?.getValidFromDate}'),
+    ('Valid Until', '${salesQuote?.getValidUntilDate}'),
     ('Expected Date', '${salesQuote?.getExpectedDate}'),
+    // If Tax Mode is not Per Line, add Tax Details here
+    if (!_isPerLineTax) ...{
+      ('Applied Taxes', salesQuote!.lineItems.first.taxNames.toUpperAll),
+    },
   ];
 
   @override
@@ -348,15 +372,6 @@ class _LeftSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow(
-            context,
-            separator: '\n',
-            textColor: textColor,
-            title: 'Additional notes:',
-            value: salesQuote!.notes.toSentence,
-          ),
-          const SizedBox(height: 10),
-          // HorizontalDivider(),
           ..._summaryItems.map(
             (item) => _buildInfoRow(
               context,
@@ -374,8 +389,29 @@ class _LeftSummary extends StatelessWidget {
 class _RightSummary extends StatelessWidget {
   final SalesQuotation? salesQuote;
   final Color? textColor;
+  final String? currencySign;
 
-  const _RightSummary({this.salesQuote, required this.textColor});
+  const _RightSummary({
+    this.salesQuote,
+    required this.currencySign,
+    required this.textColor,
+  });
+
+  double get _grandTotal => salesQuote?.totalAmount ?? 0.0;
+
+  get summaryItems => <(String, String)>[
+    ('Subtotal', '$currencySign${(salesQuote?.subTotal ?? 0.0).toCurrency}'),
+    (
+      'Discount',
+      '- $currencySign${(salesQuote?.discountAmount ?? 0.0).toCurrency}',
+    ),
+    ('Tax %', '${(salesQuote?.taxAmount ?? 0.0)}%'),
+    ('Net Total', '$currencySign${(salesQuote?.netTotal ?? 0.0).toCurrency}'),
+    (
+      'Shipping',
+      '$currencySign${(salesQuote?.shippingAmount ?? 0.0).toCurrency}',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -383,42 +419,28 @@ class _RightSummary extends StatelessWidget {
   }
 
   Widget _buildRightSummary(BuildContext context) {
-    final history = _prHistory(salesQuote!);
-
     return Align(
       alignment: Alignment.centerRight,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          ...summaryItems.map(
+            (item) => _buildInfoRow(
+              context,
+              textColor: textColor,
+              title: item.$1,
+              value: item.$2,
+            ),
+          ),
           const SizedBox(height: 8),
-          _buildInfoRow(
-            context,
-            separator: '\n',
-            textColor: kDangerColor,
-            title: 'Approved By:',
-            value:
-                '${history.$1 ?? 'Not yet approved'}\n${history.$2 ?? '-----------------'}',
+          Text(
+            'Grand Total: $currencySign${_grandTotal.toCurrency}',
+            style: context.textTheme.titleLarge?.copyWith(color: kDangerColor),
           ),
         ],
       ),
     );
-  }
-
-  /// Get the last approved PR entry and the date it was approved [_prHistory]
-  (String?, String?) _prHistory(SalesQuotation? req) {
-    if (req == null) return (null, null);
-
-    // Find the most recent approved PR entry
-    final lastApproved = req.history.lastWhere(
-      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
-      orElse: () => AuditLog.empty,
-    );
-
-    // If none found, return null for both
-    if (lastApproved.isEmpty) return (null, null);
-
-    return (lastApproved.actionBy, lastApproved.getActionAt);
   }
 }
 

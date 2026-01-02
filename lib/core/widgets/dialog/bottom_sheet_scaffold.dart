@@ -18,8 +18,8 @@ class BottomSheetScaffold extends StatelessWidget {
   final Color? subTitleColor;
   final Widget? secondaryWidget;
 
-  /// [onSecondaryTap] For printing out purposes only.
-  final Function()? onSecondaryTap, onBackPress;
+  /// [onPrint] For printing out purposes only.
+  final Function()? onPrint, onBackPress;
 
   const BottomSheetScaffold({
     super.key,
@@ -32,7 +32,7 @@ class BottomSheetScaffold extends StatelessWidget {
     this.btnText,
     this.tooltip,
     this.subTitleColor,
-    this.onSecondaryTap,
+    this.onPrint,
     this.secondaryWidget,
     this.onBackPress,
   });
@@ -79,10 +79,8 @@ class BottomSheetScaffold extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8.0,
         children: [
-          if (secondaryWidget != null)
-            secondaryWidget!
-          else if (onSecondaryTap != null)
-            _secondaryWidget(context),
+          if (secondaryWidget != null) ...{secondaryWidget!},
+          if (onPrint != null) ...{_secondaryWidget(context)},
 
           IconButton(
             icon: Icon(Icons.close),
@@ -101,7 +99,7 @@ class BottomSheetScaffold extends StatelessWidget {
       iconColor: kWarningColor,
       bgColor: kWarningColor.toAlpha(0.1),
       tooltip: tooltip ?? 'Print out',
-      onPressed: onSecondaryTap!,
+      onPressed: onPrint!,
     );
   }
 

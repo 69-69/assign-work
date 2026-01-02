@@ -89,7 +89,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
 
     context.showAlertOverlay(
       'Stores successfully created',
-      popContext: () => _resetForm(),
+      onCallback: () => _resetForm(),
     );
   }
 

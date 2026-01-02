@@ -104,7 +104,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   void _showSuccessAlert(String message) {
     context.showAlertOverlay(
       message,
-      popContext: () =>
+      onCallback: () =>
           _serverDepart != null ? Navigator.pop(context) : _resetForm(),
     );
   }

@@ -74,7 +74,7 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
 
       context.showAlertOverlay(
         '${_nameController.text.toTitle} role successfully updated',
-        popContext: () => Navigator.pop(context),
+        onCallback: () => Navigator.pop(context),
       );
     }
   }

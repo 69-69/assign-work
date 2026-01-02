@@ -44,7 +44,7 @@ extension CreateGuideForm<T> on BuildContext {
           read<HowToBloc>().add(DeleteGuide<UserGuide>(documentId: id));
           showAlertOverlay(
             'Successfully deleted',
-            popContext: () => Navigator.pop(this),
+            onCallback: () => Navigator.pop(this),
           );
         }
       },
@@ -120,7 +120,7 @@ class _GuideFormState extends State<_GuideForm> {
   void _showSuccessAlert(String message) {
     context.showAlertOverlay(
       message,
-      popContext: () =>
+      onCallback: () =>
           _serverGuide != null ? Navigator.pop(context) : _resetForm(),
     );
   }

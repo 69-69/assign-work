@@ -6,15 +6,16 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:flutter/material.dart';
 
 extension HistoryViewExtensions on BuildContext {
+  /// Opt-1: Shows history in a CupertinoDialog (static table) [showHistoryDialog]
   Future showHistoryDialog<T>({
     required String title,
-    required List<String> columnLabels,
     required List<T> items,
+    required List<String> columnLabels,
     required DataRow Function(T) rowBuilder,
   }) async => await confirmDone(
     items.isEmpty
         ? const Text('No data available yet!')
-        : HistoryDataTable<T>(
+        : StaticHistoryTable<T>(
             columnLabels: columnLabels,
             items: items,
             rowBuilder: rowBuilder,
@@ -23,10 +24,12 @@ extension HistoryViewExtensions on BuildContext {
     onDone: 'Done',
   );
 
-  Future showInlineHistorySheet<T>({
+  /// Opt-2: Shows history in a bottom sheet (sortable table) [showHistoryBottomSheet]
+  Future showHistoryBottomSheet<T>({
     required String title,
-    required List<String> columnLabels,
     required List<T> items,
+    Widget? secondaryWidget,
+    required List<String> columnLabels,
     required DataRow Function(T) rowBuilder,
   }) async => await openBottomSheet(
     isExpand: false,
@@ -36,7 +39,8 @@ extension HistoryViewExtensions on BuildContext {
       title: title,
       isDetailMode: true,
       initialSize: 0.6,
-      body: InlineHistoryTable<T>(
+      secondaryWidget: secondaryWidget,
+      body: SortableHistoryTable<T>(
         items: items,
         columnLabels: columnLabels,
         rowBuilder: rowBuilder,
@@ -45,12 +49,12 @@ extension HistoryViewExtensions on BuildContext {
   );
 }
 
-class HistoryDataTable<T> extends StatelessWidget {
+class StaticHistoryTable<T> extends StatelessWidget {
   final List<String> columnLabels;
   final List<T> items;
   final DataRow Function(T) rowBuilder;
 
-  const HistoryDataTable({
+  const StaticHistoryTable({
     super.key,
     required this.columnLabels,
     required this.items,
@@ -115,9 +119,9 @@ InlineHistoryTable(
 
 );*/
 
-/// [InlineHistoryTable] A widget that displays a list of items in a paginated, sortable table
+/// [SortableHistoryTable] A widget that displays a list of items in a paginated, sortable table
 /// suitable for showing history or audit data inline in a modal bottom sheet.
-class InlineHistoryTable<T> extends StatefulWidget {
+class SortableHistoryTable<T> extends StatefulWidget {
   /// [title] Optional title for the table (not currently used in PaginatedDataTable header)
   final String? title;
 
@@ -139,7 +143,7 @@ class InlineHistoryTable<T> extends StatefulWidget {
   /// [sortAccessors] Optional list of accessors used for sorting each column
   final List<Comparable Function(T)>? sortAccessors;
 
-  const InlineHistoryTable({
+  const SortableHistoryTable({
     super.key,
     required this.items,
     required this.rowBuilder,
@@ -151,10 +155,11 @@ class InlineHistoryTable<T> extends StatefulWidget {
   });
 
   @override
-  State<InlineHistoryTable<T>> createState() => _InlineHistoryTableState<T>();
+  State<SortableHistoryTable<T>> createState() =>
+      _SortableHistoryTableState<T>();
 }
 
-class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
+class _SortableHistoryTableState<T> extends State<SortableHistoryTable<T>> {
   /// Internal mutable copy of items to allow sorting
   late List<T> _items;
 
@@ -172,7 +177,7 @@ class _InlineHistoryTableState<T> extends State<InlineHistoryTable<T>> {
   }
 
   @override
-  void didUpdateWidget(covariant InlineHistoryTable<T> oldWidget) {
+  void didUpdateWidget(covariant SortableHistoryTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.items != widget.items) {
       _items = List.from(widget.items);

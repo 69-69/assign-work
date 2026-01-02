@@ -68,7 +68,7 @@ extension ScaffoldSnackBar on BuildContext {
     VoidCallback? onPressed,
     int duration = 6,
     bool showProgress = true,
-    void Function()? popContext,
+    void Function()? onCallback,
   }) {
     OverlayEntry? overlayEntry;
     final overlay = Overlay.of(this);
@@ -86,8 +86,8 @@ extension ScaffoldSnackBar on BuildContext {
     void dismissOverlay() {
       if (isDismissed) return; // Prevent double dismiss
       handleClose();
-      if (popContext != null && Navigator.of(this).canPop()) {
-        popContext();
+      if (onCallback != null && Navigator.of(this).canPop()) {
+        onCallback();
       }
     }
 

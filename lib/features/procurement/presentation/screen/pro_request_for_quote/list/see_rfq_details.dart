@@ -35,8 +35,9 @@ extension RFQDetails on BuildContext {
       isDetailMode: true,
       title: 'Request for Quotation (RFQ)',
       subtitle: rfq.rfqNumber.toUpperAll,
+      secondaryWidget: _showHistory(rfq),
       body: _RFQInfoPage(rfq: rfq, supplier: supplier.name),
-      onSecondaryTap: () async => await _printRFQ(supplier, bloc, rfq),
+      onPrint: () async => await _printRFQ(supplier, bloc, rfq),
     ),
   );
 
@@ -82,6 +83,31 @@ extension RFQDetails on BuildContext {
           statusAfterAction: rfq.getRFQStatus,
         ),
       ),
+    );
+  }
+
+  Widget _showHistory(RequestForQuote? rfq) {
+    return iconButton(
+      Icons.history,
+      iconColor: kPrimaryAccentColor,
+      bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      tooltip: 'View RFQ History',
+      onPressed: () async => await _onOpenHistory(rfq),
+    );
+  }
+
+  Future<void> _onOpenHistory(RequestForQuote? rfq) async {
+    if (rfq == null) return;
+
+    await showHistoryBottomSheet<AuditLog>(
+      title: 'Workflow History',
+      columnLabels: AuditLog.dataTableHeader,
+      items: rfq.history, // list of RFQ history
+      rowBuilder: (entry) {
+        return DataRow(
+          cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
+        );
+      },
     );
   }
 }
@@ -364,6 +390,7 @@ class _RFQInfoPage extends StatelessWidget {
       children: [
         _buildBody(context),
         _Footer(rfq: _rfq),
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -372,16 +399,7 @@ class _RFQInfoPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AdaptiveLayout(
-          children: [
-            _buildHeader(context),
-
-            Align(
-              alignment: Alignment.topRight,
-              child: _buildHistoryButton(context),
-            ),
-          ],
-        ),
+        _buildHeader(context),
 
         /* Align(
           alignment: Alignment.center,
@@ -402,7 +420,7 @@ class _RFQInfoPage extends StatelessWidget {
         ),
         HorizontalDivider(),
          */
-        InlineHistoryTable<LineItem>(
+        SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,
@@ -426,7 +444,7 @@ class _RFQInfoPage extends StatelessWidget {
           children: [
             _LeftSummary(
               rfq: _rfq,
-              sign: _currencySign,
+              currencySign: _currencySign,
               textColor: _textColor,
               isPerLineTax: _isPerLineTax,
             ),
@@ -437,6 +455,8 @@ class _RFQInfoPage extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 20),
+        _addressAndNotes(context),
         const SizedBox(height: 20),
       ],
     );
@@ -451,7 +471,7 @@ class _RFQInfoPage extends StatelessWidget {
       if (_rfq?.departmentCode.isNotEmpty ?? false) ...{
         ('Department', _rfq!.departmentCode.toTitle),
       },
-      if (_rfq?.taxMode.getName.isNotEmpty ?? false) ...{
+      if (_rfq?.getName.isNotEmpty ?? false) ...{
         ('Tax Mode', (_taxMode?.getName.separateWord).toTitle),
       },
       ('Vendor', _supplier.toUpperAll),
@@ -479,7 +499,27 @@ class _RFQInfoPage extends StatelessWidget {
     );
   }
 
-  /* Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
+  Widget _addressAndNotes(BuildContext context) {
+    return AdaptiveLayout(
+      children: [
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Shipping Address:',
+          value: _rfq?.shippingAddress?.address ?? 'N/A',
+        ),
+        _buildInfoRow(
+          context,
+          separator: '\n',
+          title: 'Additional Notes:',
+          value: _rfq?.notes.toSentence ?? 'N/A',
+        ),
+      ],
+    );
+  }
+}
+
+/* Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
     child: Text(
       text,
       style: TextStyle(
@@ -538,46 +578,15 @@ class _RFQInfoPage extends StatelessWidget {
     );
   }*/
 
-  Widget _buildHistoryButton(BuildContext context) {
-    return context.outlinedIconBtn(
-      Icon(Icons.explore_outlined, color: kPrimaryAccentColor),
-      borderColor: kPrimaryAccentColor,
-      onPressed: () async => await _onOpenHistory(context),
-      tooltip: 'View RFQ History',
-      label: Text(
-        'RFQ History',
-        style: const TextStyle(color: kPrimaryAccentColor),
-      ),
-    );
-  }
-
-  Future<void> _onOpenHistory(BuildContext cxt) async {
-    if (_rfq == null) return;
-
-    await cxt.showInlineHistorySheet<AuditLog>(
-      title: 'Workflow History',
-      columnLabels: AuditLog.dataTableHeader,
-      items: _rfq.history, // list of RFQ history
-      rowBuilder: (entry) {
-        return DataRow(
-          cells: entry.itemAsList
-              .map((cell) => DataCell(Text(cell.toSentence)))
-              .toList(),
-        );
-      },
-    );
-  }
-}
-
 class _LeftSummary extends StatelessWidget {
   final RequestForQuote? rfq;
   final Color? textColor;
-  final String? sign;
+  final String? currencySign;
   final bool isPerLineTax;
 
   const _LeftSummary({
     this.rfq,
-    required this.sign,
+    required this.currencySign,
     required this.textColor,
     required this.isPerLineTax,
   });
@@ -608,16 +617,15 @@ class _LeftSummary extends StatelessWidget {
 
   Widget _buildLeftSummary(BuildContext context) {
     final summaryItems = <(String, String)>[
+      ('Currency', '${rfq?.currencyCode} ($currencySign)'),
       ('Deadline', rfq!.getDeadlineDate),
       ('Delivery', rfq!.getExpectedDate),
-    ];
 
-    if (!isPerLineTax) {
-      summaryItems.add((
-        'Applied Taxes',
-        rfq!.lineItems.first.taxNames.toUpperAll,
-      ));
-    }
+      // If Tax Mode is not Per Line, add Tax Details here
+      if (!isPerLineTax) ...{
+        ('Applied Taxes', rfq!.lineItems.first.taxNames.toUpperAll),
+      },
+    ];
 
     return Align(
       alignment: Alignment.centerLeft,
@@ -633,12 +641,6 @@ class _LeftSummary extends StatelessWidget {
               value: item.$2,
             ),
           ),
-          ...buildOptionalSection(
-            context,
-            'Shipping Address',
-            rfq?.shippingAddress?.address ?? 'None',
-          ),
-          ...buildOptionalSection(context, 'Notes', rfq!.notes),
         ],
       ),
     );
@@ -652,11 +654,11 @@ class _RightSummary extends StatelessWidget {
 
   const _RightSummary({this.rfq, required this.sign, required this.textColor});
 
-  double get _grandTotal => rfq?.netTotal ?? 0.0;
+  double get _grandTotal => rfq?.totalAmount ?? 0.0;
 
   get summaryItems => <(String, String)>[
     ('Subtotal', '$sign${(rfq?.subTotal ?? 0.0).toCurrency}'),
-    ('Discount', '-$sign${(rfq?.discountAmount ?? 0.0).toCurrency}'),
+    ('Discount', '- $sign${(rfq?.discountAmount ?? 0.0).toCurrency}'),
     ('Tax', '$sign${(rfq?.taxAmount ?? 0.0).toCurrency}'),
   ];
 

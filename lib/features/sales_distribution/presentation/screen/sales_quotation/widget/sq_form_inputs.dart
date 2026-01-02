@@ -149,6 +149,7 @@ class SQFormInputs {
       customBuilder: ({required initialData, required onChanged}) {
         return DatePicker(
           inLabel: false,
+          key: Key('validFrom'),
           initialDate: initialData,
           label: 'Valid from',
           restorationId: 'Valid from',
@@ -165,6 +166,7 @@ class SQFormInputs {
       customBuilder: ({required initialData, required onChanged}) {
         return DatePicker(
           inLabel: false,
+          key: Key('validUntil'),
           initialDate: initialData,
           label: 'Valid until',
           restorationId: 'Valid until',
@@ -181,6 +183,7 @@ class SQFormInputs {
       customBuilder: ({required initialData, required onChanged}) {
         return DatePicker(
           inLabel: false,
+          key: Key('expectedDate'),
           initialDate: initialData,
           label: 'Expected date',
           restorationId: 'Expected date',

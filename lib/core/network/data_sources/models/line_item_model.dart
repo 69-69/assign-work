@@ -350,6 +350,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
     '$quantity',
     getCategory.toTitle,
     getUnitOfMeasure.toTitle,
+    if (leadTimeDays > 0) '$leadTimeDays',
     getRequiredDate,
     notes.toSentence,
   ];
@@ -361,6 +362,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
     'Qty',
     'Category',
     'UOM',
+    if (leadTimeDays > 0) 'Lead Time (Days)',
     'Required Date',
     'Notes',
   ];
@@ -514,7 +516,6 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     limitQuantity: limitQuantity ?? this.limitQuantity,
     taxCodes: taxCodes ?? this.taxCodes,
     discount: discount ?? this.discount,
-
     taxAmount: taxAmount ?? this.taxAmount,
     taxNames: taxNames ?? this.taxNames,
     leadTimeDays: leadTimeDays ?? this.leadTimeDays,
@@ -551,21 +552,23 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     '$quantity',
     getUnitOfMeasure.toTitle,
     '$serviceRate',
-    limitAmount != null ? 'Limit: $limitAmount' : '',
-    limitQuantity != null ? 'Limit: $limitQuantity' : '',
+    '${limitAmount ?? 0.0}',
+    '${limitQuantity ?? 0.0}',
+    if (leadTimeDays > 0) '$leadTimeDays',
     getRequiredDate,
     notes.toSentence,
   ];
 
   /// For UI Header display only
   @override
-  List<String> get dataTableHeader => const [
+  List<String> get dataTableHeader => [
     'Service',
     'Qty',
     'UOM',
     'Rate',
     'Limit Amount',
     'Limit Quantity',
+    if (leadTimeDays > 0) 'Lead Time (Days)',
     'Required Date',
     'Notes',
   ];

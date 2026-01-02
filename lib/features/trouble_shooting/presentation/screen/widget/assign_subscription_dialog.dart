@@ -89,7 +89,7 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
 
     context.showAlertOverlay(
       '$_workspaceName $title successfully updated',
-      popContext: () => Navigator.of(context),
+      onCallback: () => Navigator.of(context),
     );
   }
 }

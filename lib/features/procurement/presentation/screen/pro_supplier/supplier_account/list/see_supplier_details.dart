@@ -26,7 +26,7 @@ extension SupplierDetails on BuildContext {
         title: supplier.name.toTitle,
         subtitle: supplier.businessType.toUpperAll,
         body: _SupplierInfoPage(supplier: supplier),
-        onSecondaryTap: () async => await _printRFQ(this, supplier),
+        onPrint: () async => await _printRFQ(this, supplier),
       ),
     );
   }
@@ -100,6 +100,7 @@ class _SupplierInfoPage extends StatelessWidget {
       children: [
         _buildBody(context),
         _Footer(supplier: _supplier),
+        const SizedBox(height: 20),
       ],
     );
   }

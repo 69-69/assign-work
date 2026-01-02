@@ -176,7 +176,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       context.showAlertOverlay(
         'PO successfully created',
-        popContext: () => _resetForm(),
+        onCallback: () => _resetForm(),
       );
 
       await _confirmPrintoutDialog();

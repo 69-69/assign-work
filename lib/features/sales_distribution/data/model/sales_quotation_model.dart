@@ -147,7 +147,7 @@ class SalesQuotation extends Equatable {
     'salesRepId': salesRepId,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     // 'taxCodes': taxCodes,
-    'taxMode': getTaxMode,
+    'taxMode': getName,
     'currencyCode': currencyCode,
     'exchangeRate': exchangeRate,
     'shippingAmount': shippingAmount,
@@ -185,7 +185,7 @@ class SalesQuotation extends Equatable {
   }
 
   // Computed fields for Financial Summary calculations (Base amount)
-  double get subTotalAmount =>
+  double get subTotal =>
       lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
 
   // Subtract from subtotal
@@ -197,10 +197,10 @@ class SalesQuotation extends Equatable {
       lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
   // Subtotal - Discount (Before Tax)
-  double get netTotalAmount => (subTotalAmount - discountAmount) + taxAmount;
+  double get netTotal => (subTotal - discountAmount) + taxAmount;
 
   // Final amount (after Discount + Tax)
-  double get totalAmount => netTotalAmount + shippingAmount;
+  double get totalAmount => netTotal + shippingAmount;
 
   // Singleton instance for fallback (empty SalesQuotation)
   static final empty = SalesQuotation(
@@ -225,7 +225,7 @@ class SalesQuotation extends Equatable {
   String get getSalesChannel => salesChannel.getLabel;
 
   // The name is needed not label
-  String get getTaxMode => taxMode.getName;
+  String get getName => taxMode.getName;
 
   bool get isApproved => status == WorkflowStatus.approved;
 
@@ -241,7 +241,7 @@ class SalesQuotation extends Equatable {
   String get getExpectedDate => expectedDate.dateOnly;
 
   String get getValidFromDate => validFrom.dateOnly;
-  String get getValidToDate => validUntil.dateOnly;
+  String get getValidUntilDate => validUntil.dateOnly;
 
   String get getCreatedAt => createdAt.toStandardDT;
 

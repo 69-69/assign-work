@@ -154,7 +154,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _bloc.add(AddSalesDistribution<SalesQuotation>(data: _finalizedQuote));
       context.showAlertOverlay(
         'Quote successfully created',
-        popContext: () => _resetForm(),
+        onCallback: () => _resetForm(),
       );
 
       await _confirmPrintoutDialog();

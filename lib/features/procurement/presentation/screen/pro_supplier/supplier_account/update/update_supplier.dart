@@ -61,7 +61,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
 
       context.showAlertOverlay(
         'Changes successfully saved',
-        popContext: () => Navigator.pop(context),
+        onCallback: () => Navigator.pop(context),
       );
     }
   }

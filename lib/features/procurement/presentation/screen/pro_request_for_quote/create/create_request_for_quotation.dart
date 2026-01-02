@@ -182,7 +182,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
       context.showAlertOverlay(
         'RFQ successfully created',
-        popContext: () => _resetForm(),
+        onCallback: () => _resetForm(),
       );
 
       await _confirmPrintoutDialog();

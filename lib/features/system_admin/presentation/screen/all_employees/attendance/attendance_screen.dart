@@ -140,7 +140,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     Attendance attendance = _findAttendance(attendances, userId);
 
     /// Show Areas viewed by employee
-    await context.showInlineHistorySheet<String>(
+    await context.showHistoryBottomSheet<String>(
       title: 'Areas Viewed by ${attendance.name.toTitle}',
       columnLabels: const ['Area', 'Time'],
       items: attendance.areasViewed,

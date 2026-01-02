@@ -57,9 +57,9 @@ class _UpdateSalesQuote extends StatefulWidget {
 
 class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   final _formKey = GlobalKey<FormState>();
+  bool get isFormValid => _formKey.currentState!.validate();
 
   SalesQuotation get _serverQuote => widget.serverQuote;
-
   String get _lineItemType => _serverQuote.lineItems.first.getTypeLabel;
 
   // Basic fields
@@ -82,11 +82,8 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   TaxMode? _taxModeToApply;
   late SalesQuotation _finalizedQuote;
 
-  bool get isFormValid => _formKey.currentState!.validate();
-
   /// Current employee info
   Employee? get _employee => context.employee;
-
   String get _employeeId => _employee!.employeeId;
 
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
@@ -126,7 +123,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       validFrom: toDateTimeFn(_validityDate['validFrom']),
       validUntil: toDateTimeFn(_validityDate['validUntil']),
       expectedDate: toDateTimeFn(_validityDate['expectedDate']),
-      createdBy: _employee!.fullName,
+      updatedBy: _employee!.fullName,
       history: [
         ..._serverQuote.history, // Keep existing history
         AuditLog(
@@ -198,11 +195,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
@@ -270,10 +262,11 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
           children: [
             HorizontalDivider(space: 0.4),
-            _buildTextSummary('SubTotal:', _serverQuote.subTotalAmount),
+            _buildTextSummary('SubTotal:', _serverQuote.subTotal),
             _buildTextSummary('Discount:', _serverQuote.discountAmount),
             _buildTextSummary('Tax:', _serverQuote.taxAmount),
-            _buildTextSummary('Net Total:', _serverQuote.netTotalAmount),
+            _buildTextSummary('Net Total:', _serverQuote.netTotal),
+            _buildTextSummary('Shipping:', _serverQuote.shippingAmount),
             _buildTextSummary('Grand Total:', _serverQuote.totalAmount),
           ],
         ),
@@ -419,7 +412,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       initialData: [
         {
           'validFrom': _serverQuote.getValidFromDate,
-          'validUntil': _serverQuote.getValidToDate,
+          'validUntil': _serverQuote.getValidUntilDate,
           'expectedDate': _serverQuote.getExpectedDate,
         },
       ],

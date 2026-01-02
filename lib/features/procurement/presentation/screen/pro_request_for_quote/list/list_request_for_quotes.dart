@@ -260,7 +260,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
       context.showAlertOverlay(
         'To compare, deselect and then reselect two RFQ',
         bgColor: kDangerColor,
-        popContext: () => _clearComparisonData(),
+        onCallback: () => _clearComparisonData(),
       );
       return;
     }

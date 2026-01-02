@@ -149,7 +149,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
       context.showAlertOverlay(
         'PR successfully created',
-        popContext: () => _resetForm(),
+        onCallback: () => _resetForm(),
       );
 
       await _confirmPrintoutDialog();

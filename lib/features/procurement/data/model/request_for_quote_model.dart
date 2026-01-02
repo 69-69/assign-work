@@ -149,7 +149,7 @@ class RequestForQuote extends Equatable {
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'notes': notes,
     // 'taxCodes': taxCodes,
-    'taxMode': getTaxMode,
+    'taxMode': getName,
     'currencyCode': currencyCode,
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
@@ -197,7 +197,10 @@ class RequestForQuote extends Equatable {
   // taxMode.isHeaderTax ? headerTaxAmount : lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
   // subTotal - discountAmount;
-  double get netTotal => subTotal - discountAmount + taxAmount;
+  double get netTotal => (subTotal - discountAmount) + taxAmount;
+
+  // Final amount (after Discount + Tax) plus any additional charges
+  double get totalAmount => netTotal;
 
   /// A singleton instance representing an empty/default RequestForQuote.
   /// Used as a fallback when no matching RFQ is found.
@@ -224,7 +227,8 @@ class RequestForQuote extends Equatable {
 
   String get getRFQStatus => status.getLabel;
 
-  String get getTaxMode => taxMode.getName;
+  // The name is needed not label
+  String get getName => taxMode.getName;
 
   bool get isApproved => status == WorkflowStatus.approved;
 

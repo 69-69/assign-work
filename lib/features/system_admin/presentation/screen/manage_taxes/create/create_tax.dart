@@ -56,7 +56,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
 
       context.showAlertOverlay(
         'Taxes successfully ${_isEditing ? 'updated' : 'created'}',
-        popContext: () {
+        onCallback: () {
           if (!_isEditing) {
             _formKey.currentState!.reset();
             _taxList.clear();

@@ -1,7 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -243,15 +242,15 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   Future<void> _onViewDetails(List<SalesQuotation> quotes, String id) async {
-    prettyPrint('steve', id);
     await _withTaxAndCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.viewed,
+      shouldProcessCustomerInfo: false,
       onQuoteProcessed: (quoteWithTaxes, customer) async {
         return await context.openSQDetails(
           salesQuote: quoteWithTaxes,
-          customer: customer,
+          // customer: customer,
           bloc: _readBloc,
         );
       },

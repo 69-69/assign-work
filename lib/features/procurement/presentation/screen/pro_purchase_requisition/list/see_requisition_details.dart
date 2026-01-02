@@ -34,8 +34,9 @@ extension PRDetails on BuildContext {
       isDetailMode: true,
       title: 'Purchase Requisition (${requisite.lineItems.first.getTypeLabel})',
       subtitle: requisite.prNumber.toUpperAll,
+      secondaryWidget: _showHistory(requisite),
       body: _PRInfoPage(requisite: requisite, employee: employee.fullName),
-      onSecondaryTap: () async => await _printRFQ(requisite, bloc, employee),
+      onPrint: () async => await _printRFQ(requisite, bloc, employee),
     ),
   );
 
@@ -69,6 +70,31 @@ extension PRDetails on BuildContext {
           statusAfterAction: requisite.getPRStatus,
         ),
       ),
+    );
+  }
+
+  Widget _showHistory(PurchaseRequisition? pr) {
+    return iconButton(
+      Icons.history,
+      iconColor: kPrimaryAccentColor,
+      bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      tooltip: 'View PR History',
+      onPressed: () async => await _onOpenHistory(pr),
+    );
+  }
+
+  Future<void> _onOpenHistory(PurchaseRequisition? pr) async {
+    if (pr == null) return;
+
+    await showHistoryBottomSheet<AuditLog>(
+      title: 'Workflow History',
+      columnLabels: AuditLog.dataTableHeader,
+      items: pr.history, // list of PR history
+      rowBuilder: (entry) {
+        return DataRow(
+          cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
+        );
+      },
     );
   }
 }
@@ -129,6 +155,7 @@ class _PRInfoPage extends StatelessWidget {
       children: [
         _buildBody(context),
         _Footer(requisite: _requisite),
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -137,16 +164,7 @@ class _PRInfoPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AdaptiveLayout(
-          children: [
-            _buildHeader(context),
-
-            Align(
-              alignment: Alignment.topRight,
-              child: _buildHistoryButton(context),
-            ),
-          ],
-        ),
+        _buildHeader(context),
 
         /*Align(
           alignment: Alignment.center,
@@ -165,7 +183,7 @@ class _PRInfoPage extends StatelessWidget {
           (item) => _buildItemRow(item.value, item.key),
         ),
         HorizontalDivider(),*/
-        InlineHistoryTable<LineItem>(
+        SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader,
@@ -225,9 +243,9 @@ class _PRInfoPage extends StatelessWidget {
       ],
     );
   }
+}
 
-  /*
-  Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
+/* Expanded _buildItem(String text, {bool isBold = true}) => Expanded(
     child: Text(
       text,
       style: TextStyle(
@@ -276,35 +294,6 @@ class _PRInfoPage extends StatelessWidget {
       ),
     );
   }*/
-
-  Widget _buildHistoryButton(BuildContext context) {
-    return context.outlinedIconBtn(
-      Icon(Icons.explore_outlined, color: kPrimaryAccentColor),
-      borderColor: kPrimaryAccentColor,
-      onPressed: () async => await _onOpenHistory(context),
-      tooltip: 'View PR History',
-      label: Text(
-        'PR History',
-        style: const TextStyle(color: kPrimaryAccentColor),
-      ),
-    );
-  }
-
-  Future<void> _onOpenHistory(BuildContext cxt) async {
-    if (_requisite == null) return;
-
-    await cxt.showInlineHistorySheet<AuditLog>(
-      title: 'Workflow History',
-      columnLabels: AuditLog.dataTableHeader,
-      items: _requisite.history, // list of PR history
-      rowBuilder: (entry) {
-        return DataRow(
-          cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
-        );
-      },
-    );
-  }
-}
 
 class _LeftSummary extends StatelessWidget {
   final PurchaseRequisition? requisite;
