@@ -139,6 +139,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: _scrollController,
         child: SingleChildScrollView(
           controller: _scrollController,
+          padding: EdgeInsets.only(top: 10),
           child: _buildTextField(),
         ),
       ),

@@ -12,6 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
+import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
@@ -106,6 +107,7 @@ Widget _buildInfoRow(
   String title = '',
   String value = '',
   String separator = ': ',
+  bool isReadMore = false,
 }) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 2.0),
@@ -117,12 +119,14 @@ Widget _buildInfoRow(
           color: textColor ?? context.secondaryColor,
         ),
         children: [
-          TextSpan(
-            text: value,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.normal,
-            ),
-          ),
+          isReadMore
+              ? WidgetSpan(child: ReadMoreAutoText(text: value))
+              : TextSpan(
+                  text: value,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
         ],
       ),
     ),
@@ -337,15 +341,6 @@ class _LeftSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow(
-            context,
-            separator: '\n',
-            textColor: textColor,
-            title: 'Purpose / Reason:',
-            value: requisite!.purpose.toSentence,
-          ),
-          const SizedBox(height: 10),
-          // HorizontalDivider(),
           ..._summaryItems.map(
             (item) => _buildInfoRow(
               context,
@@ -353,6 +348,15 @@ class _LeftSummary extends StatelessWidget {
               title: item.$1,
               value: item.$2,
             ),
+          ),
+          const SizedBox(height: 10),
+          _buildInfoRow(
+            context,
+            separator: '\n',
+            textColor: textColor,
+            isReadMore: true,
+            title: 'Purpose / Reason:',
+            value: requisite!.purpose.toSentence,
           ),
         ],
       ),

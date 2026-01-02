@@ -556,6 +556,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     '${limitQuantity ?? 0.0}',
     if (leadTimeDays > 0) '$leadTimeDays',
     getRequiredDate,
+    taxNames.toTitle,
     notes.toSentence,
   ];
 
@@ -570,6 +571,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     'Limit Quantity',
     if (leadTimeDays > 0) 'Lead Time (Days)',
     'Required Date',
+    'Tax Names',
     'Notes',
   ];
 

@@ -8,6 +8,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
@@ -51,6 +52,7 @@ Widget _buildInfoRow(
   String title = '',
   String value = '',
   String separator = ': ',
+  bool isReadMore = false,
 }) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 2.0),
@@ -62,12 +64,14 @@ Widget _buildInfoRow(
           color: context.secondaryColor,
         ),
         children: [
-          TextSpan(
-            text: value,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.normal,
-            ),
-          ),
+          isReadMore
+              ? WidgetSpan(child: ReadMoreAutoText(text: value))
+              : TextSpan(
+                  text: value,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
         ],
       ),
     ),
@@ -80,6 +84,7 @@ class _SupplierInfoPage extends StatelessWidget {
   const _SupplierInfoPage({Supplier? supplier}) : _supplier = supplier;
 
   List<ContactPerson> get _contactPersons => _supplier?.contactPersons ?? [];
+
   List<String> get _headerItems => [
     'Name',
     'Email',

@@ -138,7 +138,11 @@ class Tax extends Equatable {
   }
 
   /// Filter/search
-  bool filterByAny(String filter) => itemAsList.filterAny(filter);
+  bool filterByAny(String filter) {
+    final words = filter.split(' ');
+
+    return words.any((word) => itemAsList.filterAny(word));
+  }
 
   /// [findById]
   static Tax? findById(List<Tax> departs, String id) =>

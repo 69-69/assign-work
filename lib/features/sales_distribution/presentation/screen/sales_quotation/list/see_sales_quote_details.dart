@@ -12,6 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
+import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
@@ -103,6 +104,7 @@ Widget _buildInfoRow(
   String title = '',
   String value = '',
   String separator = ': ',
+  bool isReadMore = false,
 }) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 2.0),
@@ -114,12 +116,14 @@ Widget _buildInfoRow(
           color: textColor ?? context.secondaryColor,
         ),
         children: [
-          TextSpan(
-            text: value,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.normal,
-            ),
-          ),
+          isReadMore
+              ? WidgetSpan(child: ReadMoreAutoText(text: value))
+              : TextSpan(
+                  text: value,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
         ],
       ),
     ),
@@ -241,24 +245,28 @@ class _SQInfoPage extends StatelessWidget {
           context,
           separator: '\n',
           title: 'Payment Terms:',
+          isReadMore: true,
           value: _salesQuote?.paymentTerms.toSentence ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           separator: '\n',
           title: 'Warranty:',
+          isReadMore: true,
           value: _salesQuote?.warrantyTerms.toSentence ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           separator: '\n',
           title: 'Return Policy:',
+          isReadMore: true,
           value: _salesQuote?.returnPolicy.toSentence ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           separator: '\n',
           title: 'Additional Notes:',
+          isReadMore: true,
           value: _salesQuote?.notes.toSentence ?? 'N/A',
         ),
       ],
@@ -328,10 +336,12 @@ class _LeftSummary extends StatelessWidget {
   });
 
   TaxMode? get _taxMode => salesQuote?.taxMode;
+
   bool get _isPerLineTax => _taxMode?.isPerLineTax ?? false;
 
   get _summaryItems => <(String, String)>[
     ('Currency', '${salesQuote?.currencyCode} ($currencySign)'),
+    ('Exchange Rate', '${salesQuote?.exchangeRate}'),
     ('Valid From', '${salesQuote?.getValidFromDate}'),
     ('Valid Until', '${salesQuote?.getValidUntilDate}'),
     ('Expected Date', '${salesQuote?.getExpectedDate}'),

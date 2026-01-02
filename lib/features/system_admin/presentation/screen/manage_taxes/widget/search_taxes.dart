@@ -347,7 +347,9 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
 
   Future<void> _handleNoDataFound(BuildContext cxt) async {
     await cxt.confirmDone(
-      const Text('Contact your system administrator to add a new tax rate.'),
+      const Text(
+        'Enter to search or contact your system administrator to add a new tax rate.',
+      ),
       title: 'Tax code not found',
     );
   }

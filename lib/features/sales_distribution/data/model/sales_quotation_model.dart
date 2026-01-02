@@ -143,7 +143,7 @@ class SalesQuotation extends Equatable {
     'customerId': customerId,
     'customerName': customerName,
     'status': getSQStatus,
-    'SalesChannel': getSalesChannel,
+    'salesChannel': getSalesChannel,
     'salesRepId': salesRepId,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     // 'taxCodes': taxCodes,

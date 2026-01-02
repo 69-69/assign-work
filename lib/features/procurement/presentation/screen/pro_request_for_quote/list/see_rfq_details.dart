@@ -12,6 +12,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
+import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
@@ -334,6 +335,7 @@ Widget _buildInfoRow(
   String title = '',
   String value = '',
   String separator = ': ',
+  bool isReadMore = false,
 }) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: 2.0),
@@ -345,12 +347,14 @@ Widget _buildInfoRow(
           color: textColor ?? context.secondaryColor,
         ),
         children: [
-          TextSpan(
-            text: value,
-            style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.normal,
-            ),
-          ),
+          isReadMore
+              ? WidgetSpan(child: ReadMoreAutoText(text: value))
+              : TextSpan(
+                  text: value,
+                  style: context.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
         ],
       ),
     ),
@@ -506,11 +510,13 @@ class _RFQInfoPage extends StatelessWidget {
           context,
           separator: '\n',
           title: 'Shipping Address:',
+          isReadMore: true,
           value: _rfq?.shippingAddress?.address ?? 'N/A',
         ),
         _buildInfoRow(
           context,
           separator: '\n',
+          isReadMore: true,
           title: 'Additional Notes:',
           value: _rfq?.notes.toSentence ?? 'N/A',
         ),

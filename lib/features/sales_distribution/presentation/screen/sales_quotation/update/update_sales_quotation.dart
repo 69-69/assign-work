@@ -264,7 +264,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
             HorizontalDivider(space: 0.4),
             _buildTextSummary('SubTotal:', _serverQuote.subTotal),
             _buildTextSummary('Discount:', _serverQuote.discountAmount),
-            _buildTextSummary('Tax:', _serverQuote.taxAmount),
+            _buildTextSummary('Tax %:', _serverQuote.taxAmount),
             _buildTextSummary('Net Total:', _serverQuote.netTotal),
             _buildTextSummary('Shipping:', _serverQuote.shippingAmount),
             _buildTextSummary('Grand Total:', _serverQuote.totalAmount),
@@ -285,6 +285,9 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     if (amount.isNaN || amount == 0.0) {
       amount = 0.0; // Set a default value if the amount is invalid
     }
+    final sign = label.contains('Tax')
+        ? ''
+        : getCurrencySign(_serverQuote.currencyCode);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -297,7 +300,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           ),
         ),
         Text(
-          '${getCurrencySign(_serverQuote.currencyCode)}${amount.toCurrency}',
+          '$sign${amount.toCurrency}',
           style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.normal,
             color: context.onSurfaceColor,

@@ -331,7 +331,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         POFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => LineItem.fromMap(map, id: id),
+          fromMap: (map, id) =>
+              LineItem.fromMap(map, id: id, lineType: _lineItemType),
         );
       },
     );
