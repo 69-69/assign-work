@@ -34,11 +34,10 @@ class ListSalesQuotations extends StatefulWidget {
 
 class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   // List to group quotations for printout
-  final List<SalesQuotation> _selectedForCompare = [];
   final List<String> _selectedIds = [];
+  final List<SalesQuotation> _selectedForCompare = [];
 
   bool get _isApproved => widget.isApproved;
-
   SalesQuotationBloc get _readBloc => context.read<SalesQuotationBloc>();
 
   @override
@@ -218,6 +217,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
                     documentId: _selectedIds,
                   ),
                 );
+                _selectedIds.clear();
               }
             },
           ),

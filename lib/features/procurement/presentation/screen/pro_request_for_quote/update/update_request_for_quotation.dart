@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
@@ -12,17 +13,16 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,40 +52,40 @@ class _UpdateRequestForQuote extends StatefulWidget {
 
 class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   final _formKey = GlobalKey<FormState>();
-  late RequestForQuote _cachedUpdatedRFQ;
 
   /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
   TaxMode? _taxModeToApply;
 
   // Basic fields
   bool _isSubmitting = false;
-  String? _currencyCode;
   String? _rfqTitle;
-  String? _requestedBy;
-  String? _departmentCode;
   String? _rfqStatus;
+  String? _requestedBy;
+  String? _currencyCode;
+  String? _costCenterCode;
+  String? _departmentCode;
   String? _paymentTerm;
+  bool? _autoConvertRfq; // auto-convert PO when RFQ is Accepted
   // Dates
   DateTime? _deadlineDate;
   DateTime? _expectedDate;
 
-  final List<String> _taxCodes = [];
-
   /// Line Items & Additional Info
   final List<LineItem> _lineItems = [];
+  final Map<String, dynamic> _buyerTerms = {};
+  final List<SupplierLink> _supplierLinks = [];
+  final List<AddressInfo> _shippingAddress = [];
   final Map<String, dynamic> _additionalInfo = {};
 
   RequestForQuote get _serverRFQ => widget.rfq;
-  String? get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
 
-  List<String> get _initialHeaderTaxes => _serverRFQ.taxMode.isHeaderTax
-      ? List.from(_serverRFQ.lineItems.first.taxCodes)
-      : [];
+  String? get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
 
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
+
   String get _employeeName => context.employee!.fullName;
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
@@ -105,20 +105,17 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     _lineItems.addAll(_serverRFQ.lineItems);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   /// Construct Request For Quote object
   RequestForQuote get _updatedRFQ {
-    final status = _rfqStatus ?? _serverRFQ.status.getName;
+    final status = _rfqStatus ?? _serverRFQ.getName;
 
     return _serverRFQ.copyWith(
       taxMode: _taxModeToApply,
       title: _rfqTitle ?? _serverRFQ.title,
+      autoConvertRfq: _autoConvertRfq ?? _serverRFQ.autoConvertRfq,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
       status: WorkflowStatusHelper.fromString(status),
+      costCenterCode: _costCenterCode ?? _serverRFQ.costCenterCode,
       currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
       supplierLinks: _serverRFQ.supplierLinks,
@@ -129,9 +126,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       deadline: _deadlineDate ?? _serverRFQ.deadline,
       buyerContactPersonId: _paymentTerm ?? _serverRFQ.buyerContactPersonId,
       expectedDate: _expectedDate ?? _serverRFQ.expectedDate,
-      /*validityDate: _validityDate != null
-          ? '${_validityDate!.toDays} days'
-          : _serverRFQ.validityDate,*/
       updatedBy: _employeeName,
       history: [
         ..._serverRFQ.history, // keep all old logs
@@ -144,54 +138,28 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     );
   }
 
-  void _onSubmit() {
+  void _onSubmit() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
     try {
       if (!isFormValid || _lineItems.isNullOrEmpty) return;
 
-      _cachedUpdatedRFQ = _sanitizeTaxCodes(_updatedRFQ);
-
       _bloc.add(
         UpdateProcurement<RequestForQuote>(
-          documentId: _cachedUpdatedRFQ.id,
-          data: _cachedUpdatedRFQ,
+          documentId: _updatedRFQ.id,
+          data: _updatedRFQ,
         ),
       );
 
-      context.showAlertOverlay('Changes successfully saved');
-      _confirmPrintoutDialog();
+      context.showAlertOverlay(
+        'Changes successfully saved',
+        onCallback: () => Navigator.pop(context),
+      );
+      await _confirmPrintoutDialog();
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
-  }
-
-  /// Ensures tax codes are correctly applied to RFQ line items
-  /// based on the selected tax mode [_sanitizeTaxCodes].
-  ///
-  /// - For Header Tax:
-  ///   Tax codes are selected once at the header level but must be
-  ///   propagated to every line item before sending data to the server.
-  ///   This guarantees backend consistency and correct tax calculation.
-  ///
-  /// - For Per-Line Tax:
-  ///   Line items already carry their own tax codes, so no modification
-  ///   is required.
-  RequestForQuote _sanitizeTaxCodes(RequestForQuote rfq) {
-    // If Header Tax is selected, apply the same tax codes
-    // to all line items to ensure backend compatibility.
-    if (rfq.taxMode.isHeaderTax) {
-      // Apply tax codes to each line item in the quote object
-      final updatedItems = rfq.lineItems
-          .map((e) => e.copyWith(taxCodes: _taxCodes))
-          .toList();
-      // Return a new RFQ object with updated line items
-      return rfq.copyWith(lineItems: updatedItems);
-    }
-    // For Per-Line Tax mode, return the RFQ unchanged since
-    // tax codes are managed individually per line item.
-    return rfq;
   }
 
   @override
@@ -208,39 +176,64 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         FormGroupCard(
-          title: 'Request for Quotes',
+          title: '1. Quotation Overview',
           children: [
+            _buildAutoCreateAndStatus(),
+            const HorizontalDivider(space: 0.4),
             _buildTitleField(),
             _buildRequesterAndDepartment(),
-            _buildSupplierAndStatus(),
           ],
         ),
 
         FormGroupCard(
-          title: '${_lineItemType.toSentence} Line Items',
+          isExpanded: false,
+          title: '2. Cost Center',
+          children: [_buildCurrencyAndCostCenter()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '3. ${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
           children: [_buildLineItems()],
         ),
 
         FormGroupCard(
-          title: 'Buyer Terms',
-          children: [_buildDates(), _buildCurrency()],
+          isExpanded: false,
+          title: '4. Invite Suppliers',
+          subTitle:
+              '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
+          children: [_buildSuppliers()],
         ),
 
         FormGroupCard(
-          title: 'Supplier Terms',
-          children: [/*_buildValidityAndPayTerms()*/ _buildTaxModeSelector()],
+          isExpanded: false,
+          title: '5. Buyer\'s Terms',
+          children: [_buildBuyerTerms()],
         ),
 
         FormGroupCard(
-          title: 'Delivery Address and Terms',
-          children: [_buildDeliveryAndTerms()],
+          isExpanded: false,
+          title: '6. Shipping Address',
+          children: [_buildShippingAddress()],
         ),
 
+        const SizedBox(height: 20.0),
         context.confirmableActionButton(onPressed: _onSubmit),
         const SizedBox(height: 20.0),
       ],
+    );
+  }
+
+  AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
+    return AutoCreateAndRFQStatus(
+      initialStatus: _serverRFQ.getRFQStatus,
+      onStatusChanged: (s) => setState(() => _rfqStatus = s),
+      isSelected: _autoConvertRfq ?? _serverRFQ.autoConvertRfq,
+      onAutoConvertChanged: (bool? v) {
+        setState(() => _autoConvertRfq = v ?? false);
+      },
     );
   }
 
@@ -279,70 +272,13 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     );
   }
 
-  /*Widget _buildValidityAndPayTerms() {
-    return ValidityAndPayTermsDropdown(
-      initialPayTerms: _serverRFQ.buyerContactPersonId,
-      onPayTermsChanged: (s) => setState(() => _paymentTerm = s),
-      initialValidity: _serverRFQ.getValidityDate,
-      onValidityChanged: (date) => setState(() => _validityDate = date),
-    );
-  }*/
-
-  Widget _buildTaxModeSelector() {
-    return TaxModeSelector(
-      initialValues: _initialHeaderTaxes,
-      onRadioChanged: _onSelectTaxMode,
-      defaultTaxMode: _taxModeToApply,
-      onCheckChanged: (List<Map<String, dynamic>> data) {
-        // if (isFormValid) setState(() {});
-
-        List<String> taxCodes = data
-            .where((e) => e['selected'] == true)
-            .map((m) => Tax.fromMap(m['data']).code)
-            .toList();
-
-        _taxCodes
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(taxCodes);
-      },
-    );
-  }
-
-  Widget _buildDeliveryAndTerms() {
-    return DynamicTextFields(
-      initialData: [
-        {
-          'notes': _serverRFQ.notes,
-          'shippingAddress': _serverRFQ.shippingAddress,
-        },
-      ],
-      fieldsConfig: RFQFormInputs.deliveryFields,
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
-        _additionalInfo
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(data.first);
-      },
-    );
-  }
-
-  Widget _buildCurrency() {
-    return CurrencyDropdown(
+  CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
+    return CurrencyAndCostCenterDepartment(
       initialCurrency: _serverRFQ.currencyCode,
-      onCurrencyChanged: (s) => setState(() => _currencyCode = s),
-    );
-  }
-
-  Widget _buildDates() {
-    return DeadlineAndExpectedDateInput(
-      lineItemType: _lineItemType,
-      labelExpected: "Expected date",
-      labelDeadline: "Deadline date",
-      initialDeadlineDate: _serverRFQ.getDeadlineDate,
-      initialExpectedDate: _serverRFQ.getExpectedDate,
-      onExpectedChanged: (date) => setState(() => _expectedDate = date),
-      onDeadlineChanged: (date) => setState(() => _deadlineDate = date),
+      initialCostCenter: _serverRFQ.costCenterCode,
+      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
+      onCostCenterChange: (id, code, name) =>
+          setState(() => _costCenterCode = code),
     );
   }
 
@@ -353,7 +289,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       fieldsConfig: RFQFormInputs.fields(
         _lineItemType ?? '',
         isHidden: _taxModeToApply != TaxMode.perLineTax,
-        keysToExclude: [],
       ),
       initialData: _serverRFQ.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
@@ -363,33 +298,76 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         RFQFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
-          fromMap: (map, id) => LineItem.fromMap(map, id: id),
+          fromMap: (map, id) => LineItem.fromMap(map),
         );
       },
     );
   }
 
-  Widget _buildSupplierAndStatus() {
-    return SizedBox.shrink();
-    /*AutoCreateAndRFQStatus(
-      initialStatus: _serverRFQ.status.getName,
-      initialSupplier: _serverRFQ.supplierId,
-      initialSupplierRep: _serverRFQ.supplierRepId,
-      onStatusChanged: (s) => setState(() => _rfqStatus = s),
-      onSupplierChanged: (id, name) => setState(() => _supplierId = id),
-      onContactPersonChanged: (id) => setState(() => _supplierRepId = id),
-    );*/
+  DynamicTextFields _buildSuppliers() {
+    return DynamicTextFields(
+      showButton: true,
+      fullWidthKey: 'supplierLinks',
+      fieldsConfig: RFQFormInputs.suppliersFields,
+      initialData: _serverRFQ.supplierLinks.map((e) => e.toMap()).toList(),
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        final supplierLinks = data.map((e) {
+          final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
+          // Merge the status from the top-level map
+          copy['status'] = e['status'];
+          return copy;
+        }).toList();
+
+        // Update the RFQSupplier list
+        RFQFormInputs.updateListFromData<SupplierLink>(
+          _supplierLinks,
+          map: supplierLinks,
+          fromMap: (map, id) => SupplierLink.fromMap(map),
+        );
+      },
+    );
   }
 
-  // -------------------------
-  // Tax, Print & History Logic
-  // -------------------------
-  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
-    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
-    final selectedKey = selected?['key'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
-    });
+  DynamicTextFields _buildBuyerTerms() {
+    return DynamicTextFields(
+      initialData: [
+        {
+          'notes': _serverRFQ.notes,
+          'deadline': _serverRFQ.getDeadlineDate,
+          'expectedDate': _serverRFQ.getExpectedDate,
+          'buyerContactPerson': _serverRFQ.buyerContactPersonId,
+        },
+      ],
+      fullWidthKey: 'buyerContactPerson',
+      fieldsConfig: RFQFormInputs.buyerTermsFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _buyerTerms
+          ..clear()
+          ..addAll(data.first);
+      },
+    );
+  }
+
+  // Addresses (e.g., Buyer Shipping Address)
+  DynamicTextFields _buildShippingAddress() {
+    return DynamicTextFields(
+      initialData: [_serverRFQ.shippingAddress?.toMap() ?? {}], // empty form
+      fieldsConfig: RFQFormInputs.shippingAddressFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        // Update the address list
+        RFQFormInputs.updateListFromData<AddressInfo>(
+          _shippingAddress,
+          map: data,
+          fromMap: (map, id) => AddressInfo.fromMap(map),
+        );
+      },
+    );
   }
 
   Future<void> _confirmPrintoutDialog() async {
@@ -400,15 +378,15 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       onRejectLabel: "Cancel",
     );
 
-    if (mounted) {
-      if (!isConfirmed) return;
-
+    if (mounted && isConfirmed) {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
         onSuccess: (_) {
-          context.showAlertOverlay('RFQ Printout successful');
-          Navigator.pop(context);
+          context.showAlertOverlay(
+            'RFQ Printout successful',
+            onCallback: () => Navigator.pop(context),
+          );
         },
         onError: (e) => context.showAlertOverlay(
           'RFQ printout failed',
@@ -419,18 +397,16 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    final rfqWithTaxes = await RFQFormInputs.applyTaxesToQuote(
-      _cachedUpdatedRFQ,
-    );
+    final rfqWithTaxes = await RFQFormInputs.applyTaxesToQuote(_updatedRFQ);
     final supplier = await RFQFormInputs.getSupplier(
-      _cachedUpdatedRFQ.supplierLinks.first.supplierId,
+      _updatedRFQ.supplierLinks.first.supplierId,
     );
     if (supplier.isEmpty) return;
 
     // Log that details were printed
     if (mounted &&
         AuditTracker.shouldLog(
-          id: _cachedUpdatedRFQ.id,
+          id: _updatedRFQ.id,
           type: DocType.prs,
           action: AuditAction.printed,
         )) {

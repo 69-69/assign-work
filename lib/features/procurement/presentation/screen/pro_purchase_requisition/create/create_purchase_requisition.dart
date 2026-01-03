@@ -60,7 +60,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   // Basic fields
   bool _isSubmitting = false;
-  bool _autoCreatePr = true; // auto create RFQ when PR is Approved
+  bool _autoConvertPr = true; // If approved, auto-convert PR to RFQ
   String _prNumber = '';
   String _requestedBy = '';
   String _costCenterCode = ''; // 47960533
@@ -111,7 +111,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   PurchaseRequisition get _newPR => PurchaseRequisition(
     prNumber: _prNumber,
     storeNumber: _employeeStore,
-    autoCreatePr: _autoCreatePr,
+    autoConvertPr: _autoConvertPr,
     priority: PriorityHelper.fromString(_priority ?? ''),
     status: WorkflowStatusHelper.fromString(_prStatus ?? ''),
     costCenterCode: _costCenterCode,
@@ -164,7 +164,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
-        _autoCreatePr = false;
+        _autoConvertPr = false;
         _costCenterCode = '';
         _departmentCode = '';
         _requestedBy = '';
@@ -309,9 +309,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
   AutoAndCostCenterDepartment _buildAutoCreateAndCostCenter() {
     return AutoAndCostCenterDepartment(
-      isSelected: _autoCreatePr,
+      isSelected: _autoConvertPr,
       onAutoConvertChanged: (bool? v) {
-        setState(() => _autoCreatePr = v ?? false);
+        setState(() => _autoConvertPr = v ?? false);
       },
       onCostCenterChange: (id, code, name) =>
           setState(() => _costCenterCode = code),

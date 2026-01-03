@@ -167,8 +167,8 @@ class Supplier extends Equatable {
         code,
         items,
         businessType,
-        bankDetails!,
-        taxDetails!,
+        bankDetails ?? '',
+        taxDetails ?? '',
       }.filterAny(filter) ||
       contactPersons.filterAny(filter);
 

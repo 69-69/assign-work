@@ -73,7 +73,15 @@ class RFQFormInputs {
     String type, {
     bool isDisabled = false,
     bool isHidden = false,
-    List<String> keysToExclude = const [],
+    List<String> keysToExclude = const [
+      'discount',
+      'unitPrice',
+      'serviceRate',
+      'limitAmount',
+      'limitQuantity',
+      'taxCodes',
+      'leadTimeDays',
+    ],
   }) {
     final fields = ProcurementForm.fields(
       type,

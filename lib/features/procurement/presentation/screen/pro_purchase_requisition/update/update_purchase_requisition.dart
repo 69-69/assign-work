@@ -56,7 +56,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   // Basic fields
   String? _priority;
   String? _prStatus;
-  bool? _autoCreatePr;
+  bool? _autoConvertPr;
   String? _requestedBy;
   String? _costCenterCode;
   String? _departmentCode;
@@ -90,7 +90,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     final status = _prStatus ?? _serverPR.getPRStatus;
 
     return _serverPR.copyWith(
-      autoCreatePr: _autoCreatePr,
+      autoConvertPr: _autoConvertPr,
       priority: PriorityHelper.fromString(
         _priority ?? _serverPR.priority.getName,
       ),
@@ -278,9 +278,9 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
   AutoAndCostCenterDepartment _buildAutoCreateAndCostCenter() {
     return AutoAndCostCenterDepartment(
-      isSelected: _autoCreatePr ?? _serverPR.autoCreatePr,
+      isSelected: _autoConvertPr ?? _serverPR.autoConvertPr,
       onAutoConvertChanged: (bool? v) {
-        setState(() => _autoCreatePr = v ?? false);
+        setState(() => _autoConvertPr = v ?? false);
       },
       initialCostCenter: _serverPR.costCenterCode,
       onCostCenterChange: (id, code, name) =>

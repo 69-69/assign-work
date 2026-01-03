@@ -36,7 +36,7 @@
 ```shell
 git init
 git add .
-git commit -m "Completed Sales Quotation details"
+git commit -m "Partially-Done: RFQ"
 git branch -M main
 git push -u origin main
 ```

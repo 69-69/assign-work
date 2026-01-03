@@ -281,35 +281,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   // -------------------------
   // Section Builders
   // -------------------------
-  Widget _buildTextSummary(String label, double amount) {
-    if (amount.isNaN || amount == 0.0) {
-      amount = 0.0; // Set a default value if the amount is invalid
-    }
-    final sign = label.contains('Tax')
-        ? ''
-        : getCurrencySign(_serverQuote.currencyCode);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: kTextColor,
-          ),
-        ),
-        Text(
-          '$sign${amount.toCurrency}',
-          style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.normal,
-            color: context.onSurfaceColor,
-          ),
-          textAlign: TextAlign.end, // Right-align the value
-        ),
-      ],
-    );
-  }
 
   AutoCreateAndSQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndSQStatus(
@@ -533,5 +504,35 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       empId: _employeeId,
     );
     _bloc.add(up);
+  }
+
+  Widget _buildTextSummary(String label, double amount) {
+    if (amount.isNaN || amount == 0.0) {
+      amount = 0.0; // Set a default value if the amount is invalid
+    }
+    final sign = label.contains('Tax')
+        ? ''
+        : getCurrencySign(_serverQuote.currencyCode);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: kTextColor,
+          ),
+        ),
+        Text(
+          '$sign${amount.toCurrency}',
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.normal,
+            color: context.onSurfaceColor,
+          ),
+          textAlign: TextAlign.end, // Right-align the value
+        ),
+      ],
+    );
   }
 }

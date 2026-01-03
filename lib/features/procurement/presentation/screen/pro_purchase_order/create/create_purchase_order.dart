@@ -319,7 +319,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           'limitAmount',
           'limitQuantity',
           'taxCodes',
-          'leadTimDays',
+          'leadTimeDays',
         ],
       ),
       initialData:

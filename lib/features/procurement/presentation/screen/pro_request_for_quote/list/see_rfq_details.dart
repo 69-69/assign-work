@@ -511,7 +511,7 @@ class _RFQInfoPage extends StatelessWidget {
           separator: '\n',
           title: 'Shipping Address:',
           isReadMore: true,
-          value: _rfq?.shippingAddress?.address ?? 'N/A',
+          value: _rfq?.shippingAddress?.address.toSentence ?? 'N/A',
         ),
         _buildInfoRow(
           context,

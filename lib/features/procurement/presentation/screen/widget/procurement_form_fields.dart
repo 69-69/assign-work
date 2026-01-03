@@ -3,6 +3,7 @@ import 'package:assign_erp/core/constants/item_category.dart';
 import 'package:assign_erp/core/constants/line_item_type.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -337,20 +338,21 @@ class ProcurementForm {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        final value = Map<String, dynamic>.from(initialData ?? {});
-
+        prettyPrint('initial-Data', initialData);
+        final initial = Map<String, dynamic>.from(initialData ?? {});
         return FindSuppliers(
-          initialSupplier: value['supplierId'],
-          initialSupplierRep: value['supplierRepId'],
+          initialSupplier: initial['supplierId'],
+          initialSupplierRep: initial['supplierRepId'],
           onSupplierChanged: (id, name) {
-            value
+            prettyPrint('supplier-Id--$id', initial['supplierId']);
+            initial
               ..['supplierId'] = id
               ..['name'] = name; // Supplier Name is not required
-            onChanged(Map<String, dynamic>.from(value));
+            onChanged(Map<String, dynamic>.from(initial));
           },
           onContactPersonChanged: (contactPersonId) {
-            value['supplierRepId'] = contactPersonId;
-            onChanged(Map<String, dynamic>.from(value));
+            initial['supplierRepId'] = contactPersonId;
+            onChanged(Map<String, dynamic>.from(initial));
           },
         );
       },

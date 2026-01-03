@@ -80,10 +80,10 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   // Basic fields
   String? _rfqStatus;
   String _rfqTitle = '';
-  String _currencyCode = '';
   String _rfqNumber = '';
   String _requestedBy = '';
-  bool _autoCreateRfq = true; // auto-convert PO when RFQ is Accepted
+  String _currencyCode = '';
+  bool _autoConvertRfq = true; // auto-convert PO when RFQ is Accepted
   bool _isSubmitting = false;
   String _costCenterCode = '';
   String _departmentCode = '';
@@ -141,7 +141,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     prNumber: _initialPR?.workflowNumber ?? 'N/A',
     rfqNumber: _rfqNumber,
     storeNumber: _employeeStore,
-    autoConvertRfq: _autoCreateRfq,
+    autoConvertRfq: _autoConvertRfq,
     title: _rfqTitle,
     status: WorkflowStatusHelper.fromString(_rfqStatus ?? ''),
     supplierLinks: List.from(_supplierLinks),
@@ -198,7 +198,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
       _isSubmitting = false;
       _rfqTitle = '';
-      _autoCreateRfq = false;
+      _autoConvertRfq = false;
       _supplierLinks.clear();
       _requestedBy = '';
       _currencyCode = '';
@@ -321,15 +321,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       fieldsConfig: RFQFormInputs.fields(
         _lineItemType ?? '',
         isDisabled: _isDisabled,
-        keysToExclude: [
-          'discount',
-          'unitPrice',
-          'serviceRate',
-          'limitAmount',
-          'limitQuantity',
-          'taxCodes',
-          'leadTimDays',
-        ],
       ),
       initialData:
           _initialPR?.lineItems.map((e) => e.toMap(true)).toList() ?? [{}],
@@ -385,8 +376,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   DynamicTextFields _buildSuppliers() {
     return DynamicTextFields(
-      initialData: [{}],
       showButton: true,
+      initialData: [{}],
       fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
@@ -394,7 +385,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
-          // Merge the status from the top-level map
+          // Merge the supplier status(like: invited, declined) from the top-level map
           copy['status'] = e['status'];
           return copy;
         }).toList();
@@ -420,9 +411,9 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndRFQStatus(
       onStatusChanged: (s) => setState(() => _rfqStatus = s),
-      isSelected: _autoCreateRfq,
+      isSelected: _autoConvertRfq,
       onAutoConvertChanged: (bool? v) {
-        setState(() => _autoCreateRfq = v ?? false);
+        setState(() => _autoConvertRfq = v ?? false);
       },
     );
   }

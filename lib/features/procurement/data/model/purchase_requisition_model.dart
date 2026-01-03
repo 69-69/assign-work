@@ -28,7 +28,7 @@ class PurchaseRequisition extends Equatable {
   final String id;
 
   /// Auto-Convert PR to RFQ after PR approval (if true)
-  final bool autoCreatePr;
+  final bool autoConvertPr;
   final String storeNumber;
   final String prNumber; // Purchase Requisition number
   /// [costCenterCode] Business Unit or Department paying for the purchase
@@ -64,7 +64,7 @@ class PurchaseRequisition extends Equatable {
 
   PurchaseRequisition({
     this.id = '',
-    this.autoCreatePr = false,
+    this.autoConvertPr = false,
     required this.prNumber,
     required this.storeNumber,
     this.priority = ERPPriority.normal,
@@ -94,7 +94,7 @@ class PurchaseRequisition extends Equatable {
       id: id ?? map['id'] ?? '',
       prNumber: map['prNumber'],
       storeNumber: map['storeNumber'] ?? '',
-      autoCreatePr: map['autoCreatePr'] ?? false,
+      autoConvertPr: map['autoConvertPr'] ?? false,
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
@@ -117,7 +117,7 @@ class PurchaseRequisition extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'prNumber': prNumber,
-    'autoCreatePr': autoCreatePr,
+    'autoConvertPr': autoConvertPr,
     'costCenterCode': costCenterCode,
     'departmentCode': departmentCode,
     'status': getPRStatus,
@@ -175,7 +175,7 @@ class PurchaseRequisition extends Equatable {
 
   bool get isNotEmpty => lineItems.isNotEmpty;
 
-  String get getAutoCreatePr => autoCreatePr ? 'Yes' : 'No';
+  String get getAutoConvertPr => autoConvertPr ? 'Yes' : 'No';
 
   String get getPriority => priority.getLabel;
 
@@ -227,7 +227,7 @@ class PurchaseRequisition extends Equatable {
     String? id,
     String? prNumber,
     String? storeNumber,
-    bool? autoCreatePr,
+    bool? autoConvertPr,
     String? costCenterCode,
     String? departmentCode,
     String? requestedBy,
@@ -247,7 +247,7 @@ class PurchaseRequisition extends Equatable {
     id: id ?? this.id,
     prNumber: prNumber ?? this.prNumber,
     storeNumber: storeNumber ?? this.storeNumber,
-    autoCreatePr: autoCreatePr ?? this.autoCreatePr,
+    autoConvertPr: autoConvertPr ?? this.autoConvertPr,
     status: status ?? this.status,
     priority: priority ?? this.priority,
     purpose: purpose ?? this.purpose,
@@ -270,7 +270,7 @@ class PurchaseRequisition extends Equatable {
     id,
     storeNumber,
     prNumber,
-    autoCreatePr,
+    autoConvertPr,
     costCenterCode,
     departmentCode,
     priority,
