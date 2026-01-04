@@ -28,9 +28,10 @@ class GetStores {
     // Load all data initially to pass to the search delegate
     storeBloc.add(
       SearchSetup<CompanyStores>(
-        field: 'name',
-        optField: 'storeNumber',
-        auxField: 'location',
+        primaryField: 'name',
+        optionalField: 'storeNumber',
+        secondaryField: 'location',
+        tertiaryField: 'phone',
         query: term,
       ),
     );

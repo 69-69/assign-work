@@ -22,9 +22,10 @@ class GetPurchaseRequisitions {
     // Load all data initially to pass to the search delegate
     prBloc.add(
       SearchProcurement<PurchaseRequisition>(
-        field: 'prNumber',
-        optField: 'priority',
-        auxField: 'departmentCode',
+        primaryField: 'prNumber',
+        optionalField: 'priority',
+        secondaryField: 'status',
+        tertiaryField: 'departmentCode',
         query: term,
       ),
     );

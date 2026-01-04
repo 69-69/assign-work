@@ -204,6 +204,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
                 _readBloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
+                _selectedIds.clear();
               }
             },
           ),

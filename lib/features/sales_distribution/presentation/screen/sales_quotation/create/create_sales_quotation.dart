@@ -159,7 +159,12 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
       await _confirmPrintoutDialog();
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _resetForm();
+        });
+      }
     }
   }
 

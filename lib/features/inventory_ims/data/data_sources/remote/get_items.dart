@@ -49,9 +49,10 @@ class GetItems {
     // Load all data initially to pass to the search delegate
     itemBloc.add(
       SearchInventory<Item>(
-        field: 'sku',
-        optField: 'batchId',
-        auxField: 'name',
+        primaryField: 'sku',
+        optionalField: 'batchId',
+        secondaryField: 'name',
+        tertiaryField: 'supplierId',
         query: term,
       ),
     );

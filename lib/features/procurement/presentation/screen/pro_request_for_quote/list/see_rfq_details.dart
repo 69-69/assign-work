@@ -35,7 +35,8 @@ extension RFQDetails on BuildContext {
     child: BottomSheetScaffold(
       isDetailMode: true,
       title: 'Request for Quotation (RFQ)',
-      subtitle: rfq.rfqNumber.toUpperAll,
+      subtitle:
+          '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getTypeLabel})',
       secondaryWidget: _showHistory(rfq),
       body: _RFQInfoPage(rfq: rfq, supplier: supplier.name),
       onPrint: () async => await _printRFQ(supplier, bloc, rfq),

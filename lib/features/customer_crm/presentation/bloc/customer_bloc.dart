@@ -217,10 +217,11 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     emit(LoadingCustomers<T>());
     try {
       List<CacheData> data = await _customerRepository.searchData(
-        field: event.field ?? '',
-        query: event.query,
-        optField: event.optField,
-        auxField: event.auxField,
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
       );
 
       var localData = _toList(data);

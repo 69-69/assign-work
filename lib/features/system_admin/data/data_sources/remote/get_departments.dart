@@ -28,9 +28,10 @@ class GetDepartments {
     // Load all data initially to pass to the search delegate
     departBloc.add(
       SearchSetup<Department>(
-        field: 'name',
-        optField: 'lead',
-        auxField: 'code',
+        primaryField: 'name',
+        optionalField: 'leadId',
+        secondaryField: 'code',
+        tertiaryField: 'description',
         query: term,
       ),
     );

@@ -36,9 +36,10 @@ class GetSuppliers {
     // Load all data initially to pass to the search delegate
     supplierBloc.add(
       SearchProcurement<Supplier>(
-        field: 'name',
-        optField: 'phone',
-        auxField: 'contactPersons',
+        primaryField: 'id',
+        optionalField: 'name',
+        secondaryField: 'phone',
+        tertiaryField: 'contactPersons',
         query: term,
       ),
     );

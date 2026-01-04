@@ -44,6 +44,7 @@ class DataRepository extends FirestoreRepository {
   }
 
   final AuthCacheService _authCacheService = AuthCacheService();
+
   /** PRIVATE METHODS */
 
   /// Track last emitted data
@@ -136,35 +137,48 @@ class DataRepository extends FirestoreRepository {
     return dataList;
   }
 
-  /// Helper function to search in Firestore
+  /// Helper function to search in Firestore based on provided table `field, optField, and auxField`
   Future<List<CacheData>> _searchRemote(
-    Object field,
-    String term,
-    Object? optField,
-    Object? auxField,
-  ) async {
+    String searchTerm, {
+    required Object primaryField,
+    Object? optionalField,
+    Object? secondaryField,
+    Object? tertiaryField,
+  }) async {
     List<CacheData> dataList = [];
 
     try {
-      var querySnapshot = await searchAll(field, term: term);
+      // First search with the primary search field
+      var querySnapshot = await searchAll(primaryField, term: searchTerm);
 
       if (querySnapshot.size > 0) {
         dataList = _toList(querySnapshot);
       }
 
-      if (dataList.isEmpty && optField != null) {
-        querySnapshot = await searchAll(optField, term: term);
+      // Search with the `optionalField` if no results
+      if (dataList.isEmpty && optionalField != null) {
+        querySnapshot = await searchAll(optionalField, term: searchTerm);
 
         dataList = _toList(querySnapshot);
 
-        if (dataList.isEmpty && auxField != null) {
-          querySnapshot = await searchAll(auxField, term: term);
+        // Search with the `secondaryField` if no results
+        if (dataList.isEmpty && secondaryField != null) {
+          querySnapshot = await searchAll(secondaryField, term: searchTerm);
           dataList = _toList(querySnapshot);
-        } else if (dataList.isEmpty) {
-          var docSnapshot = await findById(term);
-          if (docSnapshot.exists && docSnapshot.data() != null) {
-            dataList.add(_fromMap(docSnapshot.data()!, docSnapshot.id));
-          }
+        }
+
+        // Search with the `tertiaryField` if no results
+        if (dataList.isEmpty && tertiaryField != null) {
+          querySnapshot = await searchAll(tertiaryField, term: searchTerm);
+          dataList = _toList(querySnapshot);
+        }
+      }
+
+      // Fallback to `search by ID` if still no results
+      if (dataList.isEmpty) {
+        var docSnapshot = await findById(searchTerm);
+        if (docSnapshot.exists && docSnapshot.data() != null) {
+          dataList.add(_fromMap(docSnapshot.data()!, docSnapshot.id));
         }
       }
       return dataList;
@@ -399,19 +413,26 @@ class DataRepository extends FirestoreRepository {
   }
 
   /// Search Specific Data By field-Name(s) [searchData]
-  Future<List<CacheData>> searchData({
-    required Object field,
-    required String query,
-    Object? optField,
-    Object? auxField,
+  Future<List<CacheData>> searchData(
+    String query, {
+    required Object primaryField,
+    Object? optionalField,
+    Object? secondaryField,
+    Object? tertiaryField,
   }) async {
     try {
       List<CacheData> dataList = [];
 
-      dataList = _searchLocalCache(field, query);
+      dataList = _searchLocalCache(primaryField, query);
 
       if (dataList.isEmpty) {
-        dataList = await _searchRemote(field, query, optField, auxField);
+        dataList = await _searchRemote(
+          query,
+          primaryField: primaryField,
+          optionalField: optionalField,
+          secondaryField: secondaryField,
+          tertiaryField: tertiaryField,
+        );
       }
 
       return dataList;

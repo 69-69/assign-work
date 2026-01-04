@@ -43,6 +43,14 @@ class ContactPerson extends Equatable {
     );
   }
 
+  /// [contactPersons] Converts a list of maps from the provided [map] under the given [key] into a list of [ContactPerson] objects.
+  static List<ContactPerson> contactPersons(List<dynamic>? map) {
+    return map
+            ?.map((i) => ContactPerson.fromMap(Map<String, dynamic>.from(i)))
+            .toList() ??
+        [];
+  }
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'name': name,

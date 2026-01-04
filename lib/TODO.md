@@ -26,8 +26,8 @@
 
 - @Continue
     - Linking it with PO
-    - RFQ Update Form
     - CRM - Customer
+    - ~~RFQ Update Form~~
   - ~~Sales Quotation (Sales & Distribution)~~
     - ~~Linking it with RFQ~~
     - ~~Item Category~~
@@ -36,7 +36,7 @@
 ```shell
 git init
 git add .
-git commit -m "Partially-Done: RFQ"
+git commit -m "Done: RFQ"
 git branch -M main
 git push -u origin main
 ```

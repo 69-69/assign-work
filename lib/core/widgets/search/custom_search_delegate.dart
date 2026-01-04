@@ -11,9 +11,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// main search delegate class
 class CustomSearchDelegate<T> extends SearchDelegate<T?> {
   final List<T> allData;
-  final Object? field;
-  final Object? auxField;
-  final Object? optField;
+  final Object? primaryField;
+  final Object? secondaryField;
+  final Object? optionalField;
+  final Object? tertiaryField;
   final Function(dynamic)? onChanged;
   final ItemBloc firestoreBloc;
 
@@ -21,9 +22,10 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
     required this.firestoreBloc,
     required this.allData,
     this.onChanged,
-    this.field,
-    this.optField,
-    this.auxField,
+    this.primaryField,
+    this.optionalField,
+    this.secondaryField,
+    this.tertiaryField,
     required String hintText,
   }) : super(
          searchFieldLabel: hintText,
@@ -77,9 +79,10 @@ class CustomSearchDelegate<T> extends SearchDelegate<T?> {
     if (query.isNotEmpty) {
       firestoreBloc.add(
         SearchInventory<T>(
-          field: field,
-          optField: optField,
-          auxField: auxField,
+          primaryField: primaryField,
+          optionalField: optionalField,
+          secondaryField: secondaryField,
+          tertiaryField: tertiaryField,
           query: query,
         ),
       );

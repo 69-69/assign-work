@@ -225,6 +225,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
                 _readBloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
+                _selectedIds.clear();
               }
             },
           ),

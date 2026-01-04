@@ -206,10 +206,11 @@ class SalesDistributionBloc<T>
     emit(LoadingSalesDistribution<T>());
     try {
       List<CacheData> data = await _sdRepository.searchData(
-        field: event.field ?? '',
-        query: event.query,
-        optField: event.optField,
-        auxField: event.auxField,
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
       );
 
       var localData = _toList(data);

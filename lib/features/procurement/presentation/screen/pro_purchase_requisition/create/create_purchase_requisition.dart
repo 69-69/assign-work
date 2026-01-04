@@ -154,7 +154,12 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
       await _confirmPrintoutDialog();
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _resetForm();
+        });
+      }
     }
   }
 

@@ -3,7 +3,6 @@ import 'package:assign_erp/core/constants/item_category.dart';
 import 'package:assign_erp/core/constants/line_item_type.dart';
 import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -338,6 +337,48 @@ class ProcurementForm {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final initial = Map<String, dynamic>.from(initialData ?? {});
+
+        return FindSuppliers(
+          initialSupplier: initial['supplierId'],
+          initialSupplierRep: initial['supplierRepId'],
+          onSupplierChanged: (id, name) {
+            initial
+              ..['supplierId'] = id
+              ..['name'] = name; // Supplier Name is not required
+            onChanged(Map<String, dynamic>.from(initial));
+          },
+          onContactPersonChanged: (contactPersonId) {
+            initial['supplierRepId'] = contactPersonId;
+            onChanged(Map<String, dynamic>.from(initial));
+          },
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'status',
+      label: 'Supplier Status',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        // prettyPrint('my-status', initialData);
+
+        return _SupplierStatusDropdown(
+          initialValue: initialData,
+          onChanged: onChanged,
+        );
+      },
+    ),
+  ];
+
+  /*// backup
+  static List<FieldGroupConfig> suppliersFields2({String? key}) => [
+    FieldGroupConfig(
+      key: key ?? 'supplierLinks',
+      label: 'Select Suppliers',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
         prettyPrint('initial-Data', initialData);
         final initial = Map<String, dynamic>.from(initialData ?? {});
         return FindSuppliers(
@@ -369,7 +410,7 @@ class ProcurementForm {
         );
       },
     ),
-  ];
+  ];*/
 
   /// Updates the [list] with objects of type [T] from a list of maps.
   /// Clears the list first to prevent duplication, then adds new objects.

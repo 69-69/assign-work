@@ -29,9 +29,10 @@ class GetEmployees {
     // Load all data initially to pass to the search delegate
     employeeBloc.add(
       SearchSetup<Employee>(
-        field: 'fullName',
-        optField: 'role',
-        auxField: 'employeeId',
+        primaryField: 'fullName',
+        optionalField: 'role',
+        secondaryField: 'employeeId',
+        tertiaryField: 'email',
         query: term,
       ),
     );

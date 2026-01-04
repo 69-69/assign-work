@@ -50,9 +50,10 @@ class GetTaxes {
     // Load all data initially to pass to the search delegate
     taxBloc.add(
       SearchSetup<Tax>(
-        field: 'name',
-        optField: 'code',
-        auxField: 'rate',
+        primaryField: 'name',
+        optionalField: 'code',
+        secondaryField: 'rate',
+        tertiaryField: 'notes',
         query: term,
       ),
     );

@@ -201,10 +201,11 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     emit(LoadingPOS<T>());
     try {
       List<CacheData> data = await _posRepository.searchData(
-        field: event.field ?? '',
-        query: event.query,
-        optField: event.optField,
-        auxField: event.auxField,
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
       );
 
       var localData = _toList(data);

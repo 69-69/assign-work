@@ -177,6 +177,7 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
                 _bloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
+                _selectedIds.clear();
               }
             },
           ),

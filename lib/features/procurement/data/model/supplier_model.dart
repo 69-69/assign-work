@@ -69,11 +69,9 @@ class Supplier extends Equatable {
       businessType: map['businessType'] ?? '',
       bankDetails: map['bankDetails'] ?? '',
       taxDetails: map['taxDetails'] ?? '',
-      contactPersons:
-          (map['contactPersons'] as List<dynamic>?)
-              ?.map((i) => ContactPerson.fromMap(Map<String, dynamic>.from(i)))
-              .toList() ??
-          [],
+      contactPersons: ContactPerson.contactPersons(
+        map['contactPersons'] as List<dynamic>?,
+      ),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
@@ -126,7 +124,7 @@ class Supplier extends Equatable {
     address: '',
     items: '',
     businessType: '',
-    contactPersons: const [],
+    contactPersons: [],
     createdBy: '',
   );
 
@@ -170,7 +168,7 @@ class Supplier extends Equatable {
         bankDetails ?? '',
         taxDetails ?? '',
       }.filterAny(filter) ||
-      contactPersons.filterAny(filter);
+      contactPersons.any((p) => p.filterByAny(filter));
 
   /// [findById]
   static Supplier findById(List<Supplier> suppliers, String id) =>

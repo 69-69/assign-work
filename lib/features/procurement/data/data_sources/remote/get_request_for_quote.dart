@@ -22,9 +22,10 @@ class GetRequestForQuote {
     // Load all data initially to pass to the search delegate
     rfqBloc.add(
       SearchProcurement<RequestForQuote>(
-        field: 'rfqNumber',
-        optField: 'supplierId',
-        auxField: 'departmentCode',
+        primaryField: 'rfqNumber',
+        optionalField: 'supplierId',
+        secondaryField: 'departmentCode',
+        tertiaryField: 'status',
         query: term,
       ),
     );

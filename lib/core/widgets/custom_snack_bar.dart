@@ -81,7 +81,6 @@ extension ScaffoldSnackBar on BuildContext {
       overlayEntry?.remove();
       overlayEntry?.dispose();
       overlayEntry = null;
-      onCallback?.call();
     }
 
     void dismissOverlay() {

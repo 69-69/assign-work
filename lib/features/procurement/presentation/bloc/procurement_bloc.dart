@@ -205,10 +205,11 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     emit(LoadingProcurement<T>());
     try {
       List<CacheData> data = await _procurementRepository.searchData(
-        field: event.field ?? '',
-        query: event.query,
-        optField: event.optField,
-        auxField: event.auxField,
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
       );
 
       var localData = _toList(data);

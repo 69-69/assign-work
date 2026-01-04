@@ -6,6 +6,7 @@ import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -64,22 +65,18 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   String? _currencyCode;
   String? _costCenterCode;
   String? _departmentCode;
-  String? _paymentTerm;
   bool? _autoConvertRfq; // auto-convert PO when RFQ is Accepted
   // Dates
-  DateTime? _deadlineDate;
-  DateTime? _expectedDate;
 
   /// Line Items & Additional Info
   final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _buyerTerms = {};
   final List<SupplierLink> _supplierLinks = [];
   final List<AddressInfo> _shippingAddress = [];
-  final Map<String, dynamic> _additionalInfo = {};
 
   RequestForQuote get _serverRFQ => widget.rfq;
 
-  String? get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
+  String get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
 
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
@@ -98,11 +95,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   void initState() {
     super.initState();
     _taxModeToApply = _serverRFQ.taxMode;
-    _additionalInfo.addAll({
+    _buyerTerms.addAll({
       'notes': _serverRFQ.notes,
-      'deliveryAddress': _serverRFQ.shippingAddress,
+      'buyerContactPerson': _serverRFQ.buyerContactPersonId,
+      'deadline': _serverRFQ.getDeadlineDate,
+      'expectedDate': _serverRFQ.getExpectedDate,
     });
     _lineItems.addAll(_serverRFQ.lineItems);
+    _supplierLinks.addAll(_serverRFQ.supplierLinks);
   }
 
   /// Construct Request For Quote object
@@ -110,7 +110,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     final status = _rfqStatus ?? _serverRFQ.getName;
 
     return _serverRFQ.copyWith(
-      taxMode: _taxModeToApply,
       title: _rfqTitle ?? _serverRFQ.title,
       autoConvertRfq: _autoConvertRfq ?? _serverRFQ.autoConvertRfq,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
@@ -118,14 +117,13 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       costCenterCode: _costCenterCode ?? _serverRFQ.costCenterCode,
       currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
-      supplierLinks: _serverRFQ.supplierLinks,
+      supplierLinks: List.from(_supplierLinks),
       lineItems: List.from(_lineItems),
-      notes: _additionalInfo['notes'],
-      shippingAddress: _additionalInfo['deliveryAddress'],
-      termsAndConditions: _additionalInfo['termsAndConditions'],
-      deadline: _deadlineDate ?? _serverRFQ.deadline,
-      buyerContactPersonId: _paymentTerm ?? _serverRFQ.buyerContactPersonId,
-      expectedDate: _expectedDate ?? _serverRFQ.expectedDate,
+      notes: _buyerTerms['notes'],
+      shippingAddress: _shippingAddress.first,
+      deadline: toDateTimeFn(_buyerTerms['deadline']),
+      expectedDate: toDateTimeFn(_buyerTerms['expectedDate']),
+      buyerContactPersonId: _buyerTerms['buyerContactPerson'],
       updatedBy: _employeeName,
       history: [
         ..._serverRFQ.history, // keep all old logs
@@ -286,10 +284,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     return DynamicTextFields(
       showButton: true,
       fullWidthKey: 'description',
-      fieldsConfig: RFQFormInputs.fields(
-        _lineItemType ?? '',
-        isHidden: _taxModeToApply != TaxMode.perLineTax,
-      ),
+      fieldsConfig: RFQFormInputs.fields(_lineItemType),
       initialData: _serverRFQ.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
@@ -309,13 +304,15 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       showButton: true,
       fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,
-      initialData: _serverRFQ.supplierLinks.map((e) => e.toMap()).toList(),
+      initialData: _serverRFQ.supplierLinks
+          .map((e) => {'supplierLinks': e.toMap(), 'status': e.getStatus})
+          .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
-          // Merge the status from the top-level map
+          // Merge the supplier status(like: invited, declined) from the top-level map
           copy['status'] = e['status'];
           return copy;
         }).toList();
@@ -378,15 +375,12 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       onRejectLabel: "Cancel",
     );
 
-    if (mounted && isConfirmed) {
+    if (mounted && isConfirmed == true) {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
         onSuccess: (_) {
-          context.showAlertOverlay(
-            'RFQ Printout successful',
-            onCallback: () => Navigator.pop(context),
-          );
+          context.showAlertOverlay('RFQ Printout successful');
         },
         onError: (e) => context.showAlertOverlay(
           'RFQ printout failed',

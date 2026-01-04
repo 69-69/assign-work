@@ -64,7 +64,7 @@ class SupplierLink extends Equatable {
     'quoteId': quoteId,
     'supplierId': supplierId,
     'supplierRepId': supplierRepId,
-    'status': status.getName,
+    'status': getStatus,
     'invitedAt': invitedAt.toISOString,
     'respondedAt': respondedAt.toISOString,
   };

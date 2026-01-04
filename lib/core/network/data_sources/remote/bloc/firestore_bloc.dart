@@ -245,10 +245,11 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     emit(LoadingItems<T>());
     try {
       List<CacheData> data = await _dataRepository.searchData(
-        field: event.field ?? '',
-        query: event.query,
-        optField: event.optField,
-        auxField: event.auxField,
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
       );
 
       var localData = _toList(data);

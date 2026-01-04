@@ -40,9 +40,10 @@ class GetAllCustomers {
     // Load all data initially to pass to the search delegate
     customerBloc.add(
       SearchCustomers<Customer>(
-        field: 'customerId',
-        optField: 'name',
-        auxField: 'phone',
+        primaryField: 'customerId',
+        optionalField: 'name',
+        secondaryField: 'phone',
+        tertiaryField: 'email',
         query: term,
       ),
     );

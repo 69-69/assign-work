@@ -34,9 +34,10 @@ class SearchPosProducts extends StatelessWidget {
             delegate: CustomSearchDelegate<Item>(
               firestoreBloc: productBloc,
               allData: allData,
-              field: 'name',
-              optField: 'category',
-              auxField: 'barcode',
+              primaryField: 'name',
+              optionalField: 'category',
+              secondaryField: 'barcode',
+              tertiaryField: 'sku',
               hintText: 'Search...by name, category, barcode...',
               onChanged: (s) {
                 Item product = s as Item;

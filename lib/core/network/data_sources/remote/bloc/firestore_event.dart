@@ -49,24 +49,34 @@ class SearchItems<T> extends FirestoreEvent<T> {
   /// Query_Term / Search_Term [query]
   final String query;
 
-  /// First_Field_Name[field]
-  final Object? field;
+  /// First_Field_Name[primaryField]
+  final Object? primaryField;
 
-  /// Second_Field_Name [optField]
-  final Object? optField;
+  /// Second_Field_Name [optionalField]
+  final Object? optionalField;
 
-  /// Third_Field_Name[auxField]
-  final Object? auxField;
+  /// Third_Field_Name[secondaryField]
+  final Object? secondaryField;
+
+  /// Fourth_Field_Name[tertiaryField]
+  final Object? tertiaryField;
 
   const SearchItems({
-    this.field,
-    this.optField,
-    this.auxField,
+    this.primaryField,
+    this.optionalField,
+    this.secondaryField,
+    this.tertiaryField,
     required this.query,
   });
 
   @override
-  List<Object?> get props => [field, optField, auxField, query];
+  List<Object?> get props => [
+    primaryField,
+    optionalField,
+    secondaryField,
+    tertiaryField,
+    query,
+  ];
 }
 
 class AddItem<T> extends FirestoreEvent<T> {

@@ -95,7 +95,9 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
   Widget _buildContactPersonsDropdown(BuildContext context) {
     final label = 'Supplier Contact Person';
     final initial = _selectedContactPersons?.firstWhereOrNull(
-      (person) => person.id == widget.initialContactPerson,
+      (person) => person.filterByAny(
+        widget.initialContactPerson ?? '',
+      ) /* person.id == widget.initialContactPerson*/,
     );
 
     return StaticDropdown<ContactPerson>(

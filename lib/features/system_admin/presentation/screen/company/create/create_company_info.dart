@@ -83,11 +83,15 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       await _saveToCache();
 
       if (mounted) {
-        context.showAlertOverlay('Info successfully created');
-        Navigator.pop(context);
+        context.showAlertOverlay(
+          'Info successfully created',
+          onCallback: () => Navigator.pop(context),
+        );
       }
     } finally {
-      _resetForm();
+      if (mounted) {
+        _resetForm();
+      }
     }
   }
 

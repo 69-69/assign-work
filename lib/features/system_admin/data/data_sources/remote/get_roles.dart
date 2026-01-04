@@ -26,7 +26,7 @@ class GetRoles {
     final itemBloc = RoleBloc(firestore: FirebaseFirestore.instance);
 
     // Load all data initially to pass to the search delegate
-    itemBloc.add(SearchSetup<Role>(field: 'name', query: term));
+    itemBloc.add(SearchSetup<Role>(primaryField: 'name', query: term));
 
     // Ensure to wait for the data to be loaded
     final state = await _dataLoadedState(itemBloc);

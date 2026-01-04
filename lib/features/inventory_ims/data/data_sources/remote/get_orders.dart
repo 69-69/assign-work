@@ -35,9 +35,10 @@ class GetOrders {
     // Load all data initially to pass to the search delegate
     ordersBloc.add(
       SearchInventory<Orders>(
-        field: 'orderNumber',
-        optField: 'customerId',
-        auxField: 'itemName',
+        primaryField: 'orderNumber',
+        optionalField: 'customerId',
+        secondaryField: 'itemName',
+        tertiaryField: 'barcode',
         query: term,
       ),
     );

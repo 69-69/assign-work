@@ -187,7 +187,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
       await _confirmPrintoutDialog();
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _resetForm();
+        });
+      }
     }
   }
 
