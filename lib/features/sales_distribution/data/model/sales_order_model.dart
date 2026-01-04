@@ -228,7 +228,7 @@ class SalesOrder extends Equatable {
       }.filterAny(filter) ||
       addresses.filterAny(filter) ||
       itemAsList.contains(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   static SalesOrder findSOById(List<SalesOrder> rfqs, String rfqId) =>
       rfqs.firstWhere((rfq) => rfq.id == rfqId, orElse: () => SalesOrder.empty);

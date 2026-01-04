@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -27,6 +28,18 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class POFormInputs {
+  static Widget buildTaxModeSelector({
+    TaxMode? defaultTaxMode,
+    List<String>? initialValues,
+    required List<String> selectedTaxCodes,
+    required Function(TaxMode?) selectedTaxMode,
+  }) => TaxModeSelectorFactory.create(
+    initialValues: initialValues,
+    defaultTaxMode: defaultTaxMode,
+    selectedTaxMode: selectedTaxMode,
+    selectedTaxCodes: selectedTaxCodes,
+  );
+
   /// Get Company Info and Addresses
   static Future<AddressInfo?> getCompanyAddress({
     String type = 'shipping',
@@ -71,7 +84,7 @@ class POFormInputs {
     String type, {
     bool isDisabled = false,
     bool isHidden = false,
-    List<String> keysToExclude = const [],
+    List<String> keysToExclude = const ['limitQuantity', 'limitAmount'],
   }) {
     final fields = ProcurementForm.fields(
       type,
@@ -292,23 +305,35 @@ class DeliveryDate extends StatelessWidget {
   const DeliveryDate({
     super.key,
     this.labelDelivery,
-    required this.onDeliveryChanged,
     this.initialDeliveryDate,
+    required this.onDeliveryChanged,
+    this.initialContact,
+    required this.onContactChanged,
   });
 
   final String? initialDeliveryDate;
   final String? labelDelivery;
   final Function(DateTime) onDeliveryChanged;
+  final String? initialContact;
+  final void Function(String, String, String) onContactChanged;
 
   @override
   Widget build(BuildContext context) {
-    return DatePicker(
-      inLabel: false,
-      initialDate: initialDeliveryDate,
-      label: labelDelivery,
-      restorationId: 'Delivery date',
-      selectedDate: onDeliveryChanged,
-      helperText: 'Expected delivery date for the PO.',
+    return AdaptiveLayout(
+      children: [
+        _BuyerContactPerson(
+          initialValue: initialContact,
+          onChanged: onContactChanged,
+        ),
+        DatePicker(
+          inLabel: false,
+          initialDate: initialDeliveryDate,
+          label: labelDelivery,
+          restorationId: 'Delivery date',
+          selectedDate: onDeliveryChanged,
+          helperText: 'Expected delivery date for the PO.',
+        ),
+      ],
     );
   }
 }
@@ -355,6 +380,31 @@ class _POStatusDropdown extends StatelessWidget {
       items: WorkflowStatusHelper.toStringList(type: WorkflowType.po),
       getDisplayText: (status) => status,
       onChanged: onChanged,
+    );
+  }
+}
+
+/// [_BuyerContactPerson] Buyer Contact Person
+class _BuyerContactPerson extends StatelessWidget {
+  final bool isDisabled;
+  final String? initialValue;
+  final void Function(String, String, String) onChanged;
+
+  const _BuyerContactPerson({
+    this.isDisabled = false,
+    this.initialValue,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      ignoring: isDisabled,
+      child: SearchEmployees(
+        labelText: 'Contact Person',
+        initialValue: initialValue,
+        onChanged: onChanged,
+      ),
     );
   }
 }

@@ -25,9 +25,6 @@ import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_d
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/widget/sq_form_inputs.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -245,18 +242,22 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
         FormGroupCard(
           title: '1. Quotation Overview',
+          subTitle: '\nGeneral quotation info & document status.',
           children: [_buildAutoCreateAndStatus()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '2. Customer & Sales',
+          subTitle:
+              '\nCustomer details, sales channel, & sales representative.',
           children: [_buildSalesChannel(), _buildSalesRepAndCustomer()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '3. Currency & Pricing',
+          title: '3. Pricing & Tax Determination',
+          subTitle: '\nCurrency, pricing conditions, & tax preferences.',
           children: [
             _buildCurrencyPricing(),
             HorizontalDivider(space: 0.4),
@@ -274,20 +275,21 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         FormGroupCard(
           isExpanded: false,
           title: '5. Dates & Validity',
+          subTitle: '\nQuotation date, validity period, & delivery timeline.',
           children: [_buildDateValidity()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '6. Addresses',
-          subTitle: '\nCustomer shipping & billing address.',
+          subTitle: '\nCustomer Bill-to, ship-to, & other address details.',
           children: [_buildAddresses()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '7. Terms & Conditions',
-          subTitle: '\nPayment & warranty terms for the Quotation.',
+          subTitle: '\nPayment terms, warranty, & commercial conditions.',
           children: [_buildTermsConditions()],
         ),
 
@@ -331,22 +333,11 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   }
 
   Widget _buildTaxModeSelector() {
-    return TaxModeSelector(
-      initialValues: [],
-      onRadioChanged: _onSelectTaxMode,
+    return SQFormInputs.buildTaxModeSelector(
+      selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
-      onCheckChanged: (List<Map<String, dynamic>> data) {
-        // if (isFormValid) setState(() {});
-
-        List<String> taxCodes = data
-            .where((e) => e['selected'] == true)
-            .map((m) => Tax.fromMap(m['data']).code)
-            .toList();
-
-        _taxCodes
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(taxCodes);
-      },
+      selectedTaxMode: (TaxMode? mode) =>
+          setState(() => _taxModeToApply = mode),
     );
   }
 
@@ -356,7 +347,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fieldsConfig: SQFormInputs.fields(
         _lineItemType ?? '',
         isHidden: _taxModeToApply != TaxMode.perLineTax,
-        keysToExclude: ['limitAmount', 'limitQuantity'],
       ),
       initialData: [{}],
       onChanged: (List<Map<String, dynamic>> data) {
@@ -435,17 +425,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
           ..addAll(data.first);
       },
     );
-  }
-
-  // -------------------------
-  // Tax, Print & History Logic
-  // -------------------------
-  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
-    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
-    final selectedKey = selected?['key'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
-    });
   }
 
   Future<void> _confirmPrintoutDialog() async {

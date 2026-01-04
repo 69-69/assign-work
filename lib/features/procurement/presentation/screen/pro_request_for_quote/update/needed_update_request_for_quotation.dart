@@ -20,9 +20,6 @@ import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_re
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -83,9 +80,9 @@ class _NeededUpdateRequestForQuoteState
   RequestForQuote get _serverRFQ => widget.quote;
   String? get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
 
-  List<String> get _initialHeaderTaxes => _serverRFQ.taxMode.isHeaderTax
+  /*List<String> get _initialHeaderTaxes => _serverRFQ.taxMode.isHeaderTax
       ? List.from(_serverRFQ.lineItems.first.taxCodes)
-      : [];
+      : [];*/
 
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
@@ -102,7 +99,7 @@ class _NeededUpdateRequestForQuoteState
   @override
   void initState() {
     super.initState();
-    _taxModeToApply = _serverRFQ.taxMode;
+    // _taxModeToApply = _serverRFQ.taxMode;
     _titleController.text = _serverRFQ.title;
     _additionalInfo.addAll({
       'notes': _serverRFQ.notes,
@@ -121,7 +118,7 @@ class _NeededUpdateRequestForQuoteState
     final status = _rfqStatus ?? _serverRFQ.status.getName;
 
     return _serverRFQ.copyWith(
-      taxMode: _taxModeToApply,
+      // taxMode: _taxModeToApply,
       title: _rfqTitle ?? _serverRFQ.title,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
       status: WorkflowStatusHelper.fromString(status),
@@ -131,7 +128,7 @@ class _NeededUpdateRequestForQuoteState
       lineItems: List.from(_lineItems),
       notes: _additionalInfo['notes'],
       shippingAddress: _additionalInfo['deliveryAddress'],
-      termsAndConditions: _additionalInfo['termsAndConditions'],
+      // termsAndConditions: _additionalInfo['termsAndConditions'],
       deadline: _deadlineDate ?? _serverRFQ.deadline,
       buyerContactPersonId: _paymentTerm ?? _serverRFQ.buyerContactPersonId,
       expectedDate: _expectedDate ?? _serverRFQ.expectedDate,
@@ -157,12 +154,12 @@ class _NeededUpdateRequestForQuoteState
     try {
       if (!isFormValid || _lineItems.isNullOrEmpty) return;
 
-      _cachedUpdatedRFQ = _sanitizeTaxCodes(_updatedRFQ);
+      // _cachedUpdatedRFQ = _sanitizeTaxCodes(_updatedRFQ);
 
       _bloc.add(
         UpdateProcurement<RequestForQuote>(
-          documentId: _cachedUpdatedRFQ.id,
-          data: _cachedUpdatedRFQ,
+          documentId: _updatedRFQ.id,
+          data: _updatedRFQ,
         ),
       );
 
@@ -173,7 +170,7 @@ class _NeededUpdateRequestForQuoteState
     }
   }
 
-  /// Ensures tax codes are correctly applied to RFQ line items
+  /*/// Ensures tax codes are correctly applied to RFQ line items
   /// based on the selected tax mode [_sanitizeTaxCodes].
   ///
   /// - For Header Tax:
@@ -198,7 +195,7 @@ class _NeededUpdateRequestForQuoteState
     // For Per-Line Tax mode, return the RFQ unchanged since
     // tax codes are managed individually per line item.
     return quote;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -295,22 +292,12 @@ class _NeededUpdateRequestForQuoteState
   }*/
 
   Widget _buildTaxModeSelector() {
-    return TaxModeSelector(
-      initialValues: _initialHeaderTaxes,
-      onRadioChanged: _onSelectTaxMode,
+    return RFQFormInputs.buildTaxModeSelector(
+      // initialValues: _initialHeaderTaxes,
+      selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
-      onCheckChanged: (List<Map<String, dynamic>> data) {
-        // if (isFormValid) setState(() {});
-
-        List<String> taxCodes = data
-            .where((e) => e['selected'] == true)
-            .map((m) => Tax.fromMap(m['data']).code)
-            .toList();
-
-        _taxCodes
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(taxCodes);
-      },
+      selectedTaxMode: (TaxMode? mode) =>
+          setState(() => _taxModeToApply = mode),
     );
   }
 
@@ -390,13 +377,6 @@ class _NeededUpdateRequestForQuoteState
   // -------------------------
   // Tax, Print & History Logic
   // -------------------------
-  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
-    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
-    final selectedKey = selected?['key'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
-    });
-  }
 
   Future<void> _confirmPrintoutDialog() async {
     final isConfirmed = await context.confirmAction<bool>(

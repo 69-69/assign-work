@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -31,6 +32,18 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class RFQFormInputs {
+  static Widget buildTaxModeSelector({
+    TaxMode? defaultTaxMode,
+    List<String>? initialValues,
+    required List<String> selectedTaxCodes,
+    required Function(TaxMode?) selectedTaxMode,
+  }) => TaxModeSelectorFactory.create(
+    initialValues: initialValues,
+    defaultTaxMode: defaultTaxMode,
+    selectedTaxMode: selectedTaxMode,
+    selectedTaxCodes: selectedTaxCodes,
+  );
+
   static updateListFromData<T>(
     List<T> list, {
     required List<Map<String, dynamic>> map,

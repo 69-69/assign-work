@@ -42,7 +42,7 @@ mixin TaxableLineItem on LineItem {
 
 /// [LineItem] Represents a line item (e.g., product or service)
 abstract class LineItem {
-  static get _today => DateTime.now();
+  // static get _today => DateTime.now();
 
   final String id;
   final String notes;
@@ -73,8 +73,8 @@ abstract class LineItem {
     required this.description,
     this.category = ItemCategory.unknown,
     this.unitOfMeasure = UnitOfMeasure.unknown,
-    DateTime? requiredDate,
-  }) : requiredDate = requiredDate ?? _today;
+    this.requiredDate,
+  });
 
   /// Polymorphic getter — subclasses define actual unitPrice
   double get unitPrice;
@@ -84,7 +84,7 @@ abstract class LineItem {
 
   double get discountAmount => (subTotal * discount) / 100;
 
-  /// [netBeforeTax] The amount after applying Discounts BUT before Taxes
+  /// [netBeforeTax] The amount (netPrice) after applying Discounts BUT before Taxes
   /// `[netBeforeTax/netPrice = subTotal - discountAmount]`
   double get netBeforeTax => subTotal - discountAmount;
 
@@ -266,7 +266,9 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
         leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
-        requiredDate: toDateTimeFn(map['requiredDate']),
+        requiredDate: map['requiredDate'] != null
+            ? toDateTimeFn(map['requiredDate'])
+            : null,
       );
 
   @override
@@ -453,7 +455,9 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
         taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
         taxNames: map['taxNames'] ?? '',
         leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
-        requiredDate: toDateTimeFn(map['requiredDate']),
+        requiredDate: map['requiredDate'] != null
+            ? toDateTimeFn(map['requiredDate'])
+            : null,
       );
 
   @override

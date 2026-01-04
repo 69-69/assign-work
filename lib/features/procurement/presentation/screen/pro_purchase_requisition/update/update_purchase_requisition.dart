@@ -34,7 +34,8 @@ extension UpdatePurchaseRequisiteForm on BuildContext {
       isExpand: false,
       child: BottomSheetScaffold(
         title: 'Edit Purchase Requisition',
-        subtitle: requisite.prNumber.toUpperAll,
+        subtitle:
+            '${requisite.prNumber.toUpperAll} (${requisite.lineItems.first.getTypeLabel})',
         body: _PurchaseRequisite(requisite: requisite),
       ),
     );
@@ -166,31 +167,41 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         FormGroupCard(
-          title: 'Requisition Overview',
+          title: '1. Requisition Overview',
+          subTitle:
+              '\nRequisition details, requester information, & document status.',
           children: [
             _buildRequesterAndDepartment(),
             _buildPriorityAndPRStatus(),
           ],
         ),
+
         FormGroupCard(
-          title: 'Cost Center & Auto RFQ',
+          isExpanded: false,
+          title: '2. Account Assignment & Sourcing',
+          subTitle: '\nCost center assignment and RFQ creation settings.',
           children: [_buildAutoCreateAndCostCenter()],
         ),
 
         FormGroupCard(
-          title: '$_lineItemType Line Items',
+          isExpanded: false,
+          title: '3. $_lineItemType Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
           children: [_buildLineItems(_lineItemType)],
         ),
 
         FormGroupCard(
-          title: 'Request & Expected Dates',
+          isExpanded: false,
+          title: '4. Request & Delivery Dates',
+          subTitle: '\nRequest-by and expected delivery timelines.',
           children: [_buildDates()],
         ),
 
         FormGroupCard(
-          title: 'PR Justification',
+          isExpanded: false,
+          title: '5. PR Justification',
+          subTitle: '\nBusiness justification or purpose of the request.',
           children: [_buildJustification()],
         ),
 

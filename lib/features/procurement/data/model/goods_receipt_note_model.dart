@@ -112,7 +112,7 @@ class GoodsReceiptNote extends Equatable {
   bool filterByAny(String filter) =>
       itemAsList.filterAny(filter) ||
       notes.filterAny(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   /// For UI display only
   List<String> get itemAsList => [

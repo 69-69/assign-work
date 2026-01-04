@@ -147,7 +147,7 @@ class SalesQuotation extends Equatable {
     'salesRepId': salesRepId,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     // 'taxCodes': taxCodes,
-    'taxMode': getName,
+    'taxMode': getTaxName,
     'currencyCode': currencyCode,
     'exchangeRate': exchangeRate,
     'shippingAmount': shippingAmount,
@@ -225,7 +225,7 @@ class SalesQuotation extends Equatable {
   String get getSalesChannel => salesChannel.getLabel;
 
   // The name is needed not label
-  String get getName => taxMode.getName;
+  String get getTaxName => taxMode.getName;
 
   bool get isApproved => status == WorkflowStatus.approved;
 
@@ -267,7 +267,7 @@ class SalesQuotation extends Equatable {
       }.filterAny(filter) ||
       addresses.filterAny(filter) ||
       itemAsList.contains(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   static SalesQuotation findSQById(
     List<SalesQuotation> quotes,

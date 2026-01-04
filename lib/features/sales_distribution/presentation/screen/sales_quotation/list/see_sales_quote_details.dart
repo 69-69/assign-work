@@ -214,7 +214,7 @@ class _SQInfoPage extends StatelessWidget {
       ('Store ID', _salesQuote?.storeNumber.toUpperAll ?? 'N/A'),
       ('Status', _salesQuote?.getSQStatus.toSentence ?? 'N/A'),
       ('Sales Channel', _salesQuote?.getSalesChannel.toTitle ?? 'N/A'),
-      ('Tax Mode', _salesQuote?.getName.separateWord.toTitle ?? 'N/A'),
+      ('Tax Mode', _salesQuote?.getTaxName.separateWord.toTitle ?? 'N/A'),
       ('Customer', _salesQuote?.customerName.toTitle ?? 'N/A'),
       ('Sales Person', _salesQuote?.salesRepId.toTitle ?? 'N/A'),
     ];

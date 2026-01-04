@@ -166,7 +166,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textColor: widget.textColor,
       autofocus: widget.autofocus,
       obscureText: widget.obscureText,
-      initialValue: widget.initialValue,
+      // initialValue: widget.initialValue,
       keyboardType: widget.keyboardType,
       autofillHints: widget.autofillHints,
       textInputAction: widget.textInputAction,
@@ -197,6 +197,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       onActionTriggered: _actionTriggered,
       textInputAction: widget.textInputAction,
       onFieldSubmitted: widget.onFieldSubmitted,
+      // initialValue: widget.initialValue,
     );
   }
 
@@ -297,7 +298,7 @@ class _StandardTextField extends StatelessWidget {
     return TextFormField(
       autofocus: autofocus,
       controller: controller,
-      initialValue: initialValue,
+      // initialValue: initialValue,
       focusNode: focusNode,
       enabled: enable,
       maxLines: maxLines,
@@ -335,6 +336,7 @@ class _LowercaseTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
   final void Function(String)? onActionTriggered;
+  // final String? initialValue;
   // final String? labelText;
   // final String? helperText;
 
@@ -356,6 +358,7 @@ class _LowercaseTextField extends StatelessWidget {
     this.capsLockOn = false,
     // this.labelText,
     // this.helperText,
+    // this.initialValue,
   });
 
   TextEditingController? get _controller => controller;
@@ -369,6 +372,7 @@ class _LowercaseTextField extends StatelessWidget {
   TextFormField _buildTextField(BuildContext context) {
     return TextFormField(
       autofocus: autofocus,
+      // initialValue: initialValue,
       controller: _controller,
       enabled: enable,
       focusNode: focusNode,

@@ -1,9 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -77,22 +79,29 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   // Basic fields
   bool _isSubmitting = false;
-  String _costCenterCode = '';
+  String? _poStatus;
   String _poNumber = '';
-  String _currencyCode = '';
   String _requestedBy = '';
   String _paymentTerm = '';
+  String _currencyCode = '';
   String _paymentMethod = '';
-  String? _poStatus;
+  String _costCenterCode = '';
+  String _buyerContactPersonId = '';
   final List<SupplierLink> _supplierLinks = [];
+
   // Dates
   DateTime? _deliveryDate;
 
   /// Line Items & Additional Info
+  final List<String> _taxCodes = [];
   final List<LineItem> _lineItems = [];
   final List<AddressInfo> _addresses = [];
   final Map<String, dynamic> _payments = {};
   final Map<String, dynamic> _additionalInfo = {};
+
+  /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
+  TaxMode? _taxModeToApply;
+  late ProPurchaseOrder _finalizedPO;
 
   /// Initial RFQ data if converting RFQ → PO
   WorkflowConverter? get _initialRFQ => widget.initialRFQData;
@@ -104,8 +113,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   /// Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeId => _employee!.employeeId;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
 
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();
@@ -143,10 +155,12 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
     addresses: List.from(_addresses),
 
+    buyerContactPersonId: _buyerContactPersonId,
     notes: _additionalInfo['notes'],
     termsAndConditions: _additionalInfo['termsAndConditions'],
 
     lineItems: List.from(_lineItems),
+    taxMode: _taxModeToApply ?? TaxMode.headerTax,
 
     deliveryDate: _deliveryDate,
     createdBy: _employeeName,
@@ -172,7 +186,9 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         return;
       }
 
-      _bloc.add(AddProcurement<ProPurchaseOrder>(data: _newPO));
+      _finalizedPO = _sanitizeTaxCodes(_newPO);
+
+      _bloc.add(AddProcurement<ProPurchaseOrder>(data: _finalizedPO));
 
       context.showAlertOverlay(
         'PO successfully created',
@@ -181,8 +197,40 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       await _confirmPrintoutDialog();
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _resetForm();
+        });
+      }
     }
+  }
+
+  /// Ensures tax codes are correctly applied to Sale Quote line items
+  /// based on the selected tax mode [_sanitizeTaxCodes].
+  ///
+  /// - For Header Tax:
+  ///   Tax codes are selected once at the header level but must be
+  ///   propagated to every line item before sending data to the server.
+  ///   This guarantees backend consistency and correct tax calculation.
+  ///
+  /// - For Per-Line Tax:
+  ///   Line items already carry their own tax codes, so no modification
+  ///   is required.
+  ProPurchaseOrder _sanitizeTaxCodes(ProPurchaseOrder quote) {
+    // If Header Tax is selected, apply the same tax codes
+    // to all line items to ensure backend compatibility.
+    if (quote.taxMode.isHeaderTax) {
+      // Apply tax codes to each line item in the quote object
+      final updatedItems = quote.lineItems
+          .map((e) => e.copyWith(taxCodes: _taxCodes))
+          .toList();
+      // Return a new RFQ object with updated line items
+      return quote.copyWith(lineItems: updatedItems);
+    }
+    // For Per-Line Tax mode, return the RFQ unchanged since
+    // tax codes are managed individually per line item.
+    return quote;
   }
 
   void _resetForm() {
@@ -191,6 +239,12 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
+        _finalizedPO = ProPurchaseOrder.empty;
+        _taxModeToApply = null;
+        _lineItems.clear();
+        _paymentTerm = '';
+        _paymentMethod = '';
+        _costCenterCode = '';
         _currencyCode = '';
         _poNumber = '';
         _requestedBy = '';
@@ -220,36 +274,45 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       children: <Widget>[
         POFormInputs.buildPONumber(context, _poNumber, _generatePONumber),
         FormGroupCard(
-          title: 'Purchase Order Overview',
+          title: '1. Purchase Order Overview',
+          subTitle: '\nGeneral purchase order info & supplier details.',
           children: [_buildPOStatusAndRequestedBy(), _buildSupplier()],
         ),
 
         FormGroupCard(
-          title: 'Cost Center',
+          isExpanded: false,
+          title: '2. Accounting & Cost Assignment',
+          subTitle: '\nCost center, currency, & accounting allocation details.',
           children: [_buildCurrencyAndCostCenter()],
         ),
 
         FormGroupCard(
-          title: '${_lineItemType.toSentence} Line Items',
+          isExpanded: false,
+          title: '3. Payment Terms & Tax',
+          subTitle: '\nPayment method, payment terms, & tax preferences.',
+          children: [_buildPayMethodAndTerms(), _buildTaxModeSelector()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '4. ${_lineItemType.toSentence} Line Items',
           subTitle:
               '\nYou can add more ${_lineItemType}s to the purchase order (PO).',
           children: [_buildLineItems()],
         ),
 
         FormGroupCard(
-          title: 'Payment & Terms',
-          children: [_buildPayMethodAndTerms()],
-        ),
-
-        FormGroupCard(
-          title: 'Addresses',
-          subTitle: '\nYou can add multiple addresses: Billing, Shipping, etc.',
+          isExpanded: false,
+          title: '5. Addresses',
+          subTitle: '\nAdd billing, shipping, or any additional addresses.',
           children: [_buildAddresses()],
         ),
 
         FormGroupCard(
-          title: 'Notes / T&C',
-          children: [_buildTermsAndConditions(), _buildDeliveryDate()],
+          isExpanded: false,
+          title: '6. Delivery, Contacts & Terms',
+          subTitle: '\nDelivery date, buyer contact, & terms.',
+          children: [_buildBuyerRepAndDeliveryDate(), _buildTermsAndNotes()],
         ),
 
         const SizedBox(height: 20.0),
@@ -265,19 +328,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   // -------------------------
   // Section Builders
   // -------------------------
-  DynamicTextFields _buildTermsAndConditions() {
-    return DynamicTextFields(
-      initialData: [{}],
-      fieldsConfig: POFormInputs.deliveryFields,
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
-        _additionalInfo
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(data.first);
-      },
-    );
-  }
 
   // Addresses (e.g., Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
@@ -298,10 +348,26 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     );
   }
 
-  DeliveryDate _buildDeliveryDate() {
+  DeliveryDate _buildBuyerRepAndDeliveryDate() {
     return DeliveryDate(
       labelDelivery: "Delivery date",
+      onContactChanged: (id, _, _) =>
+          setState(() => _buyerContactPersonId = id),
       onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
+    );
+  }
+
+  DynamicTextFields _buildTermsAndNotes() {
+    return DynamicTextFields(
+      initialData: [{}],
+      fieldsConfig: POFormInputs.deliveryFields,
+      onChanged: (List<Map<String, dynamic>> data) {
+        if (isFormValid) setState(() {});
+
+        _additionalInfo
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(data.first);
+      },
     );
   }
 
@@ -312,22 +378,16 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       fieldsConfig: POFormInputs.fields(
         _lineItemType ?? '',
         isDisabled: _isDisabled,
-        keysToExclude: [
-          'discount',
-          'unitPrice',
-          'serviceRate',
-          'limitAmount',
-          'limitQuantity',
-          'taxCodes',
-          'leadTimeDays',
-        ],
+        isHidden: _taxModeToApply != TaxMode.perLineTax,
       ),
-      initialData:
-          _initialRFQ?.lineItems.map((e) => e.toMap(true)).toList() ?? [{}],
+      initialData: (_initialRFQ?.lineItems ?? _lineItems)
+          .map((e) => e.toMap(true))
+          .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});
 
-        // Update the ProLineItem list
+        prettyPrint('line-Items', _lineItems);
+        // Update the LineItem list
         POFormInputs.updateListFromData<LineItem>(
           _lineItems,
           map: data,
@@ -387,6 +447,15 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     );
   }
 
+  Widget _buildTaxModeSelector() {
+    return POFormInputs.buildTaxModeSelector(
+      selectedTaxCodes: _taxCodes,
+      defaultTaxMode: _taxModeToApply,
+      selectedTaxMode: (TaxMode? mode) =>
+          setState(() => _taxModeToApply = mode),
+    );
+  }
+
   // -------------------------
   // Print & History Logic
   // -------------------------
@@ -412,18 +481,18 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    if (_newPO.isEmpty) return;
+    if (_finalizedPO.isEmpty) return;
 
-    final quoteWithTaxes = await POFormInputs.applyTaxesToQuote(_newPO);
+    final quoteWithTaxes = await POFormInputs.applyTaxesToQuote(_finalizedPO);
     final supplier = await POFormInputs.getSupplier(
-      _newPO.supplierLink.supplierId,
+      _finalizedPO.supplierLink.supplierId,
     );
     if (supplier.isEmpty) return;
 
     // Log that details were printed
     if (mounted &&
         AuditTracker.shouldLog(
-          id: '${_newPO.id}::$_employeeId',
+          id: '${_finalizedPO.id}::$_employeeId',
           type: DocType.pOrder,
           action: AuditAction.printed,
         )) {
@@ -436,7 +505,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   void _updateHistory([AuditAction action = AuditAction.printed]) {
     final up = POFormInputs.updateHistory(
       action: action,
-      order: _newPO,
+      order: _finalizedPO,
       empId: _employeeId,
     );
     _bloc.add(up);

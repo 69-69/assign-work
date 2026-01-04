@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
@@ -377,10 +376,6 @@ class _RFQInfoPage extends StatelessWidget {
 
   List<LineItem> get _items => _rfq?.lineItems ?? [];
 
-  TaxMode? get _taxMode => _rfq?.taxMode;
-
-  bool get _isPerLineTax => (_taxMode?.isPerLineTax ?? false);
-
   String? get _currencySign =>
       getCurrencySign(_rfq?.currencyCode ?? ghanaCedis);
 
@@ -451,7 +446,6 @@ class _RFQInfoPage extends StatelessWidget {
               rfq: _rfq,
               currencySign: _currencySign,
               textColor: _textColor,
-              isPerLineTax: _isPerLineTax,
             ),
             _RightSummary(
               rfq: _rfq,
@@ -475,9 +469,6 @@ class _RFQInfoPage extends StatelessWidget {
       ('Status', _rfq?.getRFQStatus.toSentence ?? 'N/A'),
       if (_rfq?.departmentCode.isNotEmpty ?? false) ...{
         ('Department', _rfq!.departmentCode.toTitle),
-      },
-      if (_rfq?.getName.isNotEmpty ?? false) ...{
-        ('Tax Mode', (_taxMode?.getName.separateWord).toTitle),
       },
       ('Vendor', _supplier.toUpperAll),
     ];
@@ -589,13 +580,13 @@ class _LeftSummary extends StatelessWidget {
   final RequestForQuote? rfq;
   final Color? textColor;
   final String? currencySign;
-  final bool isPerLineTax;
+  final bool? isPerLineTax;
 
   const _LeftSummary({
     this.rfq,
     required this.currencySign,
     required this.textColor,
-    required this.isPerLineTax,
+    this.isPerLineTax,
   });
 
   @override
@@ -629,7 +620,7 @@ class _LeftSummary extends StatelessWidget {
       ('Delivery', rfq!.getExpectedDate),
 
       // If Tax Mode is not Per Line, add Tax Details here
-      if (!isPerLineTax) ...{
+      if (isPerLineTax == false) ...{
         ('Applied Taxes', rfq!.lineItems.first.taxNames.toUpperAll),
       },
     ];

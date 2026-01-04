@@ -217,7 +217,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
     AccessControl access,
     bool isEnabled,
   ) async {
-    if (_keywords == null || !isEnabled) {
+    if (_keywords.isEmpty || !isEnabled) {
       return true; // Only confirm on enabling
     }
 

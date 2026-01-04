@@ -203,7 +203,7 @@ class PurchaseRequisition extends Equatable {
   bool filterByAny(String filter) =>
       itemAsList.filterAny(filter) ||
       purpose.filterAny(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   /// Approved PRs
   static List<PurchaseRequisition> filterApprovedPR(
@@ -313,7 +313,7 @@ class PurchaseRequisition extends Equatable {
     'Status',
     'Cost Center',
     'Department',
-    'Request By',
+    'Requested By',
     'Request At',
     'Created By',
     'Created At',

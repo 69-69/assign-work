@@ -134,7 +134,7 @@ Widget _buildInfoRow(
 }
 
 class _PRInfoPage extends StatelessWidget {
-  final String _requestBy;
+  final String _requestedBy;
   final PurchaseRequisition? _requisite;
   final Color? _textColor;
 
@@ -143,7 +143,7 @@ class _PRInfoPage extends StatelessWidget {
     String employee = '',
     Color? textColor,
   }) : _requisite = requisite,
-       _requestBy = employee,
+       _requestedBy = employee,
        _textColor = textColor;
 
   List<LineItem> get _items => _requisite?.lineItems ?? [];
@@ -227,7 +227,7 @@ class _PRInfoPage extends StatelessWidget {
       ('Status', _requisite?.status.getLabel.toSentence ?? 'N/A'),
       ('Priority', _requisite?.priority.getName.toTitle ?? 'N/A'),
       ('Department', _requisite!.departmentCode.toTitle),
-      ('Request By', _requestBy.toTitle),
+      ('Requested By', _requestedBy.toTitle),
     ];
 
     return Column(

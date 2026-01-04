@@ -217,7 +217,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _lineItems.clear();
       _supplierLinks.clear();
       _shippingAddress.clear();
-      _buyerTerms.clear();
       _useDefaultAddress = false;
     });
 
@@ -248,6 +247,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         RFQFormInputs.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
         FormGroupCard(
           title: '1. Quotation Overview',
+          subTitle: '\nGeneral RFQ info, requester details, & document status.',
           children: [
             _buildAutoCreateAndStatus(),
             const HorizontalDivider(space: 0.4),
@@ -258,7 +258,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: '2. Cost Center',
+          title: '2. Accounting & Cost Assignment',
+          subTitle: '\nCost center, currency, & financial allocation details.',
           children: [_buildCurrencyAndCostCenter()],
         ),
 
@@ -272,21 +273,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: '4. Invite Suppliers',
-          subTitle:
-              '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
+          title: '4. Suppliers Invitation',
+          subTitle: '\nSelect & invite vendors to submit quotations.',
           children: [_buildSuppliers()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '5. Buyer\'s Terms',
-          children: [_buildBuyerTerms()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '6. Shipping Address',
+          title: '5. Shipping Address',
+          subTitle:
+              '\nSpecify the delivery location for quoted ${_lineItemType}s.',
           children: [
             SizedBox(
               width: context.dynamicWidth(0.48),
@@ -304,6 +300,13 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
             _buildShippingAddress(),
           ],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '6. Contacts & Submission Deadlines',
+          subTitle: '\nBuyer contact information & quotation submission dates.',
+          children: [_buildContactAndDeadlines()],
         ),
 
         context.confirmableActionButton(
@@ -364,7 +367,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     );
   }
 
-  DynamicTextFields _buildBuyerTerms() {
+  DynamicTextFields _buildContactAndDeadlines() {
     return DynamicTextFields(
       initialData: [{}],
       fullWidthKey: 'buyerContactPerson',

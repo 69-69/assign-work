@@ -54,7 +54,10 @@ class ProcurementForm {
   }
 
   /// Products / Services
-  static List<FieldGroupConfig> _productLineItemsFields(bool isDisabled) => [
+  static List<FieldGroupConfig> _productLineItemsFields(
+    bool isDisabled, {
+    Map<String, dynamic>? optValues,
+  }) => [
     FieldGroupConfig(
       key: 'description',
       label: 'Item name',
@@ -82,10 +85,25 @@ class ProcurementForm {
       isDisabled: isDisabled,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
-        labelText: 'Discount % (Optional)',
+        labelText: 'Discount % (if any)',
         // suffixText: '= $ghanaCedis $discountAmount',
         prefixIcon: const Icon(Icons.percent),
         prefixIconColor: kGrayColor,
+      ),
+    ),
+
+    /// [netPrice] A Snapshot (For User's convenience only)
+    FieldGroupConfig(
+      key: 'netPrice',
+      label: 'Net Price',
+      type: TextInputType.numberWithOptions(decimal: true),
+      validator: (_) => null,
+      isDisabled: isDisabled,
+      initialValue: optValues?['netPrice'],
+      inputDecoration: InputDecoration(
+        labelText: 'Net Price (if any)',
+        helperText: 'Amount after discounts but before taxes',
+        // suffixText: '= $ghanaCedis $discountAmount',
       ),
     ),
     FieldGroupConfig(
@@ -115,20 +133,12 @@ class ProcurementForm {
       },
     ),
     FieldGroupConfig(
-      key: 'requiredDate',
-      label: 'Required Date',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return DatePicker(
-          inLabel: false,
-          label: 'Required Date',
-          initialDate: initialData,
-          selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          restorationId: 'Required Date',
-          helperText: 'When a specific service is needed.',
-        );
-      },
+      key: 'leadTimeDays',
+      label: 'Lead time (days)',
+      helperText: 'How long it takes to fulfill this item',
+      type: TextInputType.number,
+      isDisabled: isDisabled,
+      validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'requiredDate',
@@ -142,7 +152,7 @@ class ProcurementForm {
           initialDate: initialData,
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
           restorationId: 'Required Date',
-          helperText: 'When a specific item is needed.',
+          helperText: 'When a specific service is needed.',
         );
       },
     ),
@@ -193,7 +203,7 @@ class ProcurementForm {
       isDisabled: isDisabled,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
-        labelText: 'Discount Percent (Optional)',
+        labelText: 'Discount % (if any)',
         // suffixText: '= $ghanaCedis $discountAmount',
         prefixIcon: const Icon(Icons.percent),
         prefixIconColor: kGrayColor,
@@ -244,20 +254,12 @@ class ProcurementForm {
       },
     ),
     FieldGroupConfig(
-      key: 'requiredDate',
-      label: 'Required Date',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return DatePicker(
-          inLabel: false,
-          label: 'Required Date',
-          initialDate: initialData,
-          selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          restorationId: 'Required Date',
-          helperText: 'When a specific service is needed.',
-        );
-      },
+      key: 'leadTimeDays',
+      label: 'Lead time (days)',
+      helperText: 'How long it takes to fulfill this service',
+      type: TextInputType.number,
+      isDisabled: isDisabled,
+      validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'requiredDate',
@@ -371,47 +373,6 @@ class ProcurementForm {
     ),
   ];
 
-  /*// backup
-  static List<FieldGroupConfig> suppliersFields2({String? key}) => [
-    FieldGroupConfig(
-      key: key ?? 'supplierLinks',
-      label: 'Select Suppliers',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        prettyPrint('initial-Data', initialData);
-        final initial = Map<String, dynamic>.from(initialData ?? {});
-        return FindSuppliers(
-          initialSupplier: initial['supplierId'],
-          initialSupplierRep: initial['supplierRepId'],
-          onSupplierChanged: (id, name) {
-            prettyPrint('supplier-Id--$id', initial['supplierId']);
-            initial
-              ..['supplierId'] = id
-              ..['name'] = name; // Supplier Name is not required
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-          onContactPersonChanged: (contactPersonId) {
-            initial['supplierRepId'] = contactPersonId;
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'status',
-      label: 'Supplier Status',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return _SupplierStatusDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
-        );
-      },
-    ),
-  ];*/
-
   /// Updates the [list] with objects of type [T] from a list of maps.
   /// Clears the list first to prevent duplication, then adds new objects.
   /// [fromMap] converts each map entry into an object with the index as the ID.
@@ -429,21 +390,6 @@ class ProcurementForm {
             .map((e) => fromMap(e.value, '${e.key + 1}'))
             .toList(),
       );
-
-    /* // Alternative-1 approach (now commented out)
-    _lineItems
-      ..clear() // Clear previous entries to prevent duplication
-      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
-   // Alternative-1
-    _lineItems
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(
-            data
-                .asMap()
-                .entries
-                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
-                .toList(),
-          );*/
   }
 }
 
@@ -536,3 +482,58 @@ class _UnitOfMeasureDropdown extends StatelessWidget {
     );
   }
 }
+
+/*// backup
+  static List<FieldGroupConfig> suppliersFields2({String? key}) => [
+    FieldGroupConfig(
+      key: key ?? 'supplierLinks',
+      label: 'Select Suppliers',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        prettyPrint('initial-Data', initialData);
+        final initial = Map<String, dynamic>.from(initialData ?? {});
+        return FindSuppliers(
+          initialSupplier: initial['supplierId'],
+          initialSupplierRep: initial['supplierRepId'],
+          onSupplierChanged: (id, name) {
+            prettyPrint('supplier-Id--$id', initial['supplierId']);
+            initial
+              ..['supplierId'] = id
+              ..['name'] = name; // Supplier Name is not required
+            onChanged(Map<String, dynamic>.from(initial));
+          },
+          onContactPersonChanged: (contactPersonId) {
+            initial['supplierRepId'] = contactPersonId;
+            onChanged(Map<String, dynamic>.from(initial));
+          },
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'status',
+      label: 'Supplier Status',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return _SupplierStatusDropdown(
+          initialValue: initialData,
+          onChanged: onChanged,
+        );
+      },
+    ),
+  ];*/
+/* // Alternative-1 approach (now commented out)
+    _lineItems
+      ..clear() // Clear previous entries to prevent duplication
+      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
+   // Alternative-1
+    _lineItems
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(
+            data
+                .asMap()
+                .entries
+                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
+                .toList(),
+          );*/

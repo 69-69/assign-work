@@ -25,9 +25,6 @@ import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_d
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/widget/sq_form_inputs.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,7 +36,8 @@ extension UpdateSalesQuotationForm on BuildContext {
       isExpand: false,
       child: BottomSheetScaffold(
         title: 'Edit Sales Quote',
-        subtitle: 'Quotation #: ${serverQuote.quoteNumber}',
+        subtitle:
+            '${serverQuote.quoteNumber.toUpperAll} (${serverQuote.lineItems.first.getTypeLabel})',
         body: _UpdateSalesQuote(serverQuote: serverQuote),
       ),
     );
@@ -319,22 +317,12 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         ? List.from(_serverQuote.lineItems.first.taxCodes)
         : [];
 
-    return TaxModeSelector(
+    return SQFormInputs.buildTaxModeSelector(
       initialValues: initialVals,
-      onRadioChanged: _onSelectTaxMode,
-      defaultTaxMode: _taxModeToApply ?? _serverQuote.taxMode,
-      onCheckChanged: (List<Map<String, dynamic>> data) {
-        // if (isFormValid) setState(() {});
-
-        List<String> taxCodes = data
-            .where((e) => e['selected'] == true)
-            .map((m) => Tax.fromMap(m['data']).code)
-            .toList();
-
-        _taxCodes
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(taxCodes);
-      },
+      selectedTaxCodes: _taxCodes,
+      defaultTaxMode: _taxModeToApply,
+      selectedTaxMode: (TaxMode? mode) =>
+          setState(() => _taxModeToApply = mode),
     );
   }
 
@@ -344,7 +332,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       fieldsConfig: SQFormInputs.fields(
         _lineItemType,
         isHidden: _taxModeToApply != TaxMode.perLineTax,
-        keysToExclude: ['limitAmount', 'limitQuantity'],
       ),
       initialData: _serverQuote.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
@@ -441,17 +428,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           ..addAll(data.first);
       },
     );
-  }
-
-  // -------------------------
-  // Tax, Print & History Logic
-  // -------------------------
-  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
-    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
-    final selectedKey = selected?['key'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
-    });
   }
 
   Future<void> _confirmPrintoutDialog() async {

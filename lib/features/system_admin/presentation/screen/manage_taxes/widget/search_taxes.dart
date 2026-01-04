@@ -15,21 +15,98 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+class TaxModeSelectorFactory {
+  static Widget create({
+    TaxMode? defaultTaxMode,
+    List<String>? initialValues,
+    required List<String> selectedTaxCodes,
+    required Function(TaxMode?) selectedTaxMode,
+  }) {
+    return TaxModeSelector(
+      initialValues: initialValues ?? [],
+      defaultTaxMode: defaultTaxMode,
+      onTaxModesChanged: (modes) => _onSelectTaxMode(modes, selectedTaxMode),
+      onTaxCodesChanged: (List<Map<String, dynamic>> codes) =>
+          _onTaxCodesChanged(codes, selectedTaxCodes),
+    );
+  }
+
+  static void _onSelectTaxMode(
+    List<Map<String, dynamic>> data,
+    Function(TaxMode?) selectedTaxMode,
+  ) {
+    final selected = data.firstWhereOrNull((i) => i['selected'] == true);
+    final selectedKey = selected?['key'];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      selectedTaxMode(TaxModeHelper.fromString(selectedKey));
+    });
+  }
+
+  static void _onTaxCodesChanged(
+    List<Map<String, dynamic>> data,
+    List<String> taxCodes,
+  ) {
+    // Extract tax codes from the data
+    List<String> selectedTaxCodes = data
+        .where((e) => e['selected'] == true)
+        .map((m) => Tax.fromMap(m['data']).code)
+        .toList();
+
+    // Clear previous entries and add new ones to prevent duplication
+    taxCodes
+      ..clear()
+      ..addAll(selectedTaxCodes);
+  }
+
+  /* Widget _buildTaxModeSelector() {
+    return TaxModeSelector(
+      initialValues: [],
+      onRadioChanged: _onSelectTaxMode,
+      defaultTaxMode: _taxModeToApply,
+      onCheckChanged: (List<Map<String, dynamic>> data) {
+        // if (isFormValid) setState(() {});
+
+        List<String> taxCodes = data
+            .where((e) => e['selected'] == true)
+            .map((m) => Tax.fromMap(m['data']).code)
+            .toList();
+
+        _taxCodes
+          ..clear() // Clear previous entries to prevent duplication
+          ..addAll(taxCodes);
+      },
+    );
+  }
+
+  // -------------------------
+  // Tax Logic
+  // -------------------------
+  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
+    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
+    final selectedKey = selected?['key'];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
+    });
+  }
+*/
+}
+
 /// Tax Modes Radio-Selector [TaxModeSelector]
 class TaxModeSelector extends StatefulWidget {
   final TaxMode? defaultTaxMode;
   final List<String>? initialValues;
   final ValueChanged<double>? onValueChanged;
-  final Function(List<Map<String, dynamic>>)? onCheckChanged;
-  final Function(List<Map<String, dynamic>>)? onRadioChanged;
+  final Function(List<Map<String, dynamic>>)? onTaxCodesChanged;
+  final Function(List<Map<String, dynamic>>)? onTaxModesChanged;
 
   const TaxModeSelector({
     super.key,
     this.initialValues,
     this.defaultTaxMode,
     this.onValueChanged,
-    this.onCheckChanged,
-    this.onRadioChanged,
+    this.onTaxCodesChanged,
+    this.onTaxModesChanged,
   });
 
   @override
@@ -61,7 +138,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
       );
 
       widget.onValueChanged?.call(totalRate);
-      widget.onCheckChanged?.call(data);
+      widget.onTaxCodesChanged?.call(data);
     }
   }
 
@@ -70,7 +147,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
     return Wrap(
       runSpacing: 16,
       children: [
-        if (widget.onRadioChanged != null) ...{_taxToApply()},
+        if (widget.onTaxModesChanged != null) ...{_taxToApply()},
         if (_isHeaderTax) ...{
           BlockQuote(
             blockColor: context.errorColor,
@@ -124,7 +201,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
           setState(() => _isHeaderTax = selectedKey == headerTax.getName);
         });
 
-        widget.onRadioChanged!(data);
+        widget.onTaxModesChanged!(data);
       },
     );
   }

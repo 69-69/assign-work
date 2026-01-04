@@ -209,7 +209,7 @@ class AltPhoneTextField extends StatelessWidget {
       onChanged: onAltPhoneChanged,
       keyboardType: TextInputType.number,
       inputDecoration: const InputDecoration(
-        labelText: 'Alternative phone number (Optional)',
+        labelText: 'Alternative phone number (if any)',
       ),
       validator: (s) => null,
     );

@@ -367,6 +367,9 @@ class FieldGroupConfig {
   final InputDecoration? inputDecoration;
   final FieldWidgetType widgetType;
 
+  /// [initialValue] Initial value of the text field
+  final String? initialValue;
+
   /// [isDisabled] Enable/Disable text field
   final bool isDisabled;
 
@@ -392,6 +395,7 @@ class FieldGroupConfig {
     this.minLines,
     this.validator,
     this.helperText,
+    this.initialValue,
     this.inputDecoration,
     this.isHidden = false,
     this.isDisabled = false,
@@ -413,7 +417,10 @@ class FieldGroup {
          for (var config in fieldsConfig)
            if (config.widgetType == FieldWidgetType.textField)
              config.key: TextEditingController(
-               text: initialValues?[config.key]?.toString() ?? '',
+               text:
+                   config.initialValue ??
+                   initialValues?[config.key]?.toString() ??
+                   '',
              ),
        } {
     for (var config in fieldsConfig) {

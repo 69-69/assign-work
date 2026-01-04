@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -23,6 +24,7 @@ class ProPurchaseOrder extends Equatable {
   final String storeNumber;
   final SupplierLink supplierLink;
   final List<LineItem> lineItems; // A list of items in the RFQ
+  final TaxMode taxMode;
 
   final String currencyCode;
   final String requestedBy; // Buyer's Contact: Who requested the PO
@@ -37,6 +39,7 @@ class ProPurchaseOrder extends Equatable {
 
   /// [paymentMethod] How the payment is made (the financial instrument or channel)
   final String paymentMethod;
+  final String buyerContactPersonId;
 
   final String? notes;
   final List<String> attachments;
@@ -70,6 +73,7 @@ class ProPurchaseOrder extends Equatable {
     this.costCenterCode = '',
     this.status = WorkflowStatus.draft,
     required this.lineItems,
+    this.taxMode = TaxMode.perLineTax,
     required this.paymentTerm,
     required this.paymentMethod,
     this.attachments = const [],
@@ -79,6 +83,7 @@ class ProPurchaseOrder extends Equatable {
     this.taxAmount = 0.0,
     this.discountAmount = 0.0,
     this.freightCharges = 0.0,
+    this.buyerContactPersonId = '',
     this.termsAndConditions,
     DateTime? deliveryDate,
     required this.createdBy,
@@ -103,10 +108,12 @@ class ProPurchaseOrder extends Equatable {
       costCenterCode: map['costCenterCode'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
       lineItems: LineItem.lineItems(map['lineItems']),
+      taxMode: TaxModeHelper.fromString(map['taxMode']),
       currencyCode: map['currencyCode'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
       notes: map['notes'] ?? '',
+      buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       attachments: List<String>.from(map['attachments'] ?? []),
       addresses: AddressInfo.addresses(map['addresses']),
       totalAmount: map['totalAmount']?.toDouble() ?? 0.0,
@@ -135,9 +142,11 @@ class ProPurchaseOrder extends Equatable {
     'currencyCode': currencyCode,
     'costCenterCode': costCenterCode,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
+    'taxMode': getTaxName,
     'paymentTerm': paymentTerm,
     'paymentMethod': paymentMethod,
     'notes': notes,
+    'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
     'addresses': addresses?.map((i) => i.toMap()).toList(),
     'totalAmount': totalAmount,
@@ -185,6 +194,9 @@ class ProPurchaseOrder extends Equatable {
   /// [isEmpty] Checks if the ProPurchaseOrder is empty.
   bool get isEmpty => identical(this, ProPurchaseOrder.empty);
 
+  // The name is needed not label
+  String get getTaxName => taxMode.getName;
+
   String get getPOStatus => status.getLabel;
 
   bool get isApproved => status == WorkflowStatus.approved;
@@ -221,8 +233,10 @@ class ProPurchaseOrder extends Equatable {
         currencyCode,
         paymentTerm,
         paymentMethod,
+        buyerContactPersonId,
+        getTaxName,
       }.filterAny(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   /// [findPOById]
   static ProPurchaseOrder findPOById(List<ProPurchaseOrder> po, String poId) =>
@@ -309,7 +323,9 @@ class ProPurchaseOrder extends Equatable {
     WorkflowStatus? status,
     String? paymentTerm,
     String? paymentMethod,
+    TaxMode? taxMode,
     String? notes,
+    String? buyerContactPersonId,
     List<String>? attachments,
     List<AddressInfo>? addresses,
     double? totalAmount,
@@ -333,6 +349,7 @@ class ProPurchaseOrder extends Equatable {
       currencyCode: currencyCode ?? this.currencyCode,
       status: status ?? this.status,
       lineItems: lineItems ?? this.lineItems,
+      taxMode: taxMode ?? this.taxMode,
       attachments: attachments ?? this.attachments,
       costCenterCode: costCenterCode ?? this.costCenterCode,
       addresses: addresses ?? this.addresses,
@@ -344,6 +361,7 @@ class ProPurchaseOrder extends Equatable {
       paymentTerm: paymentTerm ?? this.paymentTerm,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       notes: notes ?? this.notes,
+      buyerContactPersonId: buyerContactPersonId ?? this.buyerContactPersonId,
       deliveryDate: deliveryDate ?? this.deliveryDate,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
@@ -362,10 +380,12 @@ class ProPurchaseOrder extends Equatable {
     supplierLink,
     status,
     lineItems,
+    taxMode,
     currencyCode,
     paymentTerm,
     paymentMethod,
     notes,
+    buyerContactPersonId,
     attachments,
     costCenterCode,
     addresses,

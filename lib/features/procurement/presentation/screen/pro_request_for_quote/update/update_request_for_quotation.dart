@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -35,7 +34,8 @@ extension UpdateRequestForQuotationForm on BuildContext {
       isExpand: false,
       child: BottomSheetScaffold(
         title: 'Edit Request For Quote',
-        subtitle: rfq.rfqNumber.toUpperAll,
+        subtitle:
+            '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getTypeLabel})',
         body: _UpdateRequestForQuote(rfq: rfq),
       ),
     );
@@ -53,9 +53,6 @@ class _UpdateRequestForQuote extends StatefulWidget {
 
 class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   final _formKey = GlobalKey<FormState>();
-
-  /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
-  TaxMode? _taxModeToApply;
 
   // Basic fields
   bool _isSubmitting = false;
@@ -94,7 +91,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   @override
   void initState() {
     super.initState();
-    _taxModeToApply = _serverRFQ.taxMode;
     _buyerTerms.addAll({
       'notes': _serverRFQ.notes,
       'buyerContactPerson': _serverRFQ.buyerContactPersonId,
@@ -107,7 +103,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   /// Construct Request For Quote object
   RequestForQuote get _updatedRFQ {
-    final status = _rfqStatus ?? _serverRFQ.getName;
+    final status = _rfqStatus ?? _serverRFQ.getRFQStatus;
 
     return _serverRFQ.copyWith(
       title: _rfqTitle ?? _serverRFQ.title,
@@ -175,6 +171,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       children: <Widget>[
         FormGroupCard(
           title: '1. Quotation Overview',
+          subTitle: '\nGeneral RFQ info, requester details, & document status.',
           children: [
             _buildAutoCreateAndStatus(),
             const HorizontalDivider(space: 0.4),
@@ -185,7 +182,8 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
         FormGroupCard(
           isExpanded: false,
-          title: '2. Cost Center',
+          title: '2. Accounting & Cost Assignment',
+          subTitle: '\nCost center, currency, & financial allocation details.',
           children: [_buildCurrencyAndCostCenter()],
         ),
 
@@ -199,22 +197,24 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
         FormGroupCard(
           isExpanded: false,
-          title: '4. Invite Suppliers',
-          subTitle:
-              '\nYou can invite additional suppliers/vendors to the Quotation (RFQ).',
+          title: '4. Suppliers Invitation',
+          subTitle: '\nSelect & invite vendors to submit quotations.',
           children: [_buildSuppliers()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '5. Buyer\'s Terms',
-          children: [_buildBuyerTerms()],
+          title: '5. Shipping Address',
+          subTitle:
+              '\nSpecify the delivery location for quoted ${_lineItemType}s.',
+          children: [_buildShippingAddress()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '6. Shipping Address',
-          children: [_buildShippingAddress()],
+          title: '6. Contacts & Submission Deadlines',
+          subTitle: '\nBuyer contact information & quotation submission dates.',
+          children: [_buildBuyerTerms()],
         ),
 
         const SizedBox(height: 20.0),

@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -39,9 +38,7 @@ class RequestForQuote extends Equatable {
 
   final String departmentCode;
   final List<LineItem> lineItems;
-  final TaxMode taxMode;
 
-  // final List<String> taxCodes;
   final String buyerContactPersonId;
   final AddressInfo? shippingAddress;
   final String? notes;
@@ -79,8 +76,6 @@ class RequestForQuote extends Equatable {
     required this.requestedBy,
     required this.costCenterCode,
     required this.departmentCode,
-    // this.taxCodes = const [],
-    this.taxMode = TaxMode.perLineTax,
     this.currencyCode = ghanaCedis,
     this.buyerContactPersonId = '',
     this.shippingAddress,
@@ -114,7 +109,6 @@ class RequestForQuote extends Equatable {
       departmentCode: map['departmentCode'] ?? '',
       lineItems: LineItem.lineItems(map['lineItems']),
       notes: map['notes'],
-      taxMode: TaxModeHelper.fromString(map['taxMode']),
       buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currencyCode: map['currencyCode'] ?? '',
@@ -148,8 +142,6 @@ class RequestForQuote extends Equatable {
     'requestedBy': requestedBy,
     'lineItems': lineItems.map((i) => i.toMap()).toList(),
     'notes': notes,
-    // 'taxCodes': taxCodes,
-    'taxMode': getName,
     'currencyCode': currencyCode,
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
@@ -227,9 +219,6 @@ class RequestForQuote extends Equatable {
 
   String get getRFQStatus => status.getLabel;
 
-  // The name is needed not label
-  String get getName => taxMode.getName;
-
   bool get isApproved => status == WorkflowStatus.approved;
 
   // Returns true if all authorities have approved the RFQ (based on history)
@@ -268,7 +257,7 @@ class RequestForQuote extends Equatable {
         shippingAddress ?? '',
         getExpectedDate,
       }.filterAny(filter) ||
-      lineItems.filterAny(filter);
+      lineItems.any((i) => i.filterByAny(filter));
 
   static RequestForQuote findRFQById(
     List<RequestForQuote> rfqs,
@@ -353,9 +342,7 @@ class RequestForQuote extends Equatable {
     List<LineItem>? lineItems,
     WorkflowStatus? status,
     String? notes,
-    TaxMode? taxMode,
     List<String>? attachments,
-    String? termsAndConditions,
     DateTime? deadline,
     DateTime? expectedDate,
     String? currencyCode,
@@ -390,8 +377,6 @@ class RequestForQuote extends Equatable {
       notes: notes ?? this.notes,
       deadline: deadline ?? this.deadline,
       expectedDate: expectedDate ?? this.expectedDate,
-      // taxCodes: taxCodes ?? this.taxCodes,
-      taxMode: taxMode ?? this.taxMode,
       attachments: attachments ?? this.attachments,
       currencyCode: currencyCode ?? this.currencyCode,
       shippingAddress: shippingAddress ?? this.shippingAddress,
@@ -426,9 +411,6 @@ class RequestForQuote extends Equatable {
     notes,
     deadline,
     expectedDate,
-    taxMode,
-    // taxCodes,
-    taxMode,
     currencyCode,
     shippingAddress,
     attachments,

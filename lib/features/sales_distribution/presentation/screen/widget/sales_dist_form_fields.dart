@@ -82,7 +82,7 @@ class SalesDistFormFields {
       isDisabled: isDisabled,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
-        labelText: 'Discount % (Optional)',
+        labelText: 'Discount % (if any)',
         // suffixText: '= $ghanaCedis $discountAmount',
         prefixIcon: const Icon(Icons.percent),
         prefixIconColor: kGrayColor,
@@ -185,7 +185,7 @@ class SalesDistFormFields {
       isDisabled: isDisabled,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
-        labelText: 'Discount Percent (Optional)',
+        labelText: 'Discount % (if any)',
         // suffixText: '= $ghanaCedis $discountAmount',
         prefixIcon: const Icon(Icons.percent),
         prefixIconColor: kGrayColor,

@@ -202,14 +202,18 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         FormGroupCard(
           isExpanded: true,
           title: '1. Requisition Overview',
+          subTitle:
+              '\nRequisition details, requester information, & document status.',
           children: [
             _buildRequesterAndDepartment(),
             _buildPriorityAndPRStatus(),
           ],
         ),
+
         FormGroupCard(
           isExpanded: false,
-          title: '2. Cost Center & Auto RFQ',
+          title: '2. Account Assignment & Sourcing',
+          subTitle: '\nCost center assignment and RFQ creation settings.',
           children: [_buildAutoCreateAndCostCenter()],
         ),
 
@@ -223,12 +227,15 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
         FormGroupCard(
           isExpanded: false,
-          title: '4. Request & Expected Dates',
+          title: '4. Request & Delivery Dates',
+          subTitle: '\nRequest-by and expected delivery timelines.',
           children: [_buildDates()],
         ),
+
         FormGroupCard(
           isExpanded: false,
-          title: '6. PR Justification',
+          title: '5. PR Justification',
+          subTitle: '\nBusiness justification or purpose of the request.',
           children: [_buildJustification()],
         ),
 

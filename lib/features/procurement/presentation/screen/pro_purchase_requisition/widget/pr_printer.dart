@@ -306,7 +306,7 @@ class _PRPdfBuilder {
   /// Requester Info: name, department, role
   pw.Container _requestByInfo() {
     final reqList = [
-      'Request By:',
+      'Requested By:',
       requestedBy.fullName.toTitle,
       requestedBy.departmentCode.toUpperAll,
       requestedBy.role.toTitle,
