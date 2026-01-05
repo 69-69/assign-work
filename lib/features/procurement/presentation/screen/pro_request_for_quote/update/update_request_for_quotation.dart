@@ -27,7 +27,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension UpdateRequestForQuotationForm on BuildContext {
-  Future openUpdateRequestForQuote({required RequestForQuote rfq}) async {
+  Future openUpdateRFQ({required RequestForQuote rfq}) async {
     if (rfq.id.isEmpty) return;
 
     return await openBottomSheet(
@@ -91,7 +91,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   @override
   void initState() {
     super.initState();
-    _buyerTerms.addAll({
+    /*_buyerTerms.addAll({
       'notes': _serverRFQ.notes,
       'buyerContactPerson': _serverRFQ.buyerContactPersonId,
       'deadline': _serverRFQ.getDeadlineDate,
@@ -99,6 +99,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     });
     _lineItems.addAll(_serverRFQ.lineItems);
     _supplierLinks.addAll(_serverRFQ.supplierLinks);
+    */
   }
 
   /// Construct Request For Quote object

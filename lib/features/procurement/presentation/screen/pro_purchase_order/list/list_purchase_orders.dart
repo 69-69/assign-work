@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/doc_type_enum.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -13,7 +14,9 @@ import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_mo
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_po/pro_purchase_order_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/create/create_purchase_order.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/update/update_purchase_order.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_employees.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -191,6 +194,11 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     return po.isEmpty ? null : po;
   }
 
+  Future<ProPurchaseOrder> _applyTaxesToSQ(ProPurchaseOrder po) async {
+    final taxMap = await GetTaxes.loadAllTaxRates();
+    return po.computeTaxAmounts(taxMap);
+  }
+
   Future _getEmployee(String empId) async {
     final employee = await GetEmployees.byEmployeeId(empId);
     return employee.isEmpty ? null : employee;
@@ -200,21 +208,17 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     final po = _getPOById(orders, id);
     if (po == null) return;
 
-    /*final employee = await _getEmployee(po.requestedBy);
+    final employee = await _getEmployee(po.requestedBy);
 
     if (mounted) {
       // Log that User viewed details
       if (AuditTracker.shouldLog(id: po.id, type: DocType.rfq)) {
-        _readBloc.add(_updateHistory(po, action: AuditAction.viewed));
+        _bloc.add(_updateHistory(po, action: AuditAction.viewed));
       }
 
       // User opens PO details screen
-      await context.openPODetails(
-        po: po,
-        employee: employee,
-        bloc: _readBloc,
-      );
-    }*/
+      // await context.openPODetails(po: po, employee: employee, bloc: _readBloc);
+    }
   }
 
   Future<void> _onPrintPO(List<ProPurchaseOrder> orders, String id) async {
@@ -246,7 +250,10 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     final po = _getPOById(orders, id);
     if (po == null) return;
 
-    // await context.openUpdatePurchaseOrder(requisite: po);
+    final poWithTaxes = await _applyTaxesToSQ(po); // Apply taxes
+    if (!mounted) return;
+
+    await context.openUpdatePOForm(serverPO: poWithTaxes);
   }
 
   Future<void> _onDeleteTap(List<ProPurchaseOrder> orders, String id) async {

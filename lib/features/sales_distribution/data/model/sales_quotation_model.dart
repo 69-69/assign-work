@@ -188,16 +188,16 @@ class SalesQuotation extends Equatable {
   double get subTotal =>
       lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
 
-  // Subtract from subtotal
+  // Total Discount amount: Subtract from subtotal
   double get discountAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
 
-  // Add tax based on the subtotal (after discount)
-  double get taxAmount =>
+  // Total Tax amount: Add tax based on the subtotal (after discount)
+  double get totalTaxAmount =>
       lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
 
   // Subtotal - Discount (Before Tax)
-  double get netTotal => (subTotal - discountAmount) + taxAmount;
+  double get netTotal => (subTotal - discountAmount) + totalTaxAmount;
 
   // Final amount (after Discount + Tax)
   double get totalAmount => netTotal + shippingAmount;

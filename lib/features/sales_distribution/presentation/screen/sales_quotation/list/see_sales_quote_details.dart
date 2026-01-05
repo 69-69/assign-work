@@ -415,7 +415,7 @@ class _RightSummary extends StatelessWidget {
       'Discount',
       '- $currencySign${(salesQuote?.discountAmount ?? 0.0).toCurrency}',
     ),
-    ('Tax %', '${(salesQuote?.taxAmount ?? 0.0)}%'),
+    ('Tax %', '${(salesQuote?.totalTaxAmount ?? 0.0)}%'),
     ('Net Total', '$currencySign${(salesQuote?.netTotal ?? 0.0).toCurrency}'),
     (
       'Shipping',

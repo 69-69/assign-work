@@ -113,7 +113,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     shippingAmount: double.tryParse(_currencyPricing['shippingAmount']) ?? 0.0,
 
     lineItems: List.from(_lineItems),
-    taxMode: _taxModeToApply ?? TaxMode.headerTax,
+    taxMode: _taxModeToApply ?? TaxMode.perLineTax,
 
     notes: _termsConditions['notes'],
     paymentTerms: _termsConditions['paymentTerms'],
@@ -204,11 +204,13 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _lineItems.clear();
       _addresses.clear();
       _sqStatus = null;
+      _customerName = '';
+      _salesChannelId = '';
+      _taxCodes.clear();
+      _taxModeToApply = null;
       _validityDate.clear();
       _currencyPricing.clear();
       _termsConditions.clear();
-      _taxCodes.clear();
-      _taxModeToApply = null;
       _finalizedQuote = SalesQuotation.empty;
 
       _lineItems.clear();

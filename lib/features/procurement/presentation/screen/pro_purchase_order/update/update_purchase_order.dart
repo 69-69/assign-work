@@ -1,12 +1,12 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/doc_type_enum.dart';
-import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -14,13 +14,12 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
-import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
-import 'package:assign_erp/features/procurement/data/model/workflow_converter_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_po/pro_purchase_order_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
@@ -30,63 +29,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension POFormExtensions on BuildContext {
-  /// [openPOForm] Opens the Purchase Order Form
-  Future<void> openPOForm() => openBottomSheet(
+  /// [openUpdatePOForm] Opens the Update Purchase Order Form
+  Future<void> openUpdatePOForm({
+    required ProPurchaseOrder serverPO,
+  }) => openBottomSheet(
     isExpand: false,
-    child: FindApprovedRFQ(
-      onValueChanged: (WorkflowConverter approvedPR) async {
-        if (mounted && approvedPR.isNotEmpty) {
-          await openCreatePOForm(data: approvedPR);
-        }
-      },
-      onCreateNewPO: () async {
-        final lineItemType = await openMaterialOrServiceToggle('PO');
-        if (mounted && lineItemType != null) {
-          await openCreatePOForm(type: lineItemType);
-        }
-      },
+    child: BottomSheetScaffold(
+      initialSize: 0.94,
+      title: 'Edit Purchase Order',
+      subtitle:
+          '${serverPO.poNumber.toLowerAll} (${serverPO.lineItems.first.getTypeLabel})',
+      body: _CreatePOForm(serverPO: serverPO),
     ),
   );
-
-  Future<void> openCreatePOForm({WorkflowConverter? data, String? type}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: BottomSheetScaffold(
-          initialSize: 0.94,
-          title: 'Create Purchase Order',
-          body: _CreatePOForm(initialRFQData: data, lineItemType: type),
-        ),
-      );
 }
 
 /// Create Purchase Order Form [_CreatePOForm]
 class _CreatePOForm extends StatefulWidget {
-  final String? lineItemType;
-  final WorkflowConverter? initialRFQData;
+  final ProPurchaseOrder serverPO;
 
-  const _CreatePOForm({this.initialRFQData, this.lineItemType});
+  const _CreatePOForm({required this.serverPO});
 
   @override
   State<_CreatePOForm> createState() => _CreatePOFormState();
 }
 
 class _CreatePOFormState extends State<_CreatePOForm> {
-  String? get _lineItemType =>
-      widget.lineItemType ?? _initialRFQ?.lineItems.first.getTypeLabel;
   final _formKey = GlobalKey<FormState>();
-  Key _formResetKey = UniqueKey();
+
+  bool get _isFormValid => _formKey.currentState!.validate();
 
   // Basic fields
   bool _isSubmitting = false;
   String? _poStatus;
-  String _poNumber = '';
-  String _requestedBy = '';
-  String _paymentTerm = '';
-  String _currencyCode = '';
-  String _paymentMethod = '';
-  String _costCenterCode = '';
-  String _buyerContactPersonId = '';
-  final List<SupplierLink> _supplierLinks = [];
+  String? _requestedBy;
+  String? _paymentTerm;
+  String? _currencyCode;
+  String? _paymentMethod;
+  String? _costCenterCode;
+  String? _buyerContactPersonId;
 
   // Dates
   DateTime? _deliveryDate;
@@ -95,20 +76,17 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   final List<String> _taxCodes = [];
   final List<LineItem> _lineItems = [];
   final List<AddressInfo> _addresses = [];
+  Map<String, dynamic> _shippingAmount = {};
+  final List<SupplierLink> _supplierLinks = [];
   final Map<String, dynamic> _additionalInfo = {};
-  final Map<String, dynamic> _shippingAmount = {};
 
   /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
   TaxMode? _taxModeToApply;
   late ProPurchaseOrder _finalizedPO;
 
-  /// Initial RFQ data if converting RFQ → PO
-  WorkflowConverter? get _initialRFQ => widget.initialRFQData;
+  ProPurchaseOrder get _serverPO => widget.serverPO;
 
-  /// Disable form fields if converting RFQ to PO & RFQ has line items
-  bool get _isDisabled => _initialRFQ?.lineItems != null;
-
-  bool get _isFormValid => _formKey.currentState!.validate();
+  String get _lineItemType => _serverPO.lineItems.first.getTypeLabel;
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -117,68 +95,55 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   String get _employeeName => _employee!.fullName;
 
-  String get _employeeStore => _employee!.storeNumber;
-
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();
 
-  @override
-  void initState() {
-    super.initState();
-    _generatePONumber();
-  }
-
-  void _generatePONumber() async {
-    await DocType.pOrder.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _poNumber = s);
-      },
-    );
-  }
+  AuditAction get _action =>
+      _serverPO.isApproved ? AuditAction.approved : AuditAction.updated;
 
   /// Construct ProPurchaseOrder object
-  ProPurchaseOrder get _newPO => ProPurchaseOrder(
-    /// [rfqNumber] FOREIGN KEY (Request For Quote) else its 'new PO' (Not generated from RFQ)
-    rfqNumber: _initialRFQ?.workflowNumber ?? 'N/A',
-    poNumber: _poNumber,
-    storeNumber: _employeeStore,
+  ProPurchaseOrder get _updatePO {
+    final status = _poStatus ?? _serverPO.getPOStatus;
 
-    status: WorkflowStatusHelper.fromString(_poStatus ?? ''),
-    supplierLink: _supplierLinks.first,
-    requestedBy: _initialRFQ?.requestedBy ?? _requestedBy,
+    return _serverPO.copyWith(
+      status: WorkflowStatusHelper.fromString(status),
+      supplierLink: _supplierLinks.first,
+      requestedBy: _requestedBy ?? _serverPO.requestedBy,
 
-    costCenterCode: _initialRFQ?.costCenterCode ?? _costCenterCode,
-    currencyCode: _currencyCode,
+      costCenterCode: _costCenterCode ?? _serverPO.costCenterCode,
+      currencyCode: _currencyCode ?? _serverPO.currencyCode,
 
-    paymentTerm: _initialRFQ?.paymentTerm ?? _paymentTerm,
-    paymentMethod: _paymentMethod,
-    shippingAmount: double.tryParse(_shippingAmount['shippingAmount']) ?? 0.0,
+      paymentTerm: _paymentTerm ?? _serverPO.paymentTerm,
+      paymentMethod: _paymentMethod ?? _serverPO.paymentMethod,
+      shippingAmount: double.tryParse(_shippingAmount['shippingAmount']) ?? 0.0,
 
-    addresses: List.from(_addresses),
+      addresses: List.from(_addresses),
+      buyerContactPersonId:
+          _buyerContactPersonId ?? _serverPO.buyerContactPersonId,
+      notes: _additionalInfo['notes'],
+      termsAndConditions: _additionalInfo['termsAndConditions'],
 
-    buyerContactPersonId: _buyerContactPersonId,
-    notes: _additionalInfo['notes'],
-    termsAndConditions: _additionalInfo['termsAndConditions'],
+      lineItems: List.from(_lineItems),
+      taxMode: _taxModeToApply ?? TaxMode.perLineTax,
 
-    lineItems: List.from(_lineItems),
-    taxMode: _taxModeToApply ?? TaxMode.perLineTax,
-
-    deliveryDate: _deliveryDate,
-    createdBy: _employeeName,
-    history: [
-      AuditLog(
-        action: AuditAction.created,
-        actionBy: _employeeId,
-        statusAfterAction: _poStatus,
-      ),
-    ],
-  );
+      deliveryDate: _deliveryDate ?? _serverPO.deliveryDate,
+      updatedBy: _employeeName,
+      history: [
+        ..._serverPO.history, // Keep existing history
+        AuditLog(
+          action: _action,
+          actionBy: _employeeId,
+          statusAfterAction: status,
+        ),
+      ],
+    );
+  }
 
   void _onSubmit() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
     try {
-      if (!_isFormValid || _newPO.isNullOrEmpty) {
+      if (!_isFormValid || _updatePO.isNullOrEmpty) {
         context.showAlertOverlay(
           'Please enter all required fields',
           bgColor: kDangerColor,
@@ -186,22 +151,21 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         return;
       }
 
-      _finalizedPO = _sanitizeTaxCodes(_newPO);
+      _finalizedPO = _sanitizeTaxCodes(_updatePO);
 
-      _bloc.add(AddProcurement<ProPurchaseOrder>(data: _finalizedPO));
-
-      context.showAlertOverlay(
-        'PO successfully created',
-        onCallback: () => _resetForm(),
+      _bloc.add(
+        UpdateProcurement<ProPurchaseOrder>(
+          documentId: _finalizedPO.id,
+          data: _finalizedPO,
+        ),
       );
+
+      context.showAlertOverlay('Changes successfully saved');
 
       await _confirmPrintoutDialog();
     } finally {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-          _resetForm();
-        });
+        setState(() => _isSubmitting = false);
       }
     }
   }
@@ -226,42 +190,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           .map((e) => e.copyWith(taxCodes: _taxCodes))
           .toList();
       // Return a new RFQ object with updated line items
-      return quote.copyWith(
-        lineItems: updatedItems,
-        taxAmount: quote.totalTaxAmount,
-      );
+      return quote.copyWith(lineItems: updatedItems);
     }
     // For Per-Line Tax mode, return the RFQ unchanged since
     // tax codes are managed individually per line item.
-    return quote.copyWith(taxAmount: quote.totalTaxAmount);
-  }
-
-  void _resetForm() {
-    if (mounted) {
-      setState(() {
-        _formKey.currentState?.reset();
-        _formResetKey = UniqueKey();
-        _isSubmitting = false;
-        _finalizedPO = ProPurchaseOrder.empty;
-        _lineItems.clear();
-        _paymentTerm = '';
-        _paymentMethod = '';
-        _costCenterCode = '';
-        _currencyCode = '';
-        _poNumber = '';
-        _requestedBy = '';
-        _buyerContactPersonId = '';
-        _shippingAmount.clear();
-        _taxCodes.clear();
-        _taxModeToApply = null;
-        _addresses.clear();
-        _supplierLinks.clear();
-        _additionalInfo.clear();
-        _poStatus = null;
-        _deliveryDate = null;
-      });
-      _generatePONumber(); // fresh RFQ number
-    }
+    return quote;
   }
 
   @override
@@ -269,7 +202,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      child: _buildBody(),
     );
   }
 
@@ -277,7 +210,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        POFormInputs.buildPONumber(context, _poNumber, _generatePONumber),
         FormGroupCard(
           title: '1. Purchase Order Overview',
           subTitle: '\nGeneral purchase order info & supplier details.',
@@ -320,11 +252,24 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           children: [_buildBuyerRepAndDeliveryDate(), _buildTermsAndNotes()],
         ),
 
-        const SizedBox(height: 20.0),
-        context.confirmableActionButton(
-          label: 'Create PO',
-          onPressed: _onSubmit,
+        FormGroupCard(
+          showCollapseButton: false,
+          title: 'Financial Summary',
+          subTitle: '\nOverview of the Quotation’s Financial Details',
+          contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
+          children: [
+            HorizontalDivider(space: 0.4),
+            _buildTextSummary('SubTotal:', _serverPO.subTotal),
+            _buildTextSummary('Discount:', _serverPO.discountAmount),
+            _buildTextSummary('Tax %:', _serverPO.totalTaxAmount),
+            _buildTextSummary('Net Total:', _serverPO.netTotal),
+            _buildTextSummary('Shipping:', _serverPO.shippingAmount),
+            _buildTextSummary('Grand Total:', _serverPO.totalAmount),
+          ],
         ),
+
+        const SizedBox(height: 20.0),
+        context.confirmableActionButton(onPressed: _onSubmit),
         const SizedBox(height: 20.0),
       ],
     );
@@ -337,9 +282,9 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   // Addresses (e.g., Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
-      initialData: [{}],
       showButton: true,
       fieldsConfig: POFormInputs.addressFields,
+      initialData: _serverPO.addresses?.map((e) => e.toMap()).toList() ?? [{}],
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
 
@@ -356,6 +301,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DeliveryDate _buildBuyerRepAndDeliveryDate() {
     return DeliveryDate(
       labelDelivery: "Delivery date",
+      initialContact: _serverPO.buyerContactPersonId,
+      initialDeliveryDate: _serverPO.getDeliveryDate,
       onContactChanged: (id, _, _) =>
           setState(() => _buyerContactPersonId = id),
       onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
@@ -364,7 +311,12 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   DynamicTextFields _buildTermsAndNotes() {
     return DynamicTextFields(
-      initialData: [{}],
+      initialData: [
+        {
+          'notes': _serverPO.notes,
+          'termsAndConditions': _serverPO.termsAndConditions,
+        },
+      ],
       fieldsConfig: POFormInputs.deliveryFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
@@ -378,15 +330,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: !_isDisabled,
+      showButton: true,
       fullWidthKey: 'description',
       fieldsConfig: POFormInputs.fields(
-        _lineItemType ?? '',
-        isDisabled: _isDisabled,
+        _lineItemType,
         isHidden: _taxModeToApply != TaxMode.perLineTax,
       ),
-      initialData: (_initialRFQ?.lineItems ?? _lineItems)
-          .map((e) => e.toMap(true))
+      initialData: _serverPO.lineItems
+          .map((e) => {...e.toMap(true), 'netPrice': '${_serverPO.netTotal}'})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
@@ -404,6 +355,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
     return CurrencyAndCostCenterDepartment(
+      initialCurrency: _serverPO.currencyCode,
+      initialCostCenter: _serverPO.costCenterCode,
       onCurrencyChanged: (v) => setState(() => _currencyCode = v),
       onCostCenterChange: (id, code, name) =>
           setState(() => _costCenterCode = code),
@@ -412,7 +365,9 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   DynamicTextFields _buildShippingAmount() {
     return DynamicTextFields(
-      initialData: [{}],
+      initialData: [
+        {'shippingAmount': _serverPO.shippingAmount},
+      ],
       fieldsConfig: [
         FieldGroupConfig(
           key: 'shippingAmount',
@@ -433,6 +388,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   POStatusAndRequestedBy _buildPOStatusAndRequestedBy() {
     return POStatusAndRequestedBy(
+      initialStatus: _serverPO.getPOStatus,
+      initialRequestedBy: _serverPO.requestedBy,
       onStatusChanged: (s) => setState(() => _poStatus = s),
       onRequestedChanged: (id, code, name) => setState(() => _requestedBy = id),
     );
@@ -440,8 +397,12 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   // Only a single supplier is allowed for a PO
   DynamicTextFields _buildSupplier() {
+    final supLink = _serverPO.supplierLink;
+
     return DynamicTextFields(
-      initialData: [{}],
+      initialData: [
+        {'supplierLinks': supLink.toMap(), 'status': supLink.getStatus},
+      ],
       showButton: false,
       fullWidthKey: 'supplierLinks',
       fieldsConfig: POFormInputs.suppliersFields,
@@ -467,13 +428,22 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   PayMethodAndTermsDropdown _buildPayMethodAndTerms() {
     return PayMethodAndTermsDropdown(
+      initialPayTerms: _serverPO.paymentTerm,
+      initialPayMethod: _serverPO.paymentMethod,
       onPayTermsChanged: (t) => setState(() => _paymentTerm = t),
       onPayMethodChanged: (m) => setState(() => _paymentMethod = m),
     );
   }
 
   Widget _buildTaxModeSelector() {
+    // Header-level taxes are preselected here,
+    // but per-line taxes are handled in 'lineItems'
+    List<String> initialVals = _serverPO.taxMode.isHeaderTax
+        ? List.from(_serverPO.lineItems.first.taxCodes)
+        : [];
+
     return POFormInputs.buildTaxModeSelector(
+      initialValues: initialVals,
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
       selectedTaxMode: (TaxMode? mode) =>
@@ -534,5 +504,35 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       empId: _employeeId,
     );
     _bloc.add(up);
+  }
+
+  Widget _buildTextSummary(String label, double amount) {
+    if (amount.isNaN || amount == 0.0) {
+      amount = 0.0; // Set a default value if the amount is invalid
+    }
+    final sign = label.contains('Tax')
+        ? ''
+        : getCurrencySign(_serverPO.currencyCode);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: kTextColor,
+          ),
+        ),
+        Text(
+          '$sign${amount.toCurrency}',
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.normal,
+            color: context.onSurfaceColor,
+          ),
+          textAlign: TextAlign.end, // Right-align the value
+        ),
+      ],
+    );
   }
 }

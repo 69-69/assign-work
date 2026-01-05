@@ -351,7 +351,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
     final rfq = _getRFQById(rfqs, id);
     if (rfq == null) return;
 
-    await context.openUpdateRequestForQuote(rfq: rfq);
+    await context.openUpdateRFQ(rfq: rfq);
   }
 
   Future<void> _onDeleteTap(List<RequestForQuote> rfqs, String id) async {

@@ -55,7 +55,7 @@ class _UpdateSalesQuote extends StatefulWidget {
 
 class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   final _formKey = GlobalKey<FormState>();
-  bool get isFormValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState!.validate();
 
   SalesQuotation get _serverQuote => widget.serverQuote;
   String get _lineItemType => _serverQuote.lineItems.first.getTypeLabel;
@@ -111,7 +111,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           double.tryParse(_currencyPricing['shippingAmount']) ?? 0.0,
 
       lineItems: List.from(_lineItems),
-      taxMode: _taxModeToApply ?? TaxMode.headerTax,
+      taxMode: _taxModeToApply ?? TaxMode.perLineTax,
 
       notes: _termsConditions['notes'],
       paymentTerms: _termsConditions['paymentTerms'],
@@ -138,7 +138,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     setState(() => _isSubmitting = true);
 
     try {
-      if (!isFormValid || _updateQuote.isEmpty) {
+      if (!_isFormValid || _updateQuote.isEmpty) {
         context.showAlertOverlay(
           'Please enter all required fields',
           bgColor: kDangerColor,
@@ -207,18 +207,22 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       children: <Widget>[
         FormGroupCard(
           title: '1. Quotation Overview',
+          subTitle: '\nGeneral quotation info & document status.',
           children: [_buildAutoCreateAndStatus()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '2. Customer & Sales',
+          subTitle:
+              '\nCustomer details, sales channel, & sales representative.',
           children: [_buildSalesChannel(), _buildSalesRepAndCustomer()],
         ),
 
         FormGroupCard(
           isExpanded: false,
-          title: '3. Currency & Pricing',
+          title: '3. Pricing & Tax Determination',
+          subTitle: '\nCurrency, pricing conditions, & tax preferences.',
           children: [
             _buildCurrencyPricing(),
             HorizontalDivider(space: 0.4),
@@ -236,20 +240,21 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         FormGroupCard(
           isExpanded: false,
           title: '5. Dates & Validity',
+          subTitle: '\nQuotation date, validity period, & delivery timeline.',
           children: [_buildDateValidity()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '6. Addresses',
-          subTitle: '\nCustomer shipping & billing address.',
+          subTitle: '\nCustomer Bill-to, ship-to, & other address details.',
           children: [_buildAddresses()],
         ),
 
         FormGroupCard(
           isExpanded: false,
           title: '7. Terms & Conditions',
-          subTitle: '\nPayment & warranty terms for the Quotation.',
+          subTitle: '\nPayment terms, warranty, & commercial conditions.',
           children: [_buildTermsConditions()],
         ),
 
@@ -262,7 +267,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
             HorizontalDivider(space: 0.4),
             _buildTextSummary('SubTotal:', _serverQuote.subTotal),
             _buildTextSummary('Discount:', _serverQuote.discountAmount),
-            _buildTextSummary('Tax %:', _serverQuote.taxAmount),
+            _buildTextSummary('Tax %:', _serverQuote.totalTaxAmount),
             _buildTextSummary('Net Total:', _serverQuote.netTotal),
             _buildTextSummary('Shipping:', _serverQuote.shippingAmount),
             _buildTextSummary('Grand Total:', _serverQuote.totalAmount),
@@ -335,7 +340,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       ),
       initialData: _serverQuote.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the LineItem list
         SQFormInputs.updateListFromData<LineItem>(
@@ -359,7 +364,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       fullWidthKey: 'currencyPricing',
       fieldsConfig: SQFormInputs.currencyPricingFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _currencyPricing
           ..clear()
@@ -379,7 +384,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       ],
       fieldsConfig: SQFormInputs.validityDateFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _validityDate
           ..clear()
@@ -396,7 +401,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       initialData: _serverQuote.addresses.map((e) => e.toMap()).toList(),
       fieldsConfig: SQFormInputs.addressesFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the address list
         SQFormInputs.updateListFromData<AddressInfo>(
@@ -421,7 +426,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       fullWidthKey: 'supplierTerms',
       fieldsConfig: SQFormInputs.supplierTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _termsConditions
           ..clear()

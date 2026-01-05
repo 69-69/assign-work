@@ -46,10 +46,9 @@ class ProPurchaseOrder extends Equatable {
 
   /// [addresses] Addresses (e.g., Billing, Shipping Address, etc)
   final List<AddressInfo>? addresses;
-  final double totalAmount;
+  // For Snapshot
   final double taxAmount;
-  final double discountAmount;
-  final double freightCharges;
+  final double shippingAmount;
   final String? termsAndConditions;
 
   final DateTime? deliveryDate;
@@ -79,10 +78,8 @@ class ProPurchaseOrder extends Equatable {
     this.attachments = const [],
     this.notes,
     this.addresses,
-    this.totalAmount = 0.0,
     this.taxAmount = 0.0,
-    this.discountAmount = 0.0,
-    this.freightCharges = 0.0,
+    this.shippingAmount = 0.0,
     this.buyerContactPersonId = '',
     this.termsAndConditions,
     DateTime? deliveryDate,
@@ -108,18 +105,16 @@ class ProPurchaseOrder extends Equatable {
       costCenterCode: map['costCenterCode'] ?? '',
       status: WorkflowStatusHelper.fromString(map['status']),
       lineItems: LineItem.lineItems(map['lineItems']),
-      taxMode: TaxModeHelper.fromString(map['taxMode']),
       currencyCode: map['currencyCode'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
+      taxMode: TaxModeHelper.fromString(map['taxMode']),
+      taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
+      shippingAmount: double.tryParse('${map['shippingAmount']}') ?? 0.0,
       notes: map['notes'] ?? '',
       buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       attachments: List<String>.from(map['attachments'] ?? []),
       addresses: AddressInfo.addresses(map['addresses']),
-      totalAmount: map['totalAmount']?.toDouble() ?? 0.0,
-      taxAmount: map['taxAmount']?.toDouble() ?? 0.0,
-      discountAmount: map['discountAmount']?.toDouble() ?? 0.0,
-      freightCharges: map['freightCharges']?.toDouble() ?? 0.0,
       termsAndConditions: map['termsAndConditions'] ?? '',
       deliveryDate: toDateTimeFn(map['deliveryDate'] ?? '$_today'),
       createdBy: map['createdBy'] ?? '',
@@ -145,13 +140,14 @@ class ProPurchaseOrder extends Equatable {
     'taxMode': getTaxName,
     'paymentTerm': paymentTerm,
     'paymentMethod': paymentMethod,
+    'termsAndConditions': termsAndConditions,
+    'deliveryDate': deliveryDate,
+    'shippingAmount': shippingAmount,
     'notes': notes,
     'buyerContactPersonId': buyerContactPersonId,
     'attachments': attachments,
     'addresses': addresses?.map((i) => i.toMap()).toList(),
-    'totalAmount': totalAmount,
     'taxAmount': taxAmount,
-    'discountAmount': discountAmount,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'history': history.map((i) => i.toMap()).toList(),
@@ -223,6 +219,24 @@ class ProPurchaseOrder extends Equatable {
         dt.day == _today.day;
   }
 
+  // Computed fields for Financial Summary calculations (Base amount)
+  double get subTotal =>
+      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+
+  // Total Discount amount: Subtract from subtotal
+  double get discountAmount =>
+      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+
+  // Total Tax amount: Add tax based on the subtotal (after discount)
+  double get totalTaxAmount =>
+      lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+
+  // Subtotal - Discount (Before Tax)
+  double get netTotal => (subTotal - discountAmount) + taxAmount;
+
+  // Final amount (after Discount + Tax)
+  double get totalAmount => netTotal + shippingAmount;
+
   /// Filter
   bool filterByAny(String filter) =>
       itemAsList.filterAny(filter) ||
@@ -235,6 +249,7 @@ class ProPurchaseOrder extends Equatable {
         paymentMethod,
         buyerContactPersonId,
         getTaxName,
+        taxAmount,
       }.filterAny(filter) ||
       lineItems.any((i) => i.filterByAny(filter));
 
@@ -331,13 +346,14 @@ class ProPurchaseOrder extends Equatable {
     double? totalAmount,
     double? taxAmount,
     double? discountAmount,
-    double? freightCharges,
+    double? shippingAmount,
     String? termsAndConditions,
     DateTime? deliveryDate,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return ProPurchaseOrder(
       id: id ?? this.id,
@@ -353,10 +369,8 @@ class ProPurchaseOrder extends Equatable {
       attachments: attachments ?? this.attachments,
       costCenterCode: costCenterCode ?? this.costCenterCode,
       addresses: addresses ?? this.addresses,
-      totalAmount: totalAmount ?? this.totalAmount,
       taxAmount: taxAmount ?? this.taxAmount,
-      discountAmount: discountAmount ?? this.discountAmount,
-      freightCharges: freightCharges ?? this.freightCharges,
+      shippingAmount: shippingAmount ?? this.shippingAmount,
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       paymentTerm: paymentTerm ?? this.paymentTerm,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -367,6 +381,7 @@ class ProPurchaseOrder extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
 
@@ -389,10 +404,8 @@ class ProPurchaseOrder extends Equatable {
     attachments,
     costCenterCode,
     addresses,
-    totalAmount,
     taxAmount,
-    discountAmount,
-    freightCharges,
+    shippingAmount,
     termsAndConditions,
     deliveryDate ?? '',
     createdBy,

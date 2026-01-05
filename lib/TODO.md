@@ -11,7 +11,7 @@
 -------------------------
 
 - @Continue
-    - Progress on PO
+    - add shipping to PO
     - ~~Linking it with PO~~
     - ~~RFQ Update Form~~
   - ~~Sales Quotation (Sales & Distribution)~~
@@ -22,7 +22,7 @@
 ```shell
 git init
 git add .
-git commit -m "Done: Progress on PO"
+git commit -m "Working on PO"
 git branch -M main
 git push -u origin main
 ```
