@@ -191,13 +191,6 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
         );
         output.add(checkboxConfig);
       }
-      /*for (var config in _configs) {
-        output.add({
-          'key': config.key,
-          'selected': group[config.key] ?? false,
-          'data': config.data ?? '',
-        });
-      }*/
     }
 
     widget.onCheckChanged(output);
