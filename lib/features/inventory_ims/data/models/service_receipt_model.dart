@@ -1,13 +1,13 @@
-import 'package:assign_erp/core/constants/grn_ses_status.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/grn_ses_status.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:equatable/equatable.dart';
 
-/// [ServiceEntrySheet] The SES serves as a proof of delivery for the service.
+/// [ServiceReceipt] The SES serves as a proof of delivery for the service.
 /// Once the service is performed, the SES records the actual quantity and work performed,
 /// and it validates the service against the PO before the buyer can approve the invoice.
-class ServiceEntrySheet extends Equatable {
+class ServiceReceipt extends Equatable {
   static get _today => DateTime.now();
 
   final String id;
@@ -30,7 +30,7 @@ class ServiceEntrySheet extends Equatable {
   /// [receivedAt] System timestamp when the SES was recorded in the system (audit trail)
   final DateTime receivedAt;
 
-  ServiceEntrySheet({
+  ServiceReceipt({
     this.id = '',
     required this.poNumber,
     required this.supplierId,
@@ -49,8 +49,8 @@ class ServiceEntrySheet extends Equatable {
        serviceStart = serviceStart ?? _today,
        serviceEnd = serviceEnd ?? _today;
 
-  factory ServiceEntrySheet.fromMap(Map<String, dynamic> map, {String? id}) {
-    return ServiceEntrySheet(
+  factory ServiceReceipt.fromMap(Map<String, dynamic> map, {String? id}) {
+    return ServiceReceipt(
       id: id ?? map['id'] ?? '',
       poNumber: map['poNumber'],
       storeNumber: map['storeNumber'] ?? '',
@@ -103,9 +103,9 @@ class ServiceEntrySheet extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  /// A singleton instance representing an empty/default ServiceEntrySheet.
+  /// A singleton instance representing an empty/default ServiceReceipt.
   /// Used as a fallback when no matching SES is found.
-  static final ServiceEntrySheet empty = ServiceEntrySheet(
+  static final ServiceReceipt empty = ServiceReceipt(
     poNumber: '',
     supplierId: '',
     storeNumber: '',
@@ -118,7 +118,7 @@ class ServiceEntrySheet extends Equatable {
 
   String get getSESStatus => status.getLabel;
 
-  ServiceEntrySheet copyWith({
+  ServiceReceipt copyWith({
     String? id,
     String? poNumber,
     String? supplierId,
@@ -132,7 +132,7 @@ class ServiceEntrySheet extends Equatable {
     DateTime? receivedAt,
     DateTime? serviceStart,
     DateTime? serviceEnd,
-  }) => ServiceEntrySheet(
+  }) => ServiceReceipt(
     id: id ?? this.id,
     poNumber: poNumber ?? this.poNumber,
     supplierId: supplierId ?? this.supplierId,
