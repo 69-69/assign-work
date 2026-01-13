@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -52,14 +52,18 @@ class POFormInputs {
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
+  }) => ProcurementFormFields.updateListFromData<T>(
+    list,
+    map: map,
+    fromMap: fromMap,
+  );
 
   /// Apply taxes to PO
   static Future<ProPurchaseOrder> applyTaxesToQuote(
     ProPurchaseOrder order,
   ) async {
     final taxMap = await GetTaxes.loadAllTaxRates();
-    return order.computeTaxAmounts(taxMap);
+    return order.calculateTaxes(taxMap);
   }
 
   /// Get Supplier by ID
@@ -73,7 +77,7 @@ class POFormInputs {
     BuildContext context,
     String count,
     void Function()? onPressed,
-  ) => ProcurementForm.buildNumber(
+  ) => ProcurementFormFields.buildNumber(
     context,
     what: 'PO',
     count: count,
@@ -86,7 +90,7 @@ class POFormInputs {
     bool isHidden = false,
     List<String> keysToExclude = const ['limitQuantity', 'limitAmount'],
   }) {
-    final fields = ProcurementForm.fields(
+    final fields = ProcurementFormFields.fields(
       type,
       isDisabled: isDisabled,
       keysToExclude: keysToExclude,
@@ -140,11 +144,11 @@ class POFormInputs {
 
   /// Addresses (e.g., Billing, Shipping Address)
   static List<FieldGroupConfig> get addressFields =>
-      ProcurementForm.addressFields();
+      ProcurementFormFields.addressFields();
 
   /// Suppliers Fields
   static List<FieldGroupConfig> get suppliersFields =>
-      ProcurementForm.suppliersFields();
+      ProcurementFormFields.suppliersFields();
 
   static AuditProcurement<ProPurchaseOrder> updateHistory({
     required String empId,
@@ -315,10 +319,12 @@ class DeliveryDate extends StatelessWidget {
   final String? labelDelivery;
   final Function(DateTime) onDeliveryChanged;
   final String? initialContact;
-  final void Function(String, String, String) onContactChanged;
+  final void Function(String empId, String name, String role) onContactChanged;
 
   @override
   Widget build(BuildContext context) {
+    final msg = 'Expected delivery date for the PO.';
+
     return AdaptiveLayout(
       children: [
         _BuyerContactPerson(
@@ -331,7 +337,8 @@ class DeliveryDate extends StatelessWidget {
           label: labelDelivery,
           restorationId: 'Delivery date',
           selectedDate: onDeliveryChanged,
-          helperText: 'Expected delivery date for the PO.',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         ),
       ],
     );
@@ -377,7 +384,7 @@ class _POStatusDropdown extends StatelessWidget {
       key: key,
       label: 'PO Status',
       initialValue: initialValue,
-      items: WorkflowStatusHelper.toStringList(type: WorkflowType.po),
+      items: WorkflowStatusUtil.toStringList(type: WorkflowType.po),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );
@@ -388,12 +395,12 @@ class _POStatusDropdown extends StatelessWidget {
 class _BuyerContactPerson extends StatelessWidget {
   final bool isDisabled;
   final String? initialValue;
-  final void Function(String, String, String) onChanged;
+  final void Function(String empId, String name, String role) onChanged;
 
   const _BuyerContactPerson({
-    this.isDisabled = false,
     this.initialValue,
     required this.onChanged,
+    this.isDisabled = false,
   });
 
   @override

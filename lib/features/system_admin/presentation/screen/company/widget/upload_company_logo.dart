@@ -92,7 +92,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
     try {
       final Directory appDocDir = await getApplicationDocumentsDirectory();
       final String appDocPath = appDocDir.path;
-      // final String path = '$appDocPath/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+      // final String path = '$appDocPath/${DateTime.now().toMilliseconds}_${image.name}';
 
       // Get the file extension
       final fileExtension = getFileExtension(pickedImg.path);

@@ -1,6 +1,6 @@
-import 'package:assign_erp/core/constants/grn_ses_status.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/grn_ses_status.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -48,7 +48,7 @@ class GoodsReceiptNote extends Equatable {
       storeNumber: map['storeNumber'] ?? '',
       supplierId: map['supplierId'] ?? '',
       warehouseId: map['warehouseId'] ?? '',
-      status: GRNSESStatusHelper.fromString(map['status']),
+      status: GRNSESStatusUtil.fromString(map['status']),
       lineItems: (map['lineItems'] as List? ?? [])
           .map((i) => GRNLineItem.fromMap(Map<String, dynamic>.from(i)))
           .toList(),
@@ -86,7 +86,7 @@ class GoodsReceiptNote extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['receivedAt'] = receivedAt.millisecondsSinceEpoch;
+    newMap['receivedAt'] = receivedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
@@ -204,11 +204,11 @@ class GRNLineItem extends Equatable {
     return GRNLineItem(
       itemName: map['itemName'] ?? '',
       itemCode: map['itemCode'] ?? '',
-      unitOfMeasure: UOMHelper.fromString(map['unitOfMeasure']),
-      orderedQty: double.tryParse('${map['orderedQty']}') ?? 0,
-      receivedQty: double.tryParse('${map['receivedQty']}') ?? 0,
-      acceptedQty: double.tryParse('${map['acceptedQty']}') ?? 0,
-      rejectedQty: double.tryParse('${map['rejectedQty']}') ?? 0,
+      unitOfMeasure: UOMUtil.fromString(map['unitOfMeasure']),
+      orderedQty: '${map['orderedQty']}'.asDouble,
+      receivedQty: '${map['receivedQty']}'.asDouble,
+      acceptedQty: '${map['acceptedQty']}'.asDouble,
+      rejectedQty: '${map['rejectedQty']}'.asDouble,
       batchNo: map['batchNo'] ?? '',
       serialNumbers: List<String>.from(map['serialNumbers'] ?? []),
     );

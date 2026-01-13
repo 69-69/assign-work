@@ -2,21 +2,23 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
-import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
 import 'package:assign_erp/features/procurement/data/model/pro_purchase_order_model.dart';
+import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_po/pro_purchase_order_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/create/create_purchase_order.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/list/see_po_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/update/update_purchase_order.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_employees.dart';
-import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -143,37 +145,21 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
   }
 
   _buildToolbar(List<ProPurchaseOrder> orders) {
-    return AdaptiveLayout(
-      isFormBuilder: false,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh ${_isApproved ? 'Approved' : 'Purchase'} Orders',
-          label: 'Purchase Orders',
-          count: orders.length,
-          // Dispatch an event to refresh data
-          onPressed: () {
-            // Refresh Purchase orders Data
-            _bloc.add(RefreshProcurements<ProPurchaseOrder>());
-          },
-        ),
-        const SizedBox(width: 20),
-        context.elevatedButton(
-          'Create PO',
-          onPressed: () async => await context.openPOForm(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-
-        if (_selectedIds.length > 1) ...[
-          const SizedBox(width: 20),
-          context.elevatedButton(
-            'Delete',
-            txtColor: kWhiteColor,
-            bgColor: kDangerColor,
-            tooltip: 'Delete selected PO',
-            onPressed: () async {
+    return ListToolbarButtons(
+      // Create button
+      createLabel: 'Create PO',
+      onCreate: () async => await context.openPOForm(),
+      // Refresh button
+      dataLength: orders.length,
+      refreshLabel: '${_isApproved ? 'Approved' : 'Purchase'} Orders',
+      onRefresh: () {
+        // Refresh Purchase orders Data
+        _bloc.add(RefreshProcurements<ProPurchaseOrder>());
+      },
+      // Delete button
+      deleteLabel: 'PO',
+      onDelete: _selectedIds.length > 1
+          ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 /// Delete all selected Purchase Orders from DB
@@ -182,10 +168,8 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
                 );
                 _selectedIds.clear();
               }
-            },
-          ),
-        ],
-      ],
+            }
+          : null,
     );
   }
 
@@ -194,9 +178,9 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     return po.isEmpty ? null : po;
   }
 
-  Future<ProPurchaseOrder> _applyTaxesToSQ(ProPurchaseOrder po) async {
-    final taxMap = await GetTaxes.loadAllTaxRates();
-    return po.computeTaxAmounts(taxMap);
+  Future<Supplier?> _getSupplier(String supplierId) async {
+    final supplier = await GetSuppliers.bySupplierId(supplierId);
+    return supplier.isEmpty ? null : supplier;
   }
 
   Future _getEmployee(String empId) async {
@@ -205,20 +189,22 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
   }
 
   Future<void> _onViewDetails(List<ProPurchaseOrder> orders, String id) async {
-    final po = _getPOById(orders, id);
-    if (po == null) return;
-
-    final employee = await _getEmployee(po.requestedBy);
-
-    if (mounted) {
-      // Log that User viewed details
-      if (AuditTracker.shouldLog(id: po.id, type: DocType.rfq)) {
-        _bloc.add(_updateHistory(po, action: AuditAction.viewed));
-      }
-
-      // User opens PO details screen
-      // await context.openPODetails(po: po, employee: employee, bloc: _readBloc);
-    }
+    await _withPOSupplierLink(
+      id,
+      orders,
+      auditAction: AuditAction.viewed,
+      onPOProcessed: (po, supplier, employee) async {
+        // User opens PO details screen
+        return await context.openPODetails(
+          po: po,
+          employee: employee,
+          supplier: supplier,
+          onPrint: (bool isPrinted) {
+            if (isPrinted) _bloc.add(_updateHistory(po));
+          },
+        );
+      },
+    );
   }
 
   Future<void> _onPrintPO(List<ProPurchaseOrder> orders, String id) async {
@@ -240,7 +226,7 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
         if (employee == null) return;
 
         if (mounted) {
-          _readBloc.add(_updateHistory(po, action: AuditAction.printed));
+          _bloc.add(_updateHistory(po, action: AuditAction.printed));
         }
         // Perform action after loading
         await POPrinter(po: po, employee: employee).printPO();*/
@@ -250,7 +236,7 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     final po = _getPOById(orders, id);
     if (po == null) return;
 
-    final poWithTaxes = await _applyTaxesToSQ(po); // Apply taxes
+    final poWithTaxes = await POFormInputs.applyTaxesToQuote(po); // Apply taxes
     if (!mounted) return;
 
     await context.openUpdatePOForm(serverPO: poWithTaxes);
@@ -285,5 +271,48 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
         ),
       ),
     );
+  }
+
+  /// Orchestrates an PO action that depends on supplier selection.
+  /// [_withRFQSupplierLink]
+  /// Resolves the PO by [id], applies taxes, logs the given [auditAction],
+  /// and then:
+  /// - Executes [onPOProcessed] if exactly one supplier is linked to the PO.
+  ///
+  /// Safely guards against invalid state (unmounted widget, missing RFQ,
+  /// or empty supplier links) and rechecks [mounted] after async gaps.
+  Future<void> _withPOSupplierLink(
+    String id,
+    List<ProPurchaseOrder> orders, {
+    bool shouldProcessSupplierInfo = true,
+    required AuditAction auditAction,
+    required Future<void> Function(
+      ProPurchaseOrder rfqWithTaxes,
+      Supplier supplier,
+      Employee employee,
+    )
+    onPOProcessed,
+  }) async {
+    final po = _getPOById(orders, id);
+    if (!mounted || po == null || po.supplierLink.isEmpty) return;
+
+    final poWithTaxes = await POFormInputs.applyTaxesToQuote(po);
+    if (!mounted) return;
+
+    final supplierLink = po.supplierLink;
+
+    _bloc.add(_updateHistory(po, action: auditAction));
+
+    if (!shouldProcessSupplierInfo) {
+      return onPOProcessed(poWithTaxes, Supplier.empty, Employee.empty);
+    }
+
+    final employee = await _getEmployee(po.buyerContactPersonId);
+
+    // Single supplier
+    final supplier = await _getSupplier(supplierLink.supplierId);
+    if (!mounted || supplier == null) return;
+
+    await onPOProcessed(poWithTaxes, supplier, employee);
   }
 }

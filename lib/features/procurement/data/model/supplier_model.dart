@@ -108,8 +108,8 @@ class Supplier extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp()
-      ..['createdAt'] = createdAt.millisecondsSinceEpoch
-      ..['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+      ..['createdAt'] = createdAt.toMilliseconds
+      ..['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }

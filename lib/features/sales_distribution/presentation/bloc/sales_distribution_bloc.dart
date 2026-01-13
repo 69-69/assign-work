@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/sales_distribution/domain/repository/sales_distribution_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,7 +15,7 @@ part 'sales_distribution_state.dart';
 ///
 class SalesDistributionBloc<T>
     extends Bloc<SalesDistributionEvent, SalesDistributionState<T>> {
-  final SalesDistributionRepository _sdRepository;
+  final SalesDistributionRepository _salesQuoteRepository;
 
   /// toCache/toJson Function [toCache]
   final Map<String, dynamic> Function(T data) toCache;
@@ -37,7 +37,7 @@ class SalesDistributionBloc<T>
     required this.toFirestore,
     required this.toCache,
     this.collectionType,
-  }) : _sdRepository = SalesDistributionRepository(
+  }) : _salesQuoteRepository = SalesDistributionRepository(
          firestore: firestore,
          collectionPath: collectionPath,
          collectionType: collectionType ?? CollectionType.stores,
@@ -45,7 +45,7 @@ class SalesDistributionBloc<T>
        super(LoadingSalesDistribution<T>()) {
     _initialize();
 
-    _sdRepository.dataStream.listen(
+    _salesQuoteRepository.dataStream.listen(
       (cacheData) => add(_SalesDistributionsLoaded<T>(_toList(cacheData))),
     );
   }
@@ -53,21 +53,21 @@ class SalesDistributionBloc<T>
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
     on<RefreshSalesDistributions<T>>(_onRefreshSalesDistributions);
-    on<GetSalesDistributions<T>>(_onGetInventories);
-    on<GetSalesDistributionById<T>>(_onGetInventoryById);
-    on<GetSalesDistributionsByIds<T>>(_onGetInventoriesByIds);
-    on<GetSalesDistributionsWithSameId<T>>(_onGetInventoriesWithSameId);
-    on<SearchSalesDistribution<T>>(_onSearchInventory);
-    on<AddSalesDistribution<T>>(_onAddInventory);
-    on<AddSalesDistribution<List<T>>>(_onAddMultiInventory);
-    on<UpdateSalesDistribution>(_onUpdateInventory);
+    on<GetSalesDistributions<T>>(_onGetSalesDistributions);
+    on<GetSalesDistributionById<T>>(_onGetSalesDistributionById);
+    on<GetSalesDistributionsByIds<T>>(_onGetSalesDistributionsByIds);
+    on<GetSalesDistributionsWithSameId<T>>(_onGetSalesDistributionsWithSameId);
+    on<SearchSalesDistribution<T>>(_onSearchSalesDistribution);
+    on<AddSalesDistribution<T>>(_onAddSalesDistribution);
+    on<AddSalesDistribution<List<T>>>(_onAddSalesDistributions);
+    on<UpdateSalesDistribution>(_onUpdateSalesDistribution);
     on<AuditSalesDistribution>(_onAuditLog);
-    on<DeleteSalesDistribution<String>>(_onDeleteInventory);
-    on<DeleteSalesDistribution<List<String>>>(_onMultiDeleteInventory);
+    on<DeleteSalesDistribution<String>>(_onDeleteSalesDistribution);
+    on<DeleteSalesDistribution<List<String>>>(_onDeleteSalesDistributions);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_SalesDistributionsLoaded<T>>(_onInventoryLoaded);
-    on<_SalesDistributionLoaded<T>>(_onSingleInventoryLoaded);
-    on<_SalesDistributionLoadError>(_onInventoryLoadError);
+    on<_SalesDistributionsLoaded<T>>(_onSalesDistributionLoaded);
+    on<_SalesDistributionLoaded<T>>(_onSingleSalesDistributionLoaded);
+    on<_SalesDistributionLoadError>(_onSalesDistributionLoadError);
   }
 
   Future<void> _onRefreshSalesDistributions(
@@ -77,10 +77,10 @@ class SalesDistributionBloc<T>
     emit(LoadingSalesDistribution<T>());
     try {
       // Trigger data refresh in the DataRepository
-      await _sdRepository.refreshCacheData();
+      await _salesQuoteRepository.refreshCacheData();
 
       // Fetch the updated data from the repository
-      final snapshot = await _sdRepository.getAllCacheData().first;
+      final snapshot = await _salesQuoteRepository.getAllCacheData().first;
       final data = _toList(snapshot);
 
       // Emit the loaded state with the refreshed data
@@ -91,15 +91,15 @@ class SalesDistributionBloc<T>
     }
   }
 
-  /// Load All Data Function [_onGetInventories]
-  Future<void> _onGetInventories(
+  /// Load All Data Function [_onGetSalesDistributions]
+  Future<void> _onGetSalesDistributions(
     GetSalesDistributions<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     emit(LoadingSalesDistribution<T>());
 
     try {
-      _getDataStreamObserver = _sdRepository.getAllCacheData().listen(
+      _getDataStreamObserver = _salesQuoteRepository.getAllCacheData().listen(
         (snapshot) async {
           final data = _toList(snapshot);
 
@@ -107,7 +107,7 @@ class SalesDistributionBloc<T>
           emit(SalesDistributionsLoaded<T>(data));
 
           // Trigger an event to handle the loaded data
-          // add(_InventoryLoadedEvent<T>(data));
+          // add(_SalesDistributionLoadedEvent<T>(data));
 
           // Optionally, emit another state or handle other logic
           // emit(DataAddedState<T>()); // For example, notify that data is added
@@ -134,13 +134,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetInventoriesByIds(
+  Future<void> _onGetSalesDistributionsByIds(
     GetSalesDistributionsByIds<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     emit(LoadingSalesDistribution<T>());
     try {
-      final localDataList = await _sdRepository.getMultipleDataByIDs(
+      final localDataList = await _salesQuoteRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -155,13 +155,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetInventoryById(
+  Future<void> _onGetSalesDistributionById(
     GetSalesDistributionById<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     emit(LoadingSalesDistribution<T>());
     try {
-      final localData = await _sdRepository.getDataById(
+      final localData = await _salesQuoteRepository.getDataById(
         event.documentId,
         field: event.field,
       );
@@ -177,13 +177,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetInventoriesWithSameId(
+  Future<void> _onGetSalesDistributionsWithSameId(
     GetSalesDistributionsWithSameId<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     emit(LoadingSalesDistribution<T>());
     try {
-      final localData = await _sdRepository.getAllDataWithSameId(
+      final localData = await _salesQuoteRepository.getAllDataWithSameId(
         event.documentId,
         field: event.field,
       );
@@ -199,13 +199,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onSearchInventory(
+  Future<void> _onSearchSalesDistribution(
     SearchSalesDistribution<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     emit(LoadingSalesDistribution<T>());
     try {
-      List<CacheData> data = await _sdRepository.searchData(
+      List<CacheData> data = await _salesQuoteRepository.searchData(
         event.query,
         primaryField: event.primaryField ?? '',
         optionalField: event.optionalField,
@@ -221,13 +221,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onAddInventory(
+  Future<void> _onAddSalesDistribution(
     AddSalesDistribution<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     try {
       // Add data to Firestore and update local storage
-      await _sdRepository.createData(toCache(event.data));
+      await _salesQuoteRepository.createData(toCache(event.data));
 
       // Trigger LoadDataEvent to reload the data
       // add(LoadDataEvent<T>());
@@ -239,14 +239,14 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onAddMultiInventory(
+  Future<void> _onAddSalesDistributions(
     AddSalesDistribution<List<T>> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     try {
       for (var item in event.data) {
         // Add data to Firestore
-        await _sdRepository.createData(toCache(item));
+        await _salesQuoteRepository.createData(toCache(item));
       }
 
       // Trigger LoadDataEvent to reload the data
@@ -260,7 +260,7 @@ class SalesDistributionBloc<T>
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateInventory(
+  Future<void> _onUpdateSalesDistribution(
     UpdateSalesDistribution event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -270,7 +270,7 @@ class SalesDistributionBloc<T>
           ? {'data': event.mapData}
           : toCache(event.data as T);
 
-      await _sdRepository.updateData(
+      await _salesQuoteRepository.updateData(
         event.documentId,
         data: data,
         isPartial: isPartialUpdate, // true if not a full model update
@@ -292,7 +292,7 @@ class SalesDistributionBloc<T>
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     try {
-      await _sdRepository.updateData(
+      await _salesQuoteRepository.updateData(
         event.documentId,
         data: {'data': event.log},
         isPartial: true, // true if not a full model update
@@ -302,13 +302,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onDeleteInventory(
+  Future<void> _onDeleteSalesDistribution(
     DeleteSalesDistribution<String> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     try {
       // Delete data from Firestore and update local storage
-      await _sdRepository.deleteData(event.documentId);
+      await _salesQuoteRepository.deleteData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetSalesDistributions<T>());
@@ -320,15 +320,13 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onMultiDeleteInventory(
+  Future<void> _onDeleteSalesDistributions(
     DeleteSalesDistribution<List<String>> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
     try {
-      for (var id in event.documentId) {
-        // Delete data from Firestore and update local storage
-        await _sdRepository.deleteData(id);
-      }
+      // Delete data from Firestore and update local storage
+      await _salesQuoteRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetSalesDistributions<T>());
@@ -347,26 +345,29 @@ class SalesDistributionBloc<T>
     emit(SalesDistributionLoaded<T>(event.shortID));
   }
 
-  void _onInventoryLoaded(
+  void _onSalesDistributionLoaded(
     _SalesDistributionsLoaded<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) {
     emit(SalesDistributionsLoaded<T>(event.data));
   }
 
-  void _onSingleInventoryLoaded(
+  void _onSingleSalesDistributionLoaded(
     _SalesDistributionLoaded<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) {
     emit(SalesDistributionLoaded<T>(event.data));
   }
 
-  void _onInventoryLoadError(
+  void _onSalesDistributionLoadError(
     _SalesDistributionLoadError event,
     Emitter<SalesDistributionState<T>> emit,
   ) {
     final errorLogCache = ErrorLogCache();
-    errorLogCache.setError(error: event.error, fileName: 'inventory_bloc');
+    errorLogCache.setError(
+      error: event.error,
+      fileName: 'sales_distribution_bloc',
+    );
     emit(SalesDistributionError<T>(event.error));
   }
 
@@ -404,7 +405,7 @@ class SalesDistributionBloc<T>
 
   @override
   Future<void> close() {
-    _sdRepository.cancelDataSubscription();
+    _salesQuoteRepository.cancelDataSubscription();
     return super.close();
   }
 }

@@ -42,15 +42,14 @@ extension MapCleanupExtensions on Map<String, dynamic> {
 
 extension ToCurrencyFormat on double {
   /// [toCurrency] Returns the number formatted with 2 decimal places as a currency string
-  get toCurrency => '$this'.isNullOrEmpty ? this : toStringAsFixed(2);
+  get toCurrency => toStringAsFixed(2).asDouble;
 
-  /// [toPercent] Returns the number formatted with 1 decimal place as a percentage string
-  /// If number is `15.0 or 15.00` return 15, else if number is `15.5` return 15.5
-  get toPercent => '$this'.isNullOrEmpty
-      ? this
-      : ('$this'.trim().split('.')).last == '0'
-      ? toStringAsFixed(0)
-      : toStringAsFixed(1);
+  /// [toPercent] Returns the percent rounded to 2 decimal place for percentage display.
+  /// Whole numbers return integer-like double. If null, returns 0.0
+  double get toPercent {
+    final rounded = toStringAsFixed(2).asDouble;
+    return rounded % 1 == 0 ? rounded.toInt().toDouble() : rounded;
+  }
 }
 
 extension ListExtensions on List {
@@ -119,6 +118,12 @@ extension FilterExtension on dynamic {
         ? any((i) => regex.hasMatch(i))
         : regex.hasMatch(this);
   }
+
+  // to double
+  double get asDouble => double.tryParse(toString()) ?? 0.0;
+
+  // to int
+  int get asInt => int.tryParse(toString()) ?? 0;
 }
 
 /// Check if s STRING is empty or null [isNullOrEmpty]

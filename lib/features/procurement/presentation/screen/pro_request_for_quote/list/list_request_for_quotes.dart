@@ -2,11 +2,10 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
-import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
@@ -19,8 +18,8 @@ import 'package:assign_erp/features/procurement/presentation/screen/pro_request_
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/open_rfq_with_suppliers.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/list/see_rfq_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/update/update_request_for_quotation.dart';
+import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_form_inputs.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
-import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -43,8 +42,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
 
   bool get _isAwarded => widget.isAwarded;
 
-  ProRequestForQuoteBloc get _readBloc =>
-      context.read<ProRequestForQuoteBloc>();
+  ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -181,74 +179,35 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
   }
 
   _buildToolbar(List<RequestForQuote> rfqs) {
-    return AdaptiveLayout(
-      isFormBuilder: false,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh ${_isAwarded ? 'Awarded' : 'Request For'} Quotes',
-          label: 'RFQ',
-          count: rfqs.length,
-          onPressed: () =>
-              _readBloc.add(RefreshProcurements<RequestForQuote>()),
-        ),
-        const SizedBox(width: 20),
-        context.elevatedButton(
-          'Create RFQ',
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-          onPressed: () => context.openRFQForm(),
-        ),
-        // Compare two RFQS
-        if (_selectedIds.length == 2) ...[
-          const SizedBox(width: 20),
-          context.compareButton(
-            'Compare RFQ',
-            onPressed: () async => await _onCompareTwoRFQ(context),
-            bgColor: kSuccessColor,
-            txtColor: kWhiteColor,
-            tooltip: 'Compare two RFQs',
-          ),
-        ],
-        if (_selectedIds.length > 1) ...[
-          const SizedBox(width: 20),
-          context.elevatedButton(
-            'Delete',
-            txtColor: kWhiteColor,
-            bgColor: kDangerColor,
-            tooltip: 'Delete selected RFQ',
-            onPressed: () async {
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh RFQ',
+      createLabel: 'Create RFQ',
+      deleteLabel: 'RFQ',
+      compareLabel: 'RFQ',
+      dataLength: rfqs.length,
+      onCreate: () => context.openRFQForm(),
+      onRefresh: () => _bloc.add(RefreshProcurements<RequestForQuote>()),
+      onDelete: _selectedIds.isNotEmpty
+          ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 /// Delete all selected Quotations from RFQ-DB
-                _readBloc.add(
+                _bloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
                 _selectedIds.clear();
               }
-            },
-          ),
-        ],
-        // final quoteBloc = context.read<RequestPriceQuotationBloc>();
-        // final quoteBloc = BlocProvider.of<RequestPriceQuotationBloc>(context, listen: false);
-        /*const SizedBox(height: 20),
-        _IssueMultiQuotesPrintout(
-          quotes: _selectedForCompare,
-          onDone: (s) => setState(() => _selectedForCompare.clear()),
-        ),*/
-      ],
+            }
+          : null,
+      onCompare: _selectedIds.length == 2
+          ? () async => await _onCompareTwoRFQ(context)
+          : null,
     );
   }
 
   RequestForQuote? _getRFQById(List<RequestForQuote> rfqs, String id) {
     final rfq = RequestForQuote.findRFQById(rfqs, id);
     return rfq.isEmpty ? null : rfq;
-  }
-
-  Future<RequestForQuote> _applyTaxesToRFQ(RequestForQuote rfq) async {
-    final taxMap = await GetTaxes.loadAllTaxRates();
-    return rfq.computeTaxAmounts(taxMap);
   }
 
   Future<Supplier?> _getSupplier(String supplierId) async {
@@ -268,7 +227,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
     // limit to 2 RFQ
     for (int i = 0; i < 2; i++) {
       final rfq = _selectedForCompare[i];
-      final rfqWithTaxes = await _applyTaxesToRFQ(rfq);
+      final rfqWithTaxes = await RFQFormInputs.applyTaxesToRFQ(rfq);
       final supplier = await _getSupplier(rfq.supplierLinks.first.supplierId);
       if (!supplier.isNullOrEmpty) {
         _rfqsWithTaxes.add(rfqWithTaxes);
@@ -294,19 +253,26 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
       rfqs,
       auditAction: AuditAction.viewed,
       onSingleSupplier: (rfq, supplier) async {
+        // Open RFQ Details Screen
         return await context.openRFQDetails(
           rfq: rfq,
           supplier: supplier,
-          bloc: _readBloc,
+          onPrint: (bool isPrinted) {
+            if (isPrinted) _bloc.add(_updateHistory(rfq));
+          },
         );
       },
       onMultipleSuppliers: (rfq, supplierLinks) async {
+        // Open RFQ with suppliers selection
         return await context.openRFQWithSuppliers(
           supplierLinks: supplierLinks,
+          // On selected supplier, open RFQ Details Screen
           onSelected: (supplier) => context.openRFQDetails(
             rfq: rfq,
             supplier: supplier,
-            bloc: _readBloc,
+            onPrint: (bool isPrinted) {
+              if (isPrinted) _bloc.add(_updateHistory(rfq));
+            },
           ),
         );
       },
@@ -360,7 +326,7 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      final bloc = _readBloc;
+      final bloc = _bloc;
 
       bloc
         ..add(_updateHistory(rfq))
@@ -413,12 +379,12 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
     final rfq = _getRFQById(rfqs, id);
     if (!mounted || rfq == null || rfq.supplierLinks.isNullOrEmpty) return;
 
-    final rfqWithTaxes = await _applyTaxesToRFQ(rfq);
+    final rfqWithTaxes = await RFQFormInputs.applyTaxesToRFQ(rfq);
     if (!mounted) return;
 
     final supplierLinks = rfq.supplierLinks;
 
-    _readBloc.add(_updateHistory(rfq, action: auditAction));
+    _bloc.add(_updateHistory(rfq, action: auditAction));
 
     // Single supplier
     if (supplierLinks.length == 1) {

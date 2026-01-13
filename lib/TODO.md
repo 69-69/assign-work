@@ -11,7 +11,10 @@
 -------------------------
 
 - @Continue
-    - add shipping to PO
+    - ~~Work on Financial Data~~
+      - ~~Check if Shipping is taxable in the 'Financial summary'~~
+      - ~~Check on netPrice in PO updateForm: 'netPrice': '${e.netAmount}'~~
+    - ~~add shipping to PO~~
     - ~~Linking it with PO~~
     - ~~RFQ Update Form~~
   - ~~Sales Quotation (Sales & Distribution)~~

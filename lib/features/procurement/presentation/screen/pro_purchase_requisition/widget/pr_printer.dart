@@ -31,7 +31,7 @@ class PRPrinter {
     final req = requisite;
     List<_PrintPRItem> lineItems = _PrintPRItem.fromPR(req);
 
-    final history = _prHistory(req);
+    final history = _getApprovals(req);
 
     final pr = _PRPdfBuilder(
       items: lineItems,
@@ -53,7 +53,7 @@ class PRPrinter {
   }
 
   /// Get the last approved PR entry and the date it was approved
-  (String?, String?) _prHistory(PurchaseRequisition req) {
+  (String?, String?) _getApprovals(PurchaseRequisition req) {
     // Find the most recent approved PR entry
     final lastApproved = req.history.lastWhere(
       (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel.toLowerAll,

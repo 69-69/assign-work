@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/total_summary_model.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
@@ -104,7 +105,7 @@ class RequestForQuote extends Equatable {
       requestedBy: map['requestedBy'] ?? '',
       rfqNumber: map['rfqNumber'] ?? '',
       supplierLinks: SupplierLink.suppliers(map['supplierLinks']),
-      status: WorkflowStatusHelper.fromString(map['status']),
+      status: WorkflowStatusUtil.fromString(map['status']),
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
       lineItems: LineItem.lineItems(map['lineItems']),
@@ -163,36 +164,46 @@ class RequestForQuote extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['deadline'] = deadline?.millisecondsSinceEpoch;
-    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['deadline'] = deadline?.toMilliseconds;
+    newMap['expectedDate'] = expectedDate?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
 
-  /*double resolveHeaderTaxes(Map<String, ResolveTaxCode> taxMap) =>
-      _resolveTaxes(taxCodes, taxMap);
+  /// Get the last approved info from RFQ history [getApproval]
+  ({String? by, String? at}) get getApproval {
+    if (history.isNullOrEmpty) return (by: null, at: null);
 
-  String getTaxName(Map<String, ResolveTaxCode> taxMap) =>
-      _getTaxName(taxCodes, taxMap);*/
+    // Find the most recent approved RFQ entry
+    final lastApproved = history.lastWhere(
+      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
+      orElse: () => AuditLog.empty,
+    );
 
-  double get subTotal =>
-      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+    // If none found, return null for both
+    if (lastApproved.isEmpty) return (by: null, at: null);
 
-  double get discountAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    return (by: lastApproved.actionBy, at: lastApproved.getActionAt);
+  }
 
-  double get taxAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+  /// Computed TotalSummary based on current line items
+  TotalSummary get _totalSum => TotalSummary(lineItems: lineItems);
 
-  // taxMode.isHeaderTax ? headerTaxAmount : lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+  // Calculates tax amounts for each line item only.
+  // Shipping is not included for RFQs, so shipping tax is skipped.
+  RequestForQuote calculateTaxes(Map<String, ResolveTaxCode> taxMap) =>
+      copyWith(lineItems: lineItems.applyTaxes(taxMap));
 
-  // subTotal - discountAmount;
-  double get netTotal => (subTotal - discountAmount) + taxAmount;
-
-  // Final amount (after Discount + Tax) plus any additional charges
-  double get totalAmount => netTotal;
+  /// Financial Summaries
+  double get subTotal => _totalSum.subTotal;
+  double get taxableAmount => _totalSum.taxableAmount;
+  double get totalDiscountAmount => _totalSum.totalDiscountAmount;
+  double get totalTaxPercent => _totalSum.totalTaxPercent;
+  double get totalTaxAmount => _totalSum.totalTaxAmount;
+  double get netTotal => _totalSum.netTotal;
+  double get grandTotal => _totalSum.grandTotal;
 
   /// A singleton instance representing an empty/default RequestForQuote.
   /// Used as a fallback when no matching RFQ is found.
@@ -212,29 +223,18 @@ class RequestForQuote extends Equatable {
   /// Returns true if this instance is the singleton [empty] RFQ.
   /// Use this to check if the RFQ is the default/fallback (e.g., not found).
   bool get isEmpty => identical(this, RequestForQuote.empty);
-
   bool get isNotEmpty => lineItems.isNotEmpty;
-
   bool get isAwarded => status == WorkflowStatus.convertedToPO;
-
   String get getRFQStatus => status.getLabel;
-
   bool get isApproved => status == WorkflowStatus.approved;
-
   // Returns true if all authorities have approved the RFQ (based on history)
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getRFQStatus);
-
   String get getAutoConvertRfq => autoConvertRfq ? 'Yes' : 'No';
-
   String get getExpectedDate => expectedDate.dateOnly;
-
   // String get getValidityDate => (int.tryParse(validityDate.split(' ').first)?.toDate).dateOnly;
-
   String get getDeadlineDate => deadline.dateOnly;
-
   String get getCreatedAt => createdAt.toStandardDT;
-
   String get getUpdatedAt => updatedAt.toStandardDT;
 
   bool get isToday {
@@ -276,54 +276,6 @@ class RequestForQuote extends Equatable {
 
   static List<RequestForQuote> filterAwardedRFQ(List<RequestForQuote> rfqs) =>
       rfqs.where((q) => q.isAwarded).toList();
-
-  RequestForQuote computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
-    // Calculate tax amounts for each line item (perLineTax)
-    List<LineItem> updatedItems = lineItems.map((item) {
-      if (item is! TaxableLineItem) return item;
-
-      final taxAmount = item.computeTaxAmount(taxMap);
-      final taxNames = item.buildTaxNames(taxMap);
-
-      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);
-
-    /*final updatedItems = lineItems.map((item) {
-      // Tax rate is in Percentage
-      final taxRate = item.resolvePerItemTaxes(taxMap);
-      final taxAmount = (item.netPrice * taxRate) / 100;
-      final taxNames = item.getTaxName(taxMap);
-
-      return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);*/
-
-    /*if (taxMode == taxModeToApply.perLineTax) {
-      // Calculate tax amounts for each line item (perLineTax)
-      final updatedItems = lineItems.map((item) {
-        // Tax rate is in Percentage
-        final taxRate = item.resolvePerItemTaxes(taxMap);
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        final taxNames = item.getTaxName(taxMap);
-
-        return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
-      }).toList();
-
-      return copyWith(lineItems: updatedItems);
-    } else {
-      // Calculate total tax amount (headerTax/overall tax)
-      final taxRate = resolveHeaderTaxes(taxMap);
-      final totalTax = lineItems.fold(0.0, (sum, item) {
-        final taxAmount = sum + ((item.netPrice * taxRate) / 100);
-        return taxAmount;
-      });
-
-      return copyWith(headerTaxAmount: totalTax, taxNames: getTaxName(taxMap));
-    }*/
-  }
 
   @override
   String toString() => 'RFQ: $rfqNumber - $getRFQStatus';

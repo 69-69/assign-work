@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/features/procurement/data/permission/procurement_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -106,37 +106,11 @@ extension ProcurementTiles on dynamic {
       {
         'label': 'my approvals',
         'icon': Icons.verified_outlined,
-        'action': RouteNames.proMyPOApprovals,
+        'action': RouteNames.proMyApprovals,
         'param': {},
         'access': _getName(ProcurementPermission.approvePO),
         'description':
             'manage and approve requisitions, RFQs, and POs according to rules',
-      },
-      // -------------------------
-      // GOODS RECEIPT
-      // -------------------------
-      {
-        'hasSplit': true,
-        'label': 'GRN: goods . receipt note',
-        'icon': Icons.receipt_long,
-        'action': RouteNames.goodsReceiptNote,
-        'param': {},
-        'access': _getName(ProcurementPermission.manageGRN),
-        'description':
-            'Record the receipt of physical goods delivered by suppliers.\nUpdates inventory quantities and verifies items received.',
-      },
-      // -------------------------
-      // SERVICE ENTRY SHEET
-      // -------------------------
-      {
-        'hasSplit': true,
-        'label': 'SES: service . entry sheet',
-        'icon': Icons.assignment_turned_in_outlined,
-        'action': RouteNames.serviceEntrySheet,
-        'param': {},
-        'access': _getName(ProcurementPermission.manageSES),
-        'description':
-            'Confirm and approve completion of vendor-provided services.\nUsed for service POs—no inventory impact.',
       },
       {
         'hasSplit': true,
@@ -629,4 +603,4 @@ Let me know if you'd like:
 }
 
 // Get name from enum
-String _getName(e) => EnumHelper<ProcurementPermission>(e).getName;
+String _getName(e) => EnumUtil<ProcurementPermission>(e).getName;

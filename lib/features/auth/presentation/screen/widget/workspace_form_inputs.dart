@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -31,7 +31,7 @@ class WorkspaceRoleDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = WorkspaceRoleHelper.toStringList();
+    final strList = WorkspaceRoleUtil.toStringList();
 
     return StaticDropdown<String>(
       key: key,

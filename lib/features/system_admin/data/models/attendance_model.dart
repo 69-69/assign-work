@@ -85,7 +85,7 @@ class Attendance {
   /// Convert Attendance to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
 
     return {'id': cacheKey, 'data': newMap};
   }

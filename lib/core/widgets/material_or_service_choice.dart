@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -42,7 +42,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
         subtitle:
             'Select whether this $_procureType is a Material (Product) or Service?',
       ),
-      body: _buildFBody(context),
+      body: _buildBody(context),
       actions: [
         Row(
           children: [
@@ -61,8 +61,8 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
     );
   }
 
-  Widget _buildFBody(BuildContext context) {
-    final types = LineItemTypeHelper.toStringList(false);
+  Widget _buildBody(BuildContext context) {
+    final types = LineItemTypeUtil.toStringList(false);
 
     return Container(
       width: context.screenWidth,
@@ -75,7 +75,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
               ? context.onPrimaryContainer
               : context.outlineColor;
 
-          final material = LineItemTypeHelper.isMaterial(type);
+          final material = LineItemTypeUtil.isMaterial(type);
 
           return ChoiceChip(
             selected: isSelected,

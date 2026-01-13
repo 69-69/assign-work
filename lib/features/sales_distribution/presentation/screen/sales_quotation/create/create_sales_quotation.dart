@@ -1,12 +1,13 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/sales_channel.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/sales_channel.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -100,17 +101,17 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     quoteNumber: _quoteNumber,
     autoConvertSq: _autoConvertSO,
     storeNumber: _employee!.storeNumber,
-    status: WorkflowStatusHelper.fromString(_sqStatus),
+    status: WorkflowStatusUtil.fromString(_sqStatus),
 
     salesRepId: _salesRepId,
     customerId: _customerId ?? 'new',
     customerName: _customerName,
     addresses: _addresses,
-    salesChannel: SalesChannelHelper.fromString(_salesChannelId),
+    salesChannel: SalesChannelUtil.fromString(_salesChannelId),
 
     currencyCode: _currencyPricing['currencyCode'],
-    exchangeRate: double.tryParse(_currencyPricing['exchangeRate']) ?? 0.0,
-    shippingAmount: double.tryParse(_currencyPricing['shippingAmount']) ?? 0.0,
+    exchangeRate: '${_currencyPricing['exchangeRate']}'.asDouble,
+    shippingAmount: '${_currencyPricing['shippingAmount']}'.asDouble,
 
     lineItems: List.from(_lineItems),
     taxMode: _taxModeToApply ?? TaxMode.perLineTax,
@@ -284,7 +285,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         FormGroupCard(
           isExpanded: false,
           title: '6. Addresses',
-          subTitle: '\nCustomer Bill-to, ship-to, & other address details.',
+          subTitle: '\nCustomer Bill-to, Ship-to, & other address details.',
           children: [_buildAddresses()],
         ),
 
@@ -456,6 +457,8 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(
       _finalizedQuote,
     );
+    prettyPrint('quote-With-Taxes', quoteWithTaxes);
+
     final supplier = await SQFormInputs.getCustomer(_finalizedQuote.customerId);
     if (supplier.isEmpty) return;
 

@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
@@ -14,7 +15,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/item_master/item_master_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/stock_management/item_master/widget/item_master_form_fields.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/item_master/widget/item_master_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -225,7 +226,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   Widget _buildNameAndDesc() {
     return DynamicTextFields(
-      fullWidthKey: 'category',
+      fullWidthKey: 'itemType',
       fieldsConfig: ItemMasterFormFields.classifyFields(
         itemType: _newMaster.itemType,
       ),
@@ -237,13 +238,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         },
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Add new item master
-        _newMaster = _newMaster.copyWith(
+        prettyPrint('data.first', data.first.entries);
+        /*_newMaster = _newMaster.copyWith(
           categoryId: data.first['category'] ?? '',
-          itemType: data.first['itemType'] ?? '',
-        );
+          itemType: data.first['itemType'],
+        );*/
       },
     );
   }
@@ -258,7 +260,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         },
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
@@ -271,19 +273,20 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   Widget _buildUsageAndAvailability() {
     return DynamicTextFields(
+      fullWidthKey: 'baseUom',
       fieldsConfig: ItemMasterFormFields.unitRuleFields(
-        initial: _nullServer
-            ? {}
-            : _serverItemMater!.pickKeys({
-                'isActive',
-                'isService',
-                'isSellable',
-                'isStockItem',
-                'isPurchasable',
-              }),
+        /* initial:
+            _serverItemMater?.pickKeys({
+              'isActive',
+              'isService',
+              'isSellable',
+              'isStockItem',
+              'isPurchasable',
+            }) ??
+            {},*/
       ),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
@@ -300,20 +303,21 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.planningFields,
       initialData: [
-        _serverItemMater!.pickKeys({
-          'reorderPoint',
-          'reorderQty',
-          'leadTimeDays',
-        }),
+        _serverItemMater?.pickKeys({
+              'reorderPoint',
+              'reorderQty',
+              'leadTimeDays',
+            }) ??
+            {},
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
-          reorderPoint: data.first['reorderPoint'],
-          reorderQty: data.first['reorderQty'],
-          leadTimeDays: data.first['leadTimeDays'],
+          reorderPoint: '${data.first['reorderPoint']}'.asDouble,
+          reorderQty: '${data.first['reorderQty']}'.asDouble,
+          leadTimeDays: '${data.first['leadTimeDays']}'.asInt,
         );
       },
     );
@@ -323,14 +327,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.costingFields,
       initialData: [
-        _serverItemMater!.pickKeys({'standardCost', 'costingMethod'}),
+        _serverItemMater?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
-          standardCost: data.first['standardCost'],
+          standardCost: '${data.first['standardCost']}'.asDouble,
           costingMethod: data.first['costingMethod'],
         );
       },

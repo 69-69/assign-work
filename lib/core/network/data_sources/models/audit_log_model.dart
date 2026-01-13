@@ -2,8 +2,8 @@
 // ⚙️ Workflow Audit Entry Definitions
 // ------------------------------------
 
-import 'package:assign_erp/core/util/doc_type_enum.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 
@@ -50,28 +50,28 @@ enum AuditAction {
 * */
 extension AuditActionExtension on AuditAction {
   /// [getName] Get the specific Enum Name (e.g. "convertedToRFQ")
-  String get getName => EnumHelper<AuditAction>(this).getName;
+  String get getName => EnumUtil<AuditAction>(this).getName;
 
   /// Returns a user-friendly label (e.g. "converted To RFQ")
-  String get getLabel => EnumHelper<AuditAction>(this).getLabel;
+  String get getLabel => EnumUtil<AuditAction>(this).getLabel;
 }
 
-class AuditActionHelper {
+class AuditActionUtil {
   /// Check if action is valid
   static bool isValid(String action) =>
-      EnumHelper.isValid<AuditAction>(AuditAction.values, action, false);
+      EnumUtil.isValid<AuditAction>(AuditAction.values, action, false);
 
   /// Returns true if the action is Approved
   static bool isApproved(String? action) =>
-      EnumHelper.isEqual(AuditAction.approved, action);
+      EnumUtil.isEqual(AuditAction.approved, action);
 
   /// [fromString] Converts String/Label to enum value.
   static AuditAction fromString(String? value) =>
-      EnumHelper.fromString<AuditAction>(AuditAction.values, value);
+      EnumUtil.fromString<AuditAction>(AuditAction.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<AuditAction>(AuditAction.values);
+    final list = EnumUtil.toStringList<AuditAction>(AuditAction.values);
     return includeHeader ? ['audit entry', ...list] : list;
   }
 }
@@ -109,7 +109,7 @@ class AuditLog {
 
   factory AuditLog.fromMap(Map<String, dynamic> map, {String? id}) => AuditLog(
     id: id ?? map['id'] ?? '',
-    action: AuditActionHelper.fromString(map['action']),
+    action: AuditActionUtil.fromString(map['action']),
     actionBy: map['actionBy'] ?? '',
     actionAt: toDateTimeFn(map['actionAt'] ?? '$_today'),
     comment: map['comment'] ?? '',

@@ -5,10 +5,10 @@ Under-Review: After submission, the requisition goes through a review.
 Approved: If the requisition is approved, it triggers the creation of an RFQ or PO.
 Fulfilled: The order is fulfilled and the requisition is considered completed.
 Cancelled: If it’s canceled at any point before approval or fulfillment.*/
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -97,8 +97,8 @@ class PurchaseRequisition extends Equatable {
       autoConvertPr: map['autoConvertPr'] ?? false,
       costCenterCode: map['costCenterCode'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
-      status: WorkflowStatusHelper.fromString(map['status']),
-      priority: PriorityHelper.fromString(map['priority']),
+      status: WorkflowStatusUtil.fromString(map['status']),
+      priority: PriorityUtil.fromString(map['priority']),
       purpose: map['purpose'] ?? '',
       lineItems: LineItem.lineItems(map['lineItems']),
       attachments: List<String>.from(map['attachments'] ?? []),
@@ -147,12 +147,28 @@ class PurchaseRequisition extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['requestDate'] = requestDate?.millisecondsSinceEpoch;
-    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['requestDate'] = requestDate?.toMilliseconds;
+    newMap['expectedDate'] = expectedDate?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
+  }
+
+  /// Get the last approved info from PR history [getApproval]
+  ({String? by, String? at}) get getApproval {
+    if (history.isNullOrEmpty) return (by: null, at: null);
+
+    // Find the most recent approved PR entry
+    final lastApproved = history.lastWhere(
+      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
+      orElse: () => AuditLog.empty,
+    );
+
+    // If none found, return null for both
+    if (lastApproved.isEmpty) return (by: null, at: null);
+
+    return (by: lastApproved.actionBy, at: lastApproved.getActionAt);
   }
 
   /// A singleton instance representing an empty/default PurchaseRequisition.

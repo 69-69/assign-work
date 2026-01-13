@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -12,10 +12,8 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
-import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
-import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/core/widgets/see_detail/see_details.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
-import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_requisition/widget/pr_printer.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
@@ -26,51 +24,37 @@ import 'package:printing/printing.dart';*/
 extension PRDetails on BuildContext {
   Future openPRDetails({
     required Employee employee,
-    required ProcurementBloc bloc,
+    required Function(bool) onPrint,
     required PurchaseRequisition requisite,
+    // required ProPurchaseRequisiteBloc bloc,
   }) async => await openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
       isDetailMode: true,
-      title: 'Purchase Requisition (${requisite.lineItems.first.getTypeLabel})',
+      title: 'Purchase Requisition (${requisite.lineItems.first.getType})',
       subtitle: requisite.prNumber.toUpperAll,
       secondaryWidget: _showHistory(requisite),
       body: _PRInfoPage(requisite: requisite, employee: employee.fullName),
-      onPrint: () async => await _printRFQ(requisite, bloc, employee),
+      onPrint: () async => await _printRFQ(requisite, onPrint, employee),
     ),
   );
 
   _printRFQ(
     PurchaseRequisition requisite,
-    ProcurementBloc bloc,
+    Function(bool) onPrint,
     Employee employee,
+    // ProPurchaseRequisiteBloc bloc,
   ) async {
     await progressBarDialog(
       request: Future.delayed(kRProgressDelay, () async {
         await PRPrinter(requisite: requisite, employee: employee).printPR();
-        bloc.add(_updateHistory(requisite));
+        // bloc.add(_updateHistory(requisite));
+        onPrint(true);
       }),
       onSuccess: (_) => showAlertOverlay('PR printout successful'),
       onError: (e) =>
           showAlertOverlay('PR printout failed', bgColor: kDangerColor),
-    );
-  }
-
-  /// Audit Log Entry (Tracking actions)
-  AuditProcurement<PurchaseRequisition> _updateHistory(
-    PurchaseRequisition requisite,
-  ) {
-    return AuditProcurement<PurchaseRequisition>(
-      documentId: requisite.id,
-      log: AuditLog.logScaffold(
-        oldLogs: requisite.history,
-        newLog: AuditLog(
-          action: AuditAction.printed,
-          actionBy: employee!.employeeId,
-          statusAfterAction: requisite.getPRStatus,
-        ),
-      ),
     );
   }
 
@@ -79,6 +63,7 @@ extension PRDetails on BuildContext {
       Icons.history,
       iconColor: kPrimaryAccentColor,
       bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      borderColor: kPrimaryAccentColor.toAlpha(0.3),
       tooltip: 'View PR History',
       onPressed: () async => await _onOpenHistory(pr),
     );
@@ -100,39 +85,6 @@ extension PRDetails on BuildContext {
   }
 }
 
-/// Helper to build info row
-Widget _buildInfoRow(
-  BuildContext context, {
-  Color? textColor,
-  String title = '',
-  String value = '',
-  String separator = ': ',
-  bool isReadMore = false,
-}) {
-  return Padding(
-    padding: EdgeInsets.symmetric(vertical: 2.0),
-    child: RichText(
-      text: TextSpan(
-        text: '$title$separator',
-        style: context.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: textColor ?? context.secondaryColor,
-        ),
-        children: [
-          isReadMore
-              ? WidgetSpan(child: ReadMoreAutoText(text: value))
-              : TextSpan(
-                  text: value,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _PRInfoPage extends StatelessWidget {
   final String _requestBy;
   final PurchaseRequisition? _requisite;
@@ -148,6 +100,16 @@ class _PRInfoPage extends StatelessWidget {
 
   List<LineItem> get _items => _requisite?.lineItems ?? [];
 
+  SummaryItem get _approval {
+    ApprovalInfo? item = _requisite?.getApproval;
+
+    return (
+      title: 'Approved By',
+      value:
+          '\n${item?.by ?? 'Not yet approved'}\n${item?.at ?? '-----------------'}',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_requisite == null) {
@@ -158,7 +120,10 @@ class _PRInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBody(context),
-        _Footer(requisite: _requisite),
+        DetailsFooter(
+          created: (by: _requisite.createdBy, at: _requisite.getCreatedAt),
+          updated: (by: _requisite.updatedBy, at: _requisite.getUpdatedAt),
+        ),
         const SizedBox(height: 20),
       ],
     );
@@ -190,11 +155,13 @@ class _PRInfoPage extends StatelessWidget {
         SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
-          columnLabels: _items.first.dataTableHeader,
-          items: _items, // list of requisitions
+          columnLabels: _items.first.dataTableHeader(false),
+          items: _items,
+          // list of requisitions
           rowBuilder: (entry) {
             return DataRow(
-              cells: entry.itemAsList
+              cells: entry
+                  .itemAsList(false)
                   .map((cell) => DataCell(Text(cell)))
                   .toList(),
             );
@@ -209,8 +176,25 @@ class _PRInfoPage extends StatelessWidget {
 
         AdaptiveLayout(
           children: [
-            _LeftSummary(requisite: _requisite, textColor: _textColor),
-            _RightSummary(requisite: _requisite, textColor: _textColor),
+            DetailsSummary(
+              textColor: _textColor,
+              alignment: Alignment.topLeft,
+              items: [
+                (title: 'Request Date', value: '${_requisite?.getRequestDate}'),
+                (
+                  title: 'Expected Date',
+                  value: '${_requisite?.getExpectedDate}',
+                ),
+              ],
+              anyWidget: detailsRow(
+                context,
+                isReadMore: true,
+                title: 'Purpose / Reason',
+                textColor: _textColor,
+                value: _requisite!.purpose.toSentence,
+              ),
+            ),
+            DetailsSummary(textColor: kDangerColor, items: [_approval]),
           ],
         ),
         const SizedBox(height: 20),
@@ -220,31 +204,19 @@ class _PRInfoPage extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     // Build the list of header entries first
-    final headerItems = <(String, String)>[
-      ('PR#', _requisite?.prNumber ?? 'N/A'),
-      ('Store ID', _requisite?.storeNumber.toUpperAll ?? 'N/A'),
-      ('Status', _requisite?.status.getLabel.toSentence ?? 'N/A'),
-      ('Priority', _requisite?.priority.getName.toTitle ?? 'N/A'),
-      ('Department', _requisite!.departmentCode.toTitle),
-      ('Request By', _requestBy.toTitle),
+    List<SummaryItem> headerItems = [
+      (title: 'PR#', value: _requisite?.prNumber ?? 'N/A'),
+      (title: 'Store ID', value: _requisite?.storeNumber.toUpperAll ?? 'N/A'),
+      (title: 'Status', value: _requisite?.status.getLabel.toSentence ?? 'N/A'),
+      (title: 'Priority', value: _requisite?.priority.getName.toTitle ?? 'N/A'),
+      (title: 'Department', value: _requisite!.departmentCode.toTitle),
+      (title: 'Request By', value: _requestBy.toTitle),
     ];
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Text('Purchase Requisition', style: context.textTheme.headlineSmall),
-        // const SizedBox(height: 8),
-        ...headerItems.map(
-          (item) => _buildInfoRow(
-            context,
-            textColor: _textColor,
-            title: item.$1,
-            value: item.$2,
-          ),
-        ),
-      ],
+    return DetailsSummary(
+      textColor: _textColor,
+      items: headerItems,
+      alignment: Alignment.topLeft,
     );
   }
 }
@@ -298,167 +270,3 @@ class _PRInfoPage extends StatelessWidget {
       ),
     );
   }*/
-
-class _LeftSummary extends StatelessWidget {
-  final PurchaseRequisition? requisite;
-  final Color? textColor;
-
-  const _LeftSummary({this.requisite, required this.textColor});
-
-  get _summaryItems => <(String, String)>[
-    ('Request Date', '${requisite?.getRequestDate}'),
-    ('Expected Date', '${requisite?.getExpectedDate}'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildLeftSummary(context);
-  }
-
-  // Helper for optional multiline sections (adds spacing automatically)
-  List<Widget> buildOptionalSection(
-    BuildContext context,
-    String title,
-    String? value,
-  ) {
-    return (value == null || value.isEmpty)
-        ? []
-        : [
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              separator: ':\n',
-              title: title,
-              value: value.toSentence,
-            ),
-          ];
-  }
-
-  Widget _buildLeftSummary(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ..._summaryItems.map(
-            (item) => _buildInfoRow(
-              context,
-              textColor: textColor,
-              title: item.$1,
-              value: item.$2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildInfoRow(
-            context,
-            separator: '\n',
-            textColor: textColor,
-            isReadMore: true,
-            title: 'Purpose / Reason:',
-            value: requisite!.purpose.toSentence,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RightSummary extends StatelessWidget {
-  final PurchaseRequisition? requisite;
-  final Color? textColor;
-
-  const _RightSummary({this.requisite, required this.textColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildRightSummary(context);
-  }
-
-  Widget _buildRightSummary(BuildContext context) {
-    final history = _prHistory(requisite!);
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          _buildInfoRow(
-            context,
-            separator: '\n',
-            textColor: kDangerColor,
-            title: 'Approved By:',
-            value:
-                '${history.$1 ?? 'Not yet approved'}\n${history.$2 ?? '-----------------'}',
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Get the last approved PR entry and the date it was approved [_prHistory]
-  (String?, String?) _prHistory(PurchaseRequisition? req) {
-    if (req == null) return (null, null);
-
-    // Find the most recent approved PR entry
-    final lastApproved = req.history.lastWhere(
-      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
-      orElse: () => AuditLog.empty,
-    );
-
-    // If none found, return null for both
-    if (lastApproved.isEmpty) return (null, null);
-
-    return (lastApproved.actionBy, lastApproved.getActionAt);
-  }
-}
-
-class _Footer extends StatelessWidget {
-  final PurchaseRequisition? requisite;
-
-  const _Footer({this.requisite});
-
-  String? get _updatedBy =>
-      requisite!.updatedBy.isNullOrEmpty ? 'N/A' : requisite?.updatedBy;
-
-  String? get _createdBy =>
-      requisite!.createdBy.isNullOrEmpty ? 'N/A' : requisite?.createdBy;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildFooter(context);
-  }
-
-  Container _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      color: context.secondaryContainerColor,
-      child: AdaptiveLayout(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildInfoRow(
-              context,
-              title: 'Created',
-              value:
-                  '${requisite?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _buildInfoRow(
-              context,
-              title: 'Updated',
-              value:
-                  '${requisite!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

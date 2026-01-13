@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
@@ -20,6 +19,7 @@ class ListStaffs extends StatefulWidget {
 class _ListStaffsState extends State<ListStaffs> {
   bool? _isChecked;
   Employee? _selectedEmployee;
+  EmployeeBloc get _bloc => context.read<EmployeeBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class _ListStaffsState extends State<ListStaffs> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Employee.dataTableHeader,
-      toolbar: _buildToolbar(),
+      toolbar: _buildToolbar(employees),
       toolbarAlignment: WrapAlignment.start,
       rows: employees.map((d) => d.itemAsList).toList(),
       onChecked: (bool? isChecked, row) =>
@@ -78,54 +78,40 @@ class _ListStaffsState extends State<ListStaffs> {
     });
   }
 
-  _buildToolbar() {
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      runAlignment: WrapAlignment.start,
-      children: [
-        context.elevatedButton(
-          'Add Employee',
-          onPressed: () async => await context.openCreateStaffAcc(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-        if (_isChecked == true) ...[
-          context.elevatedButton(
-            'Assign Role',
-            tooltip: 'Assign Employee to Role',
-            onPressed: () async => await context.openAssignEmployeeRoleDialog(
+  _buildToolbar(List<Employee> employees) {
+    return ListToolbarButtons(
+      createLabel: 'Add Employee',
+      refreshLabel: 'Refresh Employees',
+      dataLength: employees.length,
+      auxLabel: 'Assign Store',
+      auxTooltip: 'Assign Employee to Store',
+      auxIcon: Icons.store,
+      subLabel: 'Assign Department',
+      subTooltip: 'Assign Employee to Department',
+      subIcon: Icons.apartment,
+      optLabel: 'Assign Role',
+      optTooltip: 'Assign Employee to Role',
+      optIcon: Icons.security,
+      onCreate: () => context.openCreateStaffAcc(),
+      onRefresh: () => _bloc.add(RefreshSetups<Employee>()),
+      subOnPressed: _isChecked == true
+          ? () async => await context.openAssignEmployeeDepartmentDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
-            ),
-            bgColor: kPrimaryAccentColor,
-            txtColor: kWhiteColor,
-          ),
-          context.elevatedButton(
-            'Assign Department',
-            tooltip: 'Assign Employee to Department',
-            onPressed: () async =>
-                await context.openAssignEmployeeDepartmentDialog(
-                  employeeId: _selectedEmployee!.id,
-                  employeeName: _selectedEmployee?.fullName,
-                ),
-            bgColor: kPrimaryLightColor,
-            txtColor: kWhiteColor,
-          ),
-
-          context.elevatedButton(
-            'Assign Store',
-            tooltip: 'Assign Employee to Store',
-            onPressed: () async =>
-                await context.assignEmployeeToStoreLocationDialog(
-                  employeeId: _selectedEmployee!.id,
-                  employeeName: _selectedEmployee?.fullName,
-                ),
-            bgColor: kWarningColor,
-            txtColor: kWhiteColor,
-          ),
-        ],
-      ],
+            )
+          : null,
+      auxOnPressed: _isChecked == true
+          ? () async => await context.assignEmployeeToStoreLocationDialog(
+              employeeId: _selectedEmployee!.id,
+              employeeName: _selectedEmployee?.fullName,
+            )
+          : null,
+      optOnPressed: _isChecked == true
+          ? () async => await context.openAssignEmployeeRoleDialog(
+              employeeId: _selectedEmployee!.id,
+              employeeName: _selectedEmployee?.fullName,
+            )
+          : null,
     );
   }
 
@@ -148,9 +134,7 @@ class _ListStaffsState extends State<ListStaffs> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific Employee Account
-        context.read<EmployeeBloc>().add(
-          DeleteSetup<String>(documentId: employee.id),
-        );
+        _bloc.add(DeleteSetup<String>(documentId: employee.id));
       }
     }
   }

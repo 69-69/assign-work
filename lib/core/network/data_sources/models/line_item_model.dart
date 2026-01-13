@@ -1,25 +1,32 @@
-import 'package:assign_erp/core/constants/item_category.dart';
-import 'package:assign_erp/core/constants/line_item_type.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 
 /// Taxable Line Item
 mixin TaxableLineItem on LineItem {
-  /*List<String> get taxCodes;
-  double get taxAmount;*/
+  /// Computes tax for this 'per line' item based on its tax codes.
+  /// [computeTax] Returns a tuple:
+  /// - `percent`: combined tax rate for the line
+  /// - `amount`: tax amount for this line (`netAmount × percent`)
+  ({double percent, double amount}) computeTax(
+    Map<String, ResolveTaxCode> taxMap,
+  ) {
+    if (taxCodes.isEmpty || taxMap.isEmpty) return (percent: 0.0, amount: 0.0);
 
-  double computeTaxAmount(Map<String, ResolveTaxCode> taxMap) {
-    if (taxCodes.isEmpty || taxMap.isEmpty) return 0.0;
-
-    final rate = taxCodes.fold(
+    // Summing up tax rates (Percent) based on tax codes.
+    final percent = taxCodes.fold(
       0.0,
       (sum, code) => sum + (taxMap[code]?.rate ?? 0.0),
     );
-    return rate;
+    final amount = ((percent / 100) * netAmount).toPercent;
+
+    return (percent: percent, amount: amount);
   }
 
+  /// Return the names of all taxes applied to this 'per line' item.
   String buildTaxNames(
     Map<String, ResolveTaxCode> taxMap, {
     String separator = ', ',
@@ -31,31 +38,25 @@ mixin TaxableLineItem on LineItem {
         .join(separator);
   }
 
-  /// [PerLineTotal] Calculated total for a line item including tax and after discount.
-  /// Derived as: `[perLineTotal = subTotal (subTotal - discountAmount) - discountAmount + taxAmount]`.
+  /// [PerLineTotal] Calculated total for a line item including tax & discount.
   @override
-  double get totalWithTaxes => netBeforeTax + taxAmount;
-
-  double totalWithTaxesUsing(Map<String, ResolveTaxCode> taxMap) =>
-      netBeforeTax + computeTaxAmount(taxMap);
+  double get totalWithTaxes => netAmount + taxAmount;
 }
 
 /// [LineItem] Represents a line item (e.g., product or service)
 abstract class LineItem {
-  // static get _today => DateTime.now();
-
   final String id;
   final String notes;
 
-  /// [discount] Discount is in percentage
-  final double discount;
+  /// [discountPercent] Discount is in percentage
+  final double discountPercent;
   final double quantity;
   final LineItemType type;
   final String description;
 
   /// [leadTimeDays] How long it take to get/fulfill this line item?
   /// Used in PR, SO, SQ
-  final double leadTimeDays;
+  final int leadTimeDays;
   final ItemCategory category;
 
   /// [requiredDate] When do I need this line item?
@@ -67,8 +68,8 @@ abstract class LineItem {
     this.id = '',
     this.notes = '',
     required this.type,
-    this.discount = 0.0,
-    this.leadTimeDays = 0.0,
+    this.discountPercent = 0.0,
+    this.leadTimeDays = 0,
     required this.quantity,
     required this.description,
     this.category = ItemCategory.unknown,
@@ -79,29 +80,48 @@ abstract class LineItem {
   /// Polymorphic getter — subclasses define actual unitPrice
   double get unitPrice;
 
-  /// [subTotal] General total for all line types [unitPrice * quantity]
-  double get subTotal => quantity * unitPrice;
+  /// 1. [grossAmount] Total 'Per Line' amount before discounts, tax, or additional charges.
+  /// Calculated as unitPrice × quantity.
+  double get grossAmount => quantity * unitPrice;
 
-  double get discountAmount => (subTotal * discount) / 100;
+  /// 2. [discountAmount] — The discount applied to this line item.
+  ///
+  /// Calculated as a percentage of the [grossAmount]:
+  /// ```dart
+  /// discountAmount = grossAmount * (discountPercent / 100)
+  /// ```
+  ///
+  /// Constraints:
+  /// - Clamped to a minimum of 0 (negative discounts are ignored)
+  /// - Clamped to a maximum of [grossAmount] (cannot exceed total line value)
+  ///
+  /// This value is subtracted from [grossAmount] to compute [netAmount] before taxes.
+  // double get discountAmount => (grossAmount * discountPercent) / 100;
+  double get discountAmount =>
+      (grossAmount * (discountPercent / 100)).clamp(0, grossAmount);
 
-  /// [netBeforeTax] The amount (netPrice) after applying Discounts BUT before Taxes
-  /// `[netBeforeTax/netPrice = subTotal - discountAmount]`
-  double get netBeforeTax => subTotal - discountAmount;
+  /// 3. [netAmount] or [SubTotal] or [netPrice]
+  /// 'Per Line' amount after discount, before tax and shipping.
+  double get netAmount => grossAmount - discountAmount;
 
-  /// These are overridden in the subClass: MaterialLineItem & ServiceLineItem
+  /// [taxNames] 'Per Line' Tax names derived from tax codes.
   String get taxNames => '';
 
+  /// [taxPercent] Percentage of tax applied 'Per Line' item
+  double get taxPercent => 0.0;
+
+  /// [taxAmount] Derived from taxPercent: Amount of tax applied 'Per Line' item
   double get taxAmount => 0.0;
 
   List<String> get taxCodes => const [];
 
-  List<String> get itemAsList;
+  List<String> itemAsList([bool isPerLine = false]);
 
-  List<String> get dataTableHeader;
+  List<String> dataTableHeader([bool isPerLine = false]);
 
-  double get totalWithTaxes => netBeforeTax + taxAmount;
+  double get totalWithTaxes => netAmount + taxAmount;
 
-  String get getTypeLabel => type.getLabel.toTitle;
+  String get getType => type.getLabel.toTitle;
 
   String get getCategory => category.getLabel;
 
@@ -124,7 +144,7 @@ abstract class LineItem {
       throw ArgumentError("Missing 'type' for Line-Item");
     }
 
-    final type = LineItemTypeHelper.fromString(typeStr.toLowerCase());
+    final type = LineItemTypeUtil.fromString(typeStr.toLowerCase());
 
     return switch (type) {
       LineItemType.material => MaterialLineItem.fromMap(map, id: id),
@@ -144,17 +164,15 @@ abstract class LineItem {
   /// if [isDate] is true, convert millisecondsSinceEpoch to DateTime, else keep as is
   Map<String, dynamic> toMap([bool isDate = false]) => {
     'id': id,
-    'type': getTypeLabel,
+    'type': getType,
     'description': description,
     'quantity': quantity,
     'category': getCategory,
     'unitOfMeasure': getUnitOfMeasure,
-    'discount': discount,
+    'discountPercent': discountPercent,
     'notes': notes,
     'leadTimeDays': leadTimeDays,
-    'requiredDate': isDate
-        ? getRequiredDate
-        : requiredDate?.millisecondsSinceEpoch,
+    'requiredDate': isDate ? getRequiredDate : requiredDate?.toMilliseconds,
   };
 
   /// Polymorphic cloning
@@ -167,7 +185,7 @@ abstract class LineItem {
   /// Filter/Search
   bool filterByAny(String filter) => {
     '$quantity',
-    '$discount',
+    '$discountPercent',
     '$quantity',
     '$leadTimeDays',
     getRequiredDate,
@@ -175,19 +193,28 @@ abstract class LineItem {
     notes,
     getCategory,
     getUnitOfMeasure,
-    getTypeLabel,
+    getType,
   }.filterAny(filter);
 
-  /// [updateTax] Returns a new instance with updated tax info if applicable
-  LineItem updateTax({required double taxAmount, required String taxNames}) {
+  /// [updateLineTax] Returns a new instance with updated tax info if applicable
+  LineItem updateLineTax({
+    required double taxPercent,
+    required double taxAmount,
+    required String taxNames,
+  }) {
     if (this is! TaxableLineItem) return this;
 
     return switch (this) {
       MaterialLineItem m => m.copyWith(
+        taxPercent: taxPercent,
         taxAmount: taxAmount,
         taxNames: taxNames,
       ),
-      ServiceLineItem s => s.copyWith(taxAmount: taxAmount, taxNames: taxNames),
+      ServiceLineItem s => s.copyWith(
+        taxPercent: taxPercent,
+        taxAmount: taxAmount,
+        taxNames: taxNames,
+      ),
       _ => this, // fallback for unknown TaxableLineItem subclasses
     };
   }
@@ -200,19 +227,16 @@ abstract class LineItem {
     quantity,
     category,
     unitOfMeasure,
-    discount,
+    discountPercent,
     notes,
     leadTimeDays,
     requiredDate,
   ];
 }
 
-/// [MaterialLineItem] Represents a material line item (e.g., product POs)
+/// [MaterialLineItem] Represents a material/product line item (e.g., product POs)
 class MaterialLineItem extends LineItem with TaxableLineItem {
   final double _unitPrice;
-
-  @override
-  double get unitPrice => _unitPrice;
 
   @override
   final List<String> taxCodes;
@@ -222,10 +246,12 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
   @override
   final String taxNames;
 
-  /// [taxAmount] is a non-persistent, computed value for UI display only.
+  /// [taxPercent] & [taxAmount]is a non-persistent, computed value for UI display only.
   /// Calculated when [TaxMode.perLineTax] is used. Not stored in the database.
   @override
-  final double taxAmount;
+  final double taxPercent;
+  @override
+  final double taxAmount; // Derived from taxPercent
 
   MaterialLineItem({
     super.id,
@@ -233,42 +259,47 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
 
     /// [quantity] Represent the number of units of the material(Products)
     required super.quantity,
-    super.category = ItemCategory.unknown,
-    super.unitOfMeasure = UnitOfMeasure.unknown,
-    super.discount,
+    super.unitOfMeasure,
+    super.category,
+    super.discountPercent,
     super.notes,
+    super.leadTimeDays,
+    super.requiredDate,
     double unitPrice = 0.0,
     this.taxCodes = const [],
 
-    /// [taxAmount] UI-only, non-persistent value (per-line tax)
+    /// [taxPercent] & [taxAmount] UI-only, non-persistent value (per-line tax)
     this.taxAmount = 0.0,
+    this.taxPercent = 0.0,
 
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
-    super.leadTimeDays,
-    super.requiredDate,
   }) : _unitPrice = unitPrice,
        super(type: LineItemType.material);
+
+  @override
+  double get unitPrice => _unitPrice;
 
   factory MaterialLineItem.fromMap(Map<String, dynamic> map, {String? id}) =>
       MaterialLineItem(
         id: id ?? map['id'] ?? '',
         description: map['description'] ?? '',
-        quantity: double.tryParse('${map['quantity']}') ?? 0,
-        unitPrice: double.tryParse('${map['unitPrice']}') ?? 0.0,
-        category: ItemCategoryHelper.fromString(map['category']),
-        unitOfMeasure: UOMHelper.fromString(map['unitOfMeasure']),
-        notes: map['notes'] ?? '',
-        discount: double.tryParse('${map['discount']}') ?? 0.0,
+        quantity: '${map['quantity']}'.asDouble,
+        unitPrice: '${map['unitPrice']}'.asDouble,
+        unitOfMeasure: UOMUtil.fromString(map['unitOfMeasure']),
+        category: ItemCategoryUtil.fromString(map['category']),
+        discountPercent: '${map['discountPercent']}'.asDouble,
         taxCodes: List<String>.from(
           map['taxCodes'] ?? [],
         ).whereType<String>().toList(),
-        taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
+        taxAmount: '${map['taxAmount']}'.asDouble,
+        taxPercent: '${map['taxPercent']}'.asDouble,
         taxNames: map['taxNames'] ?? '',
-        leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
+        leadTimeDays: '${map['leadTimeDays']}'.asInt,
         requiredDate: map['requiredDate'] != null
             ? toDateTimeFn(map['requiredDate'])
             : null,
+        notes: map['notes'] ?? '',
       );
 
   @override
@@ -287,43 +318,45 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
   bool filterByAny(String filter) =>
       super.filterByAny(filter) ||
       taxCodes.filterAny(filter) ||
-      {'$unitPrice', taxNames, '$taxAmount'}.contains(filter);
+      {'$unitPrice', taxNames, '$taxAmount'}.filterAny(filter);
 
   @override
   MaterialLineItem copyWith({
     String? id,
     String? description,
     double? quantity,
+    double? unitPrice,
     ItemCategory? category,
     UnitOfMeasure? unitOfMeasure,
-    double? unitPrice,
-    String? notes,
     List<String>? taxCodes,
+    String? notes,
 
-    /// [discount] Discount is in percentage
-    double? discount,
+    /// [discountPercent] Discount is in percentage
+    double? discountPercent,
 
-    /// [taxAmount] For UI perLineTax (per item) tax amount only
+    /// [taxPercent] & [taxAmount] For UI perLineTax (per item) tax amount only
     double? taxAmount,
+    double? taxPercent,
 
     /// [taxNames] For UI tax names calculation only
     String? taxNames,
-    double? leadTimeDays,
+    int? leadTimeDays,
     DateTime? requiredDate,
   }) => MaterialLineItem(
     id: id ?? this.id,
     description: description ?? this.description,
     quantity: quantity ?? this.quantity,
-    category: category ?? this.category,
     unitPrice: unitPrice ?? _unitPrice,
+    category: category ?? this.category,
     unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
     notes: notes ?? this.notes,
 
     taxCodes: taxCodes ?? this.taxCodes,
-    discount: discount ?? this.discount,
-
-    taxAmount: taxAmount ?? this.taxAmount,
     taxNames: taxNames ?? this.taxNames,
+    taxAmount: taxAmount ?? this.taxAmount,
+    taxPercent: taxPercent ?? this.taxPercent,
+    discountPercent: discountPercent ?? this.discountPercent,
+
     leadTimeDays: leadTimeDays ?? this.leadTimeDays,
     requiredDate: requiredDate ?? this.requiredDate,
   );
@@ -342,31 +375,39 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
 
   bool get isNotEmpty => !isEmpty;
 
-  /// [subTotal] General total for all line types [unitPrice * quantity]
+  /// [grossAmount] General total for all line types [unitPrice * quantity]
   @override
-  double get subTotal => quantity * unitPrice;
+  double get grossAmount => quantity * unitPrice;
 
   @override
-  List<String> get itemAsList => [
+  List<String> itemAsList([bool isPerLine = false]) => [
     description.toTitle,
     '$quantity',
-    getCategory.toTitle,
+    if (unitPrice > 0) '$unitPrice',
     getUnitOfMeasure.toTitle,
-    if (leadTimeDays > 0) '$leadTimeDays',
+    getCategory.toTitle,
     getRequiredDate,
-    notes.toSentence,
+    if (leadTimeDays > 0) '$leadTimeDays day(s)',
+    // If TaxMode is perLineTax, show line table, else show elsewhere
+    if (taxNames.isNotEmpty && isPerLine) ...[taxNames.toTitle, '$taxAmount'],
+    if (discountPercent > 0) '$discountPercent%',
+    if (notes.isNotEmpty) notes.toSentence,
   ];
 
   /// For UI Header display only
   @override
-  List<String> get dataTableHeader => [
+  List<String> dataTableHeader([bool isPerLine = false]) => [
     'Item',
     'Qty',
-    'Category',
+    if (unitPrice > 0) 'Unit Price',
     'UOM',
-    if (leadTimeDays > 0) 'Lead Time (Days)',
+    'Category',
     'Required Date',
-    'Notes',
+    if (leadTimeDays > 0) 'Lead Time (Days)',
+    // If TaxMode is perLineTax, show line table, else show elsewhere
+    if (taxNames.isNotEmpty && isPerLine) ...{'Tax Names', 'Tax Amount'},
+    if (discountPercent > 0) 'Discount %',
+    if (notes.isNotEmpty) 'Notes',
   ];
 
   @override
@@ -374,6 +415,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
     ...super.props,
     unitPrice,
     taxCodes,
+    taxPercent,
     taxAmount,
     taxNames,
   ];
@@ -405,10 +447,12 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
   @override
   final String taxNames;
 
-  /// [taxAmount] is a non-persistent, computed value for UI display only.
+  /// [taxPercent] & [taxAmount]is a non-persistent, computed value for UI display only.
   /// Calculated when [TaxMode.perLineTax] is used. Not stored in the database.
   @override
-  final double taxAmount;
+  final double taxPercent;
+  @override
+  final double taxAmount; // Derived from taxPercent
 
   ServiceLineItem({
     super.id,
@@ -418,20 +462,21 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     required super.quantity,
     super.unitOfMeasure,
     super.category,
-    super.discount,
+    super.discountPercent,
     super.notes,
+    super.leadTimeDays,
+    super.requiredDate,
     this.serviceRate = 0.0,
     this.limitAmount,
     this.limitQuantity,
     this.taxCodes = const [],
 
-    /// [taxAmount] UI-only, non-persistent value (per-line tax)
+    /// [taxPercent] & [taxAmount] UI-only, non-persistent value (per-line tax)
     this.taxAmount = 0.0,
+    this.taxPercent = 0.0,
 
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
-    super.leadTimeDays,
-    super.requiredDate,
   }) : super(type: LineItemType.service);
 
   @override
@@ -441,23 +486,24 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
       ServiceLineItem(
         id: id ?? map['id'] ?? '',
         description: map['description'] ?? '',
-        quantity: double.tryParse('${map['quantity']}') ?? 0,
-        unitOfMeasure: UOMHelper.fromString(map['unitOfMeasure']),
-        category: ItemCategoryHelper.fromString(map['category']),
-        serviceRate: double.tryParse('${map['serviceRate']}') ?? 0.0,
-        limitAmount: double.tryParse('${map['limitAmount']}') ?? 0.0,
-        limitQuantity: double.tryParse('${map['limitQuantity']}') ?? 0.0,
-        notes: map['notes'] ?? '',
-        discount: double.tryParse('${map['discount']}') ?? 0.0,
+        quantity: '${map['quantity']}'.asDouble,
+        serviceRate: '${map['serviceRate']}'.asDouble,
+        unitOfMeasure: UOMUtil.fromString(map['unitOfMeasure']),
+        category: ItemCategoryUtil.fromString(map['category']),
+        limitAmount: '${map['limitAmount']}'.asDouble,
+        limitQuantity: '${map['limitQuantity']}'.asDouble,
+        discountPercent: '${map['discountPercent']}'.asDouble,
         taxCodes: List<String>.from(
           map['taxCodes'] ?? [],
         ).whereType<String>().toList(),
-        taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
+        taxAmount: '${map['taxAmount']}'.asDouble,
+        taxPercent: '${map['taxPercent']}'.asDouble,
         taxNames: map['taxNames'] ?? '',
-        leadTimeDays: double.tryParse('${map['leadTimeDays']}') ?? 0.0,
+        leadTimeDays: '${map['leadTimeDays']}'.asInt,
         requiredDate: map['requiredDate'] != null
             ? toDateTimeFn(map['requiredDate'])
             : null,
+        notes: map['notes'] ?? '',
       );
 
   @override
@@ -480,12 +526,14 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
       taxCodes.filterAny(filter) ||
       {
         taxCodes,
+        taxNames,
         '$taxAmount',
+        '$taxPercent',
         '$serviceRate',
         '$limitAmount',
         '$limitQuantity',
         '$requiredDate',
-      }.contains(filter);
+      }.filterAny(filter);
 
   @override
   ServiceLineItem copyWith({
@@ -498,30 +546,36 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     ItemCategory? category,
     UnitOfMeasure? unitOfMeasure,
     List<String>? taxCodes,
+    String? notes,
 
-    /// [discount] Discount is in percentage
-    double? discount,
+    /// [discountPercent] Discount is in percentage
+    double? discountPercent,
 
-    /// [taxAmount] For UI perLineTax (per item) tax amount only
+    /// [taxPercent] & [taxAmount] For UI perLineTax (per item) tax amount only
     double? taxAmount,
+    double? taxPercent,
 
     /// [taxNames] For UI tax names calculation only
     String? taxNames,
-    double? leadTimeDays,
+    int? leadTimeDays,
     DateTime? requiredDate,
   }) => ServiceLineItem(
     id: id ?? this.id,
     description: description ?? this.description,
     quantity: quantity ?? this.quantity,
     serviceRate: serviceRate ?? this.serviceRate,
-    unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
     category: category ?? this.category,
+    unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
     limitAmount: limitAmount ?? this.limitAmount,
     limitQuantity: limitQuantity ?? this.limitQuantity,
+    notes: notes ?? this.notes,
+
     taxCodes: taxCodes ?? this.taxCodes,
-    discount: discount ?? this.discount,
-    taxAmount: taxAmount ?? this.taxAmount,
     taxNames: taxNames ?? this.taxNames,
+    taxAmount: taxAmount ?? this.taxAmount,
+    taxPercent: taxPercent ?? this.taxPercent,
+    discountPercent: discountPercent ?? this.discountPercent,
+
     leadTimeDays: leadTimeDays ?? this.leadTimeDays,
     requiredDate: requiredDate ?? this.requiredDate,
   );
@@ -546,37 +600,41 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
 
   /// Calculate remaining hours
   double get remainingHours {
-    if (limitQuantity == null) return 0;
+    if (limitQuantity == null || quantity == 0) return 0;
     return (limitQuantity! - quantity).clamp(0, double.infinity);
   }
 
   @override
-  List<String> get itemAsList => [
+  List<String> itemAsList([bool isPerLine = false]) => [
     description.toTitle,
     '$quantity',
     getUnitOfMeasure.toTitle,
-    '$serviceRate',
-    '${limitAmount ?? 0.0}',
-    '${limitQuantity ?? 0.0}',
-    if (leadTimeDays > 0) '$leadTimeDays',
+    if (serviceRate > 0) '$serviceRate',
+    if ((limitAmount ?? 0) > 0) '$limitAmount',
+    if ((limitQuantity ?? 0) > 0) '$limitQuantity',
     getRequiredDate,
-    taxNames.toTitle,
-    notes.toSentence,
+    if (leadTimeDays > 0) '$leadTimeDays day(s)',
+    // If TaxMode is perLineTax, show line table, else show elsewhere
+    if (taxNames.isNotEmpty && isPerLine) ...[taxNames.toTitle, '$taxAmount'],
+    if (discountPercent > 0) '$discountPercent%',
+    if (notes.isNotEmpty) notes.toSentence,
   ];
 
   /// For UI Header display only
   @override
-  List<String> get dataTableHeader => [
+  List<String> dataTableHeader([bool isPerLine = false]) => [
     'Service',
     'Qty',
     'UOM',
-    'Rate',
-    'Limit Amount',
-    'Limit Quantity',
-    if (leadTimeDays > 0) 'Lead Time (Days)',
+    if (serviceRate > 0) 'Rate',
+    if ((limitAmount ?? 0) > 0) 'Limit Amount',
+    if ((limitQuantity ?? 0) > 0) 'Limit Quantity',
     'Required Date',
-    'Tax Names',
-    'Notes',
+    if (leadTimeDays > 0) 'Lead Time (Days)',
+    // If TaxMode is perLineTax, show line table, else show elsewhere
+    if (taxNames.isNotEmpty && isPerLine) ...{'Tax Names', 'Tax Amount'},
+    if (discountPercent > 0) 'Discount %',
+    if (notes.isNotEmpty) 'Notes',
   ];
 
   @override
@@ -586,10 +644,111 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
     limitAmount,
     limitQuantity,
     taxCodes,
+    taxPercent,
     taxAmount,
     taxNames,
   ];
 }
+
+/* Assumptions (typical ERP setup)
+
+* Prices are **tax-exclusive**
+* **Discount applies to item lines only**
+* **Shipping is taxable**
+* Tax is calculated **after discount**
+* Tax rate = **3.5%**
+
+---
+
+## Given
+
+* Unit Price = **100**
+* Quantity = **3**
+* Discount = **12%**
+* Shipping = **90**
+* Tax = **3.5%**
+
+---------------------------
+## Step-by-step calculation
+---------------------------
+
+### 1. Gross item amount
+-> 100 × 3 = 300
+
+### 2. Discount amount
+-> 12% of 300 = 36
+
+### 3. Subtotal (after discount)
+-> 300 − 36 = 264
+
+### 4. Net price (items + shipping, before tax)
+-> 264 + 90 = 354
+
+### 5. Tax amount:
+-> 3.5% of 354 = 12.39
+
+### 6. Grand total:
+-> 354 + 12.39 = 366.39
+
+## Final values summary
+
+| Field                        | Amount     |
+| ---------------------------- | ---------- |
+| Gross Item Amount            | 300.00     |
+| Discount Amount              | 36.00      |
+| Subtotal (after discount)    | 264.00     |
+| Shipping                     | 90.00      |
+| **Net Total (taxable base)** | **354.00** |
+| Tax Amount (3.5%)            | **12.39**  |
+| **Grand Total**              | **366.39** |
+
+---
+
+## Extra (often stored in ERP)
+
+* **Net unit price after discount**
+-> 264 ÷ 3 = 88
+
+## Important ERP variations (can change results)
+
+* Shipping **non-taxable**
+* Tax calculated **only on items**
+* Discount applied **after tax**
+* Line-level vs document-level rounding*/
+
+/*final updatedItems = lineItems.map((item) {
+      // Tax rate is in Percentage
+      final taxRate = item.resolvePerItemTaxes(taxMap);
+      final taxAmount = (item.netPrice * taxRate) / 100;
+      final taxNames = item.getTaxName(taxMap);
+
+      return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
+    }).toList();
+
+    return copyWith(lineItems: updatedItems);*/
+
+/*if (taxMode == taxModeToApply.perLineTax) {
+      // Calculate tax amounts for each line item (perLineTax)
+      final updatedItems = lineItems.map((item) {
+        // Tax rate is in Percentage
+        final taxRate = item.resolvePerItemTaxes(taxMap);
+        final taxAmount = (item.netPrice * taxRate) / 100;
+        final taxNames = item.getTaxName(taxMap);
+
+        return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
+      }).toList();
+
+      return copyWith(lineItems: updatedItems);
+    } else {
+      // Calculate total tax amount (headerTax/overall tax)
+      final taxRate = resolveHeaderTaxes(taxMap);
+      final totalTax = lineItems.fold(0.0, (sum, item) {
+        final taxAmount = sum + ((item.netPrice * taxRate) / 100);
+        return taxAmount;
+      });
+
+      return copyWith(headerTaxAmount: totalTax, taxNames: getTaxName(taxMap));
+    }*/
 
 /* Example:
 class PurchaseOrder {

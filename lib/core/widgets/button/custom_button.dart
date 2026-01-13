@@ -3,6 +3,8 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:flutter/material.dart';
 
 extension Custombutton on BuildContext {
+  BorderRadius get _borderRadius => const BorderRadius.all(Radius.circular(10));
+
   /// [confirmableActionButton] A customizable elevated button widget that optionally shows a confirmation dialog
   /// before executing an action. Ideal for form submissions or critical updates.
   ///
@@ -96,47 +98,6 @@ extension Custombutton on BuildContext {
     );
   }
 
-  /// [compareButton] A customizable elevated button widget to compare two Quotes.
-  Widget compareButton(
-    String label, {
-    VoidCallback? onPressed,
-    Color? bgColor,
-    Color? txtColor,
-    String? tooltip,
-    EdgeInsetsGeometry? padding,
-    ButtonStyle? style,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        gradient: LinearGradient(
-          colors: [kSuccessColor, kWarningColor],
-          stops: [0.5, 0.5],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style:
-            style ??
-            ElevatedButton.styleFrom(
-              backgroundColor: kTransparentColor,
-              shadowColor: kTransparentColor,
-              padding: padding,
-            ),
-        child: Tooltip(
-          message: tooltip ?? label,
-          child: Text(
-            label,
-            style: TextStyle(color: txtColor, overflow: TextOverflow.ellipsis),
-            semanticsLabel: label,
-          ),
-        ),
-      ),
-    );
-  }
-
   // Text button
   Widget textButton(
     String label, {
@@ -211,7 +172,7 @@ extension Custombutton on BuildContext {
           ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
               side: BorderSide(color: borderColor ?? kOffWhiteColor),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              borderRadius: _borderRadius,
             ),
           ),
     );
@@ -238,7 +199,7 @@ extension Custombutton on BuildContext {
             backgroundColor: bgColor ?? kOffWhiteColor,
             shape: RoundedRectangleBorder(
               side: BorderSide(color: borderColor ?? kOffWhiteColor),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              borderRadius: _borderRadius,
             ),
           ),
     );
@@ -284,7 +245,7 @@ extension Custombutton on BuildContext {
         backgroundColor: bgColor ?? kOffWhiteColor,
         shape: RoundedRectangleBorder(
           side: BorderSide(color: borderColor ?? kOffWhiteColor),
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          borderRadius: _borderRadius,
         ),
       ),
       icon: Icon(
@@ -292,6 +253,64 @@ extension Custombutton on BuildContext {
         color: iconColor ?? kWhiteColor,
         size: iconSize,
         semanticLabel: tooltip ?? 'Icon button',
+      ),
+    );
+  }
+
+  Widget toolbarButton({
+    required String label,
+    Color? bgColor,
+    Color? shadowColor,
+    dynamic icon,
+    String? tooltip,
+    Color? txtColor,
+    Color? borderColor,
+    VoidCallback? onPressed,
+    bool showLabel = false,
+  }) {
+    final controller = WidgetStatesController();
+
+    return Tooltip(
+      message: tooltip ?? label,
+      child: ElevatedButton.icon(
+        statesController: controller,
+        onPressed: onPressed,
+        icon: icon is IconData
+            ? Icon(icon, color: txtColor ?? kWhiteColor)
+            : icon,
+        label: AnimatedBuilder(
+          animation: controller,
+          builder: (_, __) {
+            final isHoveredOrFocused =
+                controller.value.contains(WidgetState.hovered) ||
+                controller.value.contains(WidgetState.focused);
+
+            final shouldShowLabel = showLabel || isHoveredOrFocused;
+
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              child: shouldShowLabel
+                  ? Text(
+                      label,
+                      key: const ValueKey('label'),
+                      style: TextStyle(color: txtColor ?? kWhiteColor),
+                    )
+                  : const SizedBox(key: ValueKey('empty'), width: 0),
+            );
+          },
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          alignment: Alignment.centerRight,
+          shadowColor: shadowColor,
+          shape: RoundedRectangleBorder(
+            side: borderColor != null
+                ? BorderSide(color: borderColor)
+                : BorderSide.none,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+        ),
       ),
     );
   }

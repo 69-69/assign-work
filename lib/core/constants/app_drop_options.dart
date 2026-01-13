@@ -145,6 +145,7 @@ Map<String, List<String>> businessTypeToIndustries = {
 };
 
 /// [paymentTerms] When the payment is due and if any discounts apply
+/// Open (Credit) Account - 3days Net
 const paymentTerms = [
   {'id': 'select', 'term': 'Select Payment terms'},
   {
@@ -167,6 +168,10 @@ const paymentTerms = [
     'id': 'net_10_2_30',
     'term':
         '2/10 Net 30 – 2% discount if paid within 10 days; full due in 30 days',
+  },
+  {
+    'id': 'open_3',
+    'term': 'Open Account – Full payment due within 3 days of invoice',
   },
   {
     'id': 'advance_delivery',

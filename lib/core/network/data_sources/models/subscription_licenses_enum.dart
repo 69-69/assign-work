@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 
 /// [SubscriptionLicenses] Enum representing different subscription licenses available
@@ -45,9 +45,9 @@ enum SubscriptionLicenses {
 /// [highRiskLicenses] Unique Subscription Licenses that trigger a warning dialog,
 /// prompting the admin to reconsider before assigning them.
 final highRiskLicenses = [
-  EnumHelper(SubscriptionLicenses.dev).getName,
-  EnumHelper(SubscriptionLicenses.agent).getName,
-  EnumHelper(SubscriptionLicenses.onboarding).getName,
+  EnumUtil(SubscriptionLicenses.dev).getName,
+  EnumUtil(SubscriptionLicenses.agent).getName,
+  EnumUtil(SubscriptionLicenses.onboarding).getName,
 ];
 
 /// Example list of [AccessControl] objects representing the various

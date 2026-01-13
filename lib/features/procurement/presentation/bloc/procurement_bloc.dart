@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/procurement/domain/repository/procurement_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -52,21 +52,21 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
     on<RefreshProcurements<T>>(_onRefreshProcurements);
-    on<GetProcurements<T>>(_onGetInventories);
-    on<GetProcurementById<T>>(_onGetInventoryById);
-    on<GetProcurementsByIds<T>>(_onGetInventoriesByIds);
-    on<GetProcurementsWithSameId<T>>(_onGetInventoriesWithSameId);
-    on<SearchProcurement<T>>(_onSearchInventory);
-    on<AddProcurement<T>>(_onAddInventory);
-    on<AddProcurement<List<T>>>(_onAddMultiInventory);
-    on<UpdateProcurement>(_onUpdateInventory);
+    on<GetProcurements<T>>(_onGetProcurements);
+    on<GetProcurementById<T>>(_onGetProcurementById);
+    on<GetProcurementsByIds<T>>(_onGetProcurementsByIds);
+    on<GetProcurementsWithSameId<T>>(_onGetProcurementsWithSameId);
+    on<SearchProcurement<T>>(_onSearchProcurement);
+    on<AddProcurement<T>>(_onAddProcurement);
+    on<AddProcurement<List<T>>>(_onAddProcurements);
+    on<UpdateProcurement>(_onUpdateProcurement);
     on<AuditProcurement>(_onAuditLog);
-    on<DeleteProcurement<String>>(_onDeleteInventory);
-    on<DeleteProcurement<List<String>>>(_onMultiDeleteInventory);
+    on<DeleteProcurement<String>>(_onDeleteProcurement);
+    on<DeleteProcurement<List<String>>>(_onDeleteProcurements);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_ProcurementsLoaded<T>>(_onInventoryLoaded);
-    on<_ProcurementLoaded<T>>(_onSingleInventoryLoaded);
-    on<_ProcurementLoadError>(_onInventoryLoadError);
+    on<_ProcurementsLoaded<T>>(_onProcurementLoaded);
+    on<_ProcurementLoaded<T>>(_onSingleProcurementLoaded);
+    on<_ProcurementLoadError>(_onProcurementLoadError);
   }
 
   Future<void> _onRefreshProcurements(
@@ -90,8 +90,8 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  /// Load All Data Function [_onGetInventories]
-  Future<void> _onGetInventories(
+  /// Load All Data Function [_onGetProcurements]
+  Future<void> _onGetProcurements(
     GetProcurements<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -106,7 +106,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
           emit(ProcurementsLoaded<T>(data));
 
           // Trigger an event to handle the loaded data
-          // add(_InventoryLoadedEvent<T>(data));
+          // add(_ProcurementLoadedEvent<T>(data));
 
           // Optionally, emit another state or handle other logic
           // emit(DataAddedState<T>()); // For example, notify that data is added
@@ -133,13 +133,13 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetInventoriesByIds(
+  Future<void> _onGetProcurementsByIds(
     GetProcurementsByIds<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
     emit(LoadingProcurement<T>());
     try {
-      final localDataList = await _procurementRepository.getMultipleDataByIDs(
+      final localDataList = await _procurementRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -154,7 +154,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetInventoryById(
+  Future<void> _onGetProcurementById(
     GetProcurementById<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -176,7 +176,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetInventoriesWithSameId(
+  Future<void> _onGetProcurementsWithSameId(
     GetProcurementsWithSameId<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -198,7 +198,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onSearchInventory(
+  Future<void> _onSearchProcurement(
     SearchProcurement<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -220,7 +220,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onAddInventory(
+  Future<void> _onAddProcurement(
     AddProcurement<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -238,7 +238,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onAddMultiInventory(
+  Future<void> _onAddProcurements(
     AddProcurement<List<T>> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -259,7 +259,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateInventory(
+  Future<void> _onUpdateProcurement(
     UpdateProcurement event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -301,7 +301,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onDeleteInventory(
+  Future<void> _onDeleteProcurement(
     DeleteProcurement<String> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -319,15 +319,18 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onMultiDeleteInventory(
+  Future<void> _onDeleteProcurements(
     DeleteProcurement<List<String>> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
     try {
-      for (var id in event.documentId) {
-        // Delete data from Firestore and update local storage
-        await _procurementRepository.deleteData(id);
+      if (event.documentId.isEmpty) {
+        emit(ProcurementError<T>('Procurement IDs are empty'));
+        return;
       }
+
+      // Delete data from Firestore and update local storage
+      await _procurementRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetProcurements<T>());
@@ -346,26 +349,26 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     emit(ProcurementLoaded<T>(event.shortID));
   }
 
-  void _onInventoryLoaded(
+  void _onProcurementLoaded(
     _ProcurementsLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementsLoaded<T>(event.data));
   }
 
-  void _onSingleInventoryLoaded(
+  void _onSingleProcurementLoaded(
     _ProcurementLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementLoaded<T>(event.data));
   }
 
-  void _onInventoryLoadError(
+  void _onProcurementLoadError(
     _ProcurementLoadError event,
     Emitter<ProcurementState<T>> emit,
   ) {
     final errorLogCache = ErrorLogCache();
-    errorLogCache.setError(error: event.error, fileName: 'inventory_bloc');
+    errorLogCache.setError(error: event.error, fileName: 'procurement_bloc');
     emit(ProcurementError<T>(event.error));
   }
 

@@ -1,5 +1,5 @@
-import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -111,8 +111,8 @@ class Employee extends Equatable {
   /// Convert Employee to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': cacheKey, 'data': newMap};
   }

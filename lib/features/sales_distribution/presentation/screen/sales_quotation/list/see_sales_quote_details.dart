@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -12,11 +12,8 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
-import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
-import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/core/widgets/see_detail/see_details.dart';
 import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
-import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
-import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -24,31 +21,34 @@ import 'package:printing/printing.dart';*/
 
 extension SalesQuoteDetails on BuildContext {
   Future openSQDetails({
-    // required Customer customer,
-    required SalesQuotationBloc bloc,
     required SalesQuotation salesQuote,
+    required Function(bool) onPrint,
+    // required Customer customer,
+    // required SalesQuotationBloc bloc,
   }) async => await openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
       isDetailMode: true,
-      title: 'Sales Quotation (${salesQuote.lineItems.first.getTypeLabel})',
+      title: 'Sales Quotation (${salesQuote.lineItems.first.getType})',
       subtitle: salesQuote.quoteNumber.toUpperAll,
       secondaryWidget: _showHistory(salesQuote),
       body: _SQInfoPage(salesQuote: salesQuote),
-      onPrint: () async => await _printSQ(salesQuote, bloc /*customer*/),
+      onPrint: () async => await _printSQ(salesQuote, onPrint /*,customer*/),
     ),
   );
 
   _printSQ(
     SalesQuotation salesQuote,
-    SalesQuotationBloc bloc,
+    Function(bool) onPrint,
+    // SalesQuotationBloc bloc,
     // Customer customer,
   ) async {
     await progressBarDialog(
       request: Future.delayed(kRProgressDelay, () async {
         // await PRPrinter(salesQuote: salesQuote, customer: customer).printPR();
-        bloc.add(_updateHistory(salesQuote));
+        // bloc.add(_updateHistory(salesQuote));
+        onPrint(true);
       }),
       onSuccess: (_) => showAlertOverlay('SQ printout successful'),
       onError: (e) =>
@@ -61,6 +61,7 @@ extension SalesQuoteDetails on BuildContext {
       Icons.history,
       iconColor: kPrimaryAccentColor,
       bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      borderColor: kPrimaryAccentColor.toAlpha(0.3),
       tooltip: 'View Sales Quote History',
       onPressed: () async => await _onOpenHistory(salesQuote),
     );
@@ -81,7 +82,7 @@ extension SalesQuoteDetails on BuildContext {
     );
   }
 
-  /// Audit Log Entry (Tracking actions)
+  /*/// Audit Log Entry (Tracking actions)
   AuditSalesDistribution<SalesQuotation> _updateHistory(SalesQuotation quote) {
     return AuditSalesDistribution<SalesQuotation>(
       documentId: quote.id,
@@ -94,40 +95,7 @@ extension SalesQuoteDetails on BuildContext {
         ),
       ),
     );
-  }
-}
-
-/// Helper to build info row
-Widget _buildInfoRow(
-  BuildContext context, {
-  Color? textColor,
-  String title = '',
-  String value = '',
-  String separator = ': ',
-  bool isReadMore = false,
-}) {
-  return Padding(
-    padding: EdgeInsets.symmetric(vertical: 2.0),
-    child: RichText(
-      text: TextSpan(
-        text: '$title$separator',
-        style: context.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: textColor ?? context.secondaryColor,
-        ),
-        children: [
-          isReadMore
-              ? WidgetSpan(child: ReadMoreAutoText(text: value))
-              : TextSpan(
-                  text: value,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-        ],
-      ),
-    ),
-  );
+  }*/
 }
 
 class _SQInfoPage extends StatelessWidget {
@@ -140,8 +108,85 @@ class _SQInfoPage extends StatelessWidget {
 
   List<LineItem> get _items => _salesQuote?.lineItems ?? [];
 
+  bool get _isPerLineTax => _salesQuote?.taxMode.isPerLineTax ?? false;
+
   String? get _currencySign =>
       getCurrencySign(_salesQuote?.currencyCode ?? ghanaCedis);
+
+  SummaryItem get _approval {
+    ApprovalInfo? item = _salesQuote?.getApproval;
+
+    return (
+      title: 'Approved By',
+      value:
+          '\n${item?.by ?? 'Not yet approved'}\n${item?.at ?? '-----------------'}',
+    );
+  }
+
+  List<SummaryItem> get _rightSummaryItems => [
+    (
+      title: 'Subtotal',
+      value: '$_currencySign${(_salesQuote?.subTotal ?? 0.0).toCurrency}',
+    ),
+    (
+      title: 'Discount',
+      value:
+          '- $_currencySign${(_salesQuote?.totalDiscountAmount ?? 0.0).toCurrency}',
+    ),
+    (
+      title: 'Tax %',
+      value: '${(_salesQuote?.totalTaxPercent ?? 0.0).toPercent}',
+    ),
+    (
+      title: 'Net Total',
+      value: '$_currencySign${(_salesQuote?.netTotal ?? 0.0).toCurrency}',
+    ),
+
+    if ((_salesQuote?.shippingTaxAmount ?? 0.0) > 0) ...[
+      (
+        title: 'Shipping',
+        value:
+            '$_currencySign${(_salesQuote?.shippingAmount ?? 0.0).toCurrency}',
+      ),
+      (
+        title: 'Shipping Tax',
+        value:
+            '$_currencySign${(_salesQuote?.shippingTaxAmount ?? 0.0).toCurrency}',
+      ),
+    ],
+    (
+      title: 'Grand Total',
+      value: '$_currencySign${(_salesQuote?.grandTotal ?? 0.0).toCurrency}',
+    ),
+  ];
+
+  List<SummaryItem> get _leftSummaryItems => [
+    (title: 'Currency', value: '${_salesQuote?.currencyCode} ($_currencySign)'),
+    (title: 'Exchange Rate', value: '${_salesQuote?.exchangeRate.toCurrency}'),
+    (title: 'Valid From', value: '${_salesQuote?.getValidFromDate}'),
+    (title: 'Valid Until', value: '${_salesQuote?.getValidUntilDate}'),
+    (title: 'Expected Date', value: '${_salesQuote?.getExpectedDate}'),
+    // If Tax Mode is not Per Line, add Tax Details here
+    if (!_isPerLineTax) ...{
+      (
+        title: 'Applied Taxes',
+        value: _salesQuote!.lineItems.first.taxNames.toUpperAll,
+      ),
+    },
+  ];
+
+  List<SummaryItem> get _terms => [
+    (
+      title: 'Payment Terms',
+      value: _salesQuote?.paymentTerms.toSentence ?? 'N/A',
+    ),
+    (title: 'Warranty', value: _salesQuote?.warrantyTerms.toSentence ?? 'N/A'),
+    (
+      title: 'Return Policy',
+      value: _salesQuote?.returnPolicy.toSentence ?? 'N/A',
+    ),
+    (title: 'Additional Notes', value: _salesQuote?.notes.toSentence ?? 'N/A'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +198,10 @@ class _SQInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBody(context),
-        _Footer(salesQuote: _salesQuote),
+        DetailsFooter(
+          created: (by: _salesQuote.createdBy, at: _salesQuote.getCreatedAt),
+          updated: (by: _salesQuote.updatedBy, at: _salesQuote.getUpdatedAt),
+        ),
         const SizedBox(height: 20),
       ],
     );
@@ -167,12 +215,13 @@ class _SQInfoPage extends StatelessWidget {
 
         SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
-          columnLabels: _items.first.dataTableHeader,
+          columnLabels: _items.first.dataTableHeader(_isPerLineTax),
           items: _items,
           // list of Sales Quotes
           rowBuilder: (entry) {
             return DataRow(
-              cells: entry.itemAsList
+              cells: entry
+                  .itemAsList(_isPerLineTax)
                   .map((cell) => DataCell(Text(cell)))
                   .toList(),
             );
@@ -186,16 +235,25 @@ class _SQInfoPage extends StatelessWidget {
         const SizedBox(height: 12),
 
         AdaptiveLayout(
+          isSizedBox: false,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _LeftSummary(
-              salesQuote: _salesQuote,
+            DetailsSummary(
               textColor: _textColor,
-              currencySign: _currencySign,
+              items: _leftSummaryItems,
+              alignment: Alignment.topLeft,
             ),
-            _RightSummary(
-              salesQuote: _salesQuote,
+            DetailsSummary(
+              crossAxisAlignment: CrossAxisAlignment.end,
               textColor: _textColor,
-              currencySign: _currencySign,
+              items: _rightSummaryItems,
+              alignment: Alignment.topRight,
+              anyWidget: detailsRow(
+                context,
+                title: _approval.title,
+                textColor: kDangerColor,
+                value: _approval.value,
+              ),
             ),
           ],
         ),
@@ -209,65 +267,41 @@ class _SQInfoPage extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     // Build the list of header entries first
-    final headerItems = <(String, String)>[
-      ('SQ#', _salesQuote?.quoteNumber ?? 'N/A'),
-      ('Store ID', _salesQuote?.storeNumber.toUpperAll ?? 'N/A'),
-      ('Status', _salesQuote?.getSQStatus.toSentence ?? 'N/A'),
-      ('Sales Channel', _salesQuote?.getSalesChannel.toTitle ?? 'N/A'),
-      ('Tax Mode', _salesQuote?.getTaxName.separateWord.toTitle ?? 'N/A'),
-      ('Customer', _salesQuote?.customerName.toTitle ?? 'N/A'),
-      ('Sales Person', _salesQuote?.salesRepId.toTitle ?? 'N/A'),
+    List<SummaryItem> headerItems = [
+      (title: 'SQ#', value: _salesQuote?.quoteNumber ?? 'N/A'),
+      (title: 'Store ID', value: _salesQuote?.storeNumber.toUpperAll ?? 'N/A'),
+      (title: 'Status', value: _salesQuote?.getSQStatus.toSentence ?? 'N/A'),
+      (
+        title: 'Sales Channel',
+        value: _salesQuote?.getSalesChannel.toTitle ?? 'N/A',
+      ),
+      (
+        title: 'Tax Mode',
+        value: _salesQuote?.getTaxName.separateWord.toTitle ?? 'N/A',
+      ),
+      (title: 'Customer', value: _salesQuote?.customerName.toTitle ?? 'N/A'),
+      (title: 'Sales Person', value: _salesQuote?.salesRepId.toTitle ?? 'N/A'),
     ];
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Text('sales Quote', style: context.textTheme.headlineSmall),
-        // const SizedBox(height: 8),
-        ...headerItems.map(
-          (item) => _buildInfoRow(
-            context,
-            textColor: _textColor,
-            title: item.$1,
-            value: item.$2,
-          ),
-        ),
-      ],
+    return DetailsSummary(
+      isAlign: false,
+      items: headerItems,
+      textColor: _textColor,
+      alignment: Alignment.topLeft,
     );
   }
 
   Widget _termsAndConditions(BuildContext context) {
     return AdaptiveLayout(
       children: [
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          title: 'Payment Terms:',
-          isReadMore: true,
-          value: _salesQuote?.paymentTerms.toSentence ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          title: 'Warranty:',
-          isReadMore: true,
-          value: _salesQuote?.warrantyTerms.toSentence ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          title: 'Return Policy:',
-          isReadMore: true,
-          value: _salesQuote?.returnPolicy.toSentence ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          title: 'Additional Notes:',
-          isReadMore: true,
-          value: _salesQuote?.notes.toSentence ?? 'N/A',
+        ..._terms.map(
+          (item) => detailsRow(
+            context,
+            isReadMore: true,
+            title: item.title,
+            value: item.value,
+            textColor: _textColor,
+          ),
         ),
       ],
     );
@@ -322,182 +356,4 @@ class _SQInfoPage extends StatelessWidget {
       ),
     );
   }*/
-}
-
-class _LeftSummary extends StatelessWidget {
-  final SalesQuotation? salesQuote;
-  final Color? textColor;
-  final String? currencySign;
-
-  const _LeftSummary({
-    this.salesQuote,
-    required this.textColor,
-    this.currencySign,
-  });
-
-  TaxMode? get _taxMode => salesQuote?.taxMode;
-
-  bool get _isPerLineTax => _taxMode?.isPerLineTax ?? false;
-
-  get _summaryItems => <(String, String)>[
-    ('Currency', '${salesQuote?.currencyCode} ($currencySign)'),
-    ('Exchange Rate', '${salesQuote?.exchangeRate}'),
-    ('Valid From', '${salesQuote?.getValidFromDate}'),
-    ('Valid Until', '${salesQuote?.getValidUntilDate}'),
-    ('Expected Date', '${salesQuote?.getExpectedDate}'),
-    // If Tax Mode is not Per Line, add Tax Details here
-    if (!_isPerLineTax) ...{
-      ('Applied Taxes', salesQuote!.lineItems.first.taxNames.toUpperAll),
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildLeftSummary(context);
-  }
-
-  // Helper for optional multiline sections (adds spacing automatically)
-  List<Widget> buildOptionalSection(
-    BuildContext context,
-    String title,
-    String? value,
-  ) {
-    return (value == null || value.isEmpty)
-        ? []
-        : [
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              separator: ':\n',
-              title: title,
-              value: value.toSentence,
-            ),
-          ];
-  }
-
-  Widget _buildLeftSummary(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ..._summaryItems.map(
-            (item) => _buildInfoRow(
-              context,
-              textColor: textColor,
-              title: item.$1,
-              value: item.$2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RightSummary extends StatelessWidget {
-  final SalesQuotation? salesQuote;
-  final Color? textColor;
-  final String? currencySign;
-
-  const _RightSummary({
-    this.salesQuote,
-    required this.currencySign,
-    required this.textColor,
-  });
-
-  double get _grandTotal => salesQuote?.totalAmount ?? 0.0;
-
-  get summaryItems => <(String, String)>[
-    ('Subtotal', '$currencySign${(salesQuote?.subTotal ?? 0.0).toCurrency}'),
-    (
-      'Discount',
-      '- $currencySign${(salesQuote?.discountAmount ?? 0.0).toCurrency}',
-    ),
-    ('Tax %', '${(salesQuote?.totalTaxAmount ?? 0.0)}%'),
-    ('Net Total', '$currencySign${(salesQuote?.netTotal ?? 0.0).toCurrency}'),
-    (
-      'Shipping',
-      '$currencySign${(salesQuote?.shippingAmount ?? 0.0).toCurrency}',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildRightSummary(context);
-  }
-
-  Widget _buildRightSummary(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          ...summaryItems.map(
-            (item) => _buildInfoRow(
-              context,
-              textColor: textColor,
-              title: item.$1,
-              value: item.$2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Grand Total: $currencySign${_grandTotal.toCurrency}',
-            style: context.textTheme.titleLarge?.copyWith(color: kDangerColor),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Footer extends StatelessWidget {
-  final SalesQuotation? salesQuote;
-
-  const _Footer({this.salesQuote});
-
-  String? get _updatedBy =>
-      salesQuote!.updatedBy.isNullOrEmpty ? 'N/A' : salesQuote?.updatedBy;
-
-  String? get _createdBy =>
-      salesQuote!.createdBy.isNullOrEmpty ? 'N/A' : salesQuote?.createdBy;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildFooter(context);
-  }
-
-  Container _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      color: context.secondaryContainerColor,
-      child: AdaptiveLayout(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildInfoRow(
-              context,
-              title: 'Created',
-              value:
-                  '${salesQuote?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _buildInfoRow(
-              context,
-              title: 'Updated',
-              value:
-                  '${salesQuote!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

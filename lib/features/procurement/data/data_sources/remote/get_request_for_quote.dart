@@ -1,6 +1,7 @@
-import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
+import 'package:assign_erp/features/procurement/presentation/bloc/pro_rfq/pro_request_for_quote_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetRequestForQuote {
   static Future<ProcurementsLoaded<RequestForQuote>> _dataLoadedState(

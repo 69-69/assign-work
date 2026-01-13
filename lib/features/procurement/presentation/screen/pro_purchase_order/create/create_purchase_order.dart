@@ -1,11 +1,11 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -72,7 +72,7 @@ class _CreatePOForm extends StatefulWidget {
 
 class _CreatePOFormState extends State<_CreatePOForm> {
   String? get _lineItemType =>
-      widget.lineItemType ?? _initialRFQ?.lineItems.first.getTypeLabel;
+      widget.lineItemType ?? _initialRFQ?.lineItems.first.getType;
   final _formKey = GlobalKey<FormState>();
   Key _formResetKey = UniqueKey();
 
@@ -110,13 +110,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   bool get _isFormValid => _formKey.currentState!.validate();
 
-  /// Current employee info
+  // Current employee info
   Employee? get _employee => context.employee;
-
   String get _employeeId => _employee!.employeeId;
-
   String get _employeeName => _employee!.fullName;
-
   String get _employeeStore => _employee!.storeNumber;
 
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();
@@ -142,7 +139,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     poNumber: _poNumber,
     storeNumber: _employeeStore,
 
-    status: WorkflowStatusHelper.fromString(_poStatus ?? ''),
+    status: WorkflowStatusUtil.fromString(_poStatus ?? ''),
     supplierLink: _supplierLinks.first,
     requestedBy: _initialRFQ?.requestedBy ?? _requestedBy,
 
@@ -151,7 +148,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
     paymentTerm: _initialRFQ?.paymentTerm ?? _paymentTerm,
     paymentMethod: _paymentMethod,
-    shippingAmount: double.tryParse(_shippingAmount['shippingAmount']) ?? 0.0,
+    shippingAmount: '${_shippingAmount['shippingAmount']}'.asDouble,
 
     addresses: List.from(_addresses),
 
@@ -197,12 +194,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       await _confirmPrintoutDialog();
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-          _resetForm();
-        });
-      }
+      _resetForm();
     }
   }
 
@@ -260,7 +252,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         _poStatus = null;
         _deliveryDate = null;
       });
-      _generatePONumber(); // fresh RFQ number
+      _generatePONumber(); // fresh PO number
     }
   }
 
@@ -278,6 +270,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         POFormInputs.buildPONumber(context, _poNumber, _generatePONumber),
+
         FormGroupCard(
           title: '1. Purchase Order Overview',
           subTitle: '\nGeneral purchase order info & supplier details.',
@@ -309,7 +302,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         FormGroupCard(
           isExpanded: false,
           title: '5. Addresses',
-          subTitle: '\nAdd billing, shipping, or any additional addresses.',
+          subTitle:
+              '\nBuyer\'s billing, shipping, or any additional addresses.',
           children: [_buildAddresses()],
         ),
 
@@ -356,7 +350,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DeliveryDate _buildBuyerRepAndDeliveryDate() {
     return DeliveryDate(
       labelDelivery: "Delivery date",
-      onContactChanged: (id, _, _) =>
+      onContactChanged: (id, name, role) =>
           setState(() => _buyerContactPersonId = id),
       onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
     );
@@ -386,7 +380,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         isHidden: _taxModeToApply != TaxMode.perLineTax,
       ),
       initialData: (_initialRFQ?.lineItems ?? _lineItems)
-          .map((e) => e.toMap(true))
+          .map((e) => {...e.toMap(true), 'netPrice': e.netAmount})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});

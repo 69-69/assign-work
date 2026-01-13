@@ -128,7 +128,7 @@ class MaterialTheme {
 
   /// MAKE CHANGES TO COLORS HERE [theme]
   ThemeData theme(ColorScheme colorScheme) {
-    var borderRadius = const BorderRadius.all(Radius.circular(7.0));
+    var borderRadius = const BorderRadius.all(Radius.circular(10.0));
     var buttonStyle = ButtonStyle(
       shape: WidgetStatePropertyAll(
         RoundedRectangleBorder(borderRadius: borderRadius),

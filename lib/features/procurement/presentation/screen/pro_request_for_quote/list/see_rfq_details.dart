@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
@@ -11,12 +12,9 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
-import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
-import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/index.dart';
+import 'package:assign_erp/core/widgets/see_detail/see_details.dart';
 import 'package:assign_erp/features/procurement/data/model/request_for_quote_model.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
-import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_request_for_quote/widget/rfq_printer.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
@@ -27,18 +25,18 @@ extension RFQDetails on BuildContext {
   Future openRFQDetails({
     required Supplier supplier,
     required RequestForQuote rfq,
-    required ProcurementBloc bloc,
+    required Function(bool) onPrint,
+    // required ProRequestForQuoteBloc bloc,
   }) async => await openBottomSheet(
     isExpand: true,
     showZoomIcon: false,
     child: BottomSheetScaffold(
       isDetailMode: true,
       title: 'Request for Quotation (RFQ)',
-      subtitle:
-          '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getTypeLabel})',
+      subtitle: '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getType})',
       secondaryWidget: _showHistory(rfq),
       body: _RFQInfoPage(rfq: rfq, supplier: supplier.name),
-      onPrint: () async => await _printRFQ(supplier, bloc, rfq),
+      onPrint: () async => await _printRFQ(supplier, onPrint, rfq),
     ),
   );
 
@@ -58,32 +56,19 @@ extension RFQDetails on BuildContext {
 
   _printRFQ(
     Supplier supplier,
-    ProcurementBloc bloc,
+    Function(bool) onPrint,
     RequestForQuote rfq,
+    // ProRequestForQuoteBloc bloc,
   ) async {
     await progressBarDialog(
       request: Future.delayed(kRProgressDelay, () async {
         await RFQPrinter(rfq: rfq, supplier: supplier).printRFQ();
-        bloc.add(_updateHistory(rfq));
+        onPrint(true);
+        // bloc.add(_updateHistory(rfq));
       }),
       onSuccess: (_) => showAlertOverlay('RFQ printout successful'),
       onError: (e) =>
           showAlertOverlay('RFQ printout failed', bgColor: kDangerColor),
-    );
-  }
-
-  /// Audit Log Entry (Tracking actions)
-  AuditProcurement<RequestForQuote> _updateHistory(RequestForQuote rfq) {
-    return AuditProcurement<RequestForQuote>(
-      documentId: rfq.id,
-      log: AuditLog.logScaffold(
-        oldLogs: rfq.history,
-        newLog: AuditLog(
-          action: AuditAction.printed,
-          actionBy: employee!.employeeId,
-          statusAfterAction: rfq.getRFQStatus,
-        ),
-      ),
     );
   }
 
@@ -92,6 +77,7 @@ extension RFQDetails on BuildContext {
       Icons.history,
       iconColor: kPrimaryAccentColor,
       bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      borderColor: kPrimaryAccentColor.toAlpha(0.3),
       tooltip: 'View RFQ History',
       onPressed: () async => await _onOpenHistory(rfq),
     );
@@ -111,6 +97,21 @@ extension RFQDetails on BuildContext {
       },
     );
   }
+
+  /* Audit Log Entry (Tracking actions)
+  AuditProcurement<RequestForQuote> _updateHistory(RequestForQuote rfq) {
+    return AuditProcurement<RequestForQuote>(
+      documentId: rfq.id,
+      log: AuditLog.logScaffold(
+        oldLogs: rfq.history,
+        newLog: AuditLog(
+          action: AuditAction.printed,
+          actionBy: employee!.employeeId,
+          statusAfterAction: rfq.getRFQStatus,
+        ),
+      ),
+    );
+  }*/
 }
 
 class _CompareTwoRFQ extends StatefulWidget {
@@ -328,39 +329,6 @@ class _CompareTwoRFQState extends State<_CompareTwoRFQ> {
   }
 }
 
-/// Helper to build info row
-Widget _buildInfoRow(
-  BuildContext context, {
-  Color? textColor,
-  String title = '',
-  String value = '',
-  String separator = ': ',
-  bool isReadMore = false,
-}) {
-  return Padding(
-    padding: EdgeInsets.symmetric(vertical: 2.0),
-    child: RichText(
-      text: TextSpan(
-        text: '$title$separator',
-        style: context.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: textColor ?? context.secondaryColor,
-        ),
-        children: [
-          isReadMore
-              ? WidgetSpan(child: ReadMoreAutoText(text: value))
-              : TextSpan(
-                  text: value,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _RFQInfoPage extends StatelessWidget {
   final String _supplier;
   final RequestForQuote? _rfq;
@@ -379,6 +347,22 @@ class _RFQInfoPage extends StatelessWidget {
   String? get _currencySign =>
       getCurrencySign(_rfq?.currencyCode ?? ghanaCedis);
 
+  SummaryItem get _approval {
+    ApprovalInfo? item = _rfq?.getApproval;
+
+    return (
+      title: 'Approved By',
+      value:
+          '\n${item?.by ?? 'Not yet approved'}\n${item?.at ?? '-----------------'}',
+    );
+  }
+
+  List<SummaryItem> get _leftSummaryItems => [
+    (title: 'Currency', value: '${_rfq?.currencyCode} ($_currencySign)'),
+    (title: 'Deadline', value: _rfq?.getDeadlineDate ?? 'N/A'),
+    (title: 'Delivery', value: _rfq?.getExpectedDate ?? 'N/A'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     if (_rfq == null) {
@@ -389,7 +373,10 @@ class _RFQInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBody(context),
-        _Footer(rfq: _rfq),
+        DetailsFooter(
+          created: (by: _rfq.createdBy, at: _rfq.getCreatedAt),
+          updated: (by: _rfq.updatedBy, at: _rfq.getUpdatedAt),
+        ),
         const SizedBox(height: 20),
       ],
     );
@@ -400,34 +387,15 @@ class _RFQInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(context),
-
-        /* Align(
-          alignment: Alignment.center,
-          child: Text(
-            'Line Items (${_items.length})',
-            style: context.textTheme.titleLarge?.copyWith(
-              color: _textColor ?? kSuccessColor,
-            ),
-          ),
-        ),
-        HorizontalDivider(),
-
-        Table Headers
-        _buildItemTableHeader(context),
-
-        ..._items.asMap().entries.map(
-              (item) => _buildItemRow(item.value, item.key),
-        ),
-        HorizontalDivider(),
-         */
         SortableHistoryTable<LineItem>(
           title: 'Line Items (${_items.length})',
           // headingRowColor: context.primaryContainer,
-          columnLabels: _items.first.dataTableHeader,
+          columnLabels: _items.first.dataTableHeader(false),
           items: _items, // list of Quotes
           rowBuilder: (entry) {
             return DataRow(
-              cells: entry.itemAsList
+              cells: entry
+                  .itemAsList(false)
                   .map((cell) => DataCell(Text(cell)))
                   .toList(),
             );
@@ -442,16 +410,12 @@ class _RFQInfoPage extends StatelessWidget {
         const SizedBox(height: 12),
         AdaptiveLayout(
           children: [
-            _LeftSummary(
-              rfq: _rfq,
-              currencySign: _currencySign,
+            DetailsSummary(
               textColor: _textColor,
+              items: _leftSummaryItems,
+              alignment: Alignment.centerLeft,
             ),
-            _RightSummary(
-              rfq: _rfq,
-              sign: _currencySign,
-              textColor: _textColor,
-            ),
+            DetailsSummary(textColor: kDangerColor, items: [_approval]),
           ],
         ),
         const SizedBox(height: 20),
@@ -463,14 +427,14 @@ class _RFQInfoPage extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     // Build the list of header entries first
-    final headerItems = <(String, String)>[
-      ('RFQ#', _rfq?.rfqNumber ?? 'N/A'),
-      ('Store ID', _rfq?.storeNumber.toUpperAll ?? 'N/A'),
-      ('Status', _rfq?.getRFQStatus.toSentence ?? 'N/A'),
+    List<SummaryItem> headerItems = [
+      (title: 'RFQ#', value: _rfq?.rfqNumber ?? 'N/A'),
+      (title: 'Store ID', value: _rfq?.storeNumber.toUpperAll ?? 'N/A'),
+      (title: 'Status', value: _rfq?.getRFQStatus.toSentence ?? 'N/A'),
       if (_rfq?.departmentCode.isNotEmpty ?? false) ...{
-        ('Department', _rfq!.departmentCode.toTitle),
+        (title: 'Department', value: _rfq!.departmentCode.toTitle),
       },
-      ('Vendor', _supplier.toUpperAll),
+      (title: 'Supplier', value: _supplier.toUpperAll),
     ];
 
     return Column(
@@ -478,39 +442,38 @@ class _RFQInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          _rfq?.title.toTitle ?? 'Request for Quotation',
-          style: context.textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 8),
-        ...headerItems.map(
-          (item) => _buildInfoRow(
-            context,
-            textColor: _textColor,
-            title: item.$1,
-            value: item.$2,
-          ),
+        if (_rfq?.title.toTitle.isNotEmpty ?? false) ...{
+          Text(_rfq!.title.toTitle, style: context.textTheme.headlineSmall),
+          const SizedBox(height: 8),
+        },
+        DetailsSummary(
+          textColor: _textColor,
+          items: headerItems,
+          alignment: Alignment.topLeft,
         ),
       ],
     );
   }
 
   Widget _addressAndNotes(BuildContext context) {
+    List<SummaryItem> items = [
+      (title: 'Additional Notes', value: _rfq?.notes.toSentence ?? 'N/A'),
+      (
+        title: 'Shipping Address',
+        value: _rfq?.shippingAddress?.address.toSentence ?? 'N/A',
+      ),
+    ];
+
     return AdaptiveLayout(
       children: [
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          title: 'Shipping Address:',
-          isReadMore: true,
-          value: _rfq?.shippingAddress?.address.toSentence ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          separator: '\n',
-          isReadMore: true,
-          title: 'Additional Notes:',
-          value: _rfq?.notes.toSentence ?? 'N/A',
+        ...items.map(
+          (item) => detailsRow(
+            context,
+            isReadMore: true,
+            title: item.title,
+            value: item.value,
+            textColor: _textColor,
+          ),
         ),
       ],
     );
@@ -575,167 +538,6 @@ class _RFQInfoPage extends StatelessWidget {
       ),
     );
   }*/
-
-class _LeftSummary extends StatelessWidget {
-  final RequestForQuote? rfq;
-  final Color? textColor;
-  final String? currencySign;
-  final bool? isPerLineTax;
-
-  const _LeftSummary({
-    this.rfq,
-    required this.currencySign,
-    required this.textColor,
-    this.isPerLineTax,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildLeftSummary(context);
-  }
-
-  // Helper for optional multiline sections (adds spacing automatically)
-  List<Widget> buildOptionalSection(
-    BuildContext context,
-    String title,
-    String? value,
-  ) {
-    return (value == null || value.isEmpty)
-        ? []
-        : [
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              separator: ':\n',
-              title: title,
-              value: value.toSentence,
-            ),
-          ];
-  }
-
-  Widget _buildLeftSummary(BuildContext context) {
-    final summaryItems = <(String, String)>[
-      ('Currency', '${rfq?.currencyCode} ($currencySign)'),
-      ('Deadline', rfq!.getDeadlineDate),
-      ('Delivery', rfq!.getExpectedDate),
-
-      // If Tax Mode is not Per Line, add Tax Details here
-      if (isPerLineTax == false) ...{
-        ('Applied Taxes', rfq!.lineItems.first.taxNames.toUpperAll),
-      },
-    ];
-
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...summaryItems.map(
-            (item) => _buildInfoRow(
-              context,
-              textColor: textColor,
-              title: item.$1,
-              value: item.$2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RightSummary extends StatelessWidget {
-  final RequestForQuote? rfq;
-  final Color? textColor;
-  final String? sign;
-
-  const _RightSummary({this.rfq, required this.sign, required this.textColor});
-
-  double get _grandTotal => rfq?.totalAmount ?? 0.0;
-
-  get summaryItems => <(String, String)>[
-    ('Subtotal', '$sign${(rfq?.subTotal ?? 0.0).toCurrency}'),
-    ('Discount', '- $sign${(rfq?.discountAmount ?? 0.0).toCurrency}'),
-    ('Tax', '$sign${(rfq?.taxAmount ?? 0.0).toCurrency}'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildRightSummary(context);
-  }
-
-  Widget _buildRightSummary(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          ...summaryItems.map(
-            (item) => _buildInfoRow(
-              context,
-              textColor: textColor,
-              title: item.$1,
-              value: item.$2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Grand Total: $sign${_grandTotal.toCurrency}',
-            style: context.textTheme.titleLarge?.copyWith(color: kDangerColor),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Footer extends StatelessWidget {
-  final RequestForQuote? rfq;
-
-  const _Footer({this.rfq});
-
-  String? get _updatedBy =>
-      rfq!.updatedBy.isNullOrEmpty ? 'N/A' : rfq?.updatedBy;
-
-  String? get _createdBy =>
-      rfq!.createdBy.isNullOrEmpty ? 'N/A' : rfq?.createdBy;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildFooter(context);
-  }
-
-  Container _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      color: context.secondaryContainerColor,
-      child: AdaptiveLayout(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildInfoRow(
-              context,
-              title: 'Created',
-              value: '${rfq?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _buildInfoRow(
-              context,
-              title: 'Updated',
-              value: '${rfq!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /*void _generatePdf() async {
     final List<Map<String, dynamic>> items = [

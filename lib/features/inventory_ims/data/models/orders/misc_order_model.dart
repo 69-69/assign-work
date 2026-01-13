@@ -107,9 +107,9 @@ class MiscOrder extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['deliveryDate'] = deliveryDate?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['deliveryDate'] = deliveryDate?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }

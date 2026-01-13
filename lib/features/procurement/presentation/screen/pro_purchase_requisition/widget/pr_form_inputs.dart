@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
@@ -22,13 +22,17 @@ class PRFormInputs {
     List<T> list, {
     required List<Map<String, dynamic>> map,
     required T Function(Map<String, dynamic>, String) fromMap,
-  }) => ProcurementForm.updateListFromData<T>(list, map: map, fromMap: fromMap);
+  }) => ProcurementFormFields.updateListFromData<T>(
+    list,
+    map: map,
+    fromMap: fromMap,
+  );
 
   static Widget buildPRNumber(
     BuildContext context,
     String count,
     void Function()? onPressed,
-  ) => ProcurementForm.buildNumber(
+  ) => ProcurementFormFields.buildNumber(
     context,
     what: 'PR',
     count: count,
@@ -64,7 +68,16 @@ class PRFormInputs {
   static List<FieldGroupConfig> fields(
     String type, {
     List<String>? keysToExclude,
-  }) => ProcurementForm.fields(type, keysToExclude: keysToExclude);
+  }) => ProcurementFormFields.fields(
+    type,
+    keysToExclude: [
+      'unitPrice',
+      'serviceRate',
+      'discount',
+      'netPrice',
+      ...?keysToExclude,
+    ],
+  );
 
   static List<FieldGroupConfig> get justificationFields => [
     FieldGroupConfig(
@@ -210,6 +223,11 @@ class RequestAndExpectedDate extends StatelessWidget {
   final Function(DateTime) onRequestChanged;
   final Function(DateTime) onExpectedChanged;
 
+  String get _msgExpected =>
+      'When the entire requisition is expected to be completed.';
+
+  String get _msgRequest => 'When the entire requisition was initiated';
+
   @override
   Widget build(BuildContext context) {
     return AdaptiveLayout(
@@ -222,7 +240,8 @@ class RequestAndExpectedDate extends StatelessWidget {
           label: labelRequest,
           restorationId: 'Request date',
           selectedDate: onRequestChanged,
-          helperText: 'When the entire requisition was initiated',
+          helperText: _msgRequest,
+          validator: (v) => v == null ? _msgRequest : null,
         ),
         DatePicker(
           inLabel: false,
@@ -230,8 +249,8 @@ class RequestAndExpectedDate extends StatelessWidget {
           label: labelExpected,
           restorationId: 'Expected date',
           selectedDate: onExpectedChanged,
-          helperText:
-              'When the entire requisition is expected to be completed.',
+          helperText: _msgExpected,
+          validator: (v) => v == null ? _msgExpected : null,
         ),
       ],
     );
@@ -253,7 +272,7 @@ class UnitOfMeasureDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = UOMHelper.toStringList();
+    final strList = UOMUtil.toStringList();
     // If label is provided, replace it with the first in the list
     if (label != null) strList[0] = label!;
 
@@ -316,7 +335,7 @@ class _PRStatusDropdown extends StatelessWidget {
       key: key,
       label: 'PR status',
       initialValue: initialValue,
-      items: WorkflowStatusHelper.toStringList(type: WorkflowType.pr),
+      items: WorkflowStatusUtil.toStringList(type: WorkflowType.pr),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );
@@ -332,7 +351,7 @@ class _PriorityDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = PriorityHelper.toStringList();
+    final strList = PriorityUtil.toStringList();
 
     return StaticDropdown<String>(
       key: key,

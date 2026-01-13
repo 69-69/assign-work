@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 enum DocType {
   work,
@@ -14,19 +14,20 @@ enum DocType {
   invoice,
   customer,
   pOrder,
+  itemMaster,
   pSale,
   employee,
 }
 
 extension DocTypeExtension on DocType {
-  /// [getName] Get the specific Enum Name (e.g. "pOrder")
-  String get getName => EnumHelper<DocType>(this).getName;
+  /// [getName] Get the specific Enum Name (e.g. "itemMaster")
+  String get getName => EnumUtil<DocType>(this).getName;
 
-  /// For UI labels: 'pOrder' -> 'P Order'
-  String get getLabel => EnumHelper<DocType>(this).getLabel;
+  /// For UI labels: 'itemMaster' -> 'Item Master'
+  String get getLabel => EnumUtil<DocType>(this).getLabel;
 }
 
-class DocTypeHelper {
+class DocTypeUtil {
   static DocType fromString(String? value) =>
-      EnumHelper.fromString<DocType>(DocType.values, value);
+      EnumUtil.fromString<DocType>(DocType.values, value);
 }

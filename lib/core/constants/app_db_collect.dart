@@ -46,6 +46,8 @@ const rolesDBColPath = 'roles_db';
 // 📦 Inventory Management System (IMS) Collections Path
 // ---------------------------
 
+// Item Master
+const itemMasterDBColPath = 'item_master_inventory_db';
 // Invoices
 const invoiceDBColPath = 'invoice_inventory_db';
 // Items
@@ -105,16 +107,16 @@ const categoryDBColPath = 'item_categories_db';
 // ---------------------------
 
 // POS sales records
-const posSalesDBCollectionPath = 'pos_sales_db';
+const posSalesDBColPath = 'pos_sales_db';
 // POS orders
-const posOrdersDBCollectionPath = 'pos_orders_db';
+const posOrdersDBColPath = 'pos_orders_db';
 
 // ---------------------------
 // 👥 Customer Relationship Management (CRM) Path
 // ---------------------------
 
 // Customer records
-const customersDBCollectionPath = 'customers_crm_db';
+const customersDBColPath = 'customers_crm_db';
 
 // Define filenames to skip while zipping(backup)
 final skipFilesBeforeZip = {
@@ -144,7 +146,7 @@ const erpCacheBoxes = [
   taxesDBColPath,
 
   // CRM
-  customersDBCollectionPath,
+  customersDBColPath,
 
   // Inventory / Sales / Procurement
   itemsDBColPath,
@@ -159,8 +161,8 @@ const erpCacheBoxes = [
   salesQuotationDBColPath,
 
   // POS
-  posSalesDBCollectionPath,
-  posOrdersDBCollectionPath,
+  posSalesDBColPath,
+  posOrdersDBColPath,
 
   // Support & guides
   userGuideDBColPath,

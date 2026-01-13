@@ -14,7 +14,7 @@ class ErrorLog extends Equatable {
     required this.fileName,
     String? id,
     DateTime? dateTime,
-  }) : id = id ?? _today.millisecondsSinceEpoch.toString(),
+  }) : id = id ?? _today.toMilliseconds.toString(),
        dateTime = dateTime ?? _today;
 
   /// Creates an [ErrorLog] instance from a map.
@@ -38,7 +38,7 @@ class ErrorLog extends Equatable {
   /// Wraps the entry under a key-value structure.
   Map<String, dynamic> toCache() {
     var map = toMap();
-    map['dateTime'] = dateTime.millisecondsSinceEpoch;
+    map['dateTime'] = dateTime.toMilliseconds;
 
     return {'id': id, 'data': map};
   }

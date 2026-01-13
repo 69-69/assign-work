@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/firestore_bloc.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/short_id_bloc.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/short_id_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,9 +19,10 @@ extension GenerateUID on DocType {
     DocType.sQuote: salesQuotationDBColPath,
     DocType.delivery: deliveryDBColPath,
     DocType.invoice: invoiceDBColPath,
-    DocType.customer: customersDBCollectionPath,
-    DocType.pOrder: posOrdersDBCollectionPath,
-    DocType.pSale: posSalesDBCollectionPath,
+    DocType.customer: customersDBColPath,
+    DocType.pOrder: posOrdersDBColPath,
+    DocType.itemMaster: itemMasterDBColPath,
+    DocType.pSale: posSalesDBColPath,
     DocType.employee: employeesDBColPath,
   };
 
@@ -65,21 +66,6 @@ extension GenerateUID on DocType {
 
   Future<void> getShortUID({required Function(String) onChanged}) async =>
       await _generateAndHandleId(onChanged: onChanged);
-
-  /*String get _replaceSpecialCharsWithRandomNumbers {
-    // Create a random number generator
-    final Random random = Random();
-
-    // Define a regular expression to match non-alphanumeric characters
-    RegExp regExp = RegExp(r'[^a-zA-Z0-9]');
-
-    // Use a function to replace matches with random numbers
-    String result = replaceAllMapped(regExp, (Match match) {
-      return random.nextInt(10).toString();
-    });
-
-    return result;
-  }*/
 }
 
 extension FirestoreExtension on String {

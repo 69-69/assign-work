@@ -106,7 +106,7 @@ class UpdateCustomer<T> extends CustomerEvent<T> {
 }
 
 class DeleteCustomer<T> extends CustomerEvent<T> {
-  final String documentId;
+  final T documentId;
 
   const DeleteCustomer({required this.documentId});
 

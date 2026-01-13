@@ -1,3 +1,4 @@
+/*
 // ---------------------------------------------
 // 📏 Unit of Measure (Label-Driven Enum)
 // ---------------------------------------------
@@ -11,10 +12,12 @@ import 'package:assign_erp/core/util/enum_helper.dart';
 ///  - PO Type: Services (or sometimes, Service Order or Service Procurement).
 enum POType { standard, subcontracting, consignment, services }
 
+*/
 /* USAGE:
 * final status = POType.standard;
 * print(status.getLabel); // Output: standard
-* */
+* */ /*
+
 extension POTypeExtension on POType {
   /// [getValue] Get the label for the specific enum value (e.g. "standard")
   String get getValue => EnumHelper<POType>(this).getName;
@@ -34,3 +37,4 @@ class POTypeHelper {
     return includeHeader ? ['PO Type', ...list] : list;
   }
 }
+*/

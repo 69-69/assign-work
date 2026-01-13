@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/printout_config.dart';
+import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -178,7 +179,7 @@ class SalesDocPdfBuilder {
       context,
       _dateAndDeliveryNumber(
         title: 'Delivery Note',
-        idNumber: DateTime.now().millisecondsSinceEpoch.toString(),
+        idNumber: DateTime.now().toMilliseconds.toString(),
       ),
     );
   }

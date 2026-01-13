@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/agent/domain/repositories/agent_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

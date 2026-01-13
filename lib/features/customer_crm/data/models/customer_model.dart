@@ -94,9 +94,9 @@ class Customer extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['birthDay'] = birthDay?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['birthDay'] = birthDay?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
@@ -320,19 +320,19 @@ class Customers extends Equatable {
       storeNumber: data['storeNumber'] ?? '',
       customerId: data['customerId'] ?? '',
       name: data['name'] ?? '',
-      type: CrmCustomerHelper.typeFromString(data['type']),
-      status: CrmCustomerHelper.statusFromString(data['status']),
+      type: CrmCustomerUtil.typeFromString(data['type']),
+      status: CrmCustomerUtil.statusFromString(data['status']),
       industry: data['industry'] ?? '',
-      category: CrmCustomerHelper.categoryFromString(data['category']),
+      category: CrmCustomerUtil.categoryFromString(data['category']),
       phone: data['phone'] ?? '',
       mobile: data['mobile'] ?? '',
       email: data['email'] ?? '',
       website: data['website'] ?? '',
       addresses: AddressInfo.addresses(data['addresses']),
       salesRepId: data['salesRepId'] ?? '',
-      leadSource: CrmCustomerHelper.leadSourceFromString(data['leadSource']),
-      priority: CrmCustomerHelper.priorityFromString(data['priority']),
-      creditLimit: double.tryParse(data['creditLimit']) ?? 0.0,
+      leadSource: CrmCustomerUtil.leadSourceFromString(data['leadSource']),
+      priority: CrmCustomerUtil.priorityFromString(data['priority']),
+      creditLimit: '${data['creditLimit']}'.asDouble,
       paymentTerms: data['paymentTerms'] ?? '',
       currency: data['currency'] ?? '',
       taxId: data['taxId'] ?? '',
@@ -378,8 +378,8 @@ class Customers extends Equatable {
 
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }

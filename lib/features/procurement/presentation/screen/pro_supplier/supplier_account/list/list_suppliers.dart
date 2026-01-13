@@ -1,6 +1,6 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_vendor/suppliers_bloc.dart';
@@ -8,7 +8,6 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/create/create_suppliers.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/list/see_supplier_details.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/update/update_supplier.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,7 +19,11 @@ class ListSuppliers extends StatefulWidget {
 }
 
 class _ListSuppliersState extends State<ListSuppliers> {
-  final storeBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
+  // final storeBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
+  // List to group Requisitions for printout
+  final List<String> _selectedIds = [];
+
+  SupplierBloc get _bloc => context.read<SupplierBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -55,28 +58,65 @@ class _ListSuppliersState extends State<ListSuppliers> {
       onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.first),
       onEditTap: (row) async => _onEditTap(suppliers, row.first),
       onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),
+      selectedRowKeyIndex: 0,
+      // Column index used as row key (e.g., ID)
+      selectedRowKeys: _selectedIds,
+      // Currently selected row keys
+      onChecked: (bool? isChecked, checkedRow) {
+        setState(() => _updateSelectedIds(isChecked, checkedRow.first));
+      },
+      onAllChecked:
+          (
+            bool isChecked,
+            List<bool> isAllChecked,
+            List<List<String>> checkedRows,
+          ) {
+            setState(() => _updateAllSelectedIds(isChecked, checkedRows));
+          },
     );
   }
 
-  _buildToolbar(List<Supplier> sales) {
-    return Wrap(
-      spacing: 10.0,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh Suppliers',
-          label: 'Suppliers',
-          count: sales.length,
-          onPressed: () =>
-              context.read<SupplierBloc>().add(RefreshProcurements<Supplier>()),
-        ),
-        context.elevatedButton(
-          'Add Supplier',
-          onPressed: () => context.openAddSuppliers(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-      ],
+  // Updates selected IDs and triggers additional logic (like selecting PRs)
+  void _updateSelectedIds(bool? isChecked, String id) {
+    if (isChecked == true) {
+      if (!_selectedIds.contains(id)) {
+        _selectedIds.add(id);
+      }
+    } else {
+      // Remove item from the selected list if unchecked
+      _selectedIds.removeWhere((selectedId) => selectedId == id);
+    }
+  }
+
+  // Updates selected IDs for all checked rows
+  void _updateAllSelectedIds(bool isChecked, List<List<String>> checkedRows) {
+    _selectedIds.clear();
+    if (isChecked) {
+      // Add all selected rows, ensuring uniqueness using a Set
+      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+    }
+  }
+
+  _buildToolbar(List<Supplier> suppliers) {
+    prettyPrint('_selectedIds', _selectedIds);
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh Suppliers',
+      createLabel: 'Add Supplier',
+      deleteLabel: 'Supplier',
+      dataLength: suppliers.length,
+      onCreate: () => context.openAddSuppliers(),
+      onRefresh: () => _bloc.add(RefreshProcurements<Supplier>()),
+      onDelete: _selectedIds.isNotEmpty
+          ? () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (mounted && isConfirmed) {
+                _bloc.add(
+                  DeleteProcurement<List<String>>(documentId: _selectedIds),
+                );
+                _selectedIds.clear();
+              }
+            }
+          : null,
     );
   }
 

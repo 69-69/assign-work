@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
@@ -32,12 +32,12 @@ class AccessControl extends Equatable {
   /// This is the string representation of the [access] Enum value.
   /// Example: "createPosSale" or "POS".
   // String get accessName => access.name;
-  String get accessName => EnumHelper<Enum>(access).getName;
+  String get accessName => EnumUtil<Enum>(access).getName;
 
   /// [accessLabel] Returns the UI-friendly label for the permission or license.
   /// This is the human-readable string representation of the [access]
   /// Example: "createPosSale" -> "Create POS Sale"
-  String get accessLabel => EnumHelper<Enum>(access).getLabel;
+  String get accessLabel => EnumUtil<Enum>(access).getLabel;
 
   @override
   List<Object?> get props => [

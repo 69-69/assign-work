@@ -2,7 +2,7 @@
 // ⚙️ Account Status Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// [ERPPriority] Priority levels for PR, RFQ, PO, SO, etc.
 enum ERPPriority {
@@ -20,20 +20,20 @@ enum ERPPriority {
 * */
 extension ERPPriorityExtension on ERPPriority {
   /// [getName] Get the specific Enum Name
-  String get getName => EnumHelper<ERPPriority>(this).getName;
+  String get getName => EnumUtil<ERPPriority>(this).getName;
 
   /// Returns a user-friendly label
-  String get getLabel => EnumHelper<ERPPriority>(this).getLabel;
+  String get getLabel => EnumUtil<ERPPriority>(this).getLabel;
 }
 
-class PriorityHelper {
+class PriorityUtil {
   /// [fromString] Converts String/Label to enum value.
   static ERPPriority fromString(String? value) =>
-      EnumHelper.fromString<ERPPriority>(ERPPriority.values, value);
+      EnumUtil.fromString<ERPPriority>(ERPPriority.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<ERPPriority>(ERPPriority.values);
+    final list = EnumUtil.toStringList<ERPPriority>(ERPPriority.values);
     return includeHeader ? ['Priority', ...list] : list;
   }
 }

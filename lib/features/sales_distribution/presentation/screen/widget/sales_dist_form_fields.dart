@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/item_category.dart';
-import 'package:assign_erp/core/constants/line_item_type.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -39,7 +39,7 @@ class SalesDistFormFields {
     bool isDisabled = false, // Should certain fields be disabled?
     List<String>? keysToExclude, // Should certain fields be excluded?
   }) {
-    final match = LineItemTypeHelper.isMaterial(type);
+    final match = LineItemTypeUtil.isMaterial(type);
 
     List<FieldGroupConfig> list = match
         ? _productLineItemsFields(isDisabled)
@@ -75,8 +75,8 @@ class SalesDistFormFields {
       isDisabled: isDisabled,
     ),
     FieldGroupConfig(
-      key: 'discount',
-      label: 'Discount',
+      key: 'discountPercent',
+      label: 'Discount %',
       type: TextInputType.numberWithOptions(decimal: true),
       validator: (_) => null,
       isDisabled: isDisabled,
@@ -128,13 +128,16 @@ class SalesDistFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'When a specific product is needed.';
+
         return DatePicker(
           inLabel: false,
           label: 'Required Date',
           initialDate: initialData,
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
           restorationId: 'Required Date',
-          helperText: 'When a specific item is needed.',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
     ),
@@ -178,8 +181,8 @@ class SalesDistFormFields {
       helperText: 'How many?. E.g. 10',
     ),
     FieldGroupConfig(
-      key: 'discount',
-      label: 'Discount',
+      key: 'discountPercent',
+      label: 'Discount %',
       type: TextInputType.numberWithOptions(decimal: true),
       validator: (_) => null,
       isDisabled: isDisabled,
@@ -249,13 +252,16 @@ class SalesDistFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'When a specific service is needed.';
+
         return DatePicker(
           inLabel: false,
           label: 'Required Date',
           initialDate: initialData,
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
           restorationId: 'Required Date',
-          helperText: 'When a specific service is needed.',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
     ),
@@ -411,7 +417,7 @@ class _ItemCategoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = ItemCategoryHelper.toStringList(isService: isService);
+    final strList = ItemCategoryUtil.toStringList(isService: isService);
     // If label is provided, replace it with the first in the list
     if (label != null) strList[0] = label!;
 
@@ -445,7 +451,7 @@ class _UnitOfMeasureDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = UOMHelper.toStringList();
+    final strList = UOMUtil.toStringList();
     // If label is provided, replace it with the first in the list
     // if (label != null) strList[0] = label!;
 

@@ -118,7 +118,7 @@ class ItemMasterFormFields {
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
           title: 'Units & Rules',
-          showButton: false,
+          showButton: true,
           initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
           checkboxesConfig: [
             CheckboxGroupConfig(

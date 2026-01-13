@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/error_logs_model.dart';
@@ -24,9 +23,7 @@ class _ErrorLogsState extends State<ErrorLogs> {
   }
 
   void _refreshLogs() {
-    setState(() {
-      _logs = ErrorLogCache().getLogs(); // ✅ Expecting List<ErrorLog>
-    });
+    setState(() => _logs = ErrorLogCache().getLogs());
   }
 
   @override
@@ -58,35 +55,22 @@ class _ErrorLogsState extends State<ErrorLogs> {
   }
 
   Widget _buildToolbar() {
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      runAlignment: WrapAlignment.spaceBetween,
-      children: [
-        if (_selectedIds.isNotEmpty) ...[
-          context.elevatedIconBtn(
-            Icon(Icons.delete, color: kWhiteColor),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: context.errorColor,
-            ),
-            onPressed: () async {
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh Logs',
+      deleteLabel: 'Error Log',
+      dataLength: _logs.length,
+      onRefresh: _refreshLogs,
+      onDelete: _selectedIds.isNotEmpty
+          ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (!isConfirmed) return;
 
-              for (final id in _selectedIds) {
-                await ErrorLogCache().clearById(id);
-              }
+              await ErrorLogCache().clearById(_selectedIds);
 
               _selectedIds.clear();
               _refreshLogs();
-            },
-            label: const Text(
-              'Delete all',
-              style: TextStyle(color: kWhiteColor),
-            ),
-          ),
-        ],
-      ],
+            }
+          : null,
     );
   }
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/customer_crm/domain/repository/customer_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -56,9 +56,10 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     on<GetCustomersWithSameId<T>>(_onGetCustomersWithSameId);
     on<SearchCustomers<T>>(_onSearchCustomers);
     on<AddCustomer<T>>(_onAddCustomer);
-    on<AddCustomer<List<T>>>(_onAddMultiCustomer);
+    on<AddCustomer<List<T>>>(_onAddCustomers);
     on<UpdateCustomer>(_onUpdateCustomer);
-    on<DeleteCustomer>(_onDeleteCustomer);
+    on<DeleteCustomer<String>>(_onDeleteCustomer);
+    on<DeleteCustomer<List<String>>>(_onDeleteCustomers);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
     on<_CustomersLoaded<T>>(_onCustomersLoaded);
     on<_CustomerLoaded<T>>(_onCustomerLoaded);
@@ -151,7 +152,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   ) async {
     emit(LoadingCustomers<T>());
     try {
-      final localDataList = await _customerRepository.getMultipleDataByIDs(
+      final localDataList = await _customerRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -250,7 +251,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onAddMultiCustomer(
+  Future<void> _onAddCustomers(
     AddCustomer<List<T>> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -298,12 +299,35 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   }
 
   Future<void> _onDeleteCustomer(
-    DeleteCustomer event,
+    DeleteCustomer<String> event,
     Emitter<CustomerState<T>> emit,
   ) async {
     try {
       // Delete data from Firestore and update local storage
       await _customerRepository.deleteData(event.documentId);
+
+      // Trigger LoadDataEvent to reload the data
+      add(GetCustomers<T>());
+
+      // Update State: Notify that data deleted
+      emit(CustomerDeleted<T>(message: 'data deleted successfully'));
+    } catch (e) {
+      emit(CustomerError<T>(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteCustomers(
+    DeleteCustomer<List<String>> event,
+    Emitter<CustomerState<T>> emit,
+  ) async {
+    try {
+      if (event.documentId.isEmpty) {
+        emit(CustomerError<T>('Customer IDs are empty'));
+        return;
+      }
+
+      // Delete data from Firestore and update local storage
+      await _customerRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetCustomers<T>());

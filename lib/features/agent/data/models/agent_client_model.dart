@@ -45,7 +45,7 @@ class AgentClient extends Equatable {
   /// Convert UserModel to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var map = toMap();
-    map['assignedAt'] = assignedAt.millisecondsSinceEpoch;
+    map['assignedAt'] = assignedAt.toMilliseconds;
 
     return {'id': clientWorkspaceId, 'data': map};
   }

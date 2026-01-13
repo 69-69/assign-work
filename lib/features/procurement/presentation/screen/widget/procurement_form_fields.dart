@@ -1,8 +1,8 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/item_category.dart';
-import 'package:assign_erp/core/constants/line_item_type.dart';
-import 'package:assign_erp/core/constants/unit_of_measure.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -13,7 +13,7 @@ import 'package:assign_erp/features/procurement/data/model/supplier_link_model.d
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
 import 'package:flutter/material.dart';
 
-class ProcurementForm {
+class ProcurementFormFields {
   static Widget buildNumber(
     BuildContext context, {
     String count = '',
@@ -32,17 +32,17 @@ class ProcurementForm {
     ),
   );
 
-  /// Product(Material)/Service Line Item Fields
+  /// Product (Material)/Service Line Item Fields
   static List<FieldGroupConfig> fields(
     // Line item type
     String type, {
     bool isDisabled = false, // Should certain fields be disabled?
     List<String>? keysToExclude, // Should certain fields be excluded?
   }) {
-    final match = LineItemTypeHelper.isMaterial(type);
+    final match = LineItemTypeUtil.isMaterial(type);
 
     List<FieldGroupConfig> list = match
-        ? _productLineItemsFields(isDisabled)
+        ? _materialLineItemsFields(isDisabled)
         : _servicesLineItemsFields(isDisabled);
 
     // Filter out the fields whose key is in the 'keysToExclude' list
@@ -53,11 +53,8 @@ class ProcurementForm {
     return fields;
   }
 
-  /// Products / Services
-  static List<FieldGroupConfig> _productLineItemsFields(
-    bool isDisabled, {
-    Map<String, dynamic>? optValues,
-  }) => [
+  /// Products (Material) Line Item Fields
+  static List<FieldGroupConfig> _materialLineItemsFields(bool isDisabled) => [
     FieldGroupConfig(
       key: 'description',
       label: 'Item name',
@@ -78,8 +75,8 @@ class ProcurementForm {
       isDisabled: isDisabled,
     ),
     FieldGroupConfig(
-      key: 'discount',
-      label: 'Discount',
+      key: 'discountPercent',
+      label: 'Discount %',
       type: TextInputType.numberWithOptions(decimal: true),
       validator: (_) => null,
       isDisabled: isDisabled,
@@ -99,7 +96,6 @@ class ProcurementForm {
       type: TextInputType.numberWithOptions(decimal: true),
       validator: (_) => null,
       isDisabled: isDisabled,
-      initialValue: optValues?['netPrice'],
       inputDecoration: InputDecoration(
         labelText: 'Net Price (if any)',
         helperText: 'Amount after discounts but before taxes',
@@ -146,13 +142,16 @@ class ProcurementForm {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'When a specific product is needed.';
+
         return DatePicker(
           inLabel: false,
           label: 'Required Date',
           initialDate: initialData,
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
           restorationId: 'Required Date',
-          helperText: 'When a specific service is needed.',
+          helperText: msg,
+          validator: (v) => v == null ? msg : null,
         );
       },
     ),
@@ -174,6 +173,7 @@ class ProcurementForm {
     ),
   ];
 
+  /// Services (Not-Physical Materials/Products) Line Item Fields
   static List<FieldGroupConfig> _servicesLineItemsFields(bool isDisabled) => [
     FieldGroupConfig(
       key: 'description',
@@ -196,8 +196,8 @@ class ProcurementForm {
       helperText: 'How many?. E.g. 10',
     ),
     FieldGroupConfig(
-      key: 'discount',
-      label: 'Discount',
+      key: 'discountPercent',
+      label: 'Discount %',
       type: TextInputType.numberWithOptions(decimal: true),
       validator: (_) => null,
       isDisabled: isDisabled,
@@ -267,13 +267,16 @@ class ProcurementForm {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'When a specific service is needed.';
+
         return DatePicker(
           inLabel: false,
           label: 'Required Date',
           initialDate: initialData,
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
           restorationId: 'Required Date',
-          helperText: 'When a specific service is needed.',
+          helperText: msg,
+          validator: (v) => v == null ? msg : null,
         );
       },
     ),
@@ -431,7 +434,7 @@ class _ItemCategoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = ItemCategoryHelper.toStringList(isService: isService);
+    final strList = ItemCategoryUtil.toStringList(isService: isService);
     // If label is provided, replace it with the first in the list
     if (label != null) strList[0] = label!;
 
@@ -465,7 +468,7 @@ class _UnitOfMeasureDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = UOMHelper.toStringList();
+    final strList = UOMUtil.toStringList();
     // If label is provided, replace it with the first in the list
     // if (label != null) strList[0] = label!;
 

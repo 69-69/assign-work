@@ -60,14 +60,14 @@ class POSOrder extends Equatable {
       itemId: map['itemId'] ?? '',
       itemName: map['itemName'] ?? '',
       customerId: map['customerId'] ?? '',
-      quantity: map['quantity'] ?? 0,
-      unitPrice: map['unitPrice'] ?? 0.0,
+      quantity: '${map['quantity']}'.asInt,
+      unitPrice: '${map['unitPrice']}'.asDouble,
       barcode: map['barcode'] ?? '',
-      discountPercent: map['discountPercent'] ?? 0.0,
-      taxPercent: map['taxPercent'] ?? 0.0,
-      discountAmount: map['discountAmount'] ?? 0.0,
-      taxAmount: map['taxAmount'] ?? 0.0,
-      totalAmount: map['totalAmount'] ?? 0.0,
+      discountPercent: '${map['discountPercent']}'.asDouble,
+      taxPercent: '${map['taxPercent']}'.asDouble,
+      discountAmount: '${map['discountAmount']}'.asDouble,
+      taxAmount: '${map['taxAmount']}'.asDouble,
+      totalAmount: '${map['totalAmount']}'.asDouble,
       payMethod: map['payMethod'] ?? '',
       status: map['status'] ?? '',
       createdBy: map['createdBy'],
@@ -113,8 +113,8 @@ class POSOrder extends Equatable {
   /// Convert UserModel to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }

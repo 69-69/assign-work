@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 enum SalesChannel {
   // In-Store Sales: Transactions happening in physical retail locations (brick-and-mortar stores).
@@ -46,24 +46,24 @@ enum SalesChannel {
 
 extension SalesChannelExtension on SalesChannel {
   /// [getName] Get the specific Enum Name (e.g. "material")
-  String get getName => EnumHelper<SalesChannel>(this).getName;
+  String get getName => EnumUtil<SalesChannel>(this).getName;
 
   /// Returns a user-friendly label (e.g. "material")
-  String get getLabel => EnumHelper<SalesChannel>(this).getLabel;
+  String get getLabel => EnumUtil<SalesChannel>(this).getLabel;
 }
 
-class SalesChannelHelper {
+class SalesChannelUtil {
   /// Check if type is valid.
   static bool isExist(String type) =>
-      EnumHelper.isValid<SalesChannel>(SalesChannel.values, type, false);
+      EnumUtil.isValid<SalesChannel>(SalesChannel.values, type, false);
 
   /// [fromString] Converts String/Label to enum value.
   static SalesChannel fromString(String? value) =>
-      EnumHelper.fromString<SalesChannel>(SalesChannel.values, value);
+      EnumUtil.fromString<SalesChannel>(SalesChannel.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final label = includeHeader ? 'sales channel' : '';
-    return EnumHelper.toStringList<SalesChannel>(SalesChannel.values, label);
+    return EnumUtil.toStringList<SalesChannel>(SalesChannel.values, label);
   }
 }

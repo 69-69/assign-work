@@ -45,7 +45,7 @@ class SearchRFQs extends StatelessWidget {
               _buildMiniLabel(
                 context,
                 '| Expected',
-                '${rfq.getExpectedDate} (${rfq.lineItems.first.getTypeLabel.toSentence})',
+                '${rfq.getExpectedDate} (${rfq.lineItems.first.getType.toSentence})',
               ),
             ],
           ),

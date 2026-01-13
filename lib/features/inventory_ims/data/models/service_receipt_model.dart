@@ -55,7 +55,7 @@ class ServiceReceipt extends Equatable {
       poNumber: map['poNumber'],
       storeNumber: map['storeNumber'] ?? '',
       supplierId: map['supplierId'] ?? '',
-      status: GRNSESStatusHelper.fromString(map['status']),
+      status: GRNSESStatusUtil.fromString(map['status']),
       servicesLines: (map['servicesLines'] as List? ?? [])
           .map((i) => SESServiceLine.fromMap(Map<String, dynamic>.from(i)))
           .toList(),
@@ -170,7 +170,7 @@ class SESServiceLine extends Equatable {
   final String serviceCode;
   final String serviceName; // <- updated (service name/task name)
   final UnitOfMeasure unitOfMeasure; // hour, day, task, milestone
-  final double orderedQty;
+  final double orderedQty; // number of hours / days / tasks
   final double completedQty;
 
   /// [unitPrice] Price for unit of service

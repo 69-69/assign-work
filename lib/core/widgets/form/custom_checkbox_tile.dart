@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 
 /* USAGE:
@@ -51,7 +52,7 @@ class CustomCheckboxList<T> extends StatelessWidget {
     this.padding,
     this.tileColor,
     this.fillColor,
-    this.isRow = false,
+    this.isRow = true,
     required this.options,
     required this.values,
     required this.onChanged,
@@ -59,15 +60,15 @@ class CustomCheckboxList<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final children = _buildList(context);
+    List<CustomCheckboxTile> radios = _buildOptions();
 
-    return isRow
-        ? Wrap(spacing: 10, runSpacing: 5, children: children)
-        : Column(children: children);
+    return (isRow && radios.length > 1)
+        ? Wrap(spacing: 10, runSpacing: 5, children: _groupIntoRows(radios))
+        : Column(children: radios);
   }
 
-  List<Widget> _buildList(BuildContext context) {
-    return options.map((option) {
+  List<CustomCheckboxTile> _buildOptions() {
+    final radios = options.map((option) {
       final isChecked = values.contains(option.value);
 
       return CustomCheckboxTile(
@@ -79,8 +80,27 @@ class CustomCheckboxList<T> extends StatelessWidget {
         subtitle: option.subtitle,
         secondary: option.secondary,
         onChanged: (checked) => _onChanged(checked, option),
+        // selected: RadioGroup.maybeOf<T>(context)?.groupValue == option.value,
       );
     }).toList();
+
+    return radios;
+  }
+
+  List<Widget> _groupIntoRows(List<Widget> fields) {
+    final rows = <Widget>[];
+
+    for (var i = 0; i < fields.length; i += 2) {
+      final isLast = i == fields.length - 1;
+      final children = isLast ? [fields[i]] : [fields[i], fields[i + 1]];
+
+      rows.add(AdaptiveLayout(children: children));
+      if (!isLast) {
+        rows.add(SizedBox(height: 4));
+      }
+    }
+
+    return rows;
   }
 
   void _onChanged(bool? checked, CustomCheckboxModel<dynamic> option) {

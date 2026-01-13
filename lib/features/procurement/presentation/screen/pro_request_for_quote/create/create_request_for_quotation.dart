@@ -1,10 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
@@ -73,7 +73,7 @@ class _CreateRFQForm extends StatefulWidget {
 
 class _CreateRFQFormState extends State<_CreateRFQForm> {
   String? get _lineItemType =>
-      widget.lineItemType ?? _initialPR?.lineItems.first.getTypeLabel;
+      widget.lineItemType ?? _initialPR?.lineItems.first.getType;
   final _formKey = GlobalKey<FormState>();
   Key _formResetKey = UniqueKey();
 
@@ -143,7 +143,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     storeNumber: _employeeStore,
     autoConvertRfq: _autoConvertRfq,
     title: _rfqTitle,
-    status: WorkflowStatusHelper.fromString(_rfqStatus ?? ''),
+    status: WorkflowStatusUtil.fromString(_rfqStatus ?? ''),
     supplierLinks: List.from(_supplierLinks),
     currencyCode: _currencyCode,
     notes: _buyerTerms['notes'],
@@ -484,7 +484,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
     if (_newRFQ.isEmpty) return;
 
-    final quoteWithTaxes = await RFQFormInputs.applyTaxesToQuote(_newRFQ);
+    final quoteWithTaxes = await RFQFormInputs.applyTaxesToRFQ(_newRFQ);
     final supplier = await RFQFormInputs.getSupplier(
       _newRFQ.supplierLinks.first.supplierId,
     );

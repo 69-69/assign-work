@@ -1,5 +1,5 @@
 // WORKSPACE ROLE or ACCOUNT TYPE
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 enum WorkspaceRole {
   /// Workspace Role for UnAuthorized/unknown/fake users [unknown].
@@ -20,7 +20,7 @@ enum WorkspaceRole {
 
 extension WorkspaceRoleExtension on WorkspaceRole {
   /// [getName] Get the specific Enum Name (e.g. "agentFranchise")
-  String get getName => EnumHelper<WorkspaceRole>(this).getName;
+  String get getName => EnumUtil<WorkspaceRole>(this).getName;
 
   /// [assign] Determines the role for a "New Workspace Setup" based on the
   /// currently signed-in user's role (cached workspace role).
@@ -46,19 +46,19 @@ extension WorkspaceRoleExtension on WorkspaceRole {
   }
 }
 
-/// [WorkspaceRoleHelper] Utility class for WorkspaceRole operations
-class WorkspaceRoleHelper {
+/// [WorkspaceRoleUtil] Utility class for WorkspaceRole operations
+class WorkspaceRoleUtil {
   /// [fromString] Converts String/Label to enum value.
   static WorkspaceRole fromString(String? role) =>
-      EnumHelper.fromString<WorkspaceRole>(WorkspaceRole.values, role);
+      EnumUtil.fromString<WorkspaceRole>(WorkspaceRole.values, role);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeLabel = true]) {
-    final list = EnumHelper.toStringList<WorkspaceRole>(WorkspaceRole.values);
+    final list = EnumUtil.toStringList<WorkspaceRole>(WorkspaceRole.values);
     return includeLabel ? ['workspace role', ...list] : list;
   }
 
   /// Check if role exists in the enum
   static bool exists(String role) =>
-      EnumHelper.isValid<WorkspaceRole>(WorkspaceRole.values, role, false);
+      EnumUtil.isValid<WorkspaceRole>(WorkspaceRole.values, role, false);
 }

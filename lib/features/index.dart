@@ -11,6 +11,7 @@ export 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
 export 'package:assign_erp/features/inventory_ims/presentation/bloc/index.dart';
 export 'package:assign_erp/features/live_support/presentation/bloc/index.dart';
 export 'package:assign_erp/features/procurement/presentation/bloc/index.dart';
+export 'package:assign_erp/features/sales_distribution/presentation/bloc/index.dart';
 export 'package:assign_erp/features/system_admin/presentation/bloc/create_roles/role_bloc.dart';
 export 'package:assign_erp/features/system_admin/presentation/bloc/index.dart';
 export 'package:assign_erp/features/trouble_shooting/presentation/bloc/index.dart';

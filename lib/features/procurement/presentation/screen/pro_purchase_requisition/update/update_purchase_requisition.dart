@@ -1,10 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/line_item_type.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -35,7 +35,7 @@ extension UpdatePurchaseRequisiteForm on BuildContext {
       child: BottomSheetScaffold(
         title: 'Edit Purchase Requisition',
         subtitle:
-            '${requisite.prNumber.toUpperAll} (${requisite.lineItems.first.getTypeLabel})',
+            '${requisite.prNumber.toUpperAll} (${requisite.lineItems.first.getType})',
         body: _PurchaseRequisite(requisite: requisite),
       ),
     );
@@ -72,7 +72,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
   PurchaseRequisition get _serverPR => widget.requisite;
-  String get _lineItemType => _serverPR.lineItems.first.getTypeLabel;
+  String get _lineItemType => _serverPR.lineItems.first.getType;
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -82,7 +82,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   ProPurchaseRequisiteBloc get _bloc =>
       context.read<ProPurchaseRequisiteBloc>();
 
-  AuditAction get _action => AuditActionHelper.isApproved(_prStatus)
+  AuditAction get _action => AuditActionUtil.isApproved(_prStatus)
       ? AuditAction.approved
       : AuditAction.updated;
 
@@ -92,10 +92,10 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
     return _serverPR.copyWith(
       autoConvertPr: _autoConvertPr,
-      priority: PriorityHelper.fromString(
+      priority: PriorityUtil.fromString(
         _priority ?? _serverPR.priority.getName,
       ),
-      status: WorkflowStatusHelper.fromString(status),
+      status: WorkflowStatusUtil.fromString(status),
       requestedBy: _requestedBy ?? _serverPR.requestedBy,
       costCenterCode: _costCenterCode ?? _serverPR.costCenterCode,
       departmentCode: _departmentCode ?? _serverPR.departmentCode,
@@ -235,17 +235,14 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   }
 
   DynamicTextFields _buildLineItems(String lineItemType) {
-    final fwk = LineItemTypeHelper.isMaterial(lineItemType)
+    final fwk = LineItemTypeUtil.isMaterial(lineItemType)
         ? 'description'
         : null;
 
     return DynamicTextFields(
       showButton: true,
       fullWidthKey: fwk,
-      fieldsConfig: PRFormInputs.fields(
-        lineItemType,
-        keysToExclude: ['unitPrice', 'serviceRate', 'discount'],
-      ),
+      fieldsConfig: PRFormInputs.fields(lineItemType),
       initialData: _serverPR.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});

@@ -1,10 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -35,7 +35,7 @@ extension UpdateRequestForQuotationForm on BuildContext {
       child: BottomSheetScaffold(
         title: 'Edit Request For Quote',
         subtitle:
-            '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getTypeLabel})',
+            '${rfq.rfqNumber.toUpperAll} (${rfq.lineItems.first.getType})',
         body: _UpdateRequestForQuote(rfq: rfq),
       ),
     );
@@ -73,7 +73,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   RequestForQuote get _serverRFQ => widget.rfq;
 
-  String get _lineItemType => _serverRFQ.lineItems.first.getTypeLabel;
+  String get _lineItemType => _serverRFQ.lineItems.first.getType;
 
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
 
@@ -84,7 +84,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
-  AuditAction get _action => AuditActionHelper.isApproved(_rfqStatus)
+  AuditAction get _action => AuditActionUtil.isApproved(_rfqStatus)
       ? AuditAction.approved
       : AuditAction.updated;
 
@@ -110,7 +110,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       title: _rfqTitle ?? _serverRFQ.title,
       autoConvertRfq: _autoConvertRfq ?? _serverRFQ.autoConvertRfq,
       requestedBy: _requestedBy ?? _serverRFQ.requestedBy,
-      status: WorkflowStatusHelper.fromString(status),
+      status: WorkflowStatusUtil.fromString(status),
       costCenterCode: _costCenterCode ?? _serverRFQ.costCenterCode,
       currencyCode: _currencyCode ?? _serverRFQ.currencyCode,
       departmentCode: _departmentCode ?? _serverRFQ.departmentCode,
@@ -392,7 +392,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   }
 
   Future<dynamic> _printout() => Future.delayed(kRProgressDelay, () async {
-    final rfqWithTaxes = await RFQFormInputs.applyTaxesToQuote(_updatedRFQ);
+    final rfqWithTaxes = await RFQFormInputs.applyTaxesToRFQ(_updatedRFQ);
     final supplier = await RFQFormInputs.getSupplier(
       _updatedRFQ.supplierLinks.first.supplierId,
     );

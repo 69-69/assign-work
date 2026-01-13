@@ -121,15 +121,6 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     });
   }
 
-  /*// load existing departments
-  void _loadExistingDeparts() {
-    if (_serverDepart != null) {
-      _departments
-        ..clear()
-        ..add(_serverDepart!);
-    }
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return Form(

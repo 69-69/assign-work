@@ -1,8 +1,9 @@
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/total_summary_model.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
@@ -46,9 +47,11 @@ class ProPurchaseOrder extends Equatable {
 
   /// [addresses] Addresses (e.g., Billing, Shipping Address, etc)
   final List<AddressInfo>? addresses;
+
   // For Snapshot
   final double taxAmount;
   final double shippingAmount;
+  final double shippingTaxAmount;
   final String? termsAndConditions;
 
   final DateTime? deliveryDate;
@@ -80,6 +83,7 @@ class ProPurchaseOrder extends Equatable {
     this.addresses,
     this.taxAmount = 0.0,
     this.shippingAmount = 0.0,
+    this.shippingTaxAmount = 0.0,
     this.buyerContactPersonId = '',
     this.termsAndConditions,
     DateTime? deliveryDate,
@@ -89,9 +93,9 @@ class ProPurchaseOrder extends Equatable {
     DateTime? updatedAt,
     List<AuditLog>? history,
   }) : history = history ?? [],
-       deliveryDate = deliveryDate ?? _today,
        createdAt = createdAt ?? _today,
-       updatedAt = updatedAt ?? _today;
+       updatedAt = updatedAt ?? _today,
+       deliveryDate = deliveryDate ?? _today;
 
   /// fromFirestore / fromJson Function [ProPurchaseOrder.fromMap]
   factory ProPurchaseOrder.fromMap(Map<String, dynamic> map, {String? docId}) {
@@ -103,14 +107,14 @@ class ProPurchaseOrder extends Equatable {
       supplierLink: SupplierLink.fromMap(map['supplierLink']),
       requestedBy: map['requestedBy'] ?? '',
       costCenterCode: map['costCenterCode'] ?? '',
-      status: WorkflowStatusHelper.fromString(map['status']),
+      status: WorkflowStatusUtil.fromString(map['status']),
       lineItems: LineItem.lineItems(map['lineItems']),
       currencyCode: map['currencyCode'] ?? '',
       paymentTerm: map['paymentTerm'] ?? '',
       paymentMethod: map['paymentMethod'] ?? '',
-      taxMode: TaxModeHelper.fromString(map['taxMode']),
-      taxAmount: double.tryParse('${map['taxAmount']}') ?? 0.0,
-      shippingAmount: double.tryParse('${map['shippingAmount']}') ?? 0.0,
+      taxMode: TaxModeUtil.fromString(map['taxMode']),
+      taxAmount: '${map['taxAmount']}'.asDouble,
+      shippingAmount: '${map['shippingAmount']}'.asDouble,
       notes: map['notes'] ?? '',
       buyerContactPersonId: map['buyerContactPersonId'] ?? '',
       attachments: List<String>.from(map['attachments'] ?? []),
@@ -166,11 +170,27 @@ class ProPurchaseOrder extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['deliveryDate'] = createdAt.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['deliveryDate'] = deliveryDate.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
+  }
+
+  /// Get the last approved info from PO history [getApproval]
+  ({String? by, String? at}) get getApproval {
+    if (history.isNullOrEmpty) return (by: null, at: null);
+
+    // Find the most recent approved PO entry
+    final lastApproved = history.lastWhere(
+      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
+      orElse: () => AuditLog.empty,
+    );
+
+    // If none found, return null for both
+    if (lastApproved.isEmpty) return (by: null, at: null);
+
+    return (by: lastApproved.actionBy, at: lastApproved.getActionAt);
   }
 
   /// A singleton instance representing an empty/default ProPurchaseOrder.
@@ -201,13 +221,10 @@ class ProPurchaseOrder extends Equatable {
   bool get isFullyApproved =>
       history.isNotEmpty && history.every((a) => a.getAction == getPOStatus);
 
-  /// Formatted to Date Only in String [getDeliveryDate]
   String get getDeliveryDate => deliveryDate.dateOnly;
 
-  /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;
 
-  /// Formatted to Date Only in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
 
   /// Current / Today's Products/Stocks
@@ -219,23 +236,36 @@ class ProPurchaseOrder extends Equatable {
         dt.day == _today.day;
   }
 
-  // Computed fields for Financial Summary calculations (Base amount)
-  double get subTotal =>
-      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+  /// Computed TotalSummary based on current line items and shipping amount
+  TotalSummary get _totalSum => TotalSummary(
+    lineItems: lineItems,
+    shippingAmount: shippingAmount,
+    shippingTaxAmount: shippingTaxAmount,
+  );
 
-  // Total Discount amount: Subtract from subtotal
-  double get discountAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+  // Calculates tax amounts for each line item and the applicable shipping tax.
+  ProPurchaseOrder calculateTaxes(Map<String, ResolveTaxCode> taxMap) {
+    final taxedLineItems = lineItems.applyTaxes(taxMap);
 
-  // Total Tax amount: Add tax based on the subtotal (after discount)
-  double get totalTaxAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    // Apply shipping tax and get a new TotalSummary
+    final updatedTotalSum = _totalSum
+        .copyWith(lineItems: taxedLineItems)
+        .withShippingTax(taxMap);
 
-  // Subtotal - Discount (Before Tax)
-  double get netTotal => (subTotal - discountAmount) + taxAmount;
+    return copyWith(
+      lineItems: taxedLineItems,
+      shippingTaxAmount: updatedTotalSum.shippingTaxAmount,
+    );
+  }
 
-  // Final amount (after Discount + Tax)
-  double get totalAmount => netTotal + shippingAmount;
+  /// Financial Summaries
+  double get subTotal => _totalSum.subTotal;
+  double get taxableAmount => _totalSum.taxableAmount;
+  double get totalDiscountAmount => _totalSum.totalDiscountAmount;
+  double get totalTaxPercent => _totalSum.totalTaxPercent;
+  double get totalTaxAmount => _totalSum.totalTaxAmount;
+  double get netTotal => _totalSum.netTotal;
+  double get grandTotal => _totalSum.grandTotal;
 
   /// Filter
   bool filterByAny(String filter) =>
@@ -276,54 +306,6 @@ class ProPurchaseOrder extends Equatable {
   static List<ProPurchaseOrder> filterOthers(List<ProPurchaseOrder> orders) =>
       orders.where((po) => !po.isApproved).toList();
 
-  ProPurchaseOrder computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
-    // Calculate tax amounts for each line item (perLineTax)
-    List<LineItem> updatedItems = lineItems.map((item) {
-      if (item is! TaxableLineItem) return item;
-
-      final taxAmount = item.computeTaxAmount(taxMap);
-      final taxNames = item.buildTaxNames(taxMap);
-
-      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);
-
-    /*final updatedItems = lineItems.map((item) {
-      // Tax rate is in Percentage
-      final taxRate = item.resolvePerItemTaxes(taxMap);
-      final taxAmount = (item.netPrice * taxRate) / 100;
-      final taxNames = item.getTaxName(taxMap);
-
-      return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);*/
-
-    /*if (taxMode == taxModeToApply.perLineTax) {
-      // Calculate tax amounts for each line item (perLineTax)
-      final updatedItems = lineItems.map((item) {
-        // Tax rate is in Percentage
-        final taxRate = item.resolvePerItemTaxes(taxMap);
-        final taxAmount = (item.netPrice * taxRate) / 100;
-        final taxNames = item.getTaxName(taxMap);
-
-        return item.copyWith(taxAmount: taxAmount, taxNames: taxNames);
-      }).toList();
-
-      return copyWith(lineItems: updatedItems);
-    } else {
-      // Calculate total tax amount (headerTax/overall tax)
-      final taxRate = resolveHeaderTaxes(taxMap);
-      final totalTax = lineItems.fold(0.0, (sum, item) {
-        final taxAmount = sum + ((item.netPrice * taxRate) / 100);
-        return taxAmount;
-      });
-
-      return copyWith(headerTaxAmount: totalTax, taxNames: getTaxName(taxMap));
-    }*/
-  }
-
   /// copyWith method
   ProPurchaseOrder copyWith({
     String? id,
@@ -333,20 +315,21 @@ class ProPurchaseOrder extends Equatable {
     String? requestedBy,
     SupplierLink? supplierLink,
     String? costCenterCode,
-    List<LineItem>? lineItems,
-    String? currencyCode,
     WorkflowStatus? status,
-    String? paymentTerm,
-    String? paymentMethod,
+    String? currencyCode,
+    List<LineItem>? lineItems,
     TaxMode? taxMode,
-    String? notes,
-    String? buyerContactPersonId,
-    List<String>? attachments,
-    List<AddressInfo>? addresses,
     double? totalAmount,
     double? taxAmount,
     double? discountAmount,
     double? shippingAmount,
+    double? shippingTaxAmount,
+    String? paymentTerm,
+    String? paymentMethod,
+    String? notes,
+    String? buyerContactPersonId,
+    List<AddressInfo>? addresses,
+    List<String>? attachments,
     String? termsAndConditions,
     DateTime? deliveryDate,
     String? createdBy,
@@ -371,6 +354,7 @@ class ProPurchaseOrder extends Equatable {
       addresses: addresses ?? this.addresses,
       taxAmount: taxAmount ?? this.taxAmount,
       shippingAmount: shippingAmount ?? this.shippingAmount,
+      shippingTaxAmount: shippingTaxAmount ?? this.shippingTaxAmount,
       termsAndConditions: termsAndConditions ?? this.termsAndConditions,
       paymentTerm: paymentTerm ?? this.paymentTerm,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -406,6 +390,7 @@ class ProPurchaseOrder extends Equatable {
     addresses,
     taxAmount,
     shippingAmount,
+    shippingTaxAmount,
     termsAndConditions,
     deliveryDate ?? '',
     createdBy,
@@ -419,7 +404,7 @@ class ProPurchaseOrder extends Equatable {
     id,
     storeNumber,
     '$rfqNumber -> $poNumber',
-    supplierLink.supplierId,
+    // supplierLink.supplierId,
     getPOStatus.toTitle,
     currencyCode.toTitle,
     paymentTerm.toTitle,
@@ -435,7 +420,7 @@ class ProPurchaseOrder extends Equatable {
     'ID',
     'Store Number',
     'RFQ -> PO Number',
-    'Supplier ID',
+    // 'Supplier ID',
     'Status',
     'Currency',
     'Payment Terms',

@@ -126,6 +126,6 @@ class ContactPerson extends Equatable {
     phone,
     department.toTitle,
     position.toTitle,
-    createdAt.toStandardDT,
+    getCreatedAt,
   ];
 }

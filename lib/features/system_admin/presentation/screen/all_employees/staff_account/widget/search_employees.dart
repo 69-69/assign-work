@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class SearchEmployees extends StatefulWidget {
   final String? labelText;
   final String? initialValue;
-  final Function(String, String, String) onChanged;
+  final Function(String empId, String name, String role) onChanged;
 
   const SearchEmployees({
     super.key,
@@ -53,7 +53,8 @@ class _SearchEmployeesState extends State<SearchEmployees> {
           await _loadEmployees(filter: filter),
       filterFn: (emp, filter) => _filterEmployee(filter, emp),
       itemAsString: (emp) => emp.itemAsString,
-      onChanged: (emp) => widget.onChanged(emp!.id, emp.fullName, emp.role),
+      onChanged: (emp) =>
+          widget.onChanged(emp!.employeeId, emp.fullName, emp.role),
       validator: (emp) => emp == null ? _labelText : null,
     );
   }

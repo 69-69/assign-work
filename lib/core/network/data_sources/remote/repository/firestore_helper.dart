@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/collection_type.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

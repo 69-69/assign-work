@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
@@ -6,7 +6,7 @@ enum AddressType { billing, shipping, warehouse, office }
 
 extension AddressTypeExtension on AddressType {
   /// [getName] Get the specific Enum Name (e.g. "material")
-  String get getName => EnumHelper<AddressType>(this).getName;
+  String get getName => EnumUtil<AddressType>(this).getName;
 
   // if same
   bool get isBilling => this == AddressType.billing;
@@ -148,11 +148,11 @@ class AddressInfo extends Equatable {
 
   /// [fromString] Converts String/Label to enum value.
   static AddressType fromString(String? value) =>
-      EnumHelper.fromString<AddressType>(AddressType.values, value);
+      EnumUtil.fromString<AddressType>(AddressType.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final label = includeHeader ? 'Address type' : '';
-    return EnumHelper.toStringList<AddressType>(AddressType.values, label);
+    return EnumUtil.toStringList<AddressType>(AddressType.values, label);
   }
 }

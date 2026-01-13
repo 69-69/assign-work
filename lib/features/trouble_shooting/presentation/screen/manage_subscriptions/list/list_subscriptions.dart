@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/subscription_model.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/subscription/subscription_bloc.dart';
@@ -20,6 +19,7 @@ class ListSubscriptions extends StatefulWidget {
 class _ListSubscriptionsState extends State<ListSubscriptions> {
   bool? _isChecked;
   Subscription? _selectedSubscription;
+  SubscriptionBloc get _bloc => context.read<SubscriptionBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +52,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
-      toolbar: _buildToolbar(context),
-      toolbarAlignment: WrapAlignment.end,
+      toolbar: _buildToolbar(context, subscriptions),
       headers: Subscription.dataTableHeader,
       rows: subscriptions.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(subscriptions, row.first),
@@ -63,23 +62,18 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
     );
   }
 
-  _buildToolbar(BuildContext context) {
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      runAlignment: WrapAlignment.end,
-      children: [
-        context.elevatedButton(
-          'Create Subscription',
-          onPressed: () async => await context.openCreateNewSubscription(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-        if (_isChecked == true) ...{
-          context.elevatedButton(
-            'Assign License',
-            tooltip: 'Assign new licenses to subscription',
-            onPressed: () async {
+  _buildToolbar(BuildContext context, List<Subscription> subscriptions) {
+    return ListToolbarButtons(
+      createLabel: 'Create Subscription',
+      onCreate: () => context.openCreateNewSubscription(),
+      refreshLabel: 'Refresh Subscriptions',
+      dataLength: subscriptions.length,
+      onRefresh: () => _bloc.add(RefreshTenants<Subscription>()),
+      optLabel: 'Assign License',
+      optTooltip: 'Assign new licenses to subscription',
+      optIcon: Icons.vpn_key,
+      optOnPressed: _isChecked == true
+          ? () async {
               if (_selectedSubscription == null) return;
 
               /// Assign licenses to subscription
@@ -87,12 +81,8 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
                 isAssign: true,
                 subscription: _selectedSubscription!,
               );
-            },
-            bgColor: kGrayBlueColor,
-            txtColor: kWhiteColor,
-          ),
-        },
-      ],
+            }
+          : null,
     );
   }
 
@@ -131,9 +121,7 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         // Delete subscription
-        context.read<SubscriptionBloc>().add(
-          DeleteTenant<String>(documentId: id),
-        );
+        _bloc.add(DeleteTenant<String>(documentId: id));
 
         // Navigator.pop(context);
       }

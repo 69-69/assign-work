@@ -48,7 +48,7 @@ class LiveChatMessage extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var map = toMap();
-    map['createdAt'] = createdAt?.millisecondsSinceEpoch;
+    map['createdAt'] = createdAt?.toMilliseconds;
 
     return {'id': id, 'data': map};
   }
@@ -92,7 +92,7 @@ class LiveChatOverview {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var map = toMap();
-    var sec = updatedAt?.millisecondsSinceEpoch;
+    var sec = updatedAt?.toMilliseconds;
     map['updatedAt'] = sec;
 
     return {'id': sec, 'data': map};

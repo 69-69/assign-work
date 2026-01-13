@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_repository.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -258,15 +258,23 @@ class DataRepository extends FirestoreRepository {
     _emitDataToStream(); // Update the stream with the latest data
   }
 
-  /// Delete/Remove Data Function [deleteData]
-  Future<void> deleteData(String id) async {
-    await _cacheBox.delete(id); // Delete from cache
-    await _cacheBox.flush(); // Flush cache to disk
-    await deleteById(id); // Delete from remote Firestore-DB
+  /// Delete/Remove Single Data Function [deleteData]
+  Future<void> deleteData(String id) async => await deleteManyData([id]);
 
+  /// Delete Multiple Data Function [deleteManyData]
+  Future<void> deleteManyData(Iterable<String> ids) async {
+    if (ids.isEmpty) return;
+
+    // 1️⃣ Delete from cache & Flush cache to disk
+    await _cacheBox.deleteAll(ids);
+    await _cacheBox.flush();
+
+    // 2️⃣ Delete from remote (parallel)
+    await Future.wait(ids.map(deleteById));
+
+    // 3️⃣ Emit/Update the stream with the latest data
+    _emitDataToStream(reEmit: true);
     // prettyPrint('steve-cache-keys', _cacheBox.get(id)?.data.toString());
-
-    _emitDataToStream(reEmit: true); // Update the stream with the latest data
   }
 
   /// Get All Data from Cache [getAllCacheData]
@@ -286,8 +294,8 @@ class DataRepository extends FirestoreRepository {
     return dataList;
   }
 
-  /// Get Multiple Data by IDs [getMultipleDataByIDs]
-  Future<List<CacheData>> getMultipleDataByIDs(List<String> ids) async {
+  /// Get Multiple Data by IDs [getManyDataByIDs]
+  Future<List<CacheData>> getManyDataByIDs(List<String> ids) async {
     List<CacheData> dataList = [];
 
     for (String id in ids) {
@@ -336,7 +344,7 @@ class DataRepository extends FirestoreRepository {
     return dataList;
   }
 
-  /// ⚠️ Note:
+  /*/// ⚠️ Note:
   /// - Firestore limits `whereIn` to a maximum of 30 IDs per query + Cost.
   ///   So, if you need to fetch more than 30 documents, you must batch the calls like this [getMultiDataByIds]:
   Future<List<CacheData>> getMultiDataByIds(List<String> ids) async {
@@ -385,7 +393,7 @@ class DataRepository extends FirestoreRepository {
     _emitDataToStream();
 
     return cached;
-  }
+  }*/
 
   /// Get Single Data by ID [getDataById]
   Future<CacheData?> getDataById(String id, {Object? field}) async {

@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/url_launcher_helper.dart';
+import 'package:assign_erp/core/util/url_launcher_util.dart';
 import 'package:flutter/material.dart';
 
 class DeveloperInfo extends StatelessWidget {

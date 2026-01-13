@@ -50,7 +50,7 @@ class UpdateGuide<T> extends GuideEvent<T> {
 }
 
 class DeleteGuide<T> extends GuideEvent<T> {
-  final String documentId;
+  final T documentId;
 
   const DeleteGuide({required this.documentId});
 

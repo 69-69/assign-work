@@ -9,6 +9,7 @@ import 'package:assign_erp/features/auth/presentation/screen/sign_in/index.dart'
 import 'package:assign_erp/features/customer_crm/presentation/index.dart';
 import 'package:assign_erp/features/home/home_app.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/index.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/stock_management/index.dart';
 import 'package:assign_erp/features/live_support/presentation/index.dart';
 import 'package:assign_erp/features/onboarding/initial_screen.dart';
 import 'package:assign_erp/features/pos_system/presentation/index.dart';
@@ -17,7 +18,6 @@ import 'package:assign_erp/features/sales_distribution/presentation/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/index.dart';
-import 'package:assign_erp/features/warehouse_wms/presentation/index.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -113,7 +113,7 @@ GoRoute _configBaseRoute({
   );
 }
 
-/// Customer App
+/// CRM App
 GoRoute _customerRoute() {
   return GoRoute(
     name: RouteNames.customersApp,
@@ -133,7 +133,8 @@ GoRoute _customerRoute() {
 
 /// POS App
 GoRoute _posRoute() {
-  final List<({String name, Widget screen})> posScreens = [
+  // Sub routes for POS App
+  final List<({String name, Widget screen})> posSubScreens = [
     (name: RouteNames.posOrders, screen: const PosOrdersScreen()),
     (name: RouteNames.posSales, screen: const PosSalesScreen()),
     (name: RouteNames.posReports, screen: const ReportsAnalyticsScreen()),
@@ -143,14 +144,15 @@ GoRoute _posRoute() {
   return GoRoute(
     name: RouteNames.posApp,
     path: RouteNames.posApp,
-    pageBuilder: (context, state) => _animateTransition(state, const POSApp()),
-    routes: _mapStaticRoutes(posScreens),
+    pageBuilder: (_, state) => _animateTransition(state, const POSApp()),
+    routes: _mapStaticRoutes(posSubScreens),
   );
 }
 
 /// Setup App
 GoRoute _setupRoute() {
-  final List<String> setupRoutes = [
+  // Sub routes for Setup App
+  final List<String> setupSubRoutes = [
     RouteNames.companyInfo,
     RouteNames.allEmployees,
     RouteNames.manageRoles,
@@ -165,7 +167,7 @@ GoRoute _setupRoute() {
     path: RouteNames.systemAdminApp,
     pageBuilder: (context, state) =>
         _animateTransition(state, const SetupApp()),
-    routes: setupRoutes
+    routes: setupSubRoutes
         .map(
           (routeName) => GoRoute(
             name: routeName,
@@ -188,49 +190,75 @@ GoRoute _storesSwitcherRoute() {
   );
 }
 
-/// Warehouse App
-GoRoute _warehouseRoute() {
-  final List<({String name, Widget screen})> warehouseRoutes = [
+/// Stock Management Module
+GoRoute _stockManagementRoute() {
+  // Sub routes for Stock Management
+  final List<({String name, Widget screen})> stockManageSubRoutes = [
+    (name: RouteNames.goodsReceipt, screen: const GoodsReceiptScreen()),
+    (name: RouteNames.serviceReceipt, screen: const GoodsReceiptScreen()),
+    (name: RouteNames.goodsIssue, screen: const GoodsIssueScreen()),
+    (name: RouteNames.stockTransfer, screen: const StockTransferScreen()),
+    (name: RouteNames.stockAdjustment, screen: const StockAdjustmentScreen()),
+    (name: RouteNames.reserveStocks, screen: const StockAdjustmentScreen()),
     (
-      name: RouteNames.warehouseProducts,
-      screen: const WarehouseProductScreen(),
+      name: RouteNames.returnsFromCustomers,
+      screen: const StockAdjustmentScreen(),
     ),
-    (name: RouteNames.warehouseSupply, screen: const WarehouseProductScreen()),
-    (
-      name: RouteNames.warehouseDeliveries,
-      screen: const WarehouseProductScreen(),
-    ),
-    (name: RouteNames.warehouseSales, screen: const WarehouseProductScreen()),
   ];
 
   return GoRoute(
-    name: RouteNames.warehouseApp,
-    path: RouteNames.warehouseApp,
-    pageBuilder: (context, state) =>
-        _animateTransition(state, const WarehouseApp()),
-    routes: _mapStaticRoutes(warehouseRoutes),
+    name: RouteNames.stockManagementModule,
+    path: RouteNames.stockManagementModule,
+    pageBuilder: (_, state) =>
+        _animateTransition(state, const StockManagementScreen()),
+    routes: _mapStaticRoutes(stockManageSubRoutes),
+  );
+}
+
+/// Warehouse Management Module
+GoRoute _wmsRoute() {
+  // Sub routes for Warehouse Management
+  final List<({String name, Widget screen})> wmsSubRoutes = [
+    (name: RouteNames.warehouse, screen: const WarehouseScreen()),
+    (name: RouteNames.warehouseLocation, screen: const WarehouseScreen()),
+    (name: RouteNames.warehouseBin, screen: const WarehouseScreen()),
+  ];
+
+  return GoRoute(
+    name: RouteNames.wmsModule,
+    path: RouteNames.wmsModule,
+    pageBuilder: (_, state) => _animateTransition(state, const WMSScreen()),
+    routes: _mapStaticRoutes(wmsSubRoutes),
+  );
+}
+
+/// Orders Module
+GoRoute _ordersRoute() {
+  // Sub routes for Orders
+  final List<({String name, Widget screen})> orderSubRoutes = [
+    (name: RouteNames.salesOrders, screen: const OrderScreen()),
+    (name: RouteNames.imsPurchaseOrders, screen: const PurchaseOrderScreen()),
+    (name: RouteNames.miscOrders, screen: const MiscOrderScreen()),
+  ];
+
+  return GoRoute(
+    name: RouteNames.orders,
+    path: RouteNames.orders,
+    pageBuilder: (_, state) => _animateTransition(state, const OrdersScreen()),
+    routes: _mapStaticRoutes(orderSubRoutes),
   );
 }
 
 /// Inventory App
 GoRoute _inventoryRoute() {
+  // Sub routes for Inventory
   final List<({String name, Widget screen})> inventoryRoutes = [
+    (name: RouteNames.itemMasterModule, screen: const ItemMasterScreen()),
     (name: RouteNames.invoice, screen: const InvoiceScreen()),
     (name: RouteNames.deliveries, screen: const DeliveryScreen()),
     (name: RouteNames.items, screen: const ProductScreen()),
     (name: RouteNames.sales, screen: const SaleScreen()),
     (name: RouteNames.inventReports, screen: const ReportsAnalyticsScreen()),
-  ];
-
-  final List<({String name, Widget screen})> orderSubRoutes = [
-    (name: RouteNames.salesOrders, screen: const OrderScreen()),
-    (name: RouteNames.imsPurchaseOrders, screen: const PurchaseOrderScreen()),
-    (name: RouteNames.miscOrders, screen: const MiscOrderScreen()),
-
-    /*(
-      name: RouteNames.imsRequestForQuote,
-      screen: const RequestForQuotationScreen(),
-    ),*/
   ];
 
   return GoRoute(
@@ -239,16 +267,17 @@ GoRoute _inventoryRoute() {
     pageBuilder: (context, state) =>
         _animateTransition(state, const InventoryApp()),
     routes: [
-      // inventory routes
+      // Inventory subroutes
       ..._mapStaticRoutes(inventoryRoutes),
 
+      // Stock Management with subroutes
+      _stockManagementRoute(),
+
+      // Warehouse Management with subroutes
+      _wmsRoute(),
+
       // Orders with subroutes
-      GoRoute(
-        name: RouteNames.orders,
-        path: RouteNames.orders,
-        builder: (context, state) => const OrdersScreen(),
-        routes: _mapStaticRoutes(orderSubRoutes),
-      ),
+      _ordersRoute(),
     ],
   );
 }
@@ -269,7 +298,7 @@ GoRoute _procurementRoute() {
       screen: const ProPurchaseOrderScreen(),
     ),
     (
-      name: RouteNames.proMyPOApprovals,
+      name: RouteNames.proMyApprovals,
       screen: const ProWorkflowApprovalsScreen(),
     ),
     /*(
@@ -312,6 +341,7 @@ GoRoute _procurementRoute() {
 
 /// Sales and Distribution App
 GoRoute _salesDistributionRoute() {
+  // Sub routes for Sales and Distribution
   final List<({String name, Widget screen})> salesDistributionRoutes = [
     (name: RouteNames.salesOrders2, screen: const SalesOrderScreen()),
     (name: RouteNames.shippingDelivery, screen: const OrderDeliveryScreen()),
@@ -360,6 +390,7 @@ GoRoute _agentRoute() {
 
 /// User User Guide App
 GoRoute _userGuideRoute() {
+  // Sub routes for User Guide
   final List<({String name, Widget screen})> userGuideRoutes = [
     (name: RouteNames.howToConfigApp, screen: const HowToConfigAppScreen()),
     (
@@ -387,8 +418,9 @@ GoRoute _liveSupportRoute() {
   );
 }
 
-/// Developer: Trouble Shooting App
+/// Developer Only: Trouble Shooting App
 GoRoute _troubleShootRoute() {
+  // Sub routes for Trouble Shooting
   final List<({String name, Widget screen})> troubleShootRoutes = [
     (name: RouteNames.diagnoseIssues, screen: const DiagnosticScreen()),
     (
@@ -426,7 +458,6 @@ List<RouteBase> appRouterConfig = <RouteBase>[
           _inventoryRoute(),
           _procurementRoute(),
           _setupRoute(),
-          _warehouseRoute(),
           _customerRoute(),
           _posRoute(),
           _salesDistributionRoute(),

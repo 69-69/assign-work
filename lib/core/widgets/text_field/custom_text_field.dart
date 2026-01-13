@@ -257,7 +257,6 @@ class _StandardTextField extends StatelessWidget {
   final Color? textColor;
   final bool obscureText;
   final FocusNode? focusNode;
-  final String? initialValue;
   final TextInputType keyboardType;
   final InputDecoration? decoration;
   final Iterable<String>? autofillHints;
@@ -267,6 +266,7 @@ class _StandardTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
   // final Color? fillColor;
+  // final String? initialValue;
   // final String? label;
   // final String? helperText;
 
@@ -282,12 +282,12 @@ class _StandardTextField extends StatelessWidget {
     this.focusNode,
     this.controller,
     this.decoration,
-    this.initialValue,
     this.autofillHints,
     this.textInputAction,
     this.onFieldSubmitted,
     this.obscureText = false,
     this.autofocus = false,
+    // this.initialValue,
     // this.label,
     // this.fillColor,
     // this.helperText,

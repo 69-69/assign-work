@@ -67,14 +67,15 @@ abstract class RouteNames {
   static const sales = 'sales_screen';
   static const inventReports = 'invent_reports_screen';
 
+  /// ───────────────────────── 📦 Item Master Module ─────────────────────────
+  static const itemMasterModule = 'item_master_module_screen';
+
   // for procurement
   /// ───────────────────────── 📦 Procurement Module ─────────────────────────
   static const purchaseRequisition = 'purchase_requisition_screen';
   static const proRequestForQuote = 'pro_request_for_quote_screen';
   static const proPurchaseOrders = 'pro_purchase_orders_screen';
-  static const proMyPOApprovals = 'pro_my_approvals_screen';
-  static const goodsReceiptNote = 'goods_receipt_note_screen';
-  static const serviceEntrySheet = 'goods_receipt_note_screen';
+  static const proMyApprovals = 'pro_my_approvals_screen';
   static const supplierManagement = 'supplier_management_screen';
   static const supplierAccount = 'supplier_account_screen';
   static const procurementReports = 'pro_reports_screen';
@@ -92,10 +93,23 @@ abstract class RouteNames {
   static const createCustomer = 'create_customer_screen';
 
   /// ─────────────────────── 🏢 Warehouse Module ───────────────────────
-  static const warehouseProducts = 'warehouse_products_screen';
-  static const warehouseSupply = 'warehouse_supply_screen';
-  static const warehouseDeliveries = 'warehouse_deliveries_screen';
-  static const warehouseSales = 'warehouse_sales_screen';
+  static const wmsModule = 'warehouse_module_screen';
+  static const warehouse = 'warehouse_storage_screen';
+  static const warehouseLocation = 'warehouse_location_screen';
+  static const warehouseBin = 'warehouse_bin_screen';
+  static const inboundReceiving = 'warehouse_inbound_receiving_screen';
+  static const internalMovements = 'warehouse_internal_movements_screen';
+  static const outboundPickShipping = 'warehouse_outbound_pick_shipping_screen';
+
+  /// ─────────────────────── 🏢 Stock Management Module ───────────────────────
+  static const stockManagementModule = 'stock_management_screen';
+  static const goodsReceipt = 'goods_receipt_screen';
+  static const serviceReceipt = 'service_receipt_screen';
+  static const goodsIssue = 'goods_issue_screen';
+  static const stockTransfer = 'stock_transfer_screen';
+  static const stockAdjustment = 'stock_adjustment_screen';
+  static const reserveStocks = 'reserve_stocks_screen';
+  static const returnsFromCustomers = 'return_goods_screen';
 
   /// ─────────────────────── ⚙️ Setup / Settings Module ───────────────────────
   // static const switchStoresAccount = 'switch_stores_account_screen';

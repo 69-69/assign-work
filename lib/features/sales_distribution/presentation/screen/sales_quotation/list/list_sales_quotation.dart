@@ -2,15 +2,13 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
-import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/customer_crm/data/data_sources/remote/get_customers.dart';
 import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
 import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
@@ -18,7 +16,7 @@ import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_q
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/create/create_sales_quotation.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/list/see_sales_quote_details.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/update/update_sales_quotation.dart';
-import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
+import 'package:assign_erp/features/sales_distribution/presentation/screen/sales_quotation/widget/sq_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,7 +36,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   final List<SalesQuotation> _selectedForCompare = [];
 
   bool get _isApproved => widget.isApproved;
-  SalesQuotationBloc get _readBloc => context.read<SalesQuotationBloc>();
+  SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -182,47 +180,27 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   _buildToolbar(List<SalesQuotation> quotes) {
-    return AdaptiveLayout(
-      isFormBuilder: false,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh ${_isApproved ? 'Approved' : ''} Quotes',
-          label: 'Quotations',
-          count: quotes.length,
-          onPressed: () =>
-              _readBloc.add(RefreshSalesDistributions<SalesQuotation>()),
-        ),
-        const SizedBox(width: 20),
-        context.elevatedButton(
-          'Create Sales Quote',
-          onPressed: () => _openCreateSQ(context),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-        if (_selectedIds.length > 1) ...[
-          const SizedBox(width: 20),
-          context.elevatedButton(
-            'Delete',
-            txtColor: kWhiteColor,
-            bgColor: kDangerColor,
-            tooltip: 'Delete selected Quotes',
-            onPressed: () async {
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh Quotes',
+      createLabel: 'Create Quote',
+      deleteLabel: 'Quote',
+      dataLength: quotes.length,
+      onCreate: () => _openCreateSQ(context),
+      onRefresh: () => _bloc.add(RefreshSalesDistributions<SalesQuotation>()),
+      onDelete: _selectedIds.isNotEmpty
+          ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 /// Delete all selected Sales Quotations
-                _readBloc.add(
+                _bloc.add(
                   DeleteSalesDistribution<List<String>>(
                     documentId: _selectedIds,
                   ),
                 );
                 _selectedIds.clear();
               }
-            },
-          ),
-        ],
-      ],
+            }
+          : null,
     );
   }
 
@@ -231,27 +209,19 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     return quote.isEmpty ? null : quote;
   }
 
-  Future<SalesQuotation> _applyTaxesToSQ(SalesQuotation quote) async {
-    final taxMap = await GetTaxes.loadAllTaxRates();
-    return quote.computeTaxAmounts(taxMap);
-  }
-
-  Future<Customer?> _getCustomer(String customerId) async {
-    final customer = await GetAllCustomers.byCustomerId(customerId);
-    return customer.isEmpty ? null : customer;
-  }
-
   Future<void> _onViewDetails(List<SalesQuotation> quotes, String id) async {
     await _withTaxAndCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.viewed,
       shouldProcessCustomerInfo: false,
-      onQuoteProcessed: (quoteWithTaxes, customer) async {
+      onQuoteProcessed: (quoteWithTax, customer) async {
         return await context.openSQDetails(
-          salesQuote: quoteWithTaxes,
+          salesQuote: quoteWithTax,
           // customer: customer,
-          bloc: _readBloc,
+          onPrint: (bool isPrinted) {
+            if (isPrinted) _bloc.add(_updateHistory(quoteWithTax));
+          },
         );
       },
     );
@@ -273,11 +243,12 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   Future<void> _printout(List<SalesQuotation> quotes, String id) async {
     await Future.delayed(kRProgressDelay);
 
-    await _withTaxOrCustomerInfo(
+    await _withTaxAndCustomerInfo(
       id,
       quotes,
       auditAction: AuditAction.printed,
-      onSingleCustomer: (quote, customer) {
+      shouldProcessCustomerInfo: false,
+      onQuoteProcessed: (quote, customer) {
         return Future.delayed(kRProgressDelay); // temporal placeholder
         // return SQPrinter(quote: quote, customer: customer).printSQ();
       },
@@ -302,7 +273,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      final bloc = _readBloc;
+      final bloc = _bloc;
 
       bloc
         ..add(_updateHistory(quote))
@@ -342,48 +313,23 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     final quote = _getSQById(quotes, quoteId); // Get quote by ID
     if (!mounted || quote == null || quote.customerId.isNullOrEmpty) return;
 
-    final quoteWithTaxes = await _applyTaxesToSQ(quote); // Apply taxes
+    final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(
+      quote,
+    ); // Apply taxes
     if (!mounted) return;
 
     // Update history with the audit action
-    _readBloc.add(_updateHistory(quote, action: auditAction));
+    _bloc.add(_updateHistory(quote, action: auditAction));
 
     if (!shouldProcessCustomerInfo) {
       return onQuoteProcessed(quoteWithTaxes, Customer.empty);
     }
 
     // Fetch customer information
-    final customer = await _getCustomer(quote.customerId);
+    final customer = await SQFormInputs.getCustomer(quote.customerId);
     if (!mounted || customer == null) return;
 
     // Process quote with customer data
     await onQuoteProcessed(quoteWithTaxes, customer);
-  }
-
-  Future<void> _withTaxOrCustomerInfo(
-    String id,
-    List<SalesQuotation> quotes, {
-    bool hasCustomer = true,
-    required AuditAction auditAction,
-    required Future<void> Function(
-      SalesQuotation quoteWithTaxes,
-      Customer customer,
-    )
-    onSingleCustomer,
-  }) async {
-    final quote = _getSQById(quotes, id);
-    if (!mounted || quote == null || quote.customerId.isNullOrEmpty) return;
-
-    final quoteWithTaxes = await _applyTaxesToSQ(quote);
-    if (!mounted) return;
-
-    _readBloc.add(_updateHistory(quote, action: auditAction));
-
-    if (!hasCustomer) return onSingleCustomer(quoteWithTaxes, Customer.empty);
-
-    final customer = await _getCustomer(quote.customerId);
-    if (!mounted || customer == null) return;
-
-    await onSingleCustomer(quoteWithTaxes, customer);
   }
 }

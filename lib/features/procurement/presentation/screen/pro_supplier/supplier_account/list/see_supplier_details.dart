@@ -8,7 +8,7 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/core/widgets/layout/read_more_text.dart';
+import 'package:assign_erp/core/widgets/see_detail/see_details.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:flutter/material.dart';
 /*import 'package:pdf/pdf.dart';
@@ -47,37 +47,6 @@ extension SupplierDetails on BuildContext {
   }
 }
 
-Widget _buildInfoRow(
-  BuildContext context, {
-  String title = '',
-  String value = '',
-  String separator = ': ',
-  bool isReadMore = false,
-}) {
-  return Padding(
-    padding: EdgeInsets.symmetric(vertical: 2.0),
-    child: RichText(
-      text: TextSpan(
-        text: '$title$separator',
-        style: context.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: context.secondaryColor,
-        ),
-        children: [
-          isReadMore
-              ? WidgetSpan(child: ReadMoreAutoText(text: value))
-              : TextSpan(
-                  text: value,
-                  style: context.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _SupplierInfoPage extends StatelessWidget {
   final Supplier? _supplier;
 
@@ -85,13 +54,18 @@ class _SupplierInfoPage extends StatelessWidget {
 
   List<ContactPerson> get _contactPersons => _supplier?.contactPersons ?? [];
 
-  List<String> get _headerItems => [
-    'Name',
-    'Email',
-    'Phone',
-    'Department',
-    'Position',
-    'Date',
+  List<SummaryItem> get _summaryItems => [
+    (title: 'Supplier ID', value: _supplier?.code.toUpperAll ?? 'N/A'),
+    (title: 'Supplier', value: _supplier?.name.toSentence ?? 'N/A'),
+    (title: 'Phone', value: _supplier!.phone),
+    (title: 'Email', value: _supplier.email.toLowerAll),
+    (title: 'Business', value: _supplier.getBusinessType.toTitle),
+    (title: 'Industry', value: _supplier.getIndustryType.toTitle),
+  ];
+
+  List<SummaryItem> get _rightSummaryItems => [
+    (title: 'Address', value: _supplier?.address.toSentence ?? 'None'),
+    (title: 'Bank Details', value: _supplier?.bankDetails.toSentence ?? 'None'),
   ];
 
   @override
@@ -104,7 +78,10 @@ class _SupplierInfoPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildBody(context),
-        _Footer(supplier: _supplier),
+        DetailsFooter(
+          created: (by: _supplier.createdBy, at: _supplier.getCreatedAt),
+          updated: (by: _supplier.updatedBy, at: _supplier.getUpdatedAt),
+        ),
         const SizedBox(height: 20),
       ],
     );
@@ -122,9 +99,7 @@ class _SupplierInfoPage extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             'Contact Persons (${_contactPersons.length})',
-            style: context.textTheme.titleLarge?.copyWith(
-              color: context.secondaryColor,
-            ),
+            style: context.textTheme.titleLarge,
           ),
         ),
         HorizontalDivider(),
@@ -141,8 +116,19 @@ class _SupplierInfoPage extends StatelessWidget {
 
         AdaptiveLayout(
           children: [
-            _LeftSummary(supplier: _supplier),
-            _RightSummary(supplier: _supplier),
+            DetailsSummary(
+              items: _rightSummaryItems,
+              alignment: Alignment.centerLeft,
+            ),
+            DetailsSummary(
+              items: [
+                (
+                  title: 'Products / Services',
+                  value:
+                      '\n${_supplier!.items.splitMapJoin(',', onMatch: (m) => '\n', onNonMatch: (m) => m.toTitle.trim())}',
+                ),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 20),
@@ -161,41 +147,7 @@ class _SupplierInfoPage extends StatelessWidget {
   );
 
   Widget _buildHeader(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('Supplier (Vendor) Info', style: context.textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        _buildInfoRow(
-          context,
-          title: 'Supplier ID',
-          value: _supplier?.code.toUpperAll ?? 'N/A',
-        ),
-        _buildInfoRow(
-          context,
-          title: 'Supplier',
-          value: _supplier?.name.toSentence ?? 'N/A',
-        ),
-        _buildInfoRow(context, title: 'Phone', value: _supplier!.phone),
-        _buildInfoRow(
-          context,
-          title: 'Email',
-          value: _supplier.email.toLowerAll,
-        ),
-        _buildInfoRow(
-          context,
-          title: 'Business Type',
-          value: _supplier.getBusinessType.toTitle,
-        ),
-        _buildInfoRow(
-          context,
-          title: 'Industry Type',
-          value: _supplier.getIndustryType.toTitle,
-        ),
-      ],
-    );
+    return DetailsSummary(items: _summaryItems, alignment: Alignment.topLeft);
   }
 
   Widget _buildItemTableHeader(BuildContext context) {
@@ -204,149 +156,21 @@ class _SupplierInfoPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: _headerItems.map((item) => _buildItem(item)).toList(),
+        children: ContactPerson.dataTableHeader
+            .map((item) => _buildItem(item))
+            .toList(),
       ),
     );
   }
 
   Widget _buildItemRow(ContactPerson person, int index) {
-    final rowItems = [
-      person.name.toTitle,
-      person.email.toLowerAll,
-      person.phone,
-      person.department.toTitle,
-      person.position.toTitle,
-      person.getCreatedAt,
-    ];
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: rowItems
+        children: person.itemAsList
             .map((item) => _buildItem(item, isBold: false))
             .toList(),
-      ),
-    );
-  }
-}
-
-class _LeftSummary extends StatelessWidget {
-  final Supplier? supplier;
-
-  const _LeftSummary({this.supplier});
-
-  /// List of title-value pairs to render in the summary.
-  List<(String, String)> get summaryItems {
-    final s = supplier;
-    if (s == null) return const [];
-
-    return [
-      ('Address', s.address.toSentence),
-      ('Bank Details', s.bankDetails.toSentence),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: supplier == null
-          ? Text("No supplier data available.")
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: summaryItems
-                  .map(
-                    (item) => _buildInfoRow(
-                      context,
-                      separator: ':\n',
-                      title: item.$1,
-                      value: item.$2,
-                    ),
-                  )
-                  .toList(),
-            ),
-    );
-  }
-}
-
-class _RightSummary extends StatelessWidget {
-  final Supplier? supplier;
-
-  const _RightSummary({this.supplier});
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildRightSummary(context);
-  }
-
-  Widget _buildRightSummary(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _buildInfoRow(
-            context,
-            title: 'Products / Services',
-            separator: ':\n',
-            value: supplier!.items.splitMapJoin(
-              ',',
-              onMatch: (m) => '\n',
-              onNonMatch: (m) => m.toTitle.trim(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Footer extends StatelessWidget {
-  final Supplier? supplier;
-
-  const _Footer({this.supplier});
-
-  String? get _updatedBy =>
-      supplier!.updatedBy.isNullOrEmpty ? 'N/A' : supplier?.updatedBy;
-
-  String? get _createdBy =>
-      supplier!.createdBy.isNullOrEmpty ? 'N/A' : supplier?.createdBy;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildFooter(context);
-  }
-
-  Container _buildFooter(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      color: context.secondaryContainerColor,
-      child: AdaptiveLayout(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _buildInfoRow(
-              context,
-              title: 'Created',
-              value:
-                  '${supplier?.getCreatedAt} - By: [ ${_createdBy.toTitle} ]',
-            ),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _buildInfoRow(
-              context,
-              title: 'Updated',
-              value:
-                  '${supplier!.getUpdatedAt} - By: [ ${_updatedBy.toTitle} ]',
-            ),
-          ),
-        ],
       ),
     );
   }

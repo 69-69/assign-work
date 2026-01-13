@@ -5,9 +5,17 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_blo
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetTaxes {
-  static List<Tax>? _cached;
-  static DateTime? _lastFetched;
-  static const Duration _cacheDuration = fMinutesDuration;
+  static List<Tax>? _cached; // Cached list of taxes
+  static DateTime? _lastFetched; // Last time taxes were fetched
+  static const Duration _cacheDuration = fMinutesDuration; // Cache duration
+  /*Loading lock to prevent simultaneous fetches
+  * Analogy:
+    Call 1 -----> fetch starts ---> _loading = Future<Data>
+    Call 2 -----> sees _loading != null --> waits on Future<Data> from Call 1
+    Call 3 -----> sees _loading != null --> waits on Future<Data> from Call 1
+    Call 1 completes --> updates _cached & resets _loading
+    Call 2 & Call 3 automatically receive the same cached data*/
+  static Future<List<Tax>>? _loading;
 
   // listen to the data loaded state
   static Future<SetupsLoaded<Tax>> _dataLoadedState(TaxBloc bloc) async {
@@ -26,21 +34,48 @@ class GetTaxes {
       if (isFresh) return _cached!;
     }
 
-    // Load all data initially
+    // If already loading, wait for the existing Future
+    if (_loading != null) return await _loading!;
+
+    // Start loading
+    taxBloc.add(GetSetups<Tax>());
+    _loading = _dataLoadedState(taxBloc)
+        .then((state) {
+          _cached = state.data;
+          _lastFetched = now;
+          _loading = null; // reset loading lock
+          return state.data;
+        })
+        .catchError((e) {
+          _loading = null; // reset on error
+          throw e;
+        });
+
+    return await _loading!;
+
+    /*// Load all data initially
     taxBloc.add(GetSetups<Tax>());
     final state = await _dataLoadedState(taxBloc);
     _cached = state.data;
     _lastFetched = now;
 
-    return state.data;
+    return state.data;*/
   }
 
-  static Future<Map<String, ResolveTaxCode>> loadAllTaxRates() async {
-    final List<Tax> taxes = await GetTaxes.getAllTaxes();
+  static Future<Map<String, ResolveTaxCode>> loadAllTaxRates({
+    bool forceRefresh = false,
+  }) async {
+    final List<Tax> taxes = await GetTaxes.getAllTaxes(
+      forceRefresh: forceRefresh,
+    );
 
     return {
       for (final tax in taxes)
-        tax.code: ResolveTaxCode(rate: tax.rate, name: tax.name),
+        tax.code: ResolveTaxCode(
+          rate: tax.rate,
+          name: tax.name,
+          isShippingTaxed: tax.isShippingTaxed,
+        ),
     };
   }
 

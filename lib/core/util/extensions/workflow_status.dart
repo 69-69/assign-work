@@ -2,7 +2,7 @@
 // ⚙️ Purchase Requisition Status Definitions
 // --------------------------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// [WorkflowStatus] Workflow status for PR, RFQ, PO & Sales Quotation(SQ).
 enum WorkflowStatus {
@@ -44,12 +44,12 @@ enum WorkflowStatus {
 enum WorkflowType { pr, rfq, po, sq }
 
 // Enum Extensions (Label / Value)
-extension WorkflowStatusExt on WorkflowStatus {
+extension WorkflowStatusExtension on WorkflowStatus {
   /// [getName] Get the specific Enum Name (e.g. "underReview")
-  String get getName => EnumHelper<WorkflowStatus>(this).getName;
+  String get getName => EnumUtil<WorkflowStatus>(this).getName;
 
   /// Returns a user-friendly label (e.g. "Under Review")
-  String get getLabel => EnumHelper<WorkflowStatus>(this).getLabel;
+  String get getLabel => EnumUtil<WorkflowStatus>(this).getLabel;
 }
 
 // Generic statuses shared across all types
@@ -102,10 +102,10 @@ final Map<WorkflowType, Set<WorkflowStatus>> _statusMatrix = {
 };
 
 // Helper Class
-class WorkflowStatusHelper {
+class WorkflowStatusUtil {
   /// [fromString] Converts String/Label to enum value.
   static WorkflowStatus fromString(String? value) =>
-      EnumHelper.fromString<WorkflowStatus>(WorkflowStatus.values, value);
+      EnumUtil.fromString<WorkflowStatus>(WorkflowStatus.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList({
@@ -115,6 +115,6 @@ class WorkflowStatusHelper {
     final statuses = _statusMatrix[type] ?? WorkflowStatus.values;
 
     final list = statuses.map((e) => e).toList();
-    return EnumHelper.toStringList<WorkflowStatus>(list, 'Status');
+    return EnumUtil.toStringList<WorkflowStatus>(list, 'Status');
   }
 }

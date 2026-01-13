@@ -2,7 +2,7 @@
 // 🌐 TaxAutoApplyContext: Defines where autoApply tax should be applied
 // ---------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// [TaxContext] - Defines where tax should be applied based on the context
 enum TaxContext {
@@ -28,11 +28,11 @@ enum TaxContext {
 
 extension TaxContextExtension on TaxContext {
   /// [getName] Get the specific Enum Name (e.g. "requestForQuote")
-  String get getName => EnumHelper<TaxContext>(this).getName;
+  String get getName => EnumUtil<TaxContext>(this).getName;
 }
 
-/// [TaxContextHelper] Utility class for working with TaxContext enum
-class TaxContextHelper {
+/// [TaxContextUtil] Utility class for working with TaxContext enum
+class TaxContextUtil {
   /// [parseList] Parse a list of dynamic (string or enum) values into a `List<TaxContext>`
   static List<TaxContext> parseList(dynamic data) {
     if (data is! List) return [];
@@ -46,13 +46,13 @@ class TaxContextHelper {
 
   /// [isAutoAppliedTo] Check if tax is auto-applied to a given string value
   static bool isAutoAppliedTo(String value) =>
-      EnumHelper.isValid<TaxContext>(TaxContext.values, value);
+      EnumUtil.isValid<TaxContext>(TaxContext.values, value);
 
   /// [fromString] Converts String/Label to enum value.
   static TaxContext fromString(String? value) =>
-      EnumHelper.fromString<TaxContext>(TaxContext.values, value);
+      EnumUtil.fromString<TaxContext>(TaxContext.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([List<TaxContext>? contexts]) =>
-      EnumHelper.toStringList<TaxContext>(contexts ?? TaxContext.values);
+      EnumUtil.toStringList<TaxContext>(contexts ?? TaxContext.values);
 }

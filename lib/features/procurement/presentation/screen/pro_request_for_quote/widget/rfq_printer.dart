@@ -39,7 +39,7 @@ class RFQPrinter {
         currencySign: currencySign,
         itemName: item.description,
         quantity: item.quantity,
-        discount: item.discount,
+        discount: item.discountPercent,
         unitPrice: item.unitPrice,
         taxAmount: item.taxAmount,
         paymentTerms: rfq.buyerContactPersonId,

@@ -1,14 +1,13 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
-import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
@@ -39,7 +38,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
 
   bool get _isApproved => widget.isApproved;
 
-  ProPurchaseRequisiteBloc get _readBloc =>
+  ProPurchaseRequisiteBloc get _bloc =>
       context.read<ProPurchaseRequisiteBloc>();
 
   @override
@@ -116,9 +115,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       selectedRowKeys: _selectedIds,
       // Currently selected row keys
       onChecked: (bool? isChecked, checkedRow) {
-        setState(
-          () => _updateSelectedIds(isChecked, checkedRow.first, requisitions),
-        );
+        setState(() => _updateSelectedIds(isChecked, checkedRow.first));
       },
       onAllChecked:
           (
@@ -126,9 +123,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
             List<bool> isAllChecked,
             List<List<String>> checkedRows,
           ) {
-            setState(
-              () => _updateAllSelectedIds(isChecked, checkedRows, requisitions),
-            );
+            setState(() => _updateAllSelectedIds(isChecked, checkedRows));
           },
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintPR(requisitions, row.first),
@@ -138,11 +133,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
   }
 
   // Updates selected IDs and triggers additional logic (like selecting PRs)
-  void _updateSelectedIds(
-    bool? isChecked,
-    String id,
-    List<PurchaseRequisition> requisitions,
-  ) {
+  void _updateSelectedIds(bool? isChecked, String id) {
     if (isChecked == true) {
       if (!_selectedIds.contains(id)) {
         _selectedIds.add(id);
@@ -154,11 +145,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
   }
 
   // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(
-    bool isChecked,
-    List<List<String>> checkedRows,
-    List<PurchaseRequisition> requisitions,
-  ) {
+  void _updateAllSelectedIds(bool isChecked, List<List<String>> checkedRows) {
     _selectedIds.clear();
     if (isChecked) {
       // Add all selected rows, ensuring uniqueness using a Set
@@ -167,49 +154,24 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
   }
 
   _buildToolbar(List<PurchaseRequisition> requisitions) {
-    return AdaptiveLayout(
-      isFormBuilder: false,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh ${_isApproved ? 'Approved' : 'Purchase'} Requisitions',
-          label: 'Requisitions',
-          count: requisitions.length,
-          // Dispatch an event to refresh data
-          onPressed: () {
-            // Refresh Purchase Requisition Data
-            _readBloc.add(RefreshProcurements<PurchaseRequisition>());
-          },
-        ),
-        const SizedBox(width: 20),
-        context.elevatedButton(
-          'Create PR',
-          onPressed: () async => await _openCreatePR(context),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-
-        if (_selectedIds.length > 1) ...[
-          const SizedBox(width: 20),
-          context.elevatedButton(
-            'Delete',
-            txtColor: kWhiteColor,
-            bgColor: kDangerColor,
-            tooltip: 'Delete selected PR',
-            onPressed: () async {
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh PR',
+      createLabel: 'Create PR',
+      deleteLabel: 'PR',
+      dataLength: requisitions.length,
+      onCreate: () async => await _openCreatePR(context),
+      onRefresh: () => _bloc.add(RefreshProcurements<PurchaseRequisition>()),
+      onDelete: _selectedIds.isNotEmpty
+          ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
-                /// Delete all selected Requisitions from DB
-                _readBloc.add(
+                _bloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
                 _selectedIds.clear();
               }
-            },
-          ),
-        ],
-      ],
+            }
+          : null,
     );
   }
 
@@ -238,14 +200,16 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     if (mounted) {
       // Log that User viewed details
       if (AuditTracker.shouldLog(id: requisite.id, type: DocType.rfq)) {
-        _readBloc.add(_updateHistory(requisite, action: AuditAction.viewed));
+        _bloc.add(_updateHistory(requisite, action: AuditAction.viewed));
       }
 
       // User opens PR details screen
       await context.openPRDetails(
         requisite: requisite,
         employee: employee,
-        bloc: _readBloc,
+        onPrint: (bool isPrinted) {
+          if (isPrinted) _bloc.add(_updateHistory(requisite));
+        },
       );
     }
   }
@@ -272,7 +236,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
         if (employee == null) return;
 
         if (mounted) {
-          _readBloc.add(_updateHistory(requisite, action: AuditAction.printed));
+          _bloc.add(_updateHistory(requisite, action: AuditAction.printed));
         }
         // Perform action after loading
         await PRPrinter(requisite: requisite, employee: employee).printPR();
@@ -298,7 +262,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     final isConfirmed = await context.confirmUserActionDialog();
 
     if (mounted && isConfirmed) {
-      final bloc = _readBloc;
+      final bloc = _bloc;
 
       bloc
         ..add(_updateHistory(requisite))

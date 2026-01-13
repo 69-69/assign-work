@@ -43,7 +43,7 @@ class SearchPRs extends StatelessWidget {
               _buildMiniLabel(
                 context,
                 'Priority',
-                '${pr.getPriority.toUpperAll} (${pr.lineItems.first.getTypeLabel.toSentence})',
+                '${pr.getPriority.toUpperAll} (${pr.lineItems.first.getType.toSentence})',
               ),
             ],
           ),

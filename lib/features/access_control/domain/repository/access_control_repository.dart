@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/models/result_data.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_helper.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AccessControlRepository {

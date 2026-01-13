@@ -56,7 +56,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
   /// Update Workspace Role [_updateWorkspaceRole]
   void _updateWorkspaceRole(String role) {
-    final obj = WorkspaceRoleHelper.fromString(role);
+    final obj = WorkspaceRoleUtil.fromString(role);
 
     _workspace.copyWith(role: obj);
 

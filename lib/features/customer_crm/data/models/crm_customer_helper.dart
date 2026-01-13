@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// Customer Type
 enum CustomerType { individual, company }
@@ -44,73 +44,73 @@ enum CustomerSegment {
 /// Customer Lifecycle Stage
 enum CustomerLifecycle { lead, prospect, onboarded, active, dormant, churned }
 
-extension LeadSourceExt on LeadSource {
-  String get getName => EnumHelper<LeadSource>(this).getName;
+extension LeadSourceExtension on LeadSource {
+  String get getName => EnumUtil<LeadSource>(this).getName;
 
-  String get getLabel => EnumHelper<LeadSource>(this).getLabel;
+  String get getLabel => EnumUtil<LeadSource>(this).getLabel;
 }
 
-extension MarketingPreferencesExt on CommunicationPreferences {
-  String get getName => EnumHelper<CommunicationPreferences>(this).getName;
-  String get getLabel => EnumHelper<CommunicationPreferences>(this).getLabel;
+extension MarketingPrefExtension on CommunicationPreferences {
+  String get getName => EnumUtil<CommunicationPreferences>(this).getName;
+  String get getLabel => EnumUtil<CommunicationPreferences>(this).getLabel;
 }
 
-extension CustomerLifecycleExt on CustomerLifecycle {
-  String get getName => EnumHelper<CustomerLifecycle>(this).getName;
+extension CustomerLifecycleExtension on CustomerLifecycle {
+  String get getName => EnumUtil<CustomerLifecycle>(this).getName;
 
-  String get getLabel => EnumHelper<CustomerLifecycle>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerLifecycle>(this).getLabel;
 }
 
-extension CustomerSegmentExt on CustomerSegment {
-  String get getName => EnumHelper<CustomerSegment>(this).getName;
+extension CustomerSegmentExtension on CustomerSegment {
+  String get getName => EnumUtil<CustomerSegment>(this).getName;
 
-  String get getLabel => EnumHelper<CustomerSegment>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerSegment>(this).getLabel;
 }
 
-extension CustomerPriorityExt on CustomerPriority {
-  String get getName => EnumHelper<CustomerPriority>(this).getName;
+extension CustomerPriorityExtension on CustomerPriority {
+  String get getName => EnumUtil<CustomerPriority>(this).getName;
 
-  String get getLabel => EnumHelper<CustomerPriority>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerPriority>(this).getLabel;
 }
 
-extension CustomerCategoryExt on CustomerCategory {
+extension CustomerCategoryExtension on CustomerCategory {
   /// [getName] Get the specific Enum Name (e.g. "realEstate")
-  String get getName => EnumHelper<CustomerCategory>(this).getName;
+  String get getName => EnumUtil<CustomerCategory>(this).getName;
 
   /// Returns a user-friendly label (e.g. "real estate")
-  String get getLabel => EnumHelper<CustomerCategory>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerCategory>(this).getLabel;
 }
 
-extension CustomerTypeExt on CustomerType {
-  String get getName => EnumHelper<CustomerType>(this).getName;
+extension CustomerTypeExtension on CustomerType {
+  String get getName => EnumUtil<CustomerType>(this).getName;
 
-  String get getLabel => EnumHelper<CustomerType>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerType>(this).getLabel;
 }
 
-extension CustomerStatusExt on CustomerStatus {
-  String get getName => EnumHelper<CustomerStatus>(this).getName;
+extension CustomerStatusExtension on CustomerStatus {
+  String get getName => EnumUtil<CustomerStatus>(this).getName;
 
-  String get getLabel => EnumHelper<CustomerStatus>(this).getLabel;
+  String get getLabel => EnumUtil<CustomerStatus>(this).getLabel;
 }
 
-class CrmCustomerHelper {
+class CrmCustomerUtil {
   // ===================== Marketing Preferences =====================
   static bool isCommunicationPrefs(String value) =>
-      EnumHelper.isValid<CommunicationPreferences>(
+      EnumUtil.isValid<CommunicationPreferences>(
         CommunicationPreferences.values,
         value,
         false,
       );
 
   static CommunicationPreferences marketingPrefsFromString(String? value) =>
-      EnumHelper.fromString<CommunicationPreferences>(
+      EnumUtil.fromString<CommunicationPreferences>(
         CommunicationPreferences.values,
         value,
       );
 
   static List<String> marketingPrefsList([bool includeHeader = true]) {
     final label = includeHeader ? 'marketing preferences' : '';
-    return EnumHelper.toStringList<CommunicationPreferences>(
+    return EnumUtil.toStringList<CommunicationPreferences>(
       CommunicationPreferences.values,
       label,
     );
@@ -118,59 +118,53 @@ class CrmCustomerHelper {
 
   // ===================== Lead Source =====================
   static bool isLeadSource(String value) =>
-      EnumHelper.isValid<LeadSource>(LeadSource.values, value, false);
+      EnumUtil.isValid<LeadSource>(LeadSource.values, value, false);
 
   static LeadSource leadSourceFromString(String? value) =>
-      EnumHelper.fromString<LeadSource>(LeadSource.values, value);
+      EnumUtil.fromString<LeadSource>(LeadSource.values, value);
 
   static List<String> leadSourceList([bool includeHeader = true]) {
     final label = includeHeader ? 'lead source' : '';
-    return EnumHelper.toStringList<LeadSource>(LeadSource.values, label);
+    return EnumUtil.toStringList<LeadSource>(LeadSource.values, label);
   }
 
   // ===================== Customer Status =====================
   /// Check if type is valid.
   static bool isStatus(String value) =>
-      EnumHelper.isValid<CustomerStatus>(CustomerStatus.values, value, false);
+      EnumUtil.isValid<CustomerStatus>(CustomerStatus.values, value, false);
 
   /// [fromString] Converts String/Label to enum value.
   static CustomerStatus statusFromString(String? value) =>
-      EnumHelper.fromString<CustomerStatus>(CustomerStatus.values, value);
+      EnumUtil.fromString<CustomerStatus>(CustomerStatus.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> statusList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer status' : '';
-    return EnumHelper.toStringList<CustomerStatus>(
-      CustomerStatus.values,
-      label,
-    );
+    return EnumUtil.toStringList<CustomerStatus>(CustomerStatus.values, label);
   }
 
   // ===================== Customer Type =====================
   static bool isType(String value) =>
-      EnumHelper.isValid<CustomerType>(CustomerType.values, value, false);
+      EnumUtil.isValid<CustomerType>(CustomerType.values, value, false);
 
   static CustomerType typeFromString(String? value) =>
-      EnumHelper.fromString<CustomerType>(CustomerType.values, value);
+      EnumUtil.fromString<CustomerType>(CustomerType.values, value);
 
   static List<String> typeList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer type' : '';
-    return EnumHelper.toStringList<CustomerType>(CustomerType.values, label);
+    return EnumUtil.toStringList<CustomerType>(CustomerType.values, label);
   }
 
   // ===================== Customer Category =====================
-  static bool isCategory(String value) => EnumHelper.isValid<CustomerCategory>(
-    CustomerCategory.values,
-    value,
-    false,
-  );
+  static bool isCategory(String value) =>
+      EnumUtil.isValid<CustomerCategory>(CustomerCategory.values, value, false);
 
   static CustomerCategory categoryFromString(String? value) =>
-      EnumHelper.fromString<CustomerCategory>(CustomerCategory.values, value);
+      EnumUtil.fromString<CustomerCategory>(CustomerCategory.values, value);
 
   static List<String> categoryList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer category' : '';
-    return EnumHelper.toStringList<CustomerCategory>(
+    return EnumUtil.toStringList<CustomerCategory>(
       CustomerCategory.values,
       label,
     );
@@ -178,18 +172,14 @@ class CrmCustomerHelper {
 
   // ===================== Priority =====================
   static bool isValidPriority(String value) =>
-      EnumHelper.isValid<CustomerPriority>(
-        CustomerPriority.values,
-        value,
-        false,
-      );
+      EnumUtil.isValid<CustomerPriority>(CustomerPriority.values, value, false);
 
   static CustomerPriority priorityFromString(String? value) =>
-      EnumHelper.fromString<CustomerPriority>(CustomerPriority.values, value);
+      EnumUtil.fromString<CustomerPriority>(CustomerPriority.values, value);
 
   static List<String> priorityList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer priority' : '';
-    return EnumHelper.toStringList<CustomerPriority>(
+    return EnumUtil.toStringList<CustomerPriority>(
       CustomerPriority.values,
       label,
     );
@@ -197,33 +187,32 @@ class CrmCustomerHelper {
 
   // ===================== Segment =====================
   static bool isSegment(String value) =>
-      EnumHelper.isValid<CustomerSegment>(CustomerSegment.values, value, false);
+      EnumUtil.isValid<CustomerSegment>(CustomerSegment.values, value, false);
 
   static CustomerSegment segmentFromString(String? value) =>
-      EnumHelper.fromString<CustomerSegment>(CustomerSegment.values, value);
+      EnumUtil.fromString<CustomerSegment>(CustomerSegment.values, value);
 
   static List<String> segmentList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer segment' : '';
-    return EnumHelper.toStringList<CustomerSegment>(
+    return EnumUtil.toStringList<CustomerSegment>(
       CustomerSegment.values,
       label,
     );
   }
 
   // ===================== Lifecycle =====================
-  static bool isLifecycle(String value) =>
-      EnumHelper.isValid<CustomerLifecycle>(
-        CustomerLifecycle.values,
-        value,
-        false,
-      );
+  static bool isLifecycle(String value) => EnumUtil.isValid<CustomerLifecycle>(
+    CustomerLifecycle.values,
+    value,
+    false,
+  );
 
   static CustomerLifecycle lifecycleFromString(String? value) =>
-      EnumHelper.fromString<CustomerLifecycle>(CustomerLifecycle.values, value);
+      EnumUtil.fromString<CustomerLifecycle>(CustomerLifecycle.values, value);
 
   static List<String> lifecycleList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer lifecycle' : '';
-    return EnumHelper.toStringList<CustomerLifecycle>(
+    return EnumUtil.toStringList<CustomerLifecycle>(
       CustomerLifecycle.values,
       label,
     );

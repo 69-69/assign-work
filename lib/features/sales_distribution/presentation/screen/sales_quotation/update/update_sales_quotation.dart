@@ -1,13 +1,14 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/sales_channel.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/sales_channel.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -37,7 +38,7 @@ extension UpdateSalesQuotationForm on BuildContext {
       child: BottomSheetScaffold(
         title: 'Edit Sales Quote',
         subtitle:
-            '${serverQuote.quoteNumber.toUpperAll} (${serverQuote.lineItems.first.getTypeLabel})',
+            '${serverQuote.quoteNumber.toUpperAll} (${serverQuote.lineItems.first.getType})',
         body: _UpdateSalesQuote(serverQuote: serverQuote),
       ),
     );
@@ -58,7 +59,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   bool get _isFormValid => _formKey.currentState!.validate();
 
   SalesQuotation get _serverQuote => widget.serverQuote;
-  String get _lineItemType => _serverQuote.lineItems.first.getTypeLabel;
+  String get _lineItemType => _serverQuote.lineItems.first.getType;
 
   // Basic fields
   String? _sqStatus;
@@ -92,23 +93,23 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   /// Construct Sales Quote object
   SalesQuotation get _updateQuote {
     final status = _sqStatus ?? _serverQuote.getSQStatus;
+    prettyPrint('_taxMode-ToApply', _taxModeToApply);
 
     return _serverQuote.copyWith(
       autoConvertSq: _autoConvertSO,
-      status: WorkflowStatusHelper.fromString(status),
+      status: WorkflowStatusUtil.fromString(status),
 
       salesRepId: _salesRepId ?? _serverQuote.salesRepId,
       customerId: _customerId ?? _serverQuote.customerId,
       customerName: _customerName ?? _serverQuote.customerName,
       addresses: List.from(_addresses),
-      salesChannel: SalesChannelHelper.fromString(
+      salesChannel: SalesChannelUtil.fromString(
         _salesChannelId ?? _serverQuote.getSalesChannel,
       ),
 
       currencyCode: _currencyPricing['currencyCode'],
-      exchangeRate: double.tryParse(_currencyPricing['exchangeRate']) ?? 0.0,
-      shippingAmount:
-          double.tryParse(_currencyPricing['shippingAmount']) ?? 0.0,
+      exchangeRate: '${_currencyPricing['exchangeRate']}'.asDouble,
+      shippingAmount: '${_currencyPricing['shippingAmount']}'.asDouble,
 
       lineItems: List.from(_lineItems),
       taxMode: _taxModeToApply ?? TaxMode.perLineTax,
@@ -155,9 +156,8 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         ),
       );
 
-      context.showAlertOverlay('Changes successfully saved');
-
-      await _confirmPrintoutDialog();
+      // context.showAlertOverlay('Changes successfully saved');
+      // await _confirmPrintoutDialog();
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -193,12 +193,42 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   }
 
   @override
+  void initState() {
+    _taxModeToApply = _serverQuote.taxMode;
+    _autoConvertSO = _serverQuote.autoConvertSq;
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Form(
+    return BlocListener<SalesQuotationBloc, SalesDistributionState>(
+      listener: (context, state) async {
+        if (state is SalesDistributionUpdated<SalesQuotation>) {
+          context.showAlertOverlay(
+            state.message ?? 'Changes successfully saved',
+          );
+          await _confirmPrintoutDialog();
+        }
+
+        if (state is SalesDistributionError<SalesQuotation>) {
+          if (context.mounted) {
+            context.showAlertOverlay('Error saving changes');
+          }
+        }
+      },
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(),
+      ),
+    );
+
+    /*return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: _buildBody(),
-    );
+    );*/
   }
 
   Column _buildBody() {
@@ -247,7 +277,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         FormGroupCard(
           isExpanded: false,
           title: '6. Addresses',
-          subTitle: '\nCustomer Bill-to, ship-to, & other address details.',
+          subTitle: '\nCustomer Bill-to, Ship-to, & other address details.',
           children: [_buildAddresses()],
         ),
 
@@ -265,12 +295,17 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
           children: [
             HorizontalDivider(space: 0.4),
-            _buildTextSummary('SubTotal:', _serverQuote.subTotal),
-            _buildTextSummary('Discount:', _serverQuote.discountAmount),
-            _buildTextSummary('Tax %:', _serverQuote.totalTaxAmount),
-            _buildTextSummary('Net Total:', _serverQuote.netTotal),
-            _buildTextSummary('Shipping:', _serverQuote.shippingAmount),
-            _buildTextSummary('Grand Total:', _serverQuote.totalAmount),
+            ...[
+              ('SubTotal:', _serverQuote.subTotal),
+              ('Discount:', _serverQuote.totalDiscountAmount),
+              ('Tax Amount:', _serverQuote.totalTaxAmount),
+              ('Net Total:', _serverQuote.netTotal),
+              if (_serverQuote.shippingTaxAmount > 0) ...[
+                ('Shipping:', _serverQuote.shippingAmount),
+                ('Shipping Tax:', _serverQuote.shippingTaxAmount),
+              ],
+              ('Grand Total:', _serverQuote.grandTotal),
+            ].map((e) => _buildTextSummary(e.$1, e.$2)),
           ],
         ),
 
@@ -316,14 +351,8 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   }
 
   Widget _buildTaxModeSelector() {
-    // Header-level taxes are preselected here,
-    // but per-line taxes are handled in 'lineItems'
-    List<String> initialVals = _serverQuote.taxMode.isHeaderTax
-        ? List.from(_serverQuote.lineItems.first.taxCodes)
-        : [];
-
     return SQFormInputs.buildTaxModeSelector(
-      initialValues: initialVals,
+      initialValues: List.from(_serverQuote.lineItems.first.taxCodes),
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
       selectedTaxMode: (TaxMode? mode) =>
@@ -462,6 +491,8 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     final quoteWithTaxes = await SQFormInputs.applyTaxesToQuote(
       _finalizedQuote,
     );
+    prettyPrint('quote-With-Taxes', quoteWithTaxes);
+
     final supplier = await SQFormInputs.getCustomer(_finalizedQuote.customerId);
     if (supplier.isEmpty) return;
 
@@ -491,9 +522,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     if (amount.isNaN || amount == 0.0) {
       amount = 0.0; // Set a default value if the amount is invalid
     }
-    final sign = label.contains('Tax')
-        ? ''
-        : getCurrencySign(_serverQuote.currencyCode);
+    final sign = getCurrencySign(_serverQuote.currencyCode);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -502,7 +531,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
           label,
           style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: kTextColor,
+            color: label.filterAny('grand') ? kDangerColor : kTextColor,
           ),
         ),
         Text(

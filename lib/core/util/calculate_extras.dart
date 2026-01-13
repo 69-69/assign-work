@@ -1,6 +1,7 @@
+import 'package:assign_erp/core/util/str_util.dart';
+
 /// Calculate Additional/Extra Cost [CalculateExtras]
 class CalculateExtras {
-
   /// function to round a double to two decimal places [roundToTwoDecimalPlaces]
   static double roundToTwoDecimalPlaces(double v) => (v * 100).round() / 100;
 
@@ -10,7 +11,6 @@ class CalculateExtras {
     required String unitPrice,
     required Function(String) onChanged,
   }) {
-
     if (unitPrice.isEmpty) {
       return;
     }
@@ -29,7 +29,7 @@ class CalculateExtras {
     if (subTotal.isEmpty) return;
 
     double discountAmt =
-        ((double.tryParse(discountPercent) ?? 0.0) / 100) * double.parse(subTotal);
+        (discountPercent.asDouble / 100) * double.parse(subTotal);
 
     var roundToTwo = roundToTwoDecimalPlaces(discountAmt);
     onChanged(roundToTwo);
@@ -46,10 +46,9 @@ class CalculateExtras {
     if (subTotal.isEmpty) return;
 
     /// NetPrice: After discountAmt is deducted & other charges are added from 'subTotal'
-    double netPrice = ((double.tryParse(subTotal) ?? 0.0) - discountAmt) +
-        (double.tryParse(deliveryAmt) ?? 0.0);
+    double netPrice = (subTotal.asDouble - discountAmt) + deliveryAmt.asDouble;
 
-    double taxAmount = ((double.tryParse(taxPercent) ?? 0.0) / 100) * netPrice;
+    double taxAmount = (taxPercent.asDouble / 100) * netPrice;
 
     var roundToTwo = roundToTwoDecimalPlaces(taxAmount);
     onChanged(roundToTwo);
@@ -64,10 +63,11 @@ class CalculateExtras {
     required Function(double) onChanged,
   }) {
     if (subTotal.isEmpty) return;
+
     /// NetPrice: After discountAmt is deducted & other charges are added from 'subTotal'
     double netPrice = double.parse(subTotal) - discountAmount;
 
-    double plusDelivery = netPrice + (double.tryParse(deliveryAmt) ?? 0.0);
+    double plusDelivery = netPrice + deliveryAmt.asDouble;
     double totalAmount = plusDelivery + taxAmount;
 
     /*double totalAmount2 =

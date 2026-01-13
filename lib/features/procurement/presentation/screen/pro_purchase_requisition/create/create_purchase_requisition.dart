@@ -1,10 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/erp_priority_enum.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -112,8 +112,8 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     prNumber: _prNumber,
     storeNumber: _employeeStore,
     autoConvertPr: _autoConvertPr,
-    priority: PriorityHelper.fromString(_priority ?? ''),
-    status: WorkflowStatusHelper.fromString(_prStatus ?? ''),
+    priority: PriorityUtil.fromString(_priority ?? ''),
+    status: WorkflowStatusUtil.fromString(_prStatus ?? ''),
     costCenterCode: _costCenterCode,
     departmentCode: _departmentCode,
     requestedBy: _requestedBy,
@@ -282,13 +282,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       fullWidthKey: 'description',
       fieldsConfig: PRFormInputs.fields(
         _lineItemType,
-        keysToExclude: [
-          'discount',
-          'unitPrice',
-          'serviceRate',
-          'limitAmount',
-          'limitQuantity',
-        ],
+        keysToExclude: ['limitAmount', 'limitQuantity'],
       ),
       onChanged: (List<Map<String, dynamic>> data) {
         if (isFormValid) setState(() {});

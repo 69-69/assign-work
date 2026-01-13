@@ -1,6 +1,6 @@
-import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/account_status.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/util/str_util.dart';

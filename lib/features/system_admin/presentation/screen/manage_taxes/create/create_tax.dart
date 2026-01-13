@@ -39,8 +39,8 @@ class _AddTaxFormState extends State<_AddTaxForm> {
   bool get _isEditing => _serverTax.isNotNullNorEmpty;
 
   Tax? get _serverTax => widget.serverTax;
-  bool get _isValid => _formKey.currentState?.validate() ?? false;
   String get _employeeName => context.employee!.fullName;
+  bool get _isValid => _formKey.currentState?.validate() ?? false;
 
   void _onSubmit() {
     if (_isValid && _taxList.isNotEmpty) {
@@ -98,6 +98,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
       notes: tax.notes,
       autoApplyOn: tax.autoApplyOn,
       isAutoApply: tax.isAutoApply,
+      isShippingTaxed: tax.isShippingTaxed,
       isWithholding: tax.isWithholding,
       updatedBy: _employeeName,
     );
@@ -123,12 +124,13 @@ class _AddTaxFormState extends State<_AddTaxForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
+          title: 'Tax Rates',
+          subTitle: '\n Add Tax Rates & Notes',
           children: [
             DynamicTextFields(
-              title: 'Tax Rates',
               showButton: !_isEditing,
               initialData: [?_serverTax?.toMap()],
-              fieldsConfig: TaxFormInputs.taxRatesFields(_serverTax),
+              fieldsConfig: TaxFormInputs.taxRatesFields(_serverTax?.toMap()),
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isValid) setState(() {});
 

@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/util/url_launcher_helper.dart';
+import 'package:assign_erp/core/util/url_launcher_util.dart';
 import 'package:assign_erp/core/widgets/neumorphism.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
 import 'package:assign_erp/features/user_guide/presentation/screen/how_to_config_app/create/create_user_guide.dart';

@@ -1,10 +1,11 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/sales_channel.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/total_summary_model.dart';
+import 'package:assign_erp/core/util/extensions/sales_channel.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
@@ -98,10 +99,10 @@ class SalesOrder extends Equatable {
       salesRepId: map['salesRepId'] ?? '',
       orderNumber: map['orderNumber'] ?? '',
       customerId: map['customerId'] ?? '',
-      status: WorkflowStatusHelper.fromString(map['status']),
-      salesChannel: SalesChannelHelper.fromString(map['SalesChannel']),
+      status: WorkflowStatusUtil.fromString(map['status']),
+      salesChannel: SalesChannelUtil.fromString(map['SalesChannel']),
       lineItems: LineItem.lineItems(map['lineItems']),
-      taxMode: TaxModeHelper.fromString(map['taxMode']),
+      taxMode: TaxModeUtil.fromString(map['taxMode']),
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currencyCode: map['currencyCode'] ?? '',
       exchangeRate: double.tryParse('${map['exchangeRate']}') ?? 0.0,
@@ -156,27 +157,28 @@ class SalesOrder extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['expectedDate'] = expectedDate?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
 
-  // Computed fields for Financial Summary calculations
-  double get subTotalAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+  /// Computed TotalSummary based on current line items
+  TotalSummary get _totalSum => TotalSummary(lineItems: lineItems);
 
-  double get discountAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+  // Calculates tax amounts for each line item and the applicable shipping tax.
+  SalesOrder calculateTaxes(Map<String, ResolveTaxCode> taxMap) =>
+      copyWith(lineItems: lineItems.applyTaxes(taxMap));
 
-  double get taxAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
-
-  // subTotal - discountAmount;
-  double get netTotalAmount => (subTotalAmount - discountAmount) + taxAmount;
-
-  double get totalAmount => netTotalAmount + shippingAmount;
+  /// Financial Summaries
+  double get subTotal => _totalSum.subTotal;
+  double get taxableAmount => _totalSum.taxableAmount;
+  double get totalDiscountAmount => _totalSum.totalDiscountAmount;
+  double get totalTaxPercent => _totalSum.totalTaxPercent;
+  double get totalTaxAmount => _totalSum.totalTaxAmount;
+  double get netTotal => _totalSum.netTotal;
+  double get grandTotal => _totalSum.grandTotal;
 
   // Singleton instance for fallback (empty SalesOrder)
   static final empty = SalesOrder(
@@ -237,20 +239,6 @@ class SalesOrder extends Equatable {
     List<SalesOrder> rfqs, {
     bool isSameDay = true,
   }) => rfqs.where((q) => isSameDay ? q.isToday : !q.isToday).toList();
-
-  SalesOrder computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
-    // Calculate tax amounts for each line item (perLineTax)
-    List<LineItem> updatedItems = lineItems.map((item) {
-      if (item is! TaxableLineItem) return item;
-
-      final taxAmount = item.computeTaxAmount(taxMap);
-      final taxNames = item.buildTaxNames(taxMap);
-
-      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);
-  }
 
   @override
   String toString() => 'SO: $orderNumber - $getSOStatus';

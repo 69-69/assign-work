@@ -106,7 +106,7 @@ class UpdateItem<T> extends FirestoreEvent<T> {
 }
 
 class DeleteItem<T> extends FirestoreEvent<T> {
-  final String documentId;
+  final T documentId;
 
   const DeleteItem({required this.documentId});
 

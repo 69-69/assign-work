@@ -2,7 +2,7 @@
 // 📏 Unit of Measure (Label-Driven Enum)
 // ---------------------------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// [UnitOfMeasure] Unit of Measure for Products/Services
 enum UnitOfMeasure {
@@ -69,20 +69,20 @@ enum UnitOfMeasure {
 * */
 extension UOMExtension on UnitOfMeasure {
   /// [getName] Get the specific Enum Name (e.g. "metricTon")
-  String get getName => EnumHelper<UnitOfMeasure>(this).getName;
+  String get getName => EnumUtil<UnitOfMeasure>(this).getName;
 
   /// Returns a user-friendly label (e.g. "pack of box")
-  String get getLabel => EnumHelper<UnitOfMeasure>(this).getLabel;
+  String get getLabel => EnumUtil<UnitOfMeasure>(this).getLabel;
 }
 
-class UOMHelper {
+class UOMUtil {
   /// Converts String/Label to enum value [fromString].
   static UnitOfMeasure fromString(String? value) =>
-      EnumHelper.fromString<UnitOfMeasure>(UnitOfMeasure.values, value);
+      EnumUtil.fromString<UnitOfMeasure>(UnitOfMeasure.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<UnitOfMeasure>(UnitOfMeasure.values);
+    final list = EnumUtil.toStringList<UnitOfMeasure>(UnitOfMeasure.values);
     return includeHeader ? ['Unit of Measure', ...list] : list;
   }
 }

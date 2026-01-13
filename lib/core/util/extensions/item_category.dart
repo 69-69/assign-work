@@ -2,7 +2,7 @@
 // 🧩 Item Category (Label-Driven Enum)
 // ---------------------------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 
 /// [ItemCategory] Item Categories for Purchase Requisition
@@ -52,16 +52,16 @@ enum ItemCategory {
 * */
 extension ItemCategoryExtension on ItemCategory {
   /// [getName] Get the specific Enum Name (e.g. "officeSupplies")
-  String get getName => EnumHelper<ItemCategory>(this).getName;
+  String get getName => EnumUtil<ItemCategory>(this).getName;
 
   /// Returns a user-friendly label (e.g. "Office Supplies")
-  String get getLabel => EnumHelper<ItemCategory>(this).getLabel;
+  String get getLabel => EnumUtil<ItemCategory>(this).getLabel;
 }
 
-class ItemCategoryHelper {
+class ItemCategoryUtil {
   /// [fromString] Converts String/Label to enum value.
   static ItemCategory fromString(String? value) =>
-      EnumHelper.fromString<ItemCategory>(ItemCategory.values, value);
+      EnumUtil.fromString<ItemCategory>(ItemCategory.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList({
@@ -69,7 +69,7 @@ class ItemCategoryHelper {
     bool includeHeader = true,
   }) {
     List<ItemCategory> categories = _filterByType(isService);
-    final list = EnumHelper.toStringList<ItemCategory>(categories);
+    final list = EnumUtil.toStringList<ItemCategory>(categories);
 
     return [
       if (includeHeader) '${isService ? 'Service' : 'Material'} Category',

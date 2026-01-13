@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:assign_erp/features/user_guide/domain/repository/user_guide_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -58,9 +58,10 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
     on<LoadGuides<T>>(_onLoadGuides);
     on<LoadGuideById<T>>(_onLoadGuideById);
     on<AddGuide<T>>(_onAddGuide);
-    on<AddGuide<List<T>>>(_onAddMultiGuide);
+    on<AddGuide<List<T>>>(_onAddGuides);
     on<UpdateGuide>(_onUpdateGuide);
-    on<DeleteGuide>(_onDeleteGuide);
+    on<DeleteGuide<String>>(_onDeleteGuide);
+    on<DeleteGuide<List<String>>>(_onDeleteGuides);
     on<_GuideLoaded<T>>(_onGuideLoaded);
     on<_GuideError>(_onGuideLoadError);
   }
@@ -163,7 +164,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
     }
   }
 
-  Future<void> _onAddMultiGuide(
+  Future<void> _onAddGuides(
     AddGuide<List<T>> event,
     Emitter<GuideState<T>> emit,
   ) async {
@@ -211,12 +212,30 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
   }
 
   Future<void> _onDeleteGuide(
-    DeleteGuide event,
+    DeleteGuide<String> event,
     Emitter<GuideState<T>> emit,
   ) async {
     try {
       // Delete data from Firestore and update local storage
       await _guideRepository.deleteData(event.documentId);
+
+      // Trigger LoadDataEvent to reload the data
+      add(LoadGuides<T>());
+
+      // Update State: Notify that data deleted
+      emit(GuideDeleted<T>(message: 'data deleted successfully'));
+    } catch (e) {
+      emit(GuideError<T>(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteGuides(
+    DeleteGuide<List<String>> event,
+    Emitter<GuideState<T>> emit,
+  ) async {
+    try {
+      // Delete data from Firestore and update local storage
+      await _guideRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(LoadGuides<T>());

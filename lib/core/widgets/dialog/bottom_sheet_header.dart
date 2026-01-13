@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:flutter/material.dart';
 
 class DialogHeader extends StatelessWidget {
@@ -40,14 +41,22 @@ class DialogHeader extends StatelessWidget {
                 color: customTheme.cardColor,
                 shape: BoxShape.circle,
               ),
-              child: IconButton(
+              child: context.iconButton(
+                Icons.adaptive.arrow_back,
+                iconColor: (color ?? customColor).toAlpha(0.5),
+                bgColor: kTransparentColor,
+                borderColor: kTransparentColor,
+                tooltip: 'Go back',
+                onPressed: onBackPress ?? () => Navigator.pop(context),
+              ),
+              /*IconButton(
                 onPressed: onBackPress ?? () => Navigator.pop(context),
                 icon: Icon(
                   Icons.adaptive.arrow_back,
                   color: (color ?? customColor).toAlpha(0.5),
                 ),
                 constraints: const BoxConstraints(),
-              ),
+              ),*/
             ),
           (title is Widget)
               ? Flexible(child: title)

@@ -16,7 +16,6 @@ import 'package:assign_erp/features/system_admin/data/models/permission_tab_cont
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:assign_erp/features/trouble_shooting/data/permission/trouble_shoot_permission.dart';
 import 'package:assign_erp/features/user_guide/data/permission/user_guide_permission.dart';
-import 'package:assign_erp/features/warehouse_wms/data/permission/warehouse_permission.dart';
 import 'package:flutter/material.dart';
 
 final _tabContent = [
@@ -47,13 +46,6 @@ final _tabContent = [
     accessEnum: SubscriptionLicenses.salesDistribution,
     displayName: salesDistributionDisplayName,
     permissions: salesDistributionPermissions,
-  ),
-  PermissionTabContent<SubscriptionLicenses>(
-    label: 'WMS',
-    icon: Icons.warehouse,
-    accessEnum: SubscriptionLicenses.warehouse,
-    displayName: wmsDisplayName,
-    permissions: warehousePermissions,
   ),
   PermissionTabContent<SubscriptionLicenses>(
     label: 'CRM',

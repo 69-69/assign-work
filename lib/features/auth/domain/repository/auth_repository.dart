@@ -1,17 +1,17 @@
 import 'dart:async';
 
 import 'package:assign_erp/config/routes/route_logger.dart';
-import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/models/result_data.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_helper.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/firestore_repository.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/device_info_service.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/account_status.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
@@ -424,7 +424,7 @@ class AuthRepository extends FirestoreRepository {
       }
 
       final docRef = _genericCollection(
-        workspaceRole: EnumHelper<WorkspaceRole>(cacheWorkspace.role).getName,
+        workspaceRole: EnumUtil<WorkspaceRole>(cacheWorkspace.role).getName,
         workspaceId: cacheWorkspace.id,
       ).doc(cacheEmployee.id);
 
@@ -577,7 +577,7 @@ class AuthRepository extends FirestoreRepository {
       ).doc(clientWorkspaceId).set({
         'commission': [],
         'clientWorkspaceId': clientWorkspaceId,
-        'assignedAt': _today.millisecondsSinceEpoch,
+        'assignedAt': _today.toMilliseconds,
       });
 
       return true;
@@ -648,9 +648,9 @@ class AuthRepository extends FirestoreRepository {
     );
     final newMap = workspace.toMap();
     // update map
-    newMap['effectiveFrom'] = _today.millisecondsSinceEpoch;
-    newMap['expiresOn'] = _today.millisecondsSinceEpoch;
-    newMap['createdAt'] = _today.millisecondsSinceEpoch;
+    newMap['effectiveFrom'] = _today.toMilliseconds;
+    newMap['expiresOn'] = _today.toMilliseconds;
+    newMap['createdAt'] = _today.toMilliseconds;
 
     await overrideById(_newWorkspaceId, data: newMap);
   }
@@ -674,9 +674,7 @@ class AuthRepository extends FirestoreRepository {
     required ({String id, String name}) role,
   }) async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = EnumHelper<WorkspaceRole>(
-      assignWorkspaceRole,
-    ).getName;
+    final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
     // Add a new document to the collection and get its reference
     final DocumentReference docRef = _genericCollection(
@@ -708,8 +706,8 @@ class AuthRepository extends FirestoreRepository {
 
     final newMap = employee.toMap();
     // update map
-    newMap['updatedAt'] = _today.millisecondsSinceEpoch;
-    newMap['createdAt'] = _today.millisecondsSinceEpoch;
+    newMap['updatedAt'] = _today.toMilliseconds;
+    newMap['createdAt'] = _today.toMilliseconds;
 
     // Add the employee data to the Firestore collection
     await docRef.set(newMap);
@@ -720,9 +718,7 @@ class AuthRepository extends FirestoreRepository {
   /// @return `Future<({String id, String name})>`
   Future<({String id, String name})> _businessOwnerDefaultPermissions() async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = EnumHelper<WorkspaceRole>(
-      assignWorkspaceRole,
-    ).getName;
+    final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -733,8 +729,8 @@ class AuthRepository extends FirestoreRepository {
     final defaultPerm = businessOwnerDefaultPermissions(id: docRef.id);
 
     // update map
-    defaultPerm['updatedAt'] = _today.millisecondsSinceEpoch;
-    defaultPerm['createdAt'] = _today.millisecondsSinceEpoch;
+    defaultPerm['updatedAt'] = _today.toMilliseconds;
+    defaultPerm['createdAt'] = _today.toMilliseconds;
 
     await docRef.set(defaultPerm);
 
@@ -746,9 +742,7 @@ class AuthRepository extends FirestoreRepository {
   /// @return `Future<String>`
   Future<String> _businessOwnerDefaultDepartment() async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = EnumHelper<WorkspaceRole>(
-      assignWorkspaceRole,
-    ).getName;
+    final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -759,8 +753,8 @@ class AuthRepository extends FirestoreRepository {
     final defaultDepart = businessOwnerDefaultDepartment(id: docRef.id);
 
     // update map
-    defaultDepart['updatedAt'] = _today.millisecondsSinceEpoch;
-    defaultDepart['createdAt'] = _today.millisecondsSinceEpoch;
+    defaultDepart['updatedAt'] = _today.toMilliseconds;
+    defaultDepart['createdAt'] = _today.toMilliseconds;
 
     await docRef.set(defaultDepart);
 
@@ -778,9 +772,7 @@ class AuthRepository extends FirestoreRepository {
     required String company,
   }) async {
     final workspaceId = _newWorkspaceId;
-    final workspaceRole = EnumHelper<WorkspaceRole>(
-      assignWorkspaceRole,
-    ).getName;
+    final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
     final docRef = _genericCollection(
       workspaceId: workspaceId,
@@ -795,8 +787,8 @@ class AuthRepository extends FirestoreRepository {
     );
 
     // update map
-    defaultBranch['updatedAt'] = _today.millisecondsSinceEpoch;
-    defaultBranch['createdAt'] = _today.millisecondsSinceEpoch;
+    defaultBranch['updatedAt'] = _today.toMilliseconds;
+    defaultBranch['createdAt'] = _today.toMilliseconds;
 
     await docRef.set(defaultBranch);
 
@@ -932,7 +924,7 @@ class AuthRepository extends FirestoreRepository {
     }
 
     final workId = cacheWorkspace.id;
-    final workRole = EnumHelper<WorkspaceRole>(cacheWorkspace.role).getName;
+    final workRole = EnumUtil<WorkspaceRole>(cacheWorkspace.role).getName;
 
     final querySnap = await _genericCollection(
       workspaceId: workId,
@@ -1130,7 +1122,7 @@ class AuthRepository extends FirestoreRepository {
     if (cacheWork == null) return;
 
     final workId = cacheWork.id;
-    final workRole = EnumHelper<WorkspaceRole>(cacheWork.role).getName;
+    final workRole = EnumUtil<WorkspaceRole>(cacheWork.role).getName;
 
     await _logAuthSession(
       cacheEmp?.employeeId ?? cacheWork.id,

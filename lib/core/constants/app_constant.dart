@@ -50,12 +50,18 @@ const inventoryAppTitle = 'inventory - ims';
 const procurementAppTitle = 'procurement & suppliers';
 const salesDistributionAppTitle = 'sales distribution';
 const warehouseAppTitle = 'warehouse - wms';
+const stockManagementAppTitle = 'stock management';
 const customerAppTitle = 'customer - crm';
 const systemAdminAppTitle = 'System Administration';
 const storeSwitcherAppTitle = 'switch store locations';
 const userGuideAppTitle = 'user guide';
 
 /// MANAGEMENT SUB-SCREENS TITLES
+const itemMasterScreenTitle = 'item master';
+const goodsReceiptScreenTitle = 'goods receipt';
+const goodsIssueScreenTitle = 'goods issue';
+const stockAdjustScreenTitle = 'stock adjustment';
+const stockTransferScreenTitle = 'stock transfer';
 const supplierManagementScreenTitle = 'supplier management';
 const supplierEvaluationScreenTitle = 'supplier evaluation';
 const supplierAccountScreenTitle = 'supplier account';

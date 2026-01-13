@@ -4,7 +4,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/item_master/item_master_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/stock_management/item_master/create/create_item_master.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/item_master/create/create_item_master.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -84,18 +84,6 @@ class _ListItemMasterState extends State<ListItemMaster> {
       refreshLabel: 'Refresh Master Data',
       onCreate: () => context.openItemMasterForm(),
       onRefresh: () => _bloc.add(RefreshInventories<ItemMaster>()),
-      onDelete: _selectedIds.isNotEmpty
-          ? () async {
-              final isConfirmed = await context.confirmUserActionDialog();
-              if (mounted && isConfirmed) {
-                /// Delete all selected Master data
-                _bloc.add(
-                  DeleteInventory<List<String>>(documentId: _selectedIds),
-                );
-                _selectedIds.clear();
-              }
-            }
-          : null,
     );
   }
 

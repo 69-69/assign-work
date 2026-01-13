@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/role_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_roles/role_bloc.dart';
@@ -20,6 +19,7 @@ class ListRoles extends StatefulWidget {
 class _ListRolesState extends State<ListRoles> {
   bool? _isChecked;
   Role? _selectedRole;
+  RoleBloc get _bloc => context.read<RoleBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class _ListRolesState extends State<ListRoles> {
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Role.dataTableHeader,
-      toolbar: _buildToolbar(),
+      toolbar: _buildToolbar(roles),
       toolbarAlignment: WrapAlignment.start,
       rows: roles.map((d) => d.itemAsList).toList(),
       onEditTap: (List<String> row) async => _onEditTap(roles, row.first),
@@ -60,22 +60,18 @@ class _ListRolesState extends State<ListRoles> {
     );
   }
 
-  _buildToolbar() {
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      runAlignment: WrapAlignment.start,
-      children: [
-        context.elevatedButton(
-          'Create Role',
-          onPressed: () async => await context.openCreateNewRole(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-        if (_isChecked == true) ...{
-          context.elevatedButton(
-            'Assign Permission',
-            onPressed: () async {
+  _buildToolbar(List<Role> roles) {
+    return ListToolbarButtons(
+      createLabel: 'Create Role',
+      refreshLabel: 'Refresh Roles',
+      dataLength: roles.length,
+      onCreate: () => context.openCreateNewRole(),
+      onRefresh: () => _bloc.add(RefreshSetups<Role>()),
+      optLabel: 'Assign Permission',
+      optTooltip: 'Assign new permissions to role',
+      optIcon: Icons.security,
+      optOnPressed: _isChecked == true
+          ? () async {
               if (_selectedRole == null) return;
 
               /// Assign permission to role
@@ -83,12 +79,8 @@ class _ListRolesState extends State<ListRoles> {
                 isAssign: true,
                 role: _selectedRole!,
               );
-            },
-            bgColor: kGrayBlueColor,
-            txtColor: kWhiteColor,
-          ),
-        },
-      ],
+            }
+          : null,
     );
   }
 
@@ -125,7 +117,7 @@ class _ListRolesState extends State<ListRoles> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific role
-        context.read<RoleBloc>().add(DeleteSetup<String>(documentId: role.id));
+        _bloc.add(DeleteSetup<String>(documentId: role.id));
         setState(() => roles.remove(role));
       }
     }

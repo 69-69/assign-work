@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -26,70 +26,37 @@ class TaxModeSelectorFactory {
       initialValues: initialValues ?? [],
       defaultTaxMode: defaultTaxMode,
       onTaxModesChanged: (modes) => _onSelectTaxMode(modes, selectedTaxMode),
-      onTaxCodesChanged: (List<Map<String, dynamic>> codes) =>
-          _onTaxCodesChanged(codes, selectedTaxCodes),
+      onTaxCodesChanged: (codes) => _onTaxCodesChanged(codes, selectedTaxCodes),
     );
   }
 
   static void _onSelectTaxMode(
-    List<Map<String, dynamic>> data,
+    List<RadioGroupConfig> data,
     Function(TaxMode?) selectedTaxMode,
   ) {
-    final selected = data.firstWhereOrNull((i) => i['selected'] == true);
-    final selectedKey = selected?['key'];
+    final selected = data.firstWhereOrNull((i) => i.selected == true);
+    final selectedKey = selected?.key ?? '';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      selectedTaxMode(TaxModeHelper.fromString(selectedKey));
+      selectedTaxMode(TaxModeUtil.fromString(selectedKey));
     });
   }
 
   static void _onTaxCodesChanged(
-    List<Map<String, dynamic>> data,
-    List<String> taxCodes,
+    List<CheckboxGroupConfig> data,
+    List<String> selectedTaxCodes,
   ) {
     // Extract tax codes from the data
-    List<String> selectedTaxCodes = data
-        .where((e) => e['selected'] == true)
-        .map((m) => Tax.fromMap(m['data']).code)
+    List<String> selected = data
+        .where((e) => e.selected == true)
+        .map((m) => Tax.fromMap(m.data).code)
         .toList();
 
     // Clear previous entries and add new ones to prevent duplication
-    taxCodes
+    selectedTaxCodes
       ..clear()
-      ..addAll(selectedTaxCodes);
+      ..addAll(selected);
   }
-
-  /* Widget _buildTaxModeSelector() {
-    return TaxModeSelector(
-      initialValues: [],
-      onRadioChanged: _onSelectTaxMode,
-      defaultTaxMode: _taxModeToApply,
-      onCheckChanged: (List<Map<String, dynamic>> data) {
-        // if (isFormValid) setState(() {});
-
-        List<String> taxCodes = data
-            .where((e) => e['selected'] == true)
-            .map((m) => Tax.fromMap(m['data']).code)
-            .toList();
-
-        _taxCodes
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(taxCodes);
-      },
-    );
-  }
-
-  // -------------------------
-  // Tax Logic
-  // -------------------------
-  void _onSelectTaxMode(List<Map<String, dynamic>> data) {
-    final selected = data.firstWhereOrNull((item) => item['selected'] == true);
-    final selectedKey = selected?['key'];
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _taxModeToApply = TaxModeHelper.fromString(selectedKey));
-    });
-  }
-*/
 }
 
 /// Tax Modes Radio-Selector [TaxModeSelector]
@@ -97,8 +64,8 @@ class TaxModeSelector extends StatefulWidget {
   final TaxMode? defaultTaxMode;
   final List<String>? initialValues;
   final ValueChanged<double>? onValueChanged;
-  final Function(List<Map<String, dynamic>>)? onTaxCodesChanged;
-  final Function(List<Map<String, dynamic>>)? onTaxModesChanged;
+  final Function(List<CheckboxGroupConfig>)? onTaxCodesChanged;
+  final Function(List<RadioGroupConfig>)? onTaxModesChanged;
 
   const TaxModeSelector({
     super.key,
@@ -121,13 +88,14 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
 
   TaxMode? get _taxModeToApply => widget.defaultTaxMode;
 
-  void _handleSelectedTaxes(List<Map<String, dynamic>> data) {
+  void _handleSelectedTaxes(List<CheckboxGroupConfig> data) {
     final selectedTaxes = data
-        .where((item) => item['selected'] == true)
-        .map((item) => Tax.fromMap(item['data']))
+        .where((i) => i.selected == true)
+        .map((item) => Tax.fromMap(item.data))
         .toList();
 
     if (selectedTaxes.isNotEmpty) {
+      // Calculate the total tax rate in 'percentage' for the selected taxes
       final totalRate = selectedTaxes.fold<double>(
         0.0,
         (sum, tax) => sum + tax.rate,
@@ -175,123 +143,46 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
       radiosConfig: [
         RadioGroupConfig(
           key: perLineTax.getName,
-          defaultSelected: _taxModeToApply == perLineTax,
-          label: 'Apply Tax Per Item (Per-Line)',
+          selected: _taxModeToApply == perLineTax,
+          label: 'Apply Tax Per Item (Line-Level)',
           tooltip:
-              'Ideal when different products or services fall into different tax brackets (e.g., some at 5%, others at 18%)',
+              'Use when different items are taxed at different rates (e.g., 5% and 18%).',
           description:
-              'Select this if different products or services have different tax rates. You will be asked to enter or select tax separately for each line item.',
+              'Select this option if products or services have different tax rates. You\'ll choose or enter tax for each line item.',
         ),
         RadioGroupConfig(
           key: headerTax.getName,
-          defaultSelected: _taxModeToApply == headerTax,
-          label: 'Apply Single Tax Rate for All Items (Header)',
+          selected: _taxModeToApply == headerTax,
+          label: 'Apply Single Tax (Document-Level)',
           tooltip:
               'This method applies selected tax rate to the entire document.',
           description:
-              'Use this option if all products or services are taxed at the same rate. You’ll enter one overall tax rate that applies to the full RFQ.',
+              'Use this option if all products or services are taxed at the same rate. You\'ll choose an overall tax that applies to the entire document.',
         ),
       ],
-      onChanged: (List<Map<String, dynamic>> data) {
-        final selected = data.firstWhereOrNull(
-          (item) => item['selected'] == true,
-        );
-        final selectedKey = selected?['key'];
+      onChanged: (List<RadioGroupConfig> data) {
+        RadioGroupConfig? selected = RadioGroupConfig.selected(data);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          setState(() => _isHeaderTax = selectedKey == headerTax.getName);
+          setState(() => _isHeaderTax = selected.key == headerTax.getName);
         });
 
         widget.onTaxModesChanged!(data);
       },
     );
   }
-
-  /*Widget _buildBody(BuildContext context) {
-    return BlocBuilder<TaxBloc, SetupState<Tax>>(
-      builder: (context, state) {
-        return switch (state) {
-          LoadingSetup<Tax>() => context.loader,
-          SetupsLoaded<Tax>(data: var results) =>
-            results.isEmpty
-                ? Center(child: Text('No taxes found'))
-                : _buildTaxCheckboxes(results),
-          SetupError<Tax>(error: final error) => context.buildError(error),
-          _ => const SizedBox.shrink(),
-        };
-      },
-    );
-  }
-
-  DynamicCheckboxList _buildTaxCheckboxes(List<Tax> results) {
-    final rate = _taxPercent > 0 ? _taxPercent : '';
-
-    return DynamicCheckboxList(
-      title: 'Overall Tax Rate $rate%',
-      showButton: false,
-      checkboxesConfig: results
-          .map(
-            (e) => CheckboxGroupConfig<Map<String, dynamic>>(
-              key: e.name,
-              data: e.toMap(),
-              label: '${e.name.toUpperCaseAll}: ${e.rate}%',
-              description: e.notes.toSentenceCase,
-            ),
-          )
-          .toList(),
-      onChanged: (List<Map<String, dynamic>> data) {
-        _addTaxPercent(data);
-
-        if (widget.onCheckChanged != null) {
-          widget.onCheckChanged!(data);
-        }
-      },
-    );
-  }
-
-
-    return [
-      RadioGroupConfig(
-        key: 'name',
-        label: 'VAT %',
-        description: 'VAT percentage, e.g., 15 for 15%',
-      ),
-      RadioGroupConfig(
-        key: 'nHil',
-        label: 'NHIS (NHIL) %',
-        description: 'NHIS/NHIL Tax percentage, e.g., 2.5 for 2.5%',
-      ),
-      RadioGroupConfig(
-        key: 'getFund',
-        label: 'GET-FUND %',
-        description: 'GET-FUND Tax percentage, e.g., 2.5 for 2.5%',
-      ),
-      RadioGroupConfig(
-        key: 'covid',
-        label: 'COVID-19 %',
-        description: 'COVID-19 Tax percentage, e.g., 1 for 1.0%',
-      ),
-      RadioGroupConfig(
-        key: 'tourism',
-        label: 'Tourism %',
-        description: 'Optional: Tourism Tax percentage, e.g., 1 for 1.0%',
-      ),
-      RadioGroupConfig(
-        key: 'others',
-        label: 'Specify Others %',
-        description: 'Optional: If not stated above, specify here',
-      ),
-    ];*/
 }
 
 /// Tax Checkboxes-Options Panel [TaxOptionsPanel]
 class _TaxOptionsPanel extends StatelessWidget {
   final double taxRate;
   final List<String>? initialValues;
-  final Function(List<Map<String, dynamic>>) onCheckChanged;
+  final Function(List<CheckboxGroupConfig>) onCheckChanged;
+
+  // final Function(List<Map<String, dynamic>>) onCheckChanged;
 
   const _TaxOptionsPanel({
-    required this.taxRate,
     required this.onCheckChanged,
+    required this.taxRate,
     this.initialValues,
   });
 
@@ -320,7 +211,7 @@ class _TaxOptionsPanel extends StatelessWidget {
         key: tax.code,
         label: '${tax.name.toUpperAll}: ${tax.rate}%',
         description: tax.notes.toSentence,
-        selected: initialValues?.contains(tax.code),
+        selected: initialValues?.contains(tax.code) ?? false,
         data: tax.toMap(),
       );
     }).toList();

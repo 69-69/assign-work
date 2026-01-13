@@ -2,7 +2,7 @@
 // ⚙ Goods Receipt (GRN) and Service Entry Sheet (SES) Status
 // -------------------------------------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 /// Unified status enum for GRN & SES.
 /// NOTE:
@@ -18,8 +18,8 @@ enum GRNSESStatus {
 
 extension GRNSESStatusExtension on GRNSESStatus {
   /// [getName] Get the specific Enum Name
-  String get getName => EnumHelper<GRNSESStatus>(this).getName;
-  String get getLabel => EnumHelper<GRNSESStatus>(this).getLabel;
+  String get getName => EnumUtil<GRNSESStatus>(this).getName;
+  String get getLabel => EnumUtil<GRNSESStatus>(this).getLabel;
 
   /// Returns true if this status is valid for a GRN document
   bool get isGRNStatus =>
@@ -35,12 +35,12 @@ extension GRNSESStatusExtension on GRNSESStatus {
       this == GRNSESStatus.rejected;
 }
 
-class GRNSESStatusHelper {
+class GRNSESStatusUtil {
   static GRNSESStatus fromString(String? value) =>
-      EnumHelper.fromString<GRNSESStatus>(GRNSESStatus.values, value);
+      EnumUtil.fromString<GRNSESStatus>(GRNSESStatus.values, value);
 
   static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<GRNSESStatus>(GRNSESStatus.values);
+    final list = EnumUtil.toStringList<GRNSESStatus>(GRNSESStatus.values);
     return includeHeader ? ['status', ...list] : list;
   }
 }

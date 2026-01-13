@@ -4,6 +4,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/stock_management/stock_transaction_model.dart';
 import 'package:equatable/equatable.dart';
 
+/// InventoryStock table
 class InventoryStock extends Equatable {
   static DateTime get _today => DateTime.now();
 
@@ -12,8 +13,8 @@ class InventoryStock extends Equatable {
   final String itemId; // FK → ItemMaster.id
 
   /// 2. Location
-  final String warehouseId;
-  final String locationId; // Bin / Shelf / Subinventory
+  final String warehouseId; // (FK → Warehouse.id) → physical building
+  final String locationId; // (FK → Location.id) → Bin / Shelf / Subinventory
 
   /// 3. Quantity
   late final double onHandQty;
@@ -87,7 +88,6 @@ class InventoryStock extends Equatable {
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
     var newMap = _mapTemp();
-    newMap['deliveryDate'] = createdAt.toISOString;
     newMap['createdAt'] = createdAt.toISOString;
     newMap['updatedAt'] = updatedAt.toISOString;
 
@@ -97,7 +97,6 @@ class InventoryStock extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['deliveryDate'] = createdAt.toMilliseconds;
     newMap['createdAt'] = createdAt.toMilliseconds;
     newMap['updatedAt'] = updatedAt.toMilliseconds;
 
@@ -110,7 +109,7 @@ class InventoryStock extends Equatable {
     InventoryStock destination,
     StockTransaction txn,
   ) {
-    switch (txn.type) {
+    switch (txn.txnType) {
       case StockTxnType.grn:
         destination.onHandQty += txn.quantity;
         break;

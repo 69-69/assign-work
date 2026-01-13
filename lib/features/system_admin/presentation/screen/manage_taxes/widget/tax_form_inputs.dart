@@ -1,28 +1,14 @@
-import 'package:assign_erp/core/constants/tax_context.dart';
+import 'package:assign_erp/core/util/extensions/tax_context.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:flutter/material.dart';
 
 class TaxFormInputs {
-  static Tax toTax(Map<String, dynamic> originalData) {
-    final data = Map<String, dynamic>.from(originalData);
-    final taxOptions = data['taxOptions'] as List?;
-
-    if (taxOptions != null) {
-      for (var e in taxOptions) {
-        final taxOpt = TaxOption.fromMap(e);
-        data[taxOpt.key] = taxOpt.selected;
-      }
-    }
-
-    data.remove('taxOptions');
-    return Tax.fromMap(data);
-  }
-
-  static List<FieldGroupConfig> taxRatesFields(Tax? serverTax) => [
+  static List<FieldGroupConfig> taxRatesFields(
+    Map<String, dynamic>? initial,
+  ) => [
     FieldGroupConfig(
       key: 'name',
       label: 'Tax Name',
@@ -51,10 +37,10 @@ class TaxFormInputs {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return AutoApplyTaxOnDropdown(
-          initialValues: TaxContextHelper.parseList(initialData),
+          initialValues: TaxContextUtil.parseList(initialData),
           onMultiChanged: onChanged,
-          // final taxContexts = selected.map((e) => e.getValue).toList();
         );
+        // final taxContexts = selected.map((e) => e.getValue).toList();
       },
     ),
     FieldGroupConfig(
@@ -63,12 +49,10 @@ class TaxFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        final initial = serverTax?.toMap();
-
         return DynamicCheckboxList(
           title: 'How Tax Is Applied (Optional)',
           showButton: false,
-          initialData: initialData,
+          initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
           checkboxesConfig: [
             CheckboxGroupConfig(
               key: 'isAutoApply',
@@ -86,6 +70,15 @@ class TaxFormInputs {
               tooltip: 'Indicates if this tax is a withholding tax',
               description:
                   'This tax will be withheld (subtracted) from the total payable.',
+            ),
+            CheckboxGroupConfig(
+              key: 'isShippingTaxed',
+              label: 'Apply Tax to Shipping',
+              selected: initial?['isShippingTaxed'] ?? false,
+              tooltip:
+                  'Indicates if this tax should also be applied to shipping charges',
+              description:
+                  'If enabled, shipping charges will be included in the taxable amount.',
             ),
           ],
           onCheckChanged: onChanged,
@@ -112,7 +105,21 @@ class TaxFormInputs {
             .toList(),
       );
 
-    /* _taxList
+    /*  static Tax toTax(Map<String, dynamic> originalData) {
+    final data = Map<String, dynamic>.from(originalData);
+    final taxOptions = data['taxOptions'] as List?;
+
+    if (taxOptions != null) {
+      for (var e in taxOptions) {
+        final taxOpt = TaxOption.fromMap(e);
+        data[taxOpt.key] = taxOpt.selected;
+      }
+    }
+
+    data.remove('taxOptions');
+    return Tax.fromMap(data);
+  }
+    _taxList
         ..clear() // Clear previous entries to prevent duplication
         ..addAll(data.map((e) => TaxFormInputs.toTax(e)));*/
   }

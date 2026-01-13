@@ -58,11 +58,11 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     on<GetSetupsWithSameId<T>>(_onGetSetupsWithSameId);
     on<SearchSetup<T>>(_onSearchSetup);
     on<AddSetup<T>>(_onAddSetup);
-    on<AddSetup<List<T>>>(_onAddMultiSetup);
+    on<AddSetup<List<T>>>(_onAddSetups);
     on<UpdateSetup>(_onUpdateSetup);
     on<OverrideSetup>(_onOverrideSetup);
     on<DeleteSetup<String>>(_onDeleteSetup);
-    on<DeleteSetup<List<String>>>(_onMultiDeleteSetup);
+    on<DeleteSetup<List<String>>>(_onDeleteSetups);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
     on<_SetupsLoaded<T>>(_onSetupsLoaded);
     on<_SetupLoaded<T>>(_onSetupLoaded);
@@ -134,7 +134,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   ) async {
     emit(LoadingSetup<T>());
     try {
-      final localDataList = await _setupRepository.getMultipleDataByIDs(
+      final localDataList = await _setupRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -233,7 +233,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onAddMultiSetup(
+  Future<void> _onAddSetups(
     AddSetup<List<T>> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -318,15 +318,17 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onMultiDeleteSetup(
-    DeleteSetup event,
+  Future<void> _onDeleteSetups(
+    DeleteSetup<List<String>> event,
     Emitter<SetupState<T>> emit,
   ) async {
     try {
-      for (var id in event.documentId) {
-        // Delete data from Firestore and update local storage
-        await _setupRepository.deleteData(id);
+      if (event.documentId.isEmpty) {
+        emit(SetupError<T>('Data IDs are empty'));
+        return;
       }
+      // Delete data from Firestore and update local storage
+      await _setupRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetSetups<T>());

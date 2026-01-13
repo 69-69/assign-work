@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/department_bloc.dart';
@@ -18,6 +17,8 @@ class ListDepartments extends StatefulWidget {
 }
 
 class _ListDepartmentsState extends State<ListDepartments> {
+  DepartmentBloc get _bloc => context.read<DepartmentBloc>();
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<DepartmentBloc>(
@@ -61,27 +62,13 @@ class _ListDepartmentsState extends State<ListDepartments> {
     );
   }
 
-  _buildToolbar(List<Department> departments) {
-    return Wrap(
-      spacing: 10.0,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh Departments',
-          label: 'Departments',
-          count: departments.length,
-          onPressed: () {
-            // Refresh Company's Departments Data
-            context.read<DepartmentBloc>().add(RefreshSetups<Department>());
-          },
-        ),
-        context.elevatedButton(
-          'Add Departments',
-          onPressed: () => context.openAddDepartment(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-      ],
+  Widget _buildToolbar(List<Department> departments) {
+    return ListToolbarButtons(
+      createLabel: 'Create Departments',
+      refreshLabel: 'Refresh Departments',
+      dataLength: departments.length,
+      onCreate: () => context.openAddDepartment(),
+      onRefresh: () => _bloc.add(RefreshSetups<Department>()),
     );
   }
 
@@ -98,10 +85,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      /// Delete specific Department
-      context.read<DepartmentBloc>().add(
-        DeleteSetup<String>(documentId: depart.id),
-      );
+      _bloc.add(DeleteSetup<String>(documentId: depart.id));
     }
   }
 }

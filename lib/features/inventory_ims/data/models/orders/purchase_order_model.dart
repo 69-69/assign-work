@@ -88,15 +88,15 @@ class PurchaseOrder extends Equatable {
       itemName: data['itemName'] ?? '',
       currency: data['currency'] ?? '',
       orderType: data['orderType'] ?? 'purchase order',
-      quantity: data['quantity'] ?? 0,
-      unitPrice: data['unitPrice'] ?? 0.0,
+      quantity: '${data['quantity']}'.asInt,
+      unitPrice: '${data['unitPrice']}'.asDouble,
       payTerms: data['payTerms'] ?? '',
       payMethod: data['payMethod'] ?? '',
       remarks: data['remarks'] ?? '',
-      subTotal: data['subTotal'] ?? 0.0,
-      taxPercent: data['taxPercent'] ?? 0.0,
-      discountPercent: data['discountPercent'] ?? 0.0,
-      totalAmount: data['totalAmount'] ?? 0.0,
+      subTotal: '${data['subTotal']}'.asDouble,
+      taxPercent: '${data['taxPercent']}'.asDouble,
+      discountPercent: '${data['discountPercent']}'.asDouble,
+      totalAmount: '${data['totalAmount']}'.asDouble,
       approvedBy: data['approvedBy'] ?? '',
       deliveryDate: toDateTimeFn(data['deliveryDate']),
       createdBy: data['createdBy'] ?? '',
@@ -146,9 +146,8 @@ class PurchaseOrder extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['deliveryDate'] = createdAt.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }

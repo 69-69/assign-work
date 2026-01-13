@@ -64,7 +64,12 @@ class ErrorLogCache {
 
   /// Clears the stored Error Log by ID.
   /// [id] is same as cacheKey
-  Future<void> clearById(String id) async => await _dataBox.delete(id);
+  Future<void> clearById(dynamic ids) async {
+    if (ids == null) return;
+    ids is Iterable<String>
+        ? await _dataBox.deleteAll(ids)
+        : await _dataBox.delete(ids);
+  }
 
   /// Clears the stored Error Logs from local storage.
   Future<void> clearLogs() async => await _clearCache();

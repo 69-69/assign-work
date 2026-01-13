@@ -1,8 +1,8 @@
 import 'package:assign_erp/config/routes/route_names.dart';
-import 'package:assign_erp/core/constants/main_modules.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/main_modules.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -80,7 +80,7 @@ extension LicenseTiles on BuildContext {
         'icon': MainModuleId.system.getIcon,
         'action': RouteNames.systemAdminApp,
         'param': {},
-        'access': EnumHelper<SetupPermission>(
+        'access': EnumUtil<SetupPermission>(
           SetupPermission.manageSetup,
         ).getName,
         'description':
@@ -138,4 +138,4 @@ extension LicenseTiles on BuildContext {
 
 // Get name from enum
 String _getName(SubscriptionLicenses e) =>
-    EnumHelper<SubscriptionLicenses>(e).getName;
+    EnumUtil<SubscriptionLicenses>(e).getName;

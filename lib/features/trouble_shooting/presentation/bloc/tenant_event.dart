@@ -67,7 +67,7 @@ class RevokeAuthorizedDeviceId<T> extends UpdateTenant<T> {
 }
 
 class DeleteTenant<T> extends TenantEvent<T> {
-  final String documentId;
+  final T documentId;
 
   const DeleteTenant({required this.documentId});
 

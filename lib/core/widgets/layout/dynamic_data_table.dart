@@ -1116,15 +1116,14 @@ class _ExportButton extends StatelessWidget {
 
     return selectedRows.isEmpty
         ? const SizedBox.shrink()
-        : context.outlinedIconBtn(
-            Icon(Icons.file_download, color: kPrimaryAccentColor),
+        : context.toolbarButton(
             label: 'Export',
-            borderColor: kPrimaryAccentColor,
+            icon: Icons.file_download,
             tooltip: 'Export Data to Excel or PDF',
-            txtColor: kPrimaryAccentColor,
+            bgColor: kSuccessColor,
             onPressed: () async {
               final isExcel = await _buildPreference(context);
-              prettyPrint('isExcel', isExcel);
+              prettyPrint('is-Excel', isExcel);
               if (isExcel == null) return;
 
               if (isExcel == true) {

@@ -1,6 +1,6 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/features/user_guide/data/permission/user_guide_permission.dart';
 import 'package:flutter/material.dart';
 
@@ -33,4 +33,4 @@ extension UserGuideTiles on dynamic {
 }
 
 // Get name from enum
-String _getName(e) => EnumHelper<UserGuidePermission>(e).getName;
+String _getName(e) => EnumUtil<UserGuidePermission>(e).getName;

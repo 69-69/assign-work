@@ -59,7 +59,14 @@ class BuildBreadcrumbs extends StatelessWidget {
             ),*/
             _buildInkWell(i, breadcrumbs, context),
             if (i != breadcrumbs.length - 1)
-              const Text(' > ', style: TextStyle(color: kGrayColor)),
+              const Text(
+                ' > ',
+                style: TextStyle(
+                  color: kGrayColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
           ],
         ],
       ),

@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/main_modules.dart';
+import 'package:assign_erp/core/util/extensions/main_modules.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
@@ -30,7 +30,7 @@ class UserGuideConfig {
           .toList();
 
   static List<Set<({IconData icon, String label})>> _list(bool canAccessAgent) {
-    return MainModulesHelper.toStringList(
+    return MainModulesUtil.toStringList(
       keysToExclude: [
         if (!canAccessAgent) MainModuleId.agent,
         MainModuleId.trouble,

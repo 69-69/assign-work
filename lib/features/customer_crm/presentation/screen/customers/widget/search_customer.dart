@@ -84,8 +84,9 @@ class _SearchCustomerState extends State<SearchCustomer> {
   bool _filterCustomer(String filter, Customer customer) {
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = customer.filterByAny(term);
-    if ((!matches && filter.isNotEmpty) && _allowManualEntry)
+    if ((!matches && filter.isNotEmpty) && _allowManualEntry) {
       _toggleManualEntry();
+    }
     return matches;
   }
 

@@ -2,7 +2,7 @@
 // ⚙️ Account Status Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 
 enum AccountStatus { disabled, enabled }
 
@@ -12,18 +12,18 @@ enum AccountStatus { disabled, enabled }
 * */
 extension AccountStatusExtension on AccountStatus {
   /// [getName] Get the specific Enum Name
-  String get getName => EnumHelper<AccountStatus>(this).getName;
+  String get getName => EnumUtil<AccountStatus>(this).getName;
 }
 
-class AccountStatusHelper {
+class AccountStatusUtil {
   /// [fromString] Converts String/Label to enum value.
   static AccountStatus fromString(String? value) =>
-      EnumHelper.fromString<AccountStatus>(AccountStatus.values, value);
+      EnumUtil.fromString<AccountStatus>(AccountStatus.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final label = includeHeader ? 'account status' : '';
-    return EnumHelper.toStringList<AccountStatus>(AccountStatus.values, label);
+    return EnumUtil.toStringList<AccountStatus>(AccountStatus.values, label);
   }
 }
 // ---------------------------

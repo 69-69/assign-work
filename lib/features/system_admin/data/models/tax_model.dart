@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/tax_context.dart';
+import 'package:assign_erp/core/util/extensions/tax_context.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -16,6 +16,9 @@ class Tax extends Equatable {
   /// meaning it should be subtracted from the amount payable, not added.
   final bool isWithholding;
 
+  /// [isShippingTaxed] Indicates if this tax should also be applied to shipping charges.
+  final bool isShippingTaxed;
+
   /// [autoApplyOn] Entities or transaction types the tax applies to (e.g., pos, invoice, etc).
   final List<TaxContext> autoApplyOn;
 
@@ -26,8 +29,10 @@ class Tax extends Equatable {
   /// Ghana Education Trust Fund levy: 2.5% [getFund]
   final String name;
 
-  /// Tax code
+  /// [code] Tax code
   final String code;
+
+  /// [rate] This is the Tax Rate in percentage
   final double rate;
   final String notes;
   final String createdBy;
@@ -39,6 +44,7 @@ class Tax extends Equatable {
     this.id = '',
     this.isAutoApply = false,
     this.isWithholding = false,
+    this.isShippingTaxed = false,
     required this.name,
     required this.code,
     required this.rate,
@@ -59,8 +65,9 @@ class Tax extends Equatable {
       code: map['code'] ?? '',
       isAutoApply: map['isAutoApply'] ?? false,
       isWithholding: map['isWithholding'] ?? false,
-      autoApplyOn: TaxContextHelper.parseList(map['autoApplyOn']),
-      rate: double.tryParse(map['rate']?.toString() ?? '0') ?? 0.0,
+      isShippingTaxed: map['isShippingTaxed'] ?? false,
+      autoApplyOn: TaxContextUtil.parseList(map['autoApplyOn']),
+      rate: '${map['rate']}'.asDouble,
       notes: map['notes'] ?? '',
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
@@ -71,7 +78,7 @@ class Tax extends Equatable {
 
   // map template
   Map<String, dynamic> _mapTemp() {
-    List<String> strList = TaxContextHelper.toStringList(autoApplyOn);
+    List<String> strList = TaxContextUtil.toStringList(autoApplyOn);
 
     return {
       'id': id,
@@ -81,6 +88,7 @@ class Tax extends Equatable {
       'notes': notes,
       'isAutoApply': isAutoApply,
       'isWithholding': isWithholding,
+      'isShippingTaxed': isShippingTaxed,
       'autoApplyOn': strList,
       'createdBy': createdBy,
       'updatedBy': updatedBy,
@@ -99,8 +107,8 @@ class Tax extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
@@ -157,6 +165,7 @@ class Tax extends Equatable {
     String? notes,
     bool? isAutoApply,
     bool? isWithholding,
+    bool? isShippingTaxed,
     List<TaxContext>? autoApplyOn,
     String? createdBy,
     DateTime? createdAt,
@@ -170,6 +179,7 @@ class Tax extends Equatable {
     notes: notes ?? this.notes,
     isAutoApply: isAutoApply ?? this.isAutoApply,
     isWithholding: isWithholding ?? this.isWithholding,
+    isShippingTaxed: isShippingTaxed ?? this.isShippingTaxed,
     autoApplyOn: autoApplyOn ?? this.autoApplyOn,
     createdBy: createdBy ?? this.createdBy,
     createdAt: createdAt ?? this.createdAt,
@@ -186,6 +196,7 @@ class Tax extends Equatable {
     notes,
     isAutoApply,
     isWithholding,
+    isShippingTaxed,
     autoApplyOn,
     createdBy,
     createdAt,
@@ -200,8 +211,9 @@ class Tax extends Equatable {
     isWithholding ? 'Withholding Tax' : 'Standard Tax',
     code.toUpperAll,
     '$rate',
+    isShippingTaxed ? 'Taxable' : 'Non-Taxable',
     isAutoApply ? 'Auto-Applied' : 'Manual',
-    TaxContextHelper.toStringList(autoApplyOn).join(', ').separateWord.toTitle,
+    TaxContextUtil.toStringList(autoApplyOn).join(', ').separateWord.toTitle,
     notes.toSentence,
     createdBy.toTitle,
     getCreatedAt,
@@ -209,12 +221,13 @@ class Tax extends Equatable {
     getUpdatedAt,
   ];
 
-  static List<String> get dataHeader => const [
+  static List<String> get dataTableHeader => const [
     'ID',
-    'Tax',
+    'Tax / Levy',
     'Tax type',
     'Code',
     'Rate %',
+    'Shipping',
     'Auto Apply',
     'Auto Context',
     'Notes',
@@ -230,12 +243,19 @@ class ResolveTaxCode {
   final double rate;
   final String name;
 
-  ResolveTaxCode({required this.rate, required this.name});
+  /// [isShippingTaxed] Indicates if this tax should also be applied to shipping charges.
+  final bool isShippingTaxed;
+
+  ResolveTaxCode({
+    required this.rate,
+    required this.name,
+    this.isShippingTaxed = false,
+  });
 
   String get taxLabel => '$name (${rate.toPercent}%)';
 }
 
-/// Tax Auto Apply Context [TaxOption]
+/*/// Tax Auto Apply Context [TaxOption]
 class TaxOption {
   final String key;
   final bool selected;
@@ -250,4 +270,12 @@ class TaxOption {
       data: map['data'],
     );
   }
-}
+
+  /// [taxOptions] Converts a list of maps from the provided [map] under the given [key] into a list of [TaxOption] objects.
+  static List<TaxOption> taxOptions(List<dynamic>? map) {
+    return map
+            ?.map((i) => TaxOption.fromMap(Map<String, dynamic>.from(i)))
+            .toList() ??
+        [];
+  }
+}*/

@@ -1,13 +1,13 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/permission/inventory_permission.dart';
 import 'package:flutter/material.dart';
 
 /// Inventory Management System App(IMS) Dashboard tiles [InventoryTiles]
 extension InventoryTiles on dynamic {
   /// Sub Menu Tiles under orders tab
-  List<DashboardTile> get ordersTiles {
+  List<DashboardTile> get ordersSubTiles {
     final tilesData = [
       {
         'hasSplit': true,
@@ -32,12 +32,150 @@ extension InventoryTiles on dynamic {
     return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
   }
 
+  /// Sub Menu Tiles under Stock management tab
+  List<DashboardTile> get stockManagementSubTiles {
+    final tilesData = [
+      {
+        'hasSplit': true,
+        'label': 'goods . receipt',
+        'icon': Icons.receipt_long,
+        'action': RouteNames.goodsReceipt,
+        'param': {},
+        'access': _getName(InventoryPermission.manageGoodsReceipt),
+        'description':
+            'Record and post the receipt of physical goods from suppliers into inventory.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'goods . issue',
+        'icon': Icons.output,
+        'action': RouteNames.goodsIssue,
+        'param': {},
+        'access': _getName(InventoryPermission.manageGoodsIssue),
+        'description':
+            'Issue goods from inventory for sales, production, transfers, or internal use.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'stock . transfer',
+        'icon': Icons.compare_arrows,
+        'action': RouteNames.stockTransfer,
+        'param': {},
+        'access': _getName(InventoryPermission.manageStockTransfer),
+        'description':
+            'Transfer stock between warehouses, locations, or bins without affecting overall inventory levels.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'stock . adjustment',
+        'icon': Icons.tune,
+        'action': RouteNames.stockAdjustment,
+        'param': {},
+        'access': _getName(InventoryPermission.manageStockAdjustment),
+        'description':
+            'Adjust inventory quantities to account for discrepancies from counts, damage, loss, or corrections.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'reserve . stocks',
+        'icon': Icons.lock_outline,
+        'action': RouteNames.reserveStocks,
+        'param': {},
+        'access': _getName(InventoryPermission.manageReserveStocks),
+        'description':
+            'Reserve available inventory quantities to prevent them from being issued or sold.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'return . stocks',
+        'icon': Icons.keyboard_return,
+        'action': RouteNames.returnsFromCustomers,
+        'param': {},
+        'access': _getName(InventoryPermission.manageReturns),
+        'description':
+            'Process returned goods from customers and update inventory accordingly.',
+      },
+    ];
+
+    return tilesData.map((e) => DashboardTile.fromMap(e)).toList();
+  }
+
+  /// Sub Menu Tiles under Warehouse tab
+  List<DashboardTile> get warehouseSubTiles {
+    final tileData = [
+      // ───────────── Master Data ─────────────
+      {
+        'label': 'Warehouse',
+        'icon': Icons.store,
+        'action': RouteNames.warehouse,
+        'param': {'openTab': '0'},
+        'access': _getName(InventoryPermission.manageWarehouseAddress),
+        'description':
+            'Define physical storage facilities such as Main, Store, or Transit warehouses.',
+      },
+      {
+        'label': 'Location',
+        'icon': Icons.view_kanban,
+        'action': RouteNames.warehouseLocation,
+        'param': {'openTab': '1'},
+        'access': _getName(InventoryPermission.manageWHLocation),
+        'description':
+            'Define sub-areas within a warehouse, such as racks, aisles, or shelves.',
+      },
+      {
+        'label': 'Bin',
+        'icon': Icons.inbox,
+        'action': RouteNames.warehouseBin,
+        'param': {'openTab': '2'},
+        'access': _getName(InventoryPermission.manageWHBin),
+        'description':
+            'Define precise storage bins inside a location for accurate stock placement.',
+      },
+
+      // ───────────── Inbound Execution ─────────────
+      {
+        'hasSplit': true,
+        'label': 'Inbound . Receiving',
+        'icon': Icons.call_received,
+        'action': RouteNames.inboundReceiving,
+        'param': {'openTab': '3'},
+        'access': _getName(InventoryPermission.manageWHReceiving),
+        'description':
+            'Receive incoming goods from purchase orders and place them into warehouse bins.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'Internal . Movements',
+        'icon': Icons.swap_horiz,
+        'action': RouteNames.internalMovements,
+        'param': {'openTab': '4'},
+        'access': _getName(InventoryPermission.manageWHMovement),
+        'description':
+            'Move stock internally between bins or locations within the same warehouse.',
+      },
+
+      // ───────────── Outbound Execution ─────────────
+      {
+        'hasSplit': true,
+        'label': 'Picking . Shipments',
+        'icon': Icons.local_shipping,
+        'action': RouteNames.outboundPickShipping,
+        'param': {'openTab': '5'},
+        'access': _getName(InventoryPermission.manageWHPickShipping),
+        'description':
+            'Pick, pack, and ship goods to customers in a single outbound process.',
+      },
+    ];
+
+    return tileData.map((e) => DashboardTile.fromMap(e)).toList();
+  }
+
   /// Sub Menu Tiles under Inventory Dashboard
   List<DashboardTile> get inventoryTiles {
     final tilesData = [
       /// NEW Modules (These will be added)
       /*1️⃣ Item / Product Master
-          Purpose: Central definition of everything that can be stocked.
+          Purpose: Define what the item is -Central definition of everything that can be stocked.
           Key objects:
           Items / Products
           Item Categories
@@ -70,14 +208,15 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Item . Master',
         'icon': Icons.inventory_2,
-        'action': RouteNames.items,
+        'action': RouteNames.itemMasterModule,
         'param': {},
-        'access': _getName(InventoryPermission.manageStock),
+        'access': _getName(InventoryPermission.manageItemMaster),
         'description':
             'Create, update, and manage inventory, SKUs, and attributes.',
       },
+
       /* 2️⃣ Stock Management
-          Purpose: Real-time stock control.
+          Purpose: Define where stock can exist - Real-time stock control.
           Key objects:
           Stock On Hand
           Available Quantity
@@ -95,16 +234,20 @@ extension InventoryTiles on dynamic {
           Damaged / Blocked Stock: Items that are no longer sellable or usable, flagged for reporting.
         Why It Matters:
           This module is core to preventing overselling. It helps balance sales, production, and
-          procurement by providing real-time visibility into what’s actually available and what’s already committed elsewhere in the system.*/
+          procurement by providing real-time visibility into what’s actually available and what’s already committed elsewhere in the system.
+        What it does:
+          Warehouses
+          Bins / locations
+          Stock rules (min/max, reorder level)*/
       {
         'hasSplit': true,
         'label': 'Stock . Management',
-        'icon': Icons.receipt_long,
-        'action': RouteNames.items, // Temporal Placeholder
-        // 'action': RouteNames.stockOnHand,
+        'icon': Icons.assignment_returned,
+        'action': RouteNames.stockManagementModule,
         'param': {},
-        'access': _getName(InventoryPermission.viewStock),
-        'description': 'View available, reserved, and total stock quantities.',
+        'access': _getName(InventoryPermission.manageStock),
+        'description':
+            'Record, view available, reserved, and total stock quantities.',
       },
 
       /*3️⃣ Warehouse Management
@@ -132,89 +275,13 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Warehouses',
         'icon': Icons.warehouse,
-        'action': RouteNames.warehouseProducts,
+        'action': RouteNames.wmsModule,
         'param': {},
         'access': _getName(
-          InventoryPermission.manageStock,
+          InventoryPermission.manageWarehouse,
         ), // Temporal Placeholder
         // 'access': _getName(InventoryPermission.manageWarehouses),
         'description': 'Manage warehouses, bins, racks, and storage locations.',
-      },
-
-      // Goods Receipt (Inbound)
-      /*4️⃣ Goods Receipt (Inbound)
-        Purpose: Increase inventory from external sources.
-        Sources:
-        Purchase Orders
-        Customer Returns
-        Production Output
-        Key objects:
-        Goods Receipt Notes (GRN)
-        Receiving Inspection
-        Partial Receipts
-        =====================
-        4️⃣ Goods Receipt (Inbound)
-          Purpose: Manages the receipt of goods from external sources—suppliers, customers, or even internal
-          production outputs. It ensures accurate, timely updates to stock levels.
-        Sources:
-          Purchase Orders: Goods received based on orders placed with suppliers.
-          Customer Returns: Items returned by customers for exchange or refund.
-          Production Output: Finished goods produced in-house and added to stock.
-        Key Objects:
-          Goods Receipt Notes (GRN): Documents used to confirm the receipt of items from suppliers or other sources.
-          Receiving Inspection: Process for inspecting goods on arrival for quality and quantity.
-          Partial Receipts: Handling of partial shipments from suppliers.
-          Why It Matters:
-          Without a robust Goods Receipt system, businesses can easily experience inventory discrepancies,
-          which could lead to overselling, stockouts, or misplaced goods. Accurate receipt tracking
-          ensures inventory levels are updated in real time and that the correct quantities are added.
-
-          /// NOTE: There'll be Horizonal-tabs under the Goods / Service Receipt tab (for: GRN, SES).*/
-      {
-        /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
-        /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
-        /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
-        'hasSplit': true,
-        'label': 'Goods / Service Receipt',
-        'icon': Icons.assignment_returned,
-        'action': RouteNames.items,
-        // Temporal Placeholder
-        // 'action': RouteNames.goodsReceipt,
-        'param': {},
-        'access': _getName(InventoryPermission.manageStock),
-        // Temporal Placeholder
-        // 'access': _getName(InventoryPermission.manageGoodsReceipt),
-        'description':
-            'Record goods/services from suppliers, returns, or production into inventory.',
-      },
-
-      /*5️⃣ Goods Issue (Outbound)
-        Purpose: Decrease inventory.
-        Sources:
-        Sales Orders
-        POS Sales
-        Transfers
-        Write-offs
-        Key objects:
-        Delivery Issues
-        Picking Lists
-        Issue Notes
-
-        NOTE: Good Issue databases do NOT duplicate full item master data.
-        They store references (foreign keys) + a small snapshot.*/
-      {
-        'hasSplit': true,
-        'label': 'Goods . Issue',
-        'icon': Icons.call_made,
-        // 'action': RouteNames.goodsIssue,
-        'action': RouteNames.items, // Temporal Placeholder
-        'param': {},
-        // 'access': _getName(InventoryPermission.issueStock),
-        'access': _getName(
-          InventoryPermission.manageStock,
-        ), // Temporal Placeholder
-        'description':
-            'Release stock for in-store, online sales, POS or internal use.',
       },
 
       /*6️⃣ Inventory Reports & Analytics
@@ -374,7 +441,7 @@ extension InventoryTiles on dynamic {
 }
 
 // Get name from enum
-String _getName(e) => EnumHelper<InventoryPermission>(e).getName;
+String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
 
 /**In a **full ERP**, **Inventory** is not just “stock in / stock out”. It’s a **core operational domain** with multiple tightly related **sub-modules** that support Sales, Procurement, POS, Manufacturing, and Finance.
 
@@ -679,6 +746,86 @@ String _getName(e) => EnumHelper<InventoryPermission>(e).getName;
 
     Just tell me.
  */
+
+/*// Goods Receipt (Inbound)
+      /*4️⃣ Goods Receipt (Inbound)
+        Purpose: Actually add stock to inventory - Increase inventory from external sources.
+        Sources:
+        Purchase Orders
+        Customer Returns
+        Production Output
+        Key objects:
+        Goods Receipt Notes (GRN)
+        Receiving Inspection
+        Partial Receipts
+        =====================
+        4️⃣ Goods Receipt (Inbound)
+          Purpose: Manages the receipt of goods from external sources—suppliers, customers, or even internal
+          production outputs. It ensures accurate, timely updates to stock levels.
+        Sources:
+          Purchase Orders: Goods received based on orders placed with suppliers.
+          Customer Returns: Items returned by customers for exchange or refund.
+          Production Output: Finished goods produced in-house and added to stock.
+        Key Objects:
+          Goods Receipt Notes (GRN): Documents used to confirm the receipt of items from suppliers or other sources.
+          Receiving Inspection: Process for inspecting goods on arrival for quality and quantity.
+          Partial Receipts: Handling of partial shipments from suppliers.
+        Why It Matters:
+          Without a robust Goods Receipt system, businesses can easily experience inventory discrepancies,
+          which could lead to overselling, stockouts, or misplaced goods. Accurate receipt tracking
+          ensures inventory levels are updated in real time and that the correct quantities are added.
+        What it does:
+          Increases on-hand quantity
+          Creates stock ledger entries
+          Triggers inventory valuation
+          Posts accounting entries
+          /// NOTE: There'll be Horizonal-tabs under the Goods / Service Receipt tab (for: GRN, SES).*/
+      {
+        /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
+        /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
+        /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
+        'hasSplit': true,
+        'label': 'Goods / Service Receipt',
+        'icon': Icons.assignment_returned,
+        'action': RouteNames.items,
+        // Temporal Placeholder
+        // 'action': RouteNames.goodsReceipt,
+        'param': {},
+        'access': _getName(InventoryPermission.manageStock),
+        // Temporal Placeholder
+        // 'access': _getName(InventoryPermission.manageGoodsReceipt),
+        'description':
+            'Record/stock goods/services from suppliers, returns, or production into inventory.',
+      },
+
+      /*5️⃣ Goods Issue (Outbound)
+        Purpose: Decrease inventory.
+        Sources:
+        Sales Orders
+        POS Sales
+        Transfers
+        Write-offs
+        Key objects:
+        Delivery Issues
+        Picking Lists
+        Issue Notes
+
+        NOTE: Good Issue databases do NOT duplicate full item master data.
+        They store references (foreign keys) + a small snapshot.*/
+      {
+        'hasSplit': true,
+        'label': 'Goods . Issue',
+        'icon': Icons.call_made,
+        // 'action': RouteNames.goodsIssue,
+        'action': RouteNames.items, // Temporal Placeholder
+        'param': {},
+        // 'access': _getName(InventoryPermission.issueStock),
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        'description':
+            'Release stock for in-store, online sales, POS or internal use.',
+      },*/
 
 /*/// Returns a list of Inventory-Dashboard-Tiles based on the Inventory license [inventoryTiles]
   Map<EmployeeRole, List<DashboardTile>> get _rbcInventoryTiles {

@@ -80,10 +80,13 @@ class BottomSheetScaffold extends StatelessWidget {
         spacing: 8.0,
         children: [
           if (secondaryWidget != null) ...{secondaryWidget!},
-          if (onPrint != null) ...{_secondaryWidget(context)},
+          if (onPrint != null) ...{_printWidget(context)},
 
-          IconButton(
-            icon: Icon(Icons.close),
+          context.iconButton(
+            Icons.close,
+            iconColor: kTextColor,
+            bgColor: kTransparentColor,
+            borderColor: kTextColor.toAlpha(0.3),
             tooltip: 'Close',
             onPressed: () => Navigator.pop(context),
           ),
@@ -93,11 +96,12 @@ class BottomSheetScaffold extends StatelessWidget {
     );
   }
 
-  Widget _secondaryWidget(BuildContext context) {
+  Widget _printWidget(BuildContext context) {
     return context.iconButton(
       Icons.print,
       iconColor: kWarningColor,
       bgColor: kWarningColor.toAlpha(0.1),
+      borderColor: kWarningColor.toAlpha(0.3),
       tooltip: tooltip ?? 'Print out',
       onPressed: onPrint!,
     );

@@ -8,10 +8,10 @@ import 'package:assign_erp/core/util/str_util.dart';
 String _getEnumName<T extends Enum>(T e) => e.name;
 
 // Generic Enum Helper Class
-class EnumHelper<T extends Enum> {
+class EnumUtil<T extends Enum> {
   final T enumValue;
 
-  EnumHelper(this.enumValue);
+  EnumUtil(this.enumValue);
 
   /// [getName] Get the specific Enum Name (e.g. "officeSupplies")
   String get getName => _getEnumName(enumValue);

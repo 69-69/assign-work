@@ -1,8 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/create/create_workspace_acc.dart';
@@ -24,6 +23,8 @@ class ListTenantWorkspaces extends StatefulWidget {
 class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
   bool? _isChecked;
   Workspace? _selectedWorkspace;
+
+  AllTenantsBloc get _bloc => context.read<AllTenantsBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -93,37 +94,24 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
   }
 
   _buildToolbar(List<Workspace> tenants) {
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      runAlignment: WrapAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh Workspaces',
-          label: 'Workspaces',
-          count: tenants.length,
-          onPressed: () {
-            // Refresh Workspace Data
-            context.read<AllTenantsBloc>().add(RefreshTenants<Workspace>());
-          },
-        ),
-
-        if (_isChecked == true) ...{
-          context.elevatedButton(
-            'Assign Subscription',
-            tooltip: 'Assign Workspace Subscription & License',
-            onPressed: () async {
+    return ListToolbarButtons(
+      createLabel: 'Setup New Workspace',
+      onCreate: () => context.openCreateWorkspacePopUp(),
+      refreshLabel: 'Refresh Workspaces',
+      optLabel: 'Assign Subscription',
+      optTooltip: 'Assign Workspace Subscription & License',
+      dataLength: tenants.length,
+      onRefresh: () => _bloc.add(RefreshTenants<Workspace>()),
+      optIcon: Icons.vpn_key,
+      optOnPressed: _isChecked == true
+          ? () async {
               await context.assignSubscriptionToWorkspaceDialog(
                 workspaceId: _selectedWorkspace!.id,
                 workspaceName: _selectedWorkspace?.name,
                 initialMaxDevices: _selectedWorkspace?.maxAllowedDevices,
               );
-            },
-            bgColor: kGrayBlueColor,
-            txtColor: kWhiteColor,
-          ),
-        },
-      ],
+            }
+          : null,
     );
   }
 
@@ -163,14 +151,10 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      AllTenantsBloc allTenantsBloc = context.read<AllTenantsBloc>();
       // Delete Tenant Associated Data
-      await allTenantsBloc.deleteTenantData(
-        workspaceId,
-        workspaceRole.toLowerFirst,
-      );
+      await _bloc.deleteTenantData(workspaceId, workspaceRole.toLowerFirst);
       // Delete Tenant Workspace
-      allTenantsBloc.add(DeleteTenant<String>(documentId: workspaceId));
+      _bloc.add(DeleteTenant<String>(documentId: workspaceId));
     }
   }
 }

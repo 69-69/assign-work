@@ -1,12 +1,12 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -38,7 +38,7 @@ extension POFormExtensions on BuildContext {
       initialSize: 0.94,
       title: 'Edit Purchase Order',
       subtitle:
-          '${serverPO.poNumber.toLowerAll} (${serverPO.lineItems.first.getTypeLabel})',
+          '${serverPO.poNumber.toLowerAll} (${serverPO.lineItems.first.getType})',
       body: _CreatePOForm(serverPO: serverPO),
     ),
   );
@@ -76,8 +76,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   final List<String> _taxCodes = [];
   final List<LineItem> _lineItems = [];
   final List<AddressInfo> _addresses = [];
-  Map<String, dynamic> _shippingAmount = {};
   final List<SupplierLink> _supplierLinks = [];
+  final Map<String, dynamic> _shippingAmount = {};
   final Map<String, dynamic> _additionalInfo = {};
 
   /// [_taxModeToApply] Tax method to apply either per line[PerLineTax] or per order[HeaderTax].
@@ -86,7 +86,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   ProPurchaseOrder get _serverPO => widget.serverPO;
 
-  String get _lineItemType => _serverPO.lineItems.first.getTypeLabel;
+  String get _lineItemType => _serverPO.lineItems.first.getType;
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -105,7 +105,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     final status = _poStatus ?? _serverPO.getPOStatus;
 
     return _serverPO.copyWith(
-      status: WorkflowStatusHelper.fromString(status),
+      status: WorkflowStatusUtil.fromString(status),
       supplierLink: _supplierLinks.first,
       requestedBy: _requestedBy ?? _serverPO.requestedBy,
 
@@ -114,7 +114,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
       paymentTerm: _paymentTerm ?? _serverPO.paymentTerm,
       paymentMethod: _paymentMethod ?? _serverPO.paymentMethod,
-      shippingAmount: double.tryParse(_shippingAmount['shippingAmount']) ?? 0.0,
+      shippingAmount: '${_shippingAmount['shippingAmount']}'.asDouble,
 
       addresses: List.from(_addresses),
       buyerContactPersonId:
@@ -198,6 +198,12 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   }
 
   @override
+  void initState() {
+    _taxModeToApply = _serverPO.taxMode;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
@@ -241,7 +247,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         FormGroupCard(
           isExpanded: false,
           title: '5. Addresses',
-          subTitle: '\nAdd billing, shipping, or any additional addresses.',
+          subTitle:
+              '\nBuyer\'s billing, shipping, or any additional addresses.',
           children: [_buildAddresses()],
         ),
 
@@ -259,12 +266,17 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
           children: [
             HorizontalDivider(space: 0.4),
-            _buildTextSummary('SubTotal:', _serverPO.subTotal),
-            _buildTextSummary('Discount:', _serverPO.discountAmount),
-            _buildTextSummary('Tax %:', _serverPO.totalTaxAmount),
-            _buildTextSummary('Net Total:', _serverPO.netTotal),
-            _buildTextSummary('Shipping:', _serverPO.shippingAmount),
-            _buildTextSummary('Grand Total:', _serverPO.totalAmount),
+            ...[
+              ('SubTotal:', _serverPO.subTotal),
+              ('Discount:', _serverPO.totalDiscountAmount),
+              ('Tax Amount:', _serverPO.totalTaxPercent),
+              ('Net Total:', _serverPO.netTotal),
+              if (_serverPO.shippingTaxAmount > 0) ...[
+                ('Shipping:', _serverPO.shippingAmount),
+                ('Shipping Tax:', _serverPO.shippingTaxAmount),
+              ],
+              ('Grand Total:', _serverPO.grandTotal),
+            ].map((e) => _buildTextSummary(e.$1, e.$2)),
           ],
         ),
 
@@ -337,7 +349,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         isHidden: _taxModeToApply != TaxMode.perLineTax,
       ),
       initialData: _serverPO.lineItems
-          .map((e) => {...e.toMap(true), 'netPrice': '${_serverPO.netTotal}'})
+          .map((e) => {...e.toMap(true), 'netPrice': '${e.netAmount}'})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
@@ -436,14 +448,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   }
 
   Widget _buildTaxModeSelector() {
-    // Header-level taxes are preselected here,
-    // but per-line taxes are handled in 'lineItems'
-    List<String> initialVals = _serverPO.taxMode.isHeaderTax
-        ? List.from(_serverPO.lineItems.first.taxCodes)
-        : [];
-
     return POFormInputs.buildTaxModeSelector(
-      initialValues: initialVals,
+      initialValues: List.from(_serverPO.lineItems.first.taxCodes),
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
       selectedTaxMode: (TaxMode? mode) =>
@@ -510,9 +516,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     if (amount.isNaN || amount == 0.0) {
       amount = 0.0; // Set a default value if the amount is invalid
     }
-    final sign = label.contains('Tax')
-        ? ''
-        : getCurrencySign(_serverPO.currencyCode);
+    final sign = getCurrencySign(_serverPO.currencyCode);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -521,7 +525,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           label,
           style: context.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: kTextColor,
+            color: label.filterAny('grand') ? kDangerColor : kTextColor,
           ),
         ),
         Text(

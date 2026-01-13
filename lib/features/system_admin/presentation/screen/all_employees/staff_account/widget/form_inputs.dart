@@ -1,5 +1,5 @@
-import 'package:assign_erp/core/constants/account_status.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
@@ -267,7 +267,7 @@ class AccountStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strList = AccountStatusHelper.toStringList();
+    final strList = AccountStatusUtil.toStringList();
 
     return StaticDropdown<String>(
       key: key,

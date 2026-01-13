@@ -1,37 +1,288 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/nav/dashboard_tile_card.dart';
-import 'package:assign_erp/features/warehouse_wms/presentation/warehouse_tiles.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/inventory_tiles.dart';
 import 'package:flutter/material.dart';
 
 // Integrating WMS into your ERP requires tracking stock movement, locations, bins, picking/packing, and shipment statuses
-class WarehouseApp extends StatelessWidget {
-  const WarehouseApp({super.key});
+class WMSScreen extends StatelessWidget {
+  const WMSScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
       isGradientBg: true,
-      title: warehouseAppTitle,
-      tiles: warehouseTiles,
-      body: _buildDashboard(),
+      title: warehouseScreenTitle,
+      body: DashboardTileCard(tiles: warehouseSubTiles),
     );
   }
-
-  DashboardTileCard _buildDashboard() => DashboardTileCard(
-    tiles: warehouseTiles,
-    metricsTitle: "POS Metrics",
-    metricsSubtitle:
-        "Oversee stock movement, bin usage, and warehouse efficiency.",
-    metrics: {
-      "Total Items": 34,
-      "Out of Stock": 34,
-      "Low Stock": 34,
-      "Bins Used": 210,
-      "Utilization (%)": 5,
-    },
-  );
 }
+
+/*🏭 Example
+A company receives 100 laptops:
+Stock Management: inventory +100 laptops
+WMS:
+Assigns bins
+Creates put-away tasks
+Guides picking when orders arrive
+Manages packing and shipping*/
+
+/*You’re on the **right foundation**, but a real WMS needs **a bit more structure** to work in practice.
+
+Below is a **clean, realistic WMS data model**, starting from what you already have and expanding **only what’s truly needed**.
+
+I’ll keep it **pragmatic**, not over-engineered.
+
+---
+
+## 1️⃣ Warehouse (good, minor additions)
+
+```text
+Warehouse
+---------
+id (PK)
+code
+name
+type (Main | Store | Transit)
+isActive
+addressId
+```
+
+✅ Optional but common:
+
+* `addressId` → shipping, receiving, routing
+* `isDefault` → for auto-allocation
+
+---
+
+## 2️⃣ Location / Bin (needs hierarchy & control)
+
+Your current `Location` is missing **how the warehouse is structured**.
+
+### Recommended structure (single table, flexible)
+
+```text
+Location
+--------
+id (PK)
+warehouseId (FK)
+parentLocationId (FK, nullable)
+code
+name
+type (Zone | Aisle | Rack | Bin)
+isPickLocation (bool)
+isActive
+```
+
+### Why this matters
+
+* Supports **Zone → Aisle → Rack → Bin**
+* Works for **small & large warehouses**
+* Avoids multiple tables
+
+Example:
+
+```
+WH-01
+ └─ Z-REC (Zone)
+    └─ A-01 (Aisle)
+       └─ R-02 (Rack)
+          └─ B-15 (Bin)
+```
+
+---
+
+## 3️⃣ Item Location (Bin Inventory) ⭐ **Critical**
+
+This is where WMS becomes real.
+
+```text
+ItemLocation
+------------
+id (PK)
+itemId (FK)
+locationId (FK)
+quantity
+reservedQuantity
+batchNo
+serialNo
+expiryDate
+status (Available | Damaged | Quarantine)
+```
+
+📌 This is **NOT stock management** — this is *physical presence*.
+
+---
+
+## 4️⃣ Put-Away Rules (optional but very useful)
+
+```text
+PutAwayRule
+-----------
+id (PK)
+warehouseId (FK)
+itemCategoryId (FK, nullable)
+preferredLocationId (FK)
+priority
+```
+
+👉 Allows:
+
+* Auto-suggest bins
+* Fast receiving
+
+---
+
+## 5️⃣ Picking / Packing Locations
+
+You can model this via flags, or explicitly:
+
+```text
+Location
+--------
+...
+isPickLocation
+isBulkLocation
+```
+
+OR
+
+```text
+LocationType
+------------
+code (PICK | BULK | STAGING | QC)
+```
+
+---
+
+## 6️⃣ Internal Movements (Bin-to-Bin)
+
+```text
+WarehouseMovement
+-----------------
+id (PK)
+fromLocationId (FK)
+toLocationId (FK)
+itemId (FK)
+quantity
+reason (PutAway | Replenish | Transfer | Adjustment)
+status (Draft | Completed)
+createdAt
+```
+
+---
+
+## 7️⃣ Receiving (Inbound Execution)
+
+```text
+WarehouseReceipt
+----------------
+id (PK)
+warehouseId (FK)
+referenceType (PO | Transfer | Return)
+referenceId
+status (Draft | Received)
+receivedAt
+```
+
+```text
+WarehouseReceiptLine
+--------------------
+id (PK)
+receiptId (FK)
+itemId (FK)
+quantity
+```
+
+---
+
+## 8️⃣ Picking / Shipping (Outbound Execution)
+
+```text
+PickList
+--------
+id (PK)
+warehouseId (FK)
+referenceType (SO | Transfer)
+referenceId
+status (Open | Picked | Packed | Shipped)
+```
+
+```text
+PickListLine
+------------
+id (PK)
+pickListId (FK)
+itemId (FK)
+fromLocationId (FK)
+quantity
+```
+
+---
+
+## 9️⃣ Cycle Counting
+
+```text
+CycleCount
+----------
+id (PK)
+warehouseId (FK)
+status (Open | Completed)
+```
+
+```text
+CycleCountLine
+--------------
+id (PK)
+cycleCountId (FK)
+itemId (FK)
+locationId (FK)
+systemQty
+countedQty
+```
+
+---
+
+## 🔑 Minimum Viable WMS (if you want lean)
+
+If you want **just enough WMS**, don’t go beyond:
+
+✔ Warehouse
+✔ Location (hierarchical)
+✔ ItemLocation
+✔ WarehouseMovement
+
+Everything else can come later.
+
+---
+
+## 🧠 Key Design Principle (important)
+
+> **Stock Management owns “how much”**
+> **WMS owns “where exactly”**
+
+Never mix valuation, costing, or reorder logic into WMS tables.
+
+---
+
+## Final Takeaway
+
+Your current model is **correct but incomplete**.
+To be a *real* WMS, you must add:
+
+* Location hierarchy
+* Item ↔ Location quantities
+* Movement tracking
+
+If you want, next I can:
+
+* Draw this as a **simple ER diagram**
+* Help you decide **what NOT to build yet**
+* Map this model to SAP / Odoo style WMS
+* Help you design APIs or events between Stock & WMS
+
+Just tell me where you want to go next.
+*/
 
 /*Great question. A **Warehouse Management System (WMS)** is a key component of ERP, especially in multi-tenant or multi-location environments. Integrating WMS into your ERP requires tracking **stock movement**, **locations**, **bins**, **picking/packing**, and **shipment statuses**—all per tenant (`workspaceId` in your case).
 

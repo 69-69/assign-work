@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/inventory_ims/domain/repository/inventory_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -56,10 +56,10 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     on<GetInventoriesWithSameId<T>>(_onGetInventoriesWithSameId);
     on<SearchInventory<T>>(_onSearchInventory);
     on<AddInventory<T>>(_onAddInventory);
-    on<AddInventory<List<T>>>(_onAddMultiInventory);
+    on<AddInventory<List<T>>>(_onAddInventories);
     on<UpdateInventory>(_onUpdateInventory);
     on<DeleteInventory<String>>(_onDeleteInventory);
-    on<DeleteInventory<List<String>>>(_onMultiDeleteInventory);
+    on<DeleteInventory<List<String>>>(_onDeleteInventories);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
     on<_InventoriesLoaded<T>>(_onInventoryLoaded);
     on<_InventoryLoaded<T>>(_onSingleInventoryLoaded);
@@ -136,7 +136,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   ) async {
     emit(LoadingInventory<T>());
     try {
-      final localDataList = await _inventoryRepository.getMultipleDataByIDs(
+      final localDataList = await _inventoryRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -235,7 +235,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onAddMultiInventory(
+  Future<void> _onAddInventories(
     AddInventory<List<T>> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -300,15 +300,18 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onMultiDeleteInventory(
+  Future<void> _onDeleteInventories(
     DeleteInventory<List<String>> event,
     Emitter<InventoryState<T>> emit,
   ) async {
     try {
-      for (var id in event.documentId) {
-        // Delete data from Firestore and update local storage
-        await _inventoryRepository.deleteData(id);
+      if (event.documentId.isEmpty) {
+        emit(InventoryError<T>('Inventory IDs are empty'));
+        return;
       }
+
+      // Delete data from Firestore and update local storage
+      await _inventoryRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetInventories<T>());

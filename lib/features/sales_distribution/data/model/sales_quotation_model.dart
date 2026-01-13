@@ -1,10 +1,11 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/constants/sales_channel.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/total_summary_model.dart';
+import 'package:assign_erp/core/util/extensions/sales_channel.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
@@ -15,16 +16,19 @@ class SalesQuotation extends Equatable {
 
   /// 1. Identification & Status
   final String id;
+
   // Specific Store issuing the Sales Quote to the Customer
   final String storeNumber;
   final String quoteNumber; // Request for Quotation number
   final WorkflowStatus status;
+
   // If true, system is allowed to auto-convert this SQ to Sales order once customer
   // acceptance is confirmed AND a conversion action is explicitly invoked.
   final bool autoConvertSq;
 
   /// 2. Customer & Sales Context
   final String customerId;
+
   // Snapshot (Historical accuracy): The name could change later.
   // The quote should reflect the name at the time of creation.
   final String customerName;
@@ -34,6 +38,7 @@ class SalesQuotation extends Equatable {
 
   /// 3. Currency & Pricing Control
   final String currencyCode;
+
   // The rate used for currency conversion (if applicable).
   final double exchangeRate;
   final double shippingAmount;
@@ -61,6 +66,8 @@ class SalesQuotation extends Equatable {
   final DateTime updatedAt;
 
   final List<AuditLog> history; // History / Audit log
+  /// Non-persistent, computed value for UI display only.
+  final double shippingTaxAmount;
 
   SalesQuotation({
     this.id = '',
@@ -97,6 +104,9 @@ class SalesQuotation extends Equatable {
     this.updatedBy = '',
     DateTime? updatedAt,
     List<AuditLog>? history,
+
+    // Non-persistent, computed value for UI display only.
+    this.shippingTaxAmount = 0.0,
   }) : history = history ?? [],
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
@@ -110,11 +120,11 @@ class SalesQuotation extends Equatable {
       autoConvertSq: map['autoCreateSo'] ?? false,
       customerId: map['customerId'] ?? '',
       customerName: map['customerName'] ?? '',
-      status: WorkflowStatusHelper.fromString(map['status']),
-      salesChannel: SalesChannelHelper.fromString(map['salesChannel']),
+      status: WorkflowStatusUtil.fromString(map['status']),
+      salesChannel: SalesChannelUtil.fromString(map['salesChannel']),
       lineItems: LineItem.lineItems(map['lineItems']),
       notes: map['notes'],
-      taxMode: TaxModeHelper.fromString(map['taxMode']),
+      taxMode: TaxModeUtil.fromString(map['taxMode']),
       // taxCodes: List<String>.from(data['taxCodes'] ?? []),
       currencyCode: map['currencyCode'] ?? '',
       exchangeRate: double.tryParse('${map['exchangeRate']}') ?? 0.0,
@@ -175,32 +185,63 @@ class SalesQuotation extends Equatable {
 
   Map<String, dynamic> toCache() {
     final newMap = _mapTemp();
-    newMap['validFrom'] = validFrom?.millisecondsSinceEpoch;
-    newMap['validUntil'] = validUntil?.millisecondsSinceEpoch;
-    newMap['expectedDate'] = expectedDate?.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
+    newMap['validFrom'] = validFrom?.toMilliseconds;
+    newMap['validUntil'] = validUntil?.toMilliseconds;
+    newMap['expectedDate'] = expectedDate?.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
 
-  // Computed fields for Financial Summary calculations (Base amount)
-  double get subTotal =>
-      lineItems.fold(0.0, (sum, item) => sum + item.subTotal);
+  /// Get the last approved info from Sales Quote history [getApproval]
+  ({String? by, String? at}) get getApproval {
+    if (history.isNullOrEmpty) return (by: null, at: null);
 
-  // Total Discount amount: Subtract from subtotal
-  double get discountAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.discountAmount);
+    // Find the most recent approved SQ entry
+    final lastApproved = history.lastWhere(
+      (h) => h.getAction.toLowerAll == AuditAction.approved.getLabel,
+      orElse: () => AuditLog.empty,
+    );
 
-  // Total Tax amount: Add tax based on the subtotal (after discount)
-  double get totalTaxAmount =>
-      lineItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+    // If none found, return null for both
+    if (lastApproved.isEmpty) return (by: null, at: null);
 
-  // Subtotal - Discount (Before Tax)
-  double get netTotal => (subTotal - discountAmount) + totalTaxAmount;
+    return (by: lastApproved.actionBy, at: lastApproved.getActionAt);
+  }
 
-  // Final amount (after Discount + Tax)
-  double get totalAmount => netTotal + shippingAmount;
+  /// Computed TotalSummary based on current line items and shipping amount
+  TotalSummary get _totalSum => TotalSummary(
+    lineItems: lineItems,
+    shippingAmount: shippingAmount,
+    shippingTaxAmount: shippingTaxAmount,
+  );
+
+  // Calculates tax amounts for each line item and the applicable shipping tax.
+  SalesQuotation calculateTaxes(Map<String, ResolveTaxCode> taxMap) {
+    // Calculates shipping tax only if shipping is taxable under the applicable tax codes.
+    final taxedLineItems = lineItems.applyTaxes(taxMap);
+
+    // Apply shipping tax and get a new TotalSummary
+    final updatedTotalSum = _totalSum
+        .copyWith(lineItems: taxedLineItems)
+        .withShippingTax(taxMap);
+
+    // Update SQ with the new line items and shipping tax amount
+    return copyWith(
+      lineItems: taxedLineItems,
+      shippingTaxAmount: updatedTotalSum.shippingTaxAmount,
+    );
+  }
+
+  /// Financial Summaries
+  double get subTotal => _totalSum.subTotal;
+  double get taxableAmount => _totalSum.taxableAmount;
+  double get totalDiscountAmount => _totalSum.totalDiscountAmount;
+  double get totalTaxPercent => _totalSum.totalTaxPercent;
+  double get totalTaxAmount => _totalSum.totalTaxAmount;
+  double get netTotal => _totalSum.netTotal;
+  double get grandTotal => _totalSum.grandTotal;
 
   // Singleton instance for fallback (empty SalesQuotation)
   static final empty = SalesQuotation(
@@ -241,6 +282,7 @@ class SalesQuotation extends Equatable {
   String get getExpectedDate => expectedDate.dateOnly;
 
   String get getValidFromDate => validFrom.dateOnly;
+
   String get getValidUntilDate => validUntil.dateOnly;
 
   String get getCreatedAt => createdAt.toStandardDT;
@@ -285,46 +327,33 @@ class SalesQuotation extends Equatable {
     bool isSameDay = true,
   }) => quotes.where((q) => isSameDay ? q.isToday : !q.isToday).toList();
 
-  SalesQuotation computeTaxAmounts(Map<String, ResolveTaxCode> taxMap) {
-    // Calculate tax amounts for each line item (perLineTax)
-    List<LineItem> updatedItems = lineItems.map((item) {
-      if (item is! TaxableLineItem) return item;
-
-      final taxAmount = item.computeTaxAmount(taxMap);
-      final taxNames = item.buildTaxNames(taxMap);
-
-      return item.updateTax(taxAmount: taxAmount, taxNames: taxNames);
-    }).toList();
-
-    return copyWith(lineItems: updatedItems);
-  }
-
   @override
   String toString() => 'SQ: $quoteNumber - $getSQStatus';
 
   SalesQuotation copyWith({
     String? id,
     SalesChannel? salesChannel,
-    double? shippingAmount,
     String? storeNumber,
     bool? autoConvertSq,
     String? salesRepId,
     String? quoteNumber,
     String? customerId,
     String? customerName,
-    List<LineItem>? lineItems,
     WorkflowStatus? status,
-    List<AddressInfo>? addresses,
+    List<LineItem>? lineItems,
+    double? exchangeRate,
+    double? shippingAmount,
+    double? shippingTaxAmount,
     TaxMode? taxMode,
+    List<AddressInfo>? addresses,
     List<String>? attachments,
     DateTime? validFrom,
     DateTime? validUntil,
-    DateTime? expectedDate,
     String? currencyCode,
     String? paymentTerms,
     String? warrantyTerms,
     String? returnPolicy,
-    double? exchangeRate,
+    DateTime? expectedDate,
     String? notes,
     String? createdBy,
     DateTime? createdAt,
@@ -343,14 +372,14 @@ class SalesQuotation extends Equatable {
       customerId: customerId ?? this.customerId,
       customerName: customerName ?? this.customerName,
       lineItems: lineItems ?? this.lineItems,
+      exchangeRate: exchangeRate ?? this.exchangeRate,
       shippingAmount: shippingAmount ?? this.shippingAmount,
+      shippingTaxAmount: shippingTaxAmount ?? this.shippingTaxAmount,
       returnPolicy: returnPolicy ?? this.returnPolicy,
       paymentTerms: paymentTerms ?? this.paymentTerms,
       warrantyTerms: warrantyTerms ?? this.warrantyTerms,
-      exchangeRate: exchangeRate ?? this.exchangeRate,
       notes: notes ?? this.notes,
       addresses: addresses ?? this.addresses,
-      // taxCodes: taxCodes ?? this.taxCodes,
       taxMode: taxMode ?? this.taxMode,
       attachments: attachments ?? this.attachments,
       validFrom: validFrom ?? this.validFrom,
@@ -368,35 +397,33 @@ class SalesQuotation extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    status,
     storeNumber,
     salesRepId,
     quoteNumber,
     customerId,
     customerName,
+    salesChannel,
     exchangeRate,
     shippingAmount,
-    returnPolicy,
+    shippingTaxAmount,
+    taxMode,
     '$ghanaCedis$shippingAmount',
-    returnPolicy,
-    status,
     lineItems,
+    currencyCode,
     notes,
-    salesChannel,
     validUntil,
+    returnPolicy,
     paymentTerms,
     warrantyTerms,
     validFrom,
     validUntil,
     expectedDate,
-    // taxCodes,
-    taxMode,
-    currencyCode,
     addresses,
     attachments,
     createdBy,
     createdAt,
     updatedBy,
-    // headerTaxAmount,
     updatedAt,
     history,
   ];

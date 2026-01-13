@@ -31,7 +31,12 @@ class BreadcrumbService {
     return label
         .replaceAll('_', ' ')
         .replaceAll('-', ' ')
-        .replaceAll(RegExp(r'(screen|app)$', caseSensitive: false), '')
+        // .replaceAll(RegExp(r'(screen|app)$', caseSensitive: false), '')
+        .replaceAll(
+          RegExp(r'\b(screen|app|module)\b', caseSensitive: false),
+          '',
+        )
+        .replaceAll(RegExp(r'\s+'), ' ')
         .trim()
         .toTitle;
   }

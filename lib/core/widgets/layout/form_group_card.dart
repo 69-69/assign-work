@@ -38,11 +38,8 @@ class FormGroupCard extends StatefulWidget {
 class _FormGroupCardState extends State<FormGroupCard> {
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
-
   bool get _isExpanded => widget.isExpanded;
-
   String get _title => widget.title;
-
   String get _subTitle => widget.subTitle;
 
   // Generate a unique key for each card based on the title

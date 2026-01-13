@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -67,8 +68,8 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
                 _updateSpecificData(context, {
                   'subscriptionId': id,
                   'subscriptionFee': fee,
-                  'expiresOn': expiresOn?.millisecondsSinceEpoch,
-                  'effectiveFrom': effectiveFrom?.millisecondsSinceEpoch,
+                  'expiresOn': expiresOn?.toMilliseconds,
+                  'effectiveFrom': effectiveFrom?.toMilliseconds,
                 }, title: 'Subscription');
               },
             ),

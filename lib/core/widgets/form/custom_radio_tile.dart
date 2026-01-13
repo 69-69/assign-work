@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
 
 class CustomRadioModel<T> {
@@ -16,7 +18,7 @@ class CustomRadioModel<T> {
 
 class CustomRadioList<T> extends StatelessWidget {
   final bool isRow;
-  final T groupValue;
+  final T? groupValue;
   final Color? tileColor;
   final ValueChanged<T?> onChanged;
   final EdgeInsetsGeometry? padding;
@@ -29,7 +31,7 @@ class CustomRadioList<T> extends StatelessWidget {
     this.padding,
     this.tileColor,
     this.fillColor,
-    this.isRow = false,
+    this.isRow = true,
     required this.options,
     required this.onChanged,
     required this.groupValue,
@@ -40,14 +42,20 @@ class CustomRadioList<T> extends StatelessWidget {
     return RadioGroup<T>(
       groupValue: groupValue,
       onChanged: onChanged,
-      child: isRow
-          ? Wrap(spacing: 10, runSpacing: 5, children: _buildList(context))
-          : Column(children: _buildList(context)),
+      child: _buildBody(context),
     );
   }
 
-  List<CustomRadioBoxTile<dynamic>> _buildList(BuildContext context) {
-    return options.map((option) {
+  Widget _buildBody(BuildContext context) {
+    List<CustomRadioBoxTile<T>> radios = _buildOptions();
+
+    return (isRow && radios.length > 1)
+        ? Wrap(spacing: 10, runSpacing: 5, children: _groupIntoRows(radios))
+        : Column(children: radios);
+  }
+
+  List<CustomRadioBoxTile<T>> _buildOptions() {
+    final radios = options.map((option) {
       return CustomRadioBoxTile<T>(
         tileColor: tileColor,
         fillColor: fillColor,
@@ -59,6 +67,25 @@ class CustomRadioList<T> extends StatelessWidget {
         // selected: RadioGroup.maybeOf<T>(context)?.groupValue == option.value,
       );
     }).toList();
+
+    return radios;
+  }
+
+  // Group radios into rows if more than one
+  List<Widget> _groupIntoRows(List<Widget> fields) {
+    final rows = <Widget>[];
+
+    for (var i = 0; i < fields.length; i += 2) {
+      final isLast = i == fields.length - 1;
+      final children = isLast ? [fields[i]] : [fields[i], fields[i + 1]];
+
+      rows.add(AdaptiveLayout(children: children));
+      if (!isLast) {
+        rows.add(SizedBox(height: 4));
+      }
+    }
+
+    return rows;
   }
 }
 
@@ -69,6 +96,7 @@ class CustomRadioBoxTile<T> extends StatelessWidget {
   final Widget? subtitle;
   final Widget? secondary;
   final Color? tileColor;
+  final Color? borderColor;
   final EdgeInsetsGeometry? contentPadding;
   final WidgetStateProperty<Color?>? fillColor;
 
@@ -80,6 +108,7 @@ class CustomRadioBoxTile<T> extends StatelessWidget {
     this.secondary,
     this.tileColor,
     this.fillColor,
+    this.borderColor,
     this.contentPadding,
   });
 
@@ -95,6 +124,7 @@ class CustomRadioBoxTile<T> extends StatelessWidget {
       subtitle: subtitle,
       secondary: secondary,
       selected: RadioGroup.maybeOf<T>(context)?.groupValue == value,
+      radioSide: BorderSide(color: borderColor ?? context.onSecondaryContainer),
     );
   }
 }

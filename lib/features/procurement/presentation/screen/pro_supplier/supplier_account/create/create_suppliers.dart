@@ -116,9 +116,10 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         FormGroupCard(
+          title: 'Supplier Details',
+          subTitle: '\nGeneral supplier info and contact details.',
           children: [
             DynamicTextFields(
-              title: 'Supplier (Vendor) Details',
               initialData: [{}],
               fieldsConfig: _supplierFieldConfig,
               onChanged: (List<Map<String, dynamic>> data) {
@@ -132,9 +133,11 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
           ],
         ),
         FormGroupCard(
+          isExpanded: false,
+          title: 'Contact Person Details',
+          subTitle: '\nSupplier contact person details.',
           children: [
             DynamicTextFields(
-              title: 'Contact Person Details',
               initialData: [{}],
               showButton: true,
               fieldsConfig: _contactPersonFieldConfig,

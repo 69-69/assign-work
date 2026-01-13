@@ -61,9 +61,10 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     on<GetItemsWithSameId<T>>(_onGetItemsWithSameId);
     on<SearchItems<T>>(_onSearchItems);
     on<AddItem<T>>(_onAddItem);
-    on<AddItem<List<T>>>(_onAddMultiItems);
+    on<AddItem<List<T>>>(_onAddItems);
     on<UpdateItem>(_onUpdateItem);
-    on<DeleteItem>(_onDeleteItem);
+    on<DeleteItem<String>>(_onDeleteItem);
+    on<DeleteItem<List<String>>>(_onDeleteItems);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
     on<_ItemsLoaded<T>>(_onItemsLoaded);
     on<_ItemLoaded<T>>(_onItemLoaded);
@@ -179,7 +180,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
   ) async {
     emit(LoadingItems<T>());
     try {
-      final localDataList = await _dataRepository.getMultipleDataByIDs(
+      final localDataList = await _dataRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -278,7 +279,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
     }
   }
 
-  Future<void> _onAddMultiItems(
+  Future<void> _onAddItems(
     AddItem<List<T>> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
@@ -323,12 +324,36 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
   }
 
   Future<void> _onDeleteItem(
-    DeleteItem event,
+    DeleteItem<String> event,
     Emitter<FirestoreState<T>> emit,
   ) async {
     try {
       // Delete data from Firestore and update local storage
       await _dataRepository.deleteData(event.documentId);
+
+      // Trigger LoadDataEvent to reload the data
+      add(RefreshItems<T>());
+      // add(GetData<T>());
+
+      // Update State: Notify that data deleted
+      emit(ItemDeleted<T>(message: 'data deleted successfully'));
+    } catch (e) {
+      emit(ItemError<T>(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteItems(
+    DeleteItem<List<String>> event,
+    Emitter<FirestoreState<T>> emit,
+  ) async {
+    try {
+      if (event.documentId.isEmpty) {
+        emit(ItemError<T>('Data IDs are empty'));
+        return;
+      }
+
+      // Delete data from Firestore and update local storage
+      await _dataRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(RefreshItems<T>());

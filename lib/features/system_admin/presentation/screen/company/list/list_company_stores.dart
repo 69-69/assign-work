@@ -1,7 +1,6 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
@@ -20,6 +19,8 @@ class ListCompanyStores extends StatefulWidget {
 }
 
 class _ListCompanyStoresState extends State<ListCompanyStores> {
+  CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CompanyStoresBloc>(
@@ -76,27 +77,12 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
   }
 
   _buildToolbar(List<CompanyStores> sales) {
-    return Wrap(
-      spacing: 10.0,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh Stores',
-          label: 'Stores',
-          count: sales.length,
-          onPressed: () => context.read<CompanyStoresBloc>().add(
-            RefreshSetups<CompanyStores>(),
-          ),
-        ),
-        context.elevatedIconBtn(
-          Icon(Icons.store, color: kWhiteColor),
-          label: 'Add Stores',
-          tooltip: 'Company\'s Stores or Branches',
-          onPressed: () => context.openAddStoreLocations(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-      ],
+    return ListToolbarButtons(
+      createLabel: 'Add Stores',
+      refreshLabel: 'Refresh Stores',
+      dataLength: sales.length,
+      onCreate: () => context.openAddStoreLocations(),
+      onRefresh: () => _bloc.add(RefreshSetups<CompanyStores>()),
     );
   }
 
@@ -115,9 +101,7 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific Store
-        context.read<CompanyStoresBloc>().add(
-          DeleteSetup<String>(documentId: store.id),
-        );
+        _bloc.add(DeleteSetup<String>(documentId: store.id));
       }
     }
   }

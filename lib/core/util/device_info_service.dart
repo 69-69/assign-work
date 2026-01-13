@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/device_info_cache.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -24,7 +25,7 @@ class DeviceInfoService {
   static String _deviceId = '';
   static Map<String, dynamic> _deviceInfoCache = {};
 
-  static final fallbackId = DateTime.now().millisecondsSinceEpoch.toString();
+  static final fallbackId = DateTime.now().toMilliseconds.toString();
 
   // Platform-specific logic for retrieving device info
   static Future<({String deviceId, Map<String, dynamic> deviceInfo})>

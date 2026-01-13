@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -12,7 +12,7 @@ enum SupplierLinkStatus {
 
 extension SupplierLinkStatusExt on SupplierLinkStatus {
   /// [getName] Get the specific Enum Name
-  String get getName => EnumHelper<SupplierLinkStatus>(this).getName;
+  String get getName => EnumUtil<SupplierLinkStatus>(this).getName;
 }
 
 /// [SupplierLink] Supplier Link model: for associating RFQ, PO and Invoice with Suppliers
@@ -40,15 +40,17 @@ class SupplierLink extends Equatable {
   }) : invitedAt = invitedAt ?? _today,
        respondedAt = respondedAt ?? _today;
 
-  factory SupplierLink.fromMap(Map<String, dynamic> map, {String? id}) {
+  factory SupplierLink.fromMap(dynamic map, {String? id}) {
+    final newMap = Map<String, dynamic>.from(map);
+
     return SupplierLink(
-      id: id ?? map['id'] ?? '',
-      quoteId: map['quoteId'] ?? '',
-      supplierId: map['supplierId'] ?? '',
-      supplierRepId: map['supplierRepId'] ?? '',
-      status: fromString(map['status']),
-      invitedAt: toDateTimeFn(map['invitedAt']),
-      respondedAt: toDateTimeFn(map['respondedAt']),
+      id: id ?? newMap['id'] ?? '',
+      quoteId: newMap['quoteId'] ?? '',
+      supplierId: newMap['supplierId'] ?? '',
+      supplierRepId: newMap['supplierRepId'] ?? '',
+      status: fromString(newMap['status']),
+      invitedAt: toDateTimeFn(newMap['invitedAt']),
+      respondedAt: toDateTimeFn(newMap['respondedAt']),
     );
   }
 
@@ -126,14 +128,11 @@ class SupplierLink extends Equatable {
 
   /// [fromString] Converts String/Label to enum value.
   static SupplierLinkStatus fromString(String? value) =>
-      EnumHelper.fromString<SupplierLinkStatus>(
-        SupplierLinkStatus.values,
-        value,
-      );
+      EnumUtil.fromString<SupplierLinkStatus>(SupplierLinkStatus.values, value);
 
   /// [toStringList] Convert enum status list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final list = EnumHelper.toStringList<SupplierLinkStatus>(
+    final list = EnumUtil.toStringList<SupplierLinkStatus>(
       SupplierLinkStatus.values,
     );
     return includeHeader ? ['Supplier Status', ...list] : list;

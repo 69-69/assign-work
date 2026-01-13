@@ -44,7 +44,7 @@ extension MainModuleExtension on MainModuleId {
   IconData get getIcon => mainModules[this]?.icon ?? Icons.help;
 }
 
-class MainModulesHelper<T> {
+class MainModulesUtil<T> {
   /// Convert enum values to a list of labels and icons
   static List<Set<({IconData icon, String label})>> toStringList({
     List<MainModuleId>? keysToExclude,

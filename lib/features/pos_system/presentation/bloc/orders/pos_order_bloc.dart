@@ -11,7 +11,7 @@ class POSOrderBloc extends POSBloc<POSOrder> {
   POSOrderBloc({required super.firestore})
     : _firestore = firestore,
       super(
-        collectionPath: posOrdersDBCollectionPath,
+        collectionPath: posOrdersDBColPath,
         fromFirestore: (data, id) => POSOrder.fromMap(data, id),
         toFirestore: (so) => so.toMap(),
         toCache: (so) => so.toCache(),
@@ -49,7 +49,7 @@ class POSOrderBloc extends POSBloc<POSOrder> {
       // Execute parallel operations: update product quantity and create a new sale record
       await Future.wait([
         // Add the Sales entry to Firestore and return the future.
-        _firestore.collection(posSalesDBCollectionPath).add(saleMap),
+        _firestore.collection(posSalesDBColPath).add(saleMap),
 
         // Update the quantity of the product
         _updateItemQty(order.itemId, order.quantity),

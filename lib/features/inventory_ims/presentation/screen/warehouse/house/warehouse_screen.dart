@@ -4,8 +4,8 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
-class WarehouseProductScreen extends StatelessWidget {
-  const WarehouseProductScreen({super.key});
+class WarehouseScreen extends StatelessWidget {
+  const WarehouseScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +18,6 @@ class WarehouseProductScreen extends StatelessWidget {
           textAlign: TextAlign.center,
           style: context.textTheme.bodyLarge,
         ),
-      ),
-      actions: const [],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
       ),
     );
   }

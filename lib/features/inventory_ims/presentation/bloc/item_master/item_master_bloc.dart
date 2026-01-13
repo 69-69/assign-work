@@ -1,24 +1,13 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/item_model.dart';
+import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 
-class ItemBloc extends InventoryBloc<Item> {
-  ItemBloc({required super.firestore})
+class ItemMasterBloc extends InventoryBloc<ItemMaster> {
+  ItemMasterBloc({required super.firestore})
     : super(
-        collectionPath: itemsDBColPath,
-        fromFirestore: (data, id) => Item.fromMap(data, id),
-        toFirestore: (product) => product.toMap(),
-        toCache: (product) => product.toCache(),
+        collectionPath: itemMasterDBColPath,
+        fromFirestore: (data, id) => ItemMaster.fromMap(data, id: id),
+        toFirestore: (master) => master.toMap(),
+        toCache: (master) => master.toCache(),
       );
-  /*final DataRepository _dataRepository;
-
-  ProductBloc({required DataRepository dataRepository})
-      : _dataRepository = dataRepository,
-        super(
-          dataRepository: dataRepository,
-          collectionPath: productsDBCollectionPath,
-          fromFirestore: (data, id) => Product.fromMap(data, id),
-          toFirestore: (product) => product.toMap(),
-          toCache: (product) => product.toCache(),
-        );*/
 }

@@ -48,7 +48,7 @@ class Subscription extends Equatable {
 
     return Subscription(
       id: (id ?? map['id']) ?? '',
-      fee: double.tryParse(map['fee']?.toString() ?? '0') ?? 0.0,
+      fee: '${map['fee']}'.asDouble,
       name: map['name'] ?? '',
       licenses: licenses,
       createdBy: map['createdBy'] ?? '',
@@ -88,10 +88,10 @@ class Subscription extends Equatable {
   /// Convert Subscription to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
-    newMap['updatedAt'] = updatedAt.millisecondsSinceEpoch;
-    newMap['expiresOn'] = expiresOn.millisecondsSinceEpoch;
-    newMap['effectiveFrom'] = effectiveFrom.millisecondsSinceEpoch;
+    newMap['createdAt'] = createdAt.toMilliseconds;
+    newMap['updatedAt'] = updatedAt.toMilliseconds;
+    newMap['expiresOn'] = expiresOn.toMilliseconds;
+    newMap['effectiveFrom'] = effectiveFrom.toMilliseconds;
 
     return {'id': cacheKey, 'data': newMap};
   }

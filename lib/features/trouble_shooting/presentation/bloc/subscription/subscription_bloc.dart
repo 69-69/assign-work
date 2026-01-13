@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_db_collect.dart';
-import 'package:assign_erp/core/constants/collection_type.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/subscription_model.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/tenant_bloc.dart';
 

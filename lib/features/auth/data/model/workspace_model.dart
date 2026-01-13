@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/hosting_type.dart';
+import 'package:assign_erp/core/util/extensions/hosting_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
@@ -72,8 +72,7 @@ class Workspace extends Equatable {
 
   /// fromFirestore / fromJson Function [Workspace.fromMap]
   factory Workspace.fromMap(Map<String, dynamic> map, {String? id}) {
-    final fee =
-        double.tryParse(map['subscriptionFee']?.toString() ?? '0') ?? 0.0;
+    final fee = '${map['subscriptionFee']}'.asDouble;
 
     return Workspace(
       id: (map['id']) ?? id ?? '',
@@ -83,10 +82,10 @@ class Workspace extends Equatable {
       subscriptionId: map['subscriptionId'] ?? '',
       subscriptionFee: fee,
       username: '${map['username']}'.emailToUsername,
-      hostingType: HostingTypeHelper.fromString(
+      hostingType: HostingTypeUtil.fromString(
         map['hostingType'] ?? HostingType.onPremise.getName,
       ),
-      role: WorkspaceRoleHelper.fromString(map['role']),
+      role: WorkspaceRoleUtil.fromString(map['role']),
       name: map['name'] ?? '',
       category: map['category'] ?? '',
       clientName: map['clientName'] ?? '',
@@ -141,9 +140,9 @@ class Workspace extends Equatable {
   /// Convert UserModel to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
-    newMap['effectiveFrom'] = effectiveFrom.millisecondsSinceEpoch;
-    newMap['expiresOn'] = expiresOn.millisecondsSinceEpoch;
-    newMap['createdAt'] = createdAt.millisecondsSinceEpoch;
+    newMap['effectiveFrom'] = effectiveFrom.toMilliseconds;
+    newMap['expiresOn'] = expiresOn.toMilliseconds;
+    newMap['createdAt'] = createdAt.toMilliseconds;
 
     return {'id': cacheKey, 'data': newMap};
   }

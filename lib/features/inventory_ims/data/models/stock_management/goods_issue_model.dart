@@ -54,7 +54,7 @@ class GoodsIssue extends Equatable {
       issuedBy: map['issuedBy'] ?? '',
       issuedAt: toDateTimeFn(map['issuedAt'] ?? _today),
       notes: map['notes'],
-      status: WorkflowStatusHelper.fromString(map['status']),
+      status: WorkflowStatusUtil.fromString(map['status']),
       salesOrderId: map['salesOrderId'],
       posTransactionId: map['posTransactionId'],
       sourceDocumentType: map['sourceDocumentType'],

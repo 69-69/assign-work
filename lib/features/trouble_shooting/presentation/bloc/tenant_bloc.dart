@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
 import 'package:assign_erp/core/network/data_sources/remote/repository/data_repository.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
@@ -54,7 +54,8 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     on<OverrideTenant>(_onOverrideTenant);
     on<RevokeAuthorizedDeviceId>(_onRevokeAuthorizedDeviceIds);
     on<AddSubscription<T>>(_onAddSubscription);
-    on<DeleteTenant>(_onDeleteTenant);
+    on<DeleteTenant<String>>(_onDeleteTenant);
+    on<DeleteTenant<List<String>>>(_onDeleteTenants);
     on<_TenantsLoaded<T>>(_onTenantsLoaded);
     on<_TenantLoaded<T>>(_onTenantLoaded);
     on<_TenantError<T>>(_onTenantError);
@@ -215,12 +216,30 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   }
 
   Future<void> _onDeleteTenant(
-    DeleteTenant event,
+    DeleteTenant<String> event,
     Emitter<TenantState<T>> emit,
   ) async {
     try {
       // Delete data from Firestore and update local storage
       await _dataRepository.deleteData(event.documentId);
+
+      // Trigger LoadDataEvent to reload the data
+      add(LoadTenants<T>());
+
+      // Update State: Notify that data deleted
+      emit(TenantDeleted<T>(message: 'data deleted successfully'));
+    } catch (e) {
+      emit(TenantError<T>(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteTenants(
+    DeleteTenant<List<String>> event,
+    Emitter<TenantState<T>> emit,
+  ) async {
+    try {
+      // Delete data from Firestore and update local storage
+      await _dataRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(LoadTenants<T>());
@@ -242,7 +261,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
 
   void _onTenantError(_TenantError<T> event, Emitter<TenantState<T>> emit) {
     final errorLogCache = ErrorLogCache();
-    errorLogCache.setError(error: event.error, fileName: 'Tenant_bloc');
+    errorLogCache.setError(error: event.error, fileName: 'tenant_bloc');
     emit(TenantError<T>(event.error));
   }
 

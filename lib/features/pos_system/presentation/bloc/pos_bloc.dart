@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:assign_erp/core/constants/collection_type.dart';
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/pos_system/domain/repository/pos_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -58,10 +58,10 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     on<GetPOSsWithSameId<T>>(_onGetPOSsWithSameId);
     on<SearchPOS<T>>(_onSearchPOS);
     on<AddPOS<T>>(_onAddPOS);
-    on<AddPOS<List<T>>>(_onAddMultiplePOS);
+    on<AddPOS<List<T>>>(_onAddPOSs);
     on<UpdatePOS>(_onUpdatePOS);
     on<DeletePOS<String>>(_onDeletePOS);
-    on<DeletePOS<List<String>>>(_onMultiDeletePOS);
+    on<DeletePOS<List<String>>>(_onDeletePOSs);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
     on<_POSLoaded<T>>(_onPOSLoaded);
     on<_SinglePOSLoaded<T>>(_onSinglePOSLoaded);
@@ -135,7 +135,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
   ) async {
     emit(LoadingPOS<T>());
     try {
-      final localDataList = await _posRepository.getMultipleDataByIDs(
+      final localDataList = await _posRepository.getManyDataByIDs(
         event.documentIDs,
       );
 
@@ -231,7 +231,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onAddMultiplePOS(
+  Future<void> _onAddPOSs(
     AddPOS<List<T>> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -293,15 +293,18 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onMultiDeletePOS(
+  Future<void> _onDeletePOSs(
     DeletePOS<List<String>> event,
     Emitter<POSState<T>> emit,
   ) async {
     try {
-      for (var id in event.documentId) {
-        // Delete data from Firestore and update local storage
-        await _posRepository.deleteData(id);
+      if (event.documentId.isEmpty) {
+        emit(POSError<T>('POS IDs is empty'));
+        return;
       }
+
+      // Delete data from Firestore and update local storage
+      await _posRepository.deleteManyData(event.documentId);
 
       // Trigger LoadDataEvent to reload the data
       add(GetPOSs<T>());

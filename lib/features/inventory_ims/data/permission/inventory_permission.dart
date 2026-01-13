@@ -1,21 +1,28 @@
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 
 /// PERMISSION BASED ACCESS-CONTROL
-/*enum InventoryPermission {
-  viewItems,
-  addItem,
-  editItem,
-  deleteItem,
-  adjustStock,
-  transferStock,
-  viewStockLevels,
-  viewInventoryHistory,
-  exportInventoryData,
-  manageInventorySettings,
-}
-*/
 enum InventoryPermission {
   manageInventory,
+  // Item / Product Master
+  manageItemMaster,
+  // Warehouse Management System
+  manageWarehouse,
+  manageWarehouseAddress,
+  manageWHLocation,
+  manageWHBin,
+  manageWHReceiving,
+  manageWHMovement,
+  manageWHPickShipping,
+
+  // Stock Management
+  manageGoodsIssue,
+  manageGoodsReceipt,
+  manageServiceReceipt,
+  manageStockTransfer,
+  manageStockAdjustment,
+  manageReserveStocks,
+  manageReturns,
+
   // Stock/Product
   manageStock,
   createStock,
@@ -71,6 +78,126 @@ enum InventoryPermission {
   viewReport,
   viewImsSecrets, // For viewing items IDs
 }
+
+final List<AccessControl> _itemMasterPermissions = [
+  AccessControl(
+    module: "item master",
+    title: "Manage Item Master",
+    description:
+        "Allow users to create, edit, and delete items in the inventory system.",
+    access: InventoryPermission.manageItemMaster,
+  ),
+];
+
+final List<AccessControl> _warehousePermissions = [
+  // ───────────── Master Data ─────────────
+  AccessControl(
+    module: "warehouse",
+    title: "Manage Warehouse",
+    description:
+        "Create, edit, and delete warehouse systems for inventory management.",
+    access: InventoryPermission.manageWarehouse,
+  ),
+  AccessControl(
+    module: "warehouse",
+    title: "Manage Warehouse addresses",
+    description:
+        "Create, edit, and deactivate warehouses used for inventory storage and operations.",
+    access: InventoryPermission.manageWarehouseAddress,
+  ),
+  AccessControl(
+    module: "warehouse",
+    title: "Manage Warehouse Locations",
+    description:
+        "Create, edit, and manage storage locations such as racks, aisles, or shelves within a warehouse.",
+    access: InventoryPermission.manageWHLocation,
+  ),
+  AccessControl(
+    module: "warehouse",
+    title: "Manage Warehouse Bins",
+    description:
+        "Create, edit, and manage individual storage bins within warehouse locations.",
+    access: InventoryPermission.manageWHBin,
+  ),
+
+  // ───────────── Inbound Operations ─────────────
+  AccessControl(
+    module: "warehouse",
+    title: "Execute Receiving",
+    description:
+        "Receive inbound goods from purchase orders and assign them to warehouse locations or bins.",
+    access: InventoryPermission.manageWHReceiving,
+  ),
+
+  // ───────────── Internal Operations ─────────────
+  AccessControl(
+    module: "warehouse",
+    title: "Execute Internal Movements",
+    description:
+        "Move inventory internally between locations or bins within the same warehouse.",
+    access: InventoryPermission.manageWHMovement,
+  ),
+
+  // ───────────── Outbound Operations ─────────────
+  AccessControl(
+    module: "warehouse",
+    title: "Execute Picking & Shipping",
+    description:
+        "Pick, pack, and ship goods from the warehouse to fulfill sales orders or transfer requests.",
+    access: InventoryPermission.manageWHPickShipping,
+  ),
+];
+
+final List<AccessControl> _stockManagementPermissions = [
+  AccessControl(
+    module: "goods issue",
+    title: "Manage Goods Issue",
+    description:
+        "Create and post goods issue transactions to remove inventory for sales, production, transfers, or internal use.",
+    access: InventoryPermission.manageGoodsIssue,
+  ),
+  AccessControl(
+    module: "goods receipt",
+    title: "Manage Goods Receipt",
+    description:
+        "Create and post goods receipt transactions to add received items into inventory.",
+    access: InventoryPermission.manageGoodsReceipt,
+  ),
+  AccessControl(
+    module: "service receipt",
+    title: "Manage Service Entry",
+    description:
+        "Record and approve vendor service completion without affecting inventory stock levels.",
+    access: InventoryPermission.manageServiceReceipt,
+  ),
+  AccessControl(
+    module: "stock transfer",
+    title: "Manage Stock Transfer",
+    description:
+        "Create and post stock transfer transactions to move inventory from one location to another.",
+    access: InventoryPermission.manageStockTransfer,
+  ),
+  AccessControl(
+    module: "stock adjustment",
+    title: "Manage Stock Adjustment",
+    description: "Create and post stock adjustment transactions.",
+    access: InventoryPermission.manageStockAdjustment,
+  ),
+  AccessControl(
+    module: "reserve stocks",
+    title: "Manage Stock Reservations",
+    description:
+        "Reserve inventory quantities to control availability for outbound transactions.",
+    access: InventoryPermission.manageReserveStocks,
+  ),
+  AccessControl(
+    module: "returns from customers",
+    title: "Manage Returns",
+    description:
+        "Process customer returns and adjust inventory balances accordingly.",
+    access: InventoryPermission.manageReturns,
+  ),
+];
 
 final List<AccessControl> _inventoryPermissions = [
   AccessControl(
@@ -259,7 +386,7 @@ final List<AccessControl> _customersPermissions = [
 
 final List<AccessControl> _stockPermissions = [
   AccessControl(
-    module: "stock",
+    module: "stock management",
     title: "Manage inventory",
     description: "Allow users to create, edit, and delete inventory items.",
     access: InventoryPermission.manageStock,
@@ -358,6 +485,9 @@ final inventoryDisplayName = 'inventory';
 
 final List<AccessControl> inventoryPermissions = [
   ..._inventoryPermissions,
+  ..._itemMasterPermissions,
+  ..._warehousePermissions,
+  ..._stockManagementPermissions,
   ..._stockPermissions,
   ..._ordersPermissions,
   ..._salesPermissions,

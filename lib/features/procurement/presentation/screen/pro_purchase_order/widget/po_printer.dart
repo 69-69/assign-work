@@ -39,7 +39,7 @@ class POPrinter {
         currencySign: currencySign,
         itemName: item.description,
         quantity: item.quantity,
-        discount: item.discount,
+        discount: item.discountPercent,
         unitPrice: item.unitPrice,
         taxAmount: item.taxAmount,
         paymentTerms: order.paymentTerm,
@@ -57,7 +57,7 @@ class POPrinter {
     // lookup approved-by in the list of Orders (POs)
     final approvedBy = order.history
         .map<String?>(
-          (p) => AuditActionHelper.isApproved(p.getAction) ? p.actionBy : null,
+          (p) => AuditActionUtil.isApproved(p.getAction) ? p.actionBy : null,
         )
         .reduce((a, b) => a ?? b);
 

@@ -31,9 +31,7 @@ extension ConvertDateTime on dynamic {
 
   /// Convert microsecondsSinceEpoch to DateTime object [dateOnly]
   String get dateOnly {
-    if (_isNull) {
-      return '0000-00-00';
-    }
+    if (_isNull) return '0000-00-00';
 
     // Return the formatted date time string
     // return DateFormat('yyyy-MM-dd').format(this);
@@ -67,8 +65,18 @@ extension ConvertDateTime on dynamic {
     ).toIso8601String();
   }
 
+  /// Convert DateTime object to microsecondsSinceEpoch Int [toMilliseconds]
+  int get toMilliseconds {
+    if (_isNull) {
+      return 0;
+    }
+
+    DateTime dateTime = toDateTime;
+    return dateTime.millisecondsSinceEpoch;
+  }
+
   /// To DateTime format [toDateTime]
-  DateTime get toDateTime => toDateTimeFn(this);
+  DateTime get toDateTime => toDateTimeFn(this) ?? _today;
 
   /*
   /// MillisecondsSinceEpoch To DateTime format [toDateTime]
@@ -128,11 +136,14 @@ extension DateFromTotalDays on int {
   DateTime get toDate => DateTime.now().add(Duration(days: this));
 }
 
-DateTime toDateTimeFn(dynamic dateTime) {
+DateTime? toDateTimeFn(dynamic dateTime, {bool isNullable = false}) {
+  final isNot = dateTime == null || '$dateTime'.trim().isNullOrEmpty;
   final today = DateTime.now();
 
-  if (dateTime == null || '$dateTime'.trim().isNullOrEmpty) {
-    return today;
+  if (isNot) {
+    // [isNullable]: If 'dateTime' is empty & null is expected as 'return value', return null
+    // Else, return today's dateTime
+    return isNullable && isNot ? null : today;
   }
 
   // If is int else string

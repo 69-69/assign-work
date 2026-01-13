@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/calculate_extras.dart';
-import 'package:assign_erp/core/util/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -122,7 +122,7 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
   void _toggleEditTotalAmt() =>
       setState(() => _isEnabledTotalAmt = !_isEnabledTotalAmt);
 
-  double _strToDouble(String s) => double.tryParse(s) ?? 0.0;
+  double _strToDouble(String s) => s.asDouble;
 
   void _generateSONumber() async {
     await DocType.order.getShortUID(

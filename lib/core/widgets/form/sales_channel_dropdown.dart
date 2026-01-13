@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/constants/sales_channel.dart';
+import 'package:assign_erp/core/util/extensions/sales_channel.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +19,7 @@ class SalesChannelDropdown extends StatelessWidget {
       key: key,
       label: 'Sales Channel',
       initialValue: initialValue,
-      items: SalesChannelHelper.toStringList(),
+      items: SalesChannelUtil.toStringList(),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );

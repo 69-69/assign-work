@@ -1,9 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/constants/tax_mode.dart';
-import 'package:assign_erp/core/constants/workflow_status.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
+import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/currency_selection.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
@@ -44,10 +45,10 @@ class SQFormInputs {
     fromMap: fromMap,
   );
 
-  /// Apply taxes to RFQ
-  static Future<SalesQuotation> applyTaxesToQuote(SalesQuotation rfq) async {
+  /// Apply taxes to Sales Quote
+  static Future<SalesQuotation> applyTaxesToQuote(SalesQuotation quote) async {
     final taxMap = await GetTaxes.loadAllTaxRates();
-    return rfq.computeTaxAmounts(taxMap);
+    return quote.calculateTaxes(taxMap);
   }
 
   /// Get Customer by ID
@@ -56,7 +57,7 @@ class SQFormInputs {
     return customer.isEmpty ? null : customer;
   }
 
-  /// Build RFQ Number (using the parent method)
+  /// Build Sales Quote Number (using the parent method)
   static Widget buildSQNumber(
     BuildContext context,
     String count,
@@ -140,6 +141,8 @@ class SQFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'Start date of the sales quotation';
+
         return DatePicker(
           inLabel: false,
           key: Key('validFrom'),
@@ -147,7 +150,8 @@ class SQFormInputs {
           label: 'Valid from',
           restorationId: 'Valid from',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'Start date of the sales quotation',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
     ),
@@ -157,6 +161,8 @@ class SQFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'Expiry date of the sales quotation';
+
         return DatePicker(
           inLabel: false,
           key: Key('validUntil'),
@@ -164,7 +170,8 @@ class SQFormInputs {
           label: 'Valid until',
           restorationId: 'Valid until',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'Expiry date of the sales quotation',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
     ),
@@ -174,6 +181,8 @@ class SQFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
+        final msg = 'Earliest delivery date for the entire order.';
+
         return DatePicker(
           inLabel: false,
           key: Key('expectedDate'),
@@ -181,7 +190,8 @@ class SQFormInputs {
           label: 'Expected date',
           restorationId: 'Expected date',
           selectedDate: (DateTime date) => onChanged(date.dateOnly),
-          helperText: 'Earliest delivery date for the entire order.',
+          helperText: msg,
+          validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
     ),
@@ -251,7 +261,7 @@ class SQFormInputs {
   }
 }
 
-/// Auto Convert PO & RFQStatus Dropdown TextField [AutoCreateAndSQStatus]
+/// Auto Convert Sales Quote & SQStatus Dropdown TextField [AutoCreateAndSQStatus]
 class AutoCreateAndSQStatus extends StatelessWidget {
   const AutoCreateAndSQStatus({
     super.key,
@@ -271,7 +281,7 @@ class AutoCreateAndSQStatus extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Auto-Convert Sales Quote to Sales Order when RFQ is Accepted
+        // Auto-Convert Sales Quote to 'Sales Order' when after Acceptance
         _AutoCreateSO(isChecked: isSelected, onChanged: onAutoConvertChanged),
         _SQStatusDropdown(
           initialValue: initialStatus,
@@ -348,7 +358,7 @@ class SalesChannelChoice extends StatelessWidget {
   }
 }
 
-/// Sales Quotation Status [RFQStatusDropdown]
+/// Sales Quotation Status [SQStatusDropdown]
 class _SQStatusDropdown extends StatelessWidget {
   final String? initialValue;
   final void Function(dynamic s) onChange;
@@ -361,7 +371,7 @@ class _SQStatusDropdown extends StatelessWidget {
       key: key,
       label: 'Quote Status',
       initialValue: initialValue,
-      items: WorkflowStatusHelper.toStringList(type: WorkflowType.sq),
+      items: WorkflowStatusUtil.toStringList(type: WorkflowType.sq),
       getDisplayText: (status) => status,
       onChanged: onChange,
     );
@@ -377,7 +387,7 @@ class _AutoCreateSO extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Auto-Convert Sales Quote to Sales Order if SQ is Approved
+    // Auto-Convert Sales Quote to Sales Order if SQ after Acceptance
     return CustomCheckboxTile(
       title: Text(
         'Auto Convert Quote?',
@@ -385,14 +395,14 @@ class _AutoCreateSO extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
-      subtitle: Text('Auto-convert Quote to Orders after approval'),
+      subtitle: Text('Auto-convert Quote to Orders after customer acceptance'),
       contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
       value: isChecked,
       onChanged: (v) => onChanged(v ?? false),
     );
     /*CustomSwitchTile(
       title: 'Auto Create PO',
-      subtitle: 'Generate PO when RFQ is accepted',
+      subtitle: 'Auto-convert Quote to Orders after customer acceptance',
       padding: EdgeInsets.symmetric(horizontal: 6.0),
       isSelected: isSelected,
       onChanged: onChanged,

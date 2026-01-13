@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
@@ -17,6 +16,8 @@ class ListTaxes extends StatefulWidget {
 }
 
 class _ListTaxesState extends State<ListTaxes> {
+  TaxBloc get _bloc => context.read<TaxBloc>();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TaxBloc, SetupState<Tax>>(
@@ -40,7 +41,7 @@ class _ListTaxesState extends State<ListTaxes> {
   Widget _buildCard(BuildContext c, List<Tax> taxes) {
     return DynamicDataTable(
       omitAtIndex: 0,
-      headers: Tax.dataHeader,
+      headers: Tax.dataTableHeader,
       toolbar: _buildToolbar(taxes),
       rows: taxes.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(taxes, row.first),
@@ -49,27 +50,12 @@ class _ListTaxesState extends State<ListTaxes> {
   }
 
   _buildToolbar(List<Tax> taxes) {
-    return Wrap(
-      spacing: 10.0,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        context.actionInfoButton(
-          'Refresh Taxes',
-          label: 'Taxes',
-          count: taxes.length,
-          onPressed: () {
-            // Refresh Company's Taxes
-            context.read<TaxBloc>().add(RefreshSetups<Tax>());
-          },
-        ),
-        context.elevatedIconBtn(
-          Icon(Icons.calculate, color: kWhiteColor),
-          label: 'Add Taxes',
-          onPressed: () => context.openAddTax(),
-          bgColor: kDangerColor,
-          txtColor: kWhiteColor,
-        ),
-      ],
+    return ListToolbarButtons(
+      createLabel: 'Add Taxes',
+      refreshLabel: 'Refresh Taxes',
+      dataLength: taxes.length,
+      onCreate: () => context.openAddTax(),
+      onRefresh: () => _bloc.add(RefreshSetups<Tax>()),
     );
   }
 
@@ -87,7 +73,7 @@ class _ListTaxesState extends State<ListTaxes> {
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
       /// Delete specific Tax
-      context.read<TaxBloc>().add(DeleteSetup<String>(documentId: tax.id));
+      _bloc.add(DeleteSetup<String>(documentId: tax.id));
     }
   }
 }

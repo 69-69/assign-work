@@ -2,23 +2,27 @@
 // ⚙️ Hosting Type Definitions
 // ---------------------------
 
-import 'package:assign_erp/core/util/enum_helper.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 
 enum LineItemType { material, service }
 
 extension LineItemTypeExtension on LineItemType {
   /// [getName] Get the specific Enum Name (e.g. "material")
-  String get getName => EnumHelper<LineItemType>(this).getName;
+  String get getName => EnumUtil<LineItemType>(this).getName;
 
   /// Returns a user-friendly label (e.g. "material")
-  String get getLabel => EnumHelper<LineItemType>(this).getLabel;
+  String get getLabel => EnumUtil<LineItemType>(this).getLabel;
+
+  /// Check if type is material.
+  bool get isMaterial =>
+      getLabel.toLowerAll.contains(LineItemType.material.getLabel.toLowerAll);
 }
 
-class LineItemTypeHelper {
+class LineItemTypeUtil {
   /// Check if type is valid.
   static bool isExist(String type) =>
-      EnumHelper.isValid<LineItemType>(LineItemType.values, type, false);
+      EnumUtil.isValid<LineItemType>(LineItemType.values, type, false);
 
   /// Check if type is material.
   static bool isMaterial(String type) =>
@@ -26,11 +30,11 @@ class LineItemTypeHelper {
 
   /// [fromString] Converts String/Label to enum value.
   static LineItemType fromString(String? value) =>
-      EnumHelper.fromString<LineItemType>(LineItemType.values, value);
+      EnumUtil.fromString<LineItemType>(LineItemType.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
     final label = includeHeader ? 'line item type' : '';
-    return EnumHelper.toStringList<LineItemType>(LineItemType.values, label);
+    return EnumUtil.toStringList<LineItemType>(LineItemType.values, label);
   }
 }

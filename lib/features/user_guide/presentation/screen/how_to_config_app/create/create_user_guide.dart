@@ -41,7 +41,7 @@ extension CreateGuideForm<T> on BuildContext {
 
         if (id != null && mounted && isConfirmed) {
           // Dispatch the delete event
-          read<HowToBloc>().add(DeleteGuide<UserGuide>(documentId: id));
+          read<HowToBloc>().add(DeleteGuide<String>(documentId: id));
           showAlertOverlay(
             'Successfully deleted',
             onCallback: () => Navigator.pop(this),

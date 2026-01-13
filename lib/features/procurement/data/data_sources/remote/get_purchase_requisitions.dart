@@ -1,6 +1,7 @@
-import 'package:assign_erp/features/index.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
+import 'package:assign_erp/features/procurement/presentation/bloc/pro_requisition/pro_purchase_requisite_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetPurchaseRequisitions {
   static Future<ProcurementsLoaded<PurchaseRequisition>> _dataLoadedState(
