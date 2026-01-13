@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -36,7 +37,7 @@ class _AddTaxForm extends StatefulWidget {
 class _AddTaxFormState extends State<_AddTaxForm> {
   final List<Tax> _taxList = [];
   final _formKey = GlobalKey<FormState>();
-  bool get _isEditing => _serverTax.isNotNullNorEmpty;
+  bool get _isEditing => _serverTax.hasValue;
 
   Tax? get _serverTax => widget.serverTax;
   String get _employeeName => context.employee!.fullName;
@@ -134,11 +135,18 @@ class _AddTaxFormState extends State<_AddTaxForm> {
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isValid) setState(() {});
 
+                final flattenedData = FieldGroupConfig.flattenList(
+                  data,
+                  nestedKey: 'taxOptions',
+                );
+
                 TaxFormInputs.updateListFromData<Tax>(
                   _taxList,
-                  map: data,
+                  map: flattenedData,
                   fromMap: (map, id) => Tax.fromMap(map),
                 );
+
+                prettyPrint('demo-tax', _taxList.first.isAutoApply);
               },
             ),
           ],

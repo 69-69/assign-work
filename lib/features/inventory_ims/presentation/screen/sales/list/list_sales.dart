@@ -30,8 +30,6 @@ class _ListSalesState extends State<ListSales> {
   // List to group orders for printout
   final List<Sale> _groupReportsForPrintout = [];
 
-  // final SaleBloc saleBloc = BlocProvider.of<SaleBloc>(context);
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(

@@ -38,7 +38,7 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
   }
 
   void _initializeSelectedKey() {
-    if (_initialData.isNotNullNorEmpty) {
+    if (_initialData.hasValue) {
       final selectedItem = _initialData!.firstWhere(
         (map) => map['selected'] == true,
         orElse: () => {},

@@ -81,7 +81,11 @@ class TaxFormInputs {
                   'If enabled, shipping charges will be included in the taxable amount.',
             ),
           ],
-          onCheckChanged: onChanged,
+          onCheckChanged: (List<CheckboxGroupConfig> selected) {
+            final selectedMap = CheckboxGroupConfig.mapCheckboxes(selected);
+            onChanged(selectedMap);
+            // prettyPrint('selected-Map', selectedMap);
+          },
         );
       },
     ),

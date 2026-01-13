@@ -26,7 +26,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   final T Function(Map<String, dynamic> data, String documentId) fromFirestore;
 
   // Set up the stream subscription
-  late StreamSubscription<List<CacheData>> _getDataStreamObserver;
+  StreamSubscription<List<CacheData>>? _getDataStreamObserver;
 
   InventoryBloc({
     required FirebaseFirestore firestore,
@@ -95,38 +95,18 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     emit(LoadingInventory<T>());
 
     try {
-      _getDataStreamObserver = _inventoryRepository.getAllCacheData().listen(
-        (snapshot) async {
-          final data = _toList(snapshot);
-
-          // Update internal state in the BLoC to reflect data loaded
-          emit(InventoriesLoaded<T>(data));
-
-          // Trigger an event to handle the loaded data
-          // add(_InventoryLoadedEvent<T>(data));
-
-          // Optionally, emit another state or handle other logic
-          // emit(DataAddedState<T>()); // For example, notify that data is added
-        },
-        onError: (e) {
-          add(_InventoryLoadError('Error loading data: $e'));
-        },
-      );
-
-      // Await for the subscription to be done (optional)
-      // await _getDataStreamObserver.asFuture();
-
-      /*List<CacheData> firstData =  await _dataRepository.getAllData().first; // Ensure await
-
-      final data = _listDoc(firstData);
-
-      emit(DataLoadedState<T>(data));*/
+      _getDataStreamObserver = _inventoryRepository.getAllCacheData().listen((
+        snapshot,
+      ) {
+        final data = _toList(snapshot);
+        emit(InventoriesLoaded<T>(data));
+      }, onError: (e) => add(_InventoryLoadError('Error loading data: $e')));
     } catch (e) {
       emit(InventoryError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
-      _getDataStreamObserver.cancel();
+      _getDataStreamObserver?.cancel();
     }
   }
 
@@ -388,6 +368,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   @override
   Future<void> close() {
     _inventoryRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

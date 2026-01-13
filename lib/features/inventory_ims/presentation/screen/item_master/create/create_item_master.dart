@@ -3,6 +3,7 @@ import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -21,21 +22,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension IMFormExtensions on BuildContext {
-  Future<void> openItemMasterForm({ItemMaster? serverItem}) => openBottomSheet(
+  Future<void> openItemMasterForm({
+    ItemMaster? serverItem,
+    required String itemType,
+    void Function()? onBackPress,
+  }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      initialSize: 0.94,
+      onBackPress: onBackPress,
       title: '${serverItem != null ? 'Edit' : 'Create'} Item Master',
       subtitle: serverItem?.name.toTitle ?? '',
-      body: _CreateItemMasterForm(serverItem: serverItem),
+      body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
     ),
   );
 }
 
 class _CreateItemMasterForm extends StatefulWidget {
   final ItemMaster? serverItem;
+  final String itemType;
 
-  const _CreateItemMasterForm({this.serverItem});
+  const _CreateItemMasterForm({this.serverItem, required this.itemType});
 
   @override
   State<_CreateItemMasterForm> createState() => _CreateItemMasterFormState();
@@ -44,7 +50,6 @@ class _CreateItemMasterForm extends StatefulWidget {
 class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
-
   bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
@@ -60,6 +65,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   ItemMaster? get _serverItemMater => widget.serverItem;
 
   bool get _nullServer => _serverItemMater == null;
+  String get _itemType => widget.itemType;
 
   // Basic fields
   String _itemMasterNumber = '';
@@ -87,6 +93,9 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   void _addNewItemMaster() {
+    prettyPrint('demo', _newMaster.toMap());
+    return;
+
     final newItemMaster = _newMaster.copyWith(
       storeNumber: _employeeStore,
       sku: _itemMasterNumber,
@@ -173,26 +182,19 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           _generateIMNumber,
         ),
 
-        /// 1️⃣ Basic Item Information
+        /// 1️⃣ Basic Item Information + 2️⃣ Classification & Type
         FormGroupCard(
           title: '1. Basic Item Information',
-          subTitle: '\nItem identity and description.',
+          subTitle:
+              '\nKey identification details and description of the $_itemType.',
           children: [_buildNameAndDesc()],
-        ),
-
-        /// 2️⃣ Classification & Type
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Classification & Type',
-          subTitle: '\nCategory and item behavior.',
-          children: [_buildClassAndType()],
         ),
 
         /// 3️⃣ Units & Stock Rules
         FormGroupCard(
           isExpanded: false,
           title: '3. Units & Stock Rules',
-          subTitle: '\nBase unit and stock control.',
+          subTitle: '\nBase unit of measure and inventory control rules.',
           children: [_buildUsageAndAvailability()],
         ),
 
@@ -200,7 +202,8 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         FormGroupCard(
           isExpanded: false,
           title: '4. Planning & Procurement',
-          subTitle: '\nReordering and lead time defaults.',
+          subTitle:
+              '\nDefault reorder settings, lead times, and procurement rules.',
           children: [_buildPlanningAndProcurement()],
         ),
 
@@ -208,7 +211,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         FormGroupCard(
           isExpanded: false,
           title: '5. Costing',
-          subTitle: '\nDefault valuation settings.',
+          subTitle: '\nStandard costing and valuation method.',
           children: [_buildCosting()],
         ),
 
@@ -225,37 +228,15 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   Widget _buildNameAndDesc() {
-    return DynamicTextFields(
-      fullWidthKey: 'itemType',
-      fieldsConfig: ItemMasterFormFields.classifyFields(
-        itemType: _newMaster.itemType,
-      ),
-      initialData: [
-        {
-          'category': _serverItemMater?.categoryId ?? '',
-          ?_serverItemMater?.itemType.getName:
-              _serverItemMater?.itemType.getName,
-        },
-      ],
-      onChanged: (List<Map<String, dynamic>> data) {
-        // if (_isFormValid) setState(() {});
+    final itemType =
+        _serverItemMater?.itemType ?? LineItemTypeUtil.fromString(_itemType);
 
-        // Add new item master
-        prettyPrint('data.first', data.first.entries);
-        /*_newMaster = _newMaster.copyWith(
-          categoryId: data.first['category'] ?? '',
-          itemType: data.first['itemType'],
-        );*/
-      },
-    );
-  }
-
-  Widget _buildClassAndType() {
     return DynamicTextFields(
-      fieldsConfig: ItemMasterFormFields.identifyFields,
+      fieldsConfig: ItemMasterFormFields.nameAndDescFields(itemType: itemType),
       initialData: [
         {
           'name': _serverItemMater?.name ?? '',
+          'category': _serverItemMater?.categoryId ?? '',
           'description': _serverItemMater?.description ?? '',
         },
       ],
@@ -263,6 +244,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         // if (_isFormValid) setState(() {});
 
         // Add new item master
+        prettyPrint('Name-Desc', data);
         _newMaster = _newMaster.copyWith(
           name: data.first['name'] ?? '',
           description: data.first['description'] ?? '',
@@ -289,12 +271,19 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         // if (_isFormValid) setState(() {});
 
         // Add new item master
+
+        final flattened = FieldGroupConfig.flattenList(
+          data,
+          nestedKey: 'itemRules',
+        ).first;
+
         _newMaster = _newMaster.copyWith(
-          baseUom: data.first['baseUom'] ?? '',
-          isActive: data.first['isActive'] ?? false,
-          isSellable: data.first['isSellable'] ?? false,
-          isPurchasable: data.first['isPurchasable'] ?? false,
+          baseUom: UOMUtil.fromString(flattened['baseUom']),
+          isActive: flattened['isActive'] ?? false,
+          isSellable: flattened['isSellable'] ?? false,
+          isPurchasable: flattened['isPurchasable'] ?? false,
         );
+        prettyPrint('Usage-Avail', _newMaster.toMap());
       },
     );
   }
@@ -335,34 +324,11 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         // Add new item master
         _newMaster = _newMaster.copyWith(
           standardCost: '${data.first['standardCost']}'.asDouble,
-          costingMethod: data.first['costingMethod'],
+          costingMethod: CostingMethodUtil.fromString(
+            data.first['costingMethod'],
+          ),
         );
       },
     );
   }
 }
-
-/*
-
-
-FormGroupCard(
-  title: '1. Identification',
-  children: [_buildSKU(), _buildName(), _buildDescription(), _buildItemType()],
-),
-
-FormGroupCard(
-  title: '2. Inventory & Units',
-  children: selectedItemType != LineItemType.service
-      ? [_buildBaseUOM(), _buildIsStockItem(), _buildReorderPoint(), _buildReorderQty(), _buildLeadTimeDays(), _buildCostingMethod()]
-      : [],
-),
-
-FormGroupCard(
-  title: '3. Costing',
-  children: [_buildStandardCost()],
-),
-
-FormGroupCard(
-  title: '4. Classification',
-  children: [_buildCategorySelector()],
-),*/

@@ -67,13 +67,13 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
 
   Future<void> _openCreatePR(BuildContext cxt) async {
     final lineItemType = await cxt.openMaterialOrServiceToggle('PR');
-    if (cxt.mounted && '$lineItemType'.isNotNullNorEmpty) {
+    if (cxt.mounted && '$lineItemType'.hasValue) {
       await cxt.openCreatePurchaseRequisite(
-        type: lineItemType,
+        lineType: lineItemType,
         onBackPress: () async {
           Navigator.pop(cxt);
 
-          if (cxt.mounted && '$lineItemType'.isNotNullNorEmpty) {
+          if (cxt.mounted && '$lineItemType'.hasValue) {
             await _openCreatePR(cxt);
           }
         },

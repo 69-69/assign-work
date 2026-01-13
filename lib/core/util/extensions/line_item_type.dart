@@ -17,6 +17,9 @@ extension LineItemTypeExtension on LineItemType {
   /// Check if type is material.
   bool get isMaterial =>
       getLabel.toLowerAll.contains(LineItemType.material.getLabel.toLowerAll);
+
+  bool get isService =>
+      getLabel.toLowerAll.contains(LineItemType.service.getLabel.toLowerAll);
 }
 
 class LineItemTypeUtil {

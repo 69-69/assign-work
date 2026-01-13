@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -220,7 +221,7 @@ class ItemMaster extends Equatable {
   final LineItemType itemType; // raw, material/product, service
 
   /// 3. Units & Rules
-  final String baseUom; // EA, KG, LTR
+  final UnitOfMeasure baseUom; // EA, KG, LTR
   // Is this item allowed to participate in inventory processes?
   // false for 'itemType' as services
   final bool isActive;
@@ -287,7 +288,7 @@ class ItemMaster extends Equatable {
     this.description = '',
     this.itemType = LineItemType.material,
     required this.categoryId,
-    required this.baseUom,
+    this.baseUom = UnitOfMeasure.unknown,
     this.isStockItem = false,
     this.isPurchasable = false,
     this.isSellable = false,
@@ -307,14 +308,14 @@ class ItemMaster extends Equatable {
 
   factory ItemMaster.fromMap(Map<String, dynamic> map, {String? id}) {
     return ItemMaster(
-      storeNumber: map['storeNumber'],
+      storeNumber: map['storeNumber'] ?? '',
       id: id ?? map['id'] ?? '',
-      sku: map['sku'],
-      name: map['name'],
+      sku: map['sku'] ?? '',
+      name: map['name'] ?? '',
       description: map['description'] ?? '',
-      categoryId: map['categoryId'],
+      categoryId: map['categoryId'] ?? '',
       itemType: LineItemTypeUtil.fromString(map['itemType']),
-      baseUom: map['baseUom'],
+      baseUom: UOMUtil.fromString(map['baseUom']),
       isStockItem: map['isStockItem'] ?? false,
       isPurchasable: map['isPurchasable'] ?? false,
       isSellable: map['isSellable'] ?? false,
@@ -324,7 +325,7 @@ class ItemMaster extends Equatable {
       leadTimeDays: '${map['leadTimeDays']}'.asInt,
       standardCost: '${map['standardCost']}'.asDouble,
       costingMethod: CostingMethodUtil.fromString(map['costingMethod']),
-      createdBy: map['createdBy'],
+      createdBy: map['createdBy'] ?? '',
       updatedBy: map['updatedBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedAt: toDateTimeFn(map['updatedAt']),
@@ -341,7 +342,7 @@ class ItemMaster extends Equatable {
     'description': description,
     'categoryId': categoryId,
     'itemType': itemType.getName,
-    'baseUom': baseUom,
+    'baseUom': baseUom.getName,
     'isActive': isActive,
     'isStockItem': isStockItem,
     'isPurchasable': isPurchasable,
@@ -390,7 +391,6 @@ class ItemMaster extends Equatable {
     name: '',
     description: '',
     categoryId: '',
-    baseUom: '',
     createdBy: '',
   );
 
@@ -416,7 +416,7 @@ class ItemMaster extends Equatable {
     String? description,
     String? categoryId,
     LineItemType? itemType,
-    String? baseUom,
+    UnitOfMeasure? baseUom,
     bool? isActive,
     bool? isStockItem,
     bool? isPurchasable,
@@ -465,7 +465,6 @@ class ItemMaster extends Equatable {
     isPurchasable ? 'Yes' : 'No',
     reorderPoint.toString(),
     reorderQty.toString(),
-    baseUom,
     createdBy.toTitle,
     updatedBy.toTitle,
   ];
@@ -478,7 +477,6 @@ class ItemMaster extends Equatable {
     'Purchasable',
     'Reorder Point',
     'Reorder Quantity',
-    'UOM',
     'Created By',
     'Updated By',
   ];

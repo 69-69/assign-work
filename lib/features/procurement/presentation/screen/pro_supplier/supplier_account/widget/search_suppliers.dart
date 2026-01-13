@@ -47,7 +47,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
     final initial = widget.initialSupplier ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
     final suppliers = await GetSuppliers.byAnyTerm(filterBy);
-    if (initial.isNotNullNorEmpty && suppliers.isNotNullNorEmpty) {
+    if (initial.hasValue && suppliers.hasValue) {
       setState(() => _supplier = suppliers.first);
     }
     return suppliers;
@@ -59,8 +59,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
       children: [
         _buildSuppliersDropdown(context),
         // Conditionally render contact persons dropdown based on `showContactPerson`
-        if (widget.showContactPerson &&
-            _selectedContactPersons.isNotNullNorEmpty) ...{
+        if (widget.showContactPerson && _selectedContactPersons.hasValue) ...{
           _buildContactPersonsDropdown(context),
         },
       ],
@@ -110,7 +109,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
       getDisplayText: (person) => person.itemAsString,
       onChanged: (person) {
         final id = person?.id;
-        if (id.isNotNullNorEmpty) {
+        if (id.hasValue) {
           widget.onContactPersonChanged?.call(id!.trim());
         }
       },

@@ -102,7 +102,7 @@ extension UniversalIsNullOrEmpty on Object? {
     }
   }
 
-  bool get isNotNullNorEmpty => !isNullOrEmpty;
+  bool get hasValue => !isNullOrEmpty;
 }
 
 // Filter or search a Iterable or String

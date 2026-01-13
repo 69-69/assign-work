@@ -29,7 +29,7 @@ class _SearchCategoryState extends State<SearchCategory> {
   Future _loadCategories() async {
     final initial = widget.initialValue ?? '';
     final categories = await GetProductCategory.load();
-    if (initial.isNotNullNorEmpty && categories.isNotNullNorEmpty) {
+    if (initial.hasValue && categories.hasValue) {
       setState(() => _category = categories.first);
     }
     return categories;

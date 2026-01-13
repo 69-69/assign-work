@@ -256,7 +256,7 @@ class _POInfoPage extends StatelessWidget {
   Widget _addressesAndNotes(BuildContext context) {
     return AdaptiveLayout(
       children: [
-        if (order.addresses.isNotNullNorEmpty) ...{
+        if (order.addresses.hasValue) ...{
           ...?order.addresses?.map((a) {
             return detailsRow(
               context,

@@ -71,7 +71,7 @@ class _BusinessToIndustriesDropdownState
       items: businessTypes,
       getDisplayText: (type) => type,
       onChanged: (String? v) {
-        if (v.isNotNullNorEmpty) {
+        if (v.hasValue) {
           setState(() {
             _selectedBusinessType = v?.trim();
             // reset industry when business type changes
@@ -99,7 +99,7 @@ class _BusinessToIndustriesDropdownState
       items: List.from(['Select Industry', ...industries]),
       getDisplayText: (industry) => industry,
       onChanged: (String? v) {
-        if (v.isNotNullNorEmpty) {
+        if (v.hasValue) {
           setState(() => _selectedIndustry = v?.trim());
           widget.onIndustryChanged?.call(_selectedBusinessType, v?.trim());
         }
@@ -342,7 +342,7 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
           ),
         ),
 
-        if (subTitle.isNotNullNorEmpty) ...[
+        if (subTitle.hasValue) ...[
           const SizedBox(height: 8),
           Flexible(
             fit: FlexFit.loose,

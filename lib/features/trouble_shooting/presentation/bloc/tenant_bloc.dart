@@ -55,7 +55,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     on<RevokeAuthorizedDeviceId>(_onRevokeAuthorizedDeviceIds);
     on<AddSubscription<T>>(_onAddSubscription);
     on<DeleteTenant<String>>(_onDeleteTenant);
-    on<DeleteTenant<List<String>>>(_onDeleteTenants);
+    on<DeleteTenant<List<String>>>(_onDeleteMultiTenants);
     on<_TenantsLoaded<T>>(_onTenantsLoaded);
     on<_TenantLoaded<T>>(_onTenantLoaded);
     on<_TenantError<T>>(_onTenantError);
@@ -233,7 +233,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onDeleteTenants(
+  Future<void> _onDeleteMultiTenants(
     DeleteTenant<List<String>> event,
     Emitter<TenantState<T>> emit,
   ) async {

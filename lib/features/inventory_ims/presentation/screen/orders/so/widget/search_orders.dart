@@ -30,7 +30,7 @@ class _SearchOrdersState extends State<SearchOrders> {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
     final orders = await GetOrders.byAnyTerm(filterBy);
-    if (initial.isNotNullNorEmpty && orders.isNotNullNorEmpty) {
+    if (initial.hasValue && orders.hasValue) {
       setState(() => _order = orders.first);
     }
     return orders;

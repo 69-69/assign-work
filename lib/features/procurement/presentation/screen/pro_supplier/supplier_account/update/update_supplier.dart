@@ -49,7 +49,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
   }
 
   void _onSubmit() {
-    if (_serverSupplier.isNotNullNorEmpty) {
+    if (_serverSupplier.hasValue) {
       final updated = _prepareUpdatedSupplier();
 
       context.read<SupplierBloc>().add(

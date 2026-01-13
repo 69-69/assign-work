@@ -72,7 +72,8 @@ class ItemCategoryUtil {
     final list = EnumUtil.toStringList<ItemCategory>(categories);
 
     return [
-      if (includeHeader) '${isService ? 'Service' : 'Material'} Category',
+      if (includeHeader)
+        '${isService ? 'Service (Work)' : 'Material (Product)'} Category',
       ...list.map((a) => a.separateWord),
     ];
   }

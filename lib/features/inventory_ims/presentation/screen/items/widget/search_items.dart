@@ -45,7 +45,7 @@ class _SearchItemsState extends State<SearchItems> {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
     final items = await GetItems.byAnyTerm(filterBy);
-    if (initial.isNotNullNorEmpty && items.isNotNullNorEmpty) {
+    if (initial.hasValue && items.hasValue) {
       setState(() => _item = items.first);
     }
     return items;

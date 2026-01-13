@@ -189,8 +189,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       }
 
       // Notify if a callback is provided
-      if (widget.onAllChecked != null &&
-          _selectedRowsStatus.isNotNullNorEmpty) {
+      if (widget.onAllChecked != null && _selectedRowsStatus.hasValue) {
         widget.onAllChecked!(
           _allSelectedStatus,
           _selectedRowsStatus,
@@ -692,7 +691,7 @@ class _DataTableHeader {
         ),
       ),
 
-      if (maskAtIndex.isNotNullNorEmpty) ...{_toggleMaskAll()},
+      if (maskAtIndex.hasValue) ...{_toggleMaskAll()},
 
       // Skip the first header
       ...excludeAtIndex(

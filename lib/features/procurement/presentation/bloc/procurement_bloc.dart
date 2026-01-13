@@ -407,6 +407,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   @override
   Future<void> close() {
     _procurementRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

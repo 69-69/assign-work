@@ -100,31 +100,13 @@ class SalesDistributionBloc<T>
 
     try {
       _getDataStreamObserver = _salesQuoteRepository.getAllCacheData().listen(
-        (snapshot) async {
+        (snapshot) {
           final data = _toList(snapshot);
-
-          // Update internal state in the BLoC to reflect data loaded
           emit(SalesDistributionsLoaded<T>(data));
-
-          // Trigger an event to handle the loaded data
-          // add(_SalesDistributionLoadedEvent<T>(data));
-
-          // Optionally, emit another state or handle other logic
-          // emit(DataAddedState<T>()); // For example, notify that data is added
         },
-        onError: (e) {
-          add(_SalesDistributionLoadError('Error loading data: $e'));
-        },
+        onError: (e) =>
+            add(_SalesDistributionLoadError('Error loading data: $e')),
       );
-
-      // Await for the subscription to be done (optional)
-      // await _getDataStreamObserver.asFuture();
-
-      /*List<CacheData> firstData =  await _dataRepository.getAllData().first; // Ensure await
-
-      final data = _listDoc(firstData);
-
-      emit(DataLoadedState<T>(data));*/
     } catch (e) {
       emit(SalesDistributionError<T>('Error loading data: $e'));
     } finally {
@@ -406,6 +388,7 @@ class SalesDistributionBloc<T>
   @override
   Future<void> close() {
     _salesQuoteRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

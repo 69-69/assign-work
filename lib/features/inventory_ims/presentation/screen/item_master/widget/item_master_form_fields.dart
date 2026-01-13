@@ -4,7 +4,6 @@ import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
-import 'package:assign_erp/core/widgets/form/dynamic_radio_list.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
@@ -22,9 +21,24 @@ class ItemMasterFormFields {
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> get identifyFields => [
+  static List<FieldGroupConfig> nameAndDescFields({LineItemType? itemType}) => [
     /// 1. Identification
     FieldGroupConfig(key: 'name', label: 'Name', type: TextInputType.text),
+
+    /// 2. Classification
+    FieldGroupConfig(
+      key: 'category',
+      label: '${itemType?.getLabel ?? 'Item'} Category',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return _ItemCategoryDropdown(
+          isService: itemType?.isService ?? false,
+          initialValue: initialData,
+          onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
     FieldGroupConfig(
       key: 'description',
       label: 'Description (if any)...',
@@ -34,11 +48,7 @@ class ItemMasterFormFields {
       minLines: null,
       validator: (_) => null,
     ),
-  ];
-
-  static List<FieldGroupConfig> classifyFields({LineItemType? itemType}) => [
-    /// 2. Classification
-    FieldGroupConfig(
+    /* FieldGroupConfig(
       key: 'itemType',
       label: 'Item Type',
       type: TextInputType.text,
@@ -70,20 +80,7 @@ class ItemMasterFormFields {
           },
         );
       },
-    ),
-    FieldGroupConfig(
-      key: 'category',
-      label: 'Item Category',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return _ItemCategoryDropdown(
-          isService: itemType?.isMaterial ?? false,
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
-        );
-      },
-    ),
+    ),*/
   ];
 
   static List<FieldGroupConfig> unitRuleFields({
@@ -117,8 +114,7 @@ class ItemMasterFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
-          title: 'Units & Rules',
-          showButton: true,
+          showButton: false,
           initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
           checkboxesConfig: [
             CheckboxGroupConfig(
@@ -150,7 +146,10 @@ class ItemMasterFormFields {
                   'Allows this item to be offered and sold to customers in sales and POS transactions.',
             ),
           ],
-          onCheckChanged: onChanged,
+          onCheckChanged: (List<CheckboxGroupConfig> selected) {
+            final selectedMap = CheckboxGroupConfig.mapCheckboxes(selected);
+            onChanged(selectedMap);
+          },
         );
       },
     ),

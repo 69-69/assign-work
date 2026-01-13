@@ -266,7 +266,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
 
     final taxes = await GetTaxes.getAllTaxes(forceRefresh: true);
 
-    if (filterBy.toString().isNotNullNorEmpty && taxes.isNotNullNorEmpty) {
+    if (filterBy.toString().hasValue && taxes.hasValue) {
       final filteredTaxes = taxes
           .where((t) => t.filterByAny(filterBy!))
           .toList();

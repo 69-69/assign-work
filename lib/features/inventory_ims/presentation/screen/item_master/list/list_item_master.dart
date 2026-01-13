@@ -1,4 +1,6 @@
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
@@ -22,8 +24,8 @@ class _ListItemMasterState extends State<ListItemMaster> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ItemMasterBloc>(
-      create: (_) =>
+    return BlocProvider(
+      create: (context) =>
           ItemMasterBloc(firestore: FirebaseFirestore.instance)
             ..add(GetInventories<ItemMaster>()),
       child: _buildBody(),
@@ -39,7 +41,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Create Item Master',
-                    onPressed: () => context.openItemMasterForm(),
+                    onPressed: () => _openItemMasterForm(context),
                   )
                 : _buildCard(context, results),
           InventoryError<ItemMaster>(error: final error) => context.buildError(
@@ -82,7 +84,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
       createLabel: 'Create Item Master',
       deleteLabel: 'Delete Item Master',
       refreshLabel: 'Refresh Master Data',
-      onCreate: () => context.openItemMasterForm(),
+      onCreate: () => _openItemMasterForm(context),
       onRefresh: () => _bloc.add(RefreshInventories<ItemMaster>()),
     );
   }
@@ -91,7 +93,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
     final master = ItemMaster.findById(masters, id);
     if (master == null) return;
 
-    await context.openItemMasterForm(serverItem: master);
+    await _openItemMasterForm(context, serverItem: master);
   }
 
   Future<void> _onDeleteTap(List<ItemMaster> masters, String id) async {
@@ -101,6 +103,26 @@ class _ListItemMasterState extends State<ListItemMaster> {
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
       _bloc.add(DeleteInventory<String>(documentId: master.id));
+    }
+  }
+
+  Future<void> _openItemMasterForm(
+    BuildContext cxt, {
+    ItemMaster? serverItem,
+  }) async {
+    final lineItemType = await cxt.openMaterialOrServiceToggle('Master');
+    if (cxt.mounted && '$lineItemType'.hasValue) {
+      await cxt.openItemMasterForm(
+        serverItem: serverItem,
+        itemType: lineItemType,
+        onBackPress: () async {
+          Navigator.pop(cxt);
+
+          if (cxt.mounted && '$lineItemType'.hasValue) {
+            await _openItemMasterForm(cxt);
+          }
+        },
+      );
     }
   }
 }

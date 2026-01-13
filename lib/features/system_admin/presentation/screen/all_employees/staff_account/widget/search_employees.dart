@@ -38,7 +38,7 @@ class _SearchEmployeesState extends State<SearchEmployees> {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
     final employees = await GetEmployees.byAnyTerm(filterBy);
-    if (initial.isNotNullNorEmpty && employees.isNotNullNorEmpty) {
+    if (initial.hasValue && employees.hasValue) {
       setState(() => _employee = employees.first);
     }
     return employees;

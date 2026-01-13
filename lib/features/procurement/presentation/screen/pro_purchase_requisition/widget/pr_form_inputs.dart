@@ -2,9 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
-import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
@@ -257,7 +255,7 @@ class RequestAndExpectedDate extends StatelessWidget {
   }
 }
 
-/// Purchase Requisition unit of measure [UnitOfMeasureDropdown]
+/*/// Purchase Requisition unit of measure [UnitOfMeasureDropdown]
 class UnitOfMeasureDropdown extends StatelessWidget {
   final String? label;
   final String? initialValue;
@@ -285,7 +283,7 @@ class UnitOfMeasureDropdown extends StatelessWidget {
       onChanged: onChanged,
     );
   }
-}
+}*/
 
 /// [_AutoCreatePr] Auto-convert PR to RFQ after approval
 class _AutoCreatePr extends StatelessWidget {

@@ -74,7 +74,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final initialData = widget.initialData;
 
-      if (initialData.isNotNullNorEmpty) {
+      if (initialData.hasValue) {
         for (final map in initialData!) {
           _fieldGroups.add(FieldGroup(_fieldsConfig, initialValues: map));
         }
@@ -274,7 +274,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         if (_title != null) ...[
           Expanded(
             child: Text(
-              '${_title.toTitle} [$_fieldGroupsLength]',
+              "${_title.toTitle} ${_showButton ? '[$_fieldGroupsLength]' : ''}",
               style: context.textTheme.titleMedium?.copyWith(
                 color:
                     widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
@@ -404,6 +404,57 @@ class FieldGroupConfig {
     this.customBuilder,
     this.widgetType = FieldWidgetType.textField,
   });
+
+  /// Flattens a list of maps by merging a nested list of key-value pairs
+  /// into the parent map. Useful for ERP forms where nested options
+  /// (like `taxOptions`) should become top-level keys.
+  ///
+  /// Example:
+  /// ```dart
+  /// [
+  ///   {
+  ///     "name": "GST",
+  ///     "taxOptions": [
+  ///       {"key": "isAutoApply", "value": true},
+  ///       {"key": "isWithholding", "value": false},
+  ///     ]
+  ///   }
+  /// ]
+  /// ```
+  /// becomes:
+  /// ```dart
+  /// [
+  ///   {
+  ///     "name": "GST",
+  ///     "isAutoApply": true,
+  ///     "isWithholding": false
+  ///   }
+  /// ]
+  /// ```
+  static List<Map<String, dynamic>> flattenList(
+    List<Map<String, dynamic>> list, {
+    String? nestedKey,
+  }) {
+    return list.map((item) {
+      // Create a copy to avoid mutating the original
+      final flat = Map<String, dynamic>.from(item);
+
+      // Flatten the nested list if it exists and is valid
+      final nested = flat[nestedKey];
+      if (nestedKey != null && nested is List) {
+        for (final opt in nested) {
+          if (opt is Map<String, dynamic> && opt.containsKey('key')) {
+            flat[opt['key']] = opt['value'];
+          }
+        }
+      }
+
+      // Remove the nested key to keep the map flat
+      flat.remove(nestedKey);
+
+      return flat;
+    }).toList();
+  }
 }
 
 class FieldGroup {

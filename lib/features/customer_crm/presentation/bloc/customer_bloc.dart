@@ -26,7 +26,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   final T Function(Map<String, dynamic> data, String documentId) fromFirestore;
 
   // Set up the stream subscription
-  late StreamSubscription<List<CacheData>> _subscription;
+  StreamSubscription<List<CacheData>>? _getDataStreamObserver;
 
   CustomerBloc({
     required FirebaseFirestore firestore,
@@ -95,7 +95,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     emit(LoadingCustomers<T>());
 
     try {
-      _subscription = _customerRepository.getAllCacheData().listen(
+      _getDataStreamObserver = _customerRepository.getAllCacheData().listen(
         (snapshot) async {
           final data = _toList(snapshot);
 
@@ -114,7 +114,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       );
 
       // Await for the subscription to be done (optional)
-      await _subscription.asFuture();
+      await _getDataStreamObserver?.asFuture();
 
       /*List<CacheData> firstData =  await _dataRepository.getAllData().first; // Ensure await
 
@@ -126,7 +126,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
-      _subscription.cancel();
+      _getDataStreamObserver?.cancel();
     }
   }
 
@@ -401,6 +401,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   @override
   Future<void> close() {
     _customerRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

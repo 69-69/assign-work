@@ -27,15 +27,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreatePurchaseRequisitionForm on BuildContext {
   Future<void> openCreatePurchaseRequisite({
     PurchaseRequisition? serverRequisition,
-    required String type,
     void Function()? onBackPress,
+    required String lineType,
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
       title: 'Create Purchase Requisition',
       onBackPress: onBackPress,
       body: _PurchaseRequisiteForm(
-        type: type,
+        lineType: lineType,
         serverRequisition: serverRequisition,
       ),
     ),
@@ -44,9 +44,12 @@ extension CreatePurchaseRequisitionForm on BuildContext {
 
 class _PurchaseRequisiteForm extends StatefulWidget {
   final PurchaseRequisition? serverRequisition;
-  final String type;
+  final String lineType;
 
-  const _PurchaseRequisiteForm({this.serverRequisition, required this.type});
+  const _PurchaseRequisiteForm({
+    this.serverRequisition,
+    required this.lineType,
+  });
 
   @override
   State<_PurchaseRequisiteForm> createState() => _PurchaseRequisiteFormState();
@@ -56,7 +59,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
 
-  String get _lineItemType => widget.type;
+  String get _lineItemType => widget.lineType;
 
   // Basic fields
   bool _isSubmitting = false;

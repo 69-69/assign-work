@@ -372,6 +372,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
   @override
   Future<void> close() {
     _posRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

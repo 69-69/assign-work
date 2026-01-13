@@ -29,7 +29,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
   final T Function(Map<String, dynamic> data, String documentId) fromFirestore;
 
   // Set up the stream subscription
-  late StreamSubscription<List<CacheData>> _subscription;
+  StreamSubscription<List<CacheData>>? _getDataStreamObserver;
 
   GuideBloc({
     this.collectionType,
@@ -95,7 +95,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
     emit(LoadingGuides<T>());
 
     try {
-      _subscription = _guideRepository.getAllCacheData().listen(
+      _getDataStreamObserver = _guideRepository.getAllCacheData().listen(
         (snapshot) async {
           final data = _toList(snapshot);
 
@@ -114,13 +114,13 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
       );
 
       // Await for the subscription to be done (optional)
-      await _subscription.asFuture();
+      await _getDataStreamObserver?.asFuture();
     } catch (e) {
       emit(GuideError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
-      _subscription.cancel();
+      _getDataStreamObserver?.cancel();
     }
   }
 
@@ -270,6 +270,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
   @override
   Future<void> close() {
     _guideRepository.cancelDataSubscription();
+    _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

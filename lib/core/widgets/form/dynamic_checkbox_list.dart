@@ -40,7 +40,7 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
   }
 
   void _initializeGroups() {
-    if (_initialData.isNotNullNorEmpty) {
+    if (_initialData.hasValue) {
       for (final groupData in _initialData!) {
         _checkboxGroups.add({
           for (final config in _configs)
@@ -67,20 +67,13 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (widget.title != null)
+        if (widget.title != null) ...[
           Expanded(
             child: Text(widget.title!, style: context.textTheme.titleMedium),
           ),
+        ],
         if (widget.showButton) ...[
-          context.iconButton(
-            Icons.add,
-            isCard: true,
-            tooltip: 'Add more checkbox group',
-            onPressed: _addCheckboxGroup,
-            iconColor: kPrimaryAccentColor,
-            borderColor: kPrimaryAccentColor,
-          ),
-          if (_checkboxGroups.isNotEmpty)
+          if (_checkboxGroups.length > 1) ...{
             context.iconButton(
               Icons.remove,
               isCard: true,
@@ -90,6 +83,15 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
               bgColor: kWhiteColor,
               borderColor: kDangerColor,
             ),
+          },
+          context.iconButton(
+            Icons.add,
+            isCard: true,
+            tooltip: 'Add more checkbox group',
+            onPressed: _addCheckboxGroup,
+            iconColor: kPrimaryAccentColor,
+            borderColor: kPrimaryAccentColor,
+          ),
         ],
       ],
     );

@@ -44,7 +44,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   Future _loadCustomers({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final customers = await GetAllCustomers.byAnyTerm(filter ?? initial);
-    if (initial.isNotNullNorEmpty && customers.isNotNullNorEmpty) {
+    if (initial.hasValue && customers.hasValue) {
       setState(() => _customer = customers.first);
     }
     return customers;
