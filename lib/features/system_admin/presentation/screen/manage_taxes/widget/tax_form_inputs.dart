@@ -46,6 +46,7 @@ class TaxFormInputs {
     FieldGroupConfig(
       key: 'taxOptions',
       label: 'Tax Options',
+      isNested: true,
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
@@ -82,9 +83,8 @@ class TaxFormInputs {
             ),
           ],
           onCheckChanged: (List<CheckboxGroupConfig> selected) {
-            final selectedMap = CheckboxGroupConfig.mapCheckboxes(selected);
-            onChanged(selectedMap);
-            // prettyPrint('selected-Map', selectedMap);
+            final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
+            onChanged(mapList);
           },
         );
       },

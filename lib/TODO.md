@@ -6,26 +6,27 @@
     2. Workflow Approval Rules
     3. My Approvals
     4. Printouts
-    5. 
+    5. Inventory
 
 -------------------------
 
 - @Continue
-    - ~~Work on Financial Data~~
-      - ~~Check if Shipping is taxable in the 'Financial summary'~~
-      - ~~Check on netPrice in PO updateForm: 'netPrice': '${e.netAmount}'~~
-    - ~~add shipping to PO~~
-    - ~~Linking it with PO~~
-    - ~~RFQ Update Form~~
-  - ~~Sales Quotation (Sales & Distribution)~~
-    - ~~Linking it with RFQ~~
-    - ~~Item Category~~
-    - ~~Company Setup with address (issue: address not saving multiple data)~~
+    - Inventory System
+      - Item Master Updates
+      - Stock mangement
+        - Goods Receipt
+        - Goods Issue
+        - Goods Transfer
+        - Stock Adjustment
+        - Returns from Customer
+        - Reserve Stock
+
+
 
 ```shell
 git init
 git add .
-git commit -m "Working on PO"
+git commit -m "Working on Inventory System"
 git branch -M main
 git push -u origin main
 ```

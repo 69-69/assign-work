@@ -344,7 +344,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   // Collect all data in a list of maps (one map per set of fields)
   List<Map<String, dynamic>> getAllData() =>
-      _fieldGroups.map((group) => group.getData()).toList();
+      _fieldGroups.map((group) => group.getData(_fieldsConfig)).toList();
 
   @override
   void dispose() {
@@ -366,6 +366,11 @@ class FieldGroupConfig {
   final String? Function(String?)? validator;
   final InputDecoration? inputDecoration;
   final FieldWidgetType widgetType;
+
+  /// Indicates that this field contains a nested list of key-value pairs
+  /// (e.g., `[{ "key": "isAutoApply", "value": true }]`) in `otherValues`.
+  /// When `true`, `getData()` will flatten these into top-level keys.
+  final bool isNested;
 
   /// [initialValue] Initial value of the text field
   final String? initialValue;
@@ -398,63 +403,13 @@ class FieldGroupConfig {
     this.initialValue,
     this.inputDecoration,
     this.isHidden = false,
+    this.isNested = false,
     this.isDisabled = false,
     this.isAutoGrow = false,
     this.maxHeight = 100,
     this.customBuilder,
     this.widgetType = FieldWidgetType.textField,
   });
-
-  /// Flattens a list of maps by merging a nested list of key-value pairs
-  /// into the parent map. Useful for ERP forms where nested options
-  /// (like `taxOptions`) should become top-level keys.
-  ///
-  /// Example:
-  /// ```dart
-  /// [
-  ///   {
-  ///     "name": "GST",
-  ///     "taxOptions": [
-  ///       {"key": "isAutoApply", "value": true},
-  ///       {"key": "isWithholding", "value": false},
-  ///     ]
-  ///   }
-  /// ]
-  /// ```
-  /// becomes:
-  /// ```dart
-  /// [
-  ///   {
-  ///     "name": "GST",
-  ///     "isAutoApply": true,
-  ///     "isWithholding": false
-  ///   }
-  /// ]
-  /// ```
-  static List<Map<String, dynamic>> flattenList(
-    List<Map<String, dynamic>> list, {
-    String? nestedKey,
-  }) {
-    return list.map((item) {
-      // Create a copy to avoid mutating the original
-      final flat = Map<String, dynamic>.from(item);
-
-      // Flatten the nested list if it exists and is valid
-      final nested = flat[nestedKey];
-      if (nestedKey != null && nested is List) {
-        for (final opt in nested) {
-          if (opt is Map<String, dynamic> && opt.containsKey('key')) {
-            flat[opt['key']] = opt['value'];
-          }
-        }
-      }
-
-      // Remove the nested key to keep the map flat
-      flat.remove(nestedKey);
-
-      return flat;
-    }).toList();
-  }
 }
 
 class FieldGroup {
@@ -465,18 +420,16 @@ class FieldGroup {
     List<FieldGroupConfig> fieldsConfig, {
     Map<String, dynamic>? initialValues,
   }) : controllers = {
-         for (var config in fieldsConfig)
-           if (config.widgetType == FieldWidgetType.textField)
-             config.key: TextEditingController(
+         for (var cf in fieldsConfig)
+           if (cf.widgetType == FieldWidgetType.textField)
+             cf.key: TextEditingController(
                text:
-                   config.initialValue ??
-                   initialValues?[config.key]?.toString() ??
-                   '',
+                   cf.initialValue ?? initialValues?[cf.key]?.toString() ?? '',
              ),
        } {
-    for (var config in fieldsConfig) {
-      if (config.widgetType != FieldWidgetType.textField) {
-        otherValues[config.key] = initialValues?[config.key];
+    for (var cf in fieldsConfig) {
+      if (cf.widgetType != FieldWidgetType.textField) {
+        otherValues[cf.key] = initialValues?[cf.key];
       }
     }
   }
@@ -487,12 +440,35 @@ class FieldGroup {
     }
   }
 
-  Map<String, dynamic> getData() {
+  Map<String, dynamic> getData(List<FieldGroupConfig> fieldsConfig) {
     final data = <String, dynamic>{};
-    data.addAll({
-      for (final entry in controllers.entries) entry.key: entry.value.text,
-    });
-    data.addAll(otherValues);
+
+    // Text fields
+    data.addAll({for (final e in controllers.entries) e.key: e.value.text});
+
+    for (final cf in fieldsConfig) {
+      if (cf.widgetType != FieldWidgetType.textField) {
+        final val = otherValues[cf.key];
+        if (val == null) continue;
+
+        cf.isNested && val is List
+            ? _flattenNest(data, val)
+            : data[cf.key] = val;
+      }
+    }
+
     return data;
+  }
+
+  /// Flatten a nested list of key-value maps into the parent map.
+  /// Example: [{"name": "GST", "taxOptions":[{"key":"isAutoApply","value":true}]}]
+  /// becomes: [{"name": "GST", "isAutoApply":true}]
+  void _flattenNest(Map<String, dynamic> target, List values) {
+    for (final m in values.whereType<Map>()) {
+      final k = m['key'];
+      if (k != null) {
+        target[k] = m['value'];
+      }
+    }
   }
 }

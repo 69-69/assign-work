@@ -93,7 +93,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
     final master = ItemMaster.findById(masters, id);
     if (master == null) return;
 
-    await _openItemMasterForm(context, serverItem: master);
+    await context.openItemMasterForm(serverItem: master);
   }
 
   Future<void> _onDeleteTap(List<ItemMaster> masters, String id) async {

@@ -458,6 +458,7 @@ class ItemMaster extends Equatable {
 
   /// ToList for StoreLocation [itemAsList]
   List<String> get itemAsList => [
+    id,
     sku,
     name,
     isStockItem ? 'Yes' : 'No',
@@ -470,6 +471,7 @@ class ItemMaster extends Equatable {
   ];
 
   static List<String> get dataHeader => const [
+    'ID',
     'SKU',
     'Item Name',
     'Track Inventory',
@@ -504,7 +506,7 @@ class ItemMaster extends Equatable {
   ];
 }
 
-class ItemMaster2 extends Equatable {
+/*class ItemMaster2 extends Equatable {
   static get _today => DateTime.now();
 
   /// 1. Identification
@@ -699,4 +701,4 @@ class ItemMaster2 extends Equatable {
     updatedBy,
     updatedAt,
   ];
-}
+}*/

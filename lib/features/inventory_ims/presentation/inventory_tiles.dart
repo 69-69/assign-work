@@ -87,7 +87,7 @@ extension InventoryTiles on dynamic {
       },
       {
         'hasSplit': true,
-        'label': 'return . stocks',
+        'label': 'return . from customers',
         'icon': Icons.keyboard_return,
         'action': RouteNames.returnsFromCustomers,
         'param': {},

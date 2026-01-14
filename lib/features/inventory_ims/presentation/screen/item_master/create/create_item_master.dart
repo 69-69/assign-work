@@ -1,9 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
-import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -24,7 +22,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension IMFormExtensions on BuildContext {
   Future<void> openItemMasterForm({
     ItemMaster? serverItem,
-    required String itemType,
+    String? itemType,
     void Function()? onBackPress,
   }) => openBottomSheet(
     isExpand: false,
@@ -39,9 +37,9 @@ extension IMFormExtensions on BuildContext {
 
 class _CreateItemMasterForm extends StatefulWidget {
   final ItemMaster? serverItem;
-  final String itemType;
+  final String? itemType;
 
-  const _CreateItemMasterForm({this.serverItem, required this.itemType});
+  const _CreateItemMasterForm({this.serverItem, this.itemType});
 
   @override
   State<_CreateItemMasterForm> createState() => _CreateItemMasterFormState();
@@ -50,6 +48,7 @@ class _CreateItemMasterForm extends StatefulWidget {
 class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+
   bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
@@ -62,10 +61,11 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
 
-  ItemMaster? get _serverItemMater => widget.serverItem;
+  ItemMaster? get _serverMater => widget.serverItem;
 
-  bool get _nullServer => _serverItemMater == null;
-  String get _itemType => widget.itemType;
+  bool get _nullServer => _serverMater == null;
+
+  String get _itemType => widget.itemType ?? '';
 
   // Basic fields
   String _itemMasterNumber = '';
@@ -77,13 +77,13 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     setState(() => _isSubmitting = true);
 
     // Case 1: Update existing ItemMaster
-    if (_serverItemMater != null) {
+    if (_serverMater != null) {
       _updateItemMaster();
       return;
     }
 
     // Case 2: Form validation or empty ItemMaster
-    if (!_isFormValid && (_serverItemMater?.isNullOrEmpty ?? true)) {
+    if (!_isFormValid && (_serverMater?.isNullOrEmpty ?? true)) {
       _showErrorAlert('Please enter all required fields', kDangerColor);
       return;
     }
@@ -93,9 +93,6 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   void _addNewItemMaster() {
-    prettyPrint('demo', _newMaster.toMap());
-    return;
-
     final newItemMaster = _newMaster.copyWith(
       storeNumber: _employeeStore,
       sku: _itemMasterNumber,
@@ -108,7 +105,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   void _updateItemMaster() {
-    final updated = _serverItemMater?.copyWith(
+    final updated = _serverMater?.copyWith(
       id: _newMaster.id,
       updatedBy: _employee!.fullName,
       history: history(AuditAction.updated),
@@ -148,7 +145,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     context.showAlertOverlay(
       message,
       onCallback: () =>
-          _serverItemMater != null ? Navigator.pop(context) : _resetForm(),
+          _serverMater != null ? Navigator.pop(context) : _resetForm(),
     );
   }
 
@@ -229,25 +226,18 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   Widget _buildNameAndDesc() {
     final itemType =
-        _serverItemMater?.itemType ?? LineItemTypeUtil.fromString(_itemType);
+        _serverMater?.itemType ?? LineItemTypeUtil.fromString(_itemType);
 
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.nameAndDescFields(itemType: itemType),
-      initialData: [
-        {
-          'name': _serverItemMater?.name ?? '',
-          'category': _serverItemMater?.categoryId ?? '',
-          'description': _serverItemMater?.description ?? '',
-        },
-      ],
+      initialData: [_serverMater?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
+        final i = ItemMaster.fromMap(data.first);
 
-        // Add new item master
-        prettyPrint('Name-Desc', data);
         _newMaster = _newMaster.copyWith(
-          name: data.first['name'] ?? '',
-          description: data.first['description'] ?? '',
+          name: i.name,
+          description: i.description,
         );
       },
     );
@@ -256,34 +246,20 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Widget _buildUsageAndAvailability() {
     return DynamicTextFields(
       fullWidthKey: 'baseUom',
+      // initialData: [_serverMater?.toMap() ?? {}],
       fieldsConfig: ItemMasterFormFields.unitRuleFields(
-        /* initial:
-            _serverItemMater?.pickKeys({
-              'isActive',
-              'isService',
-              'isSellable',
-              'isStockItem',
-              'isPurchasable',
-            }) ??
-            {},*/
+        initial: _serverMater?.toMap() ?? {},
       ),
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
-
-        // Add new item master
-
-        final flattened = FieldGroupConfig.flattenList(
-          data,
-          nestedKey: 'itemRules',
-        ).first;
+        final i = ItemMaster.fromMap(data.first);
 
         _newMaster = _newMaster.copyWith(
-          baseUom: UOMUtil.fromString(flattened['baseUom']),
-          isActive: flattened['isActive'] ?? false,
-          isSellable: flattened['isSellable'] ?? false,
-          isPurchasable: flattened['isPurchasable'] ?? false,
+          baseUom: i.baseUom,
+          isActive: i.isActive,
+          isSellable: i.isSellable,
+          isPurchasable: i.isPurchasable,
         );
-        prettyPrint('Usage-Avail', _newMaster.toMap());
       },
     );
   }
@@ -291,22 +267,16 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Widget _buildPlanningAndProcurement() {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.planningFields,
-      initialData: [
-        _serverItemMater?.pickKeys({
-              'reorderPoint',
-              'reorderQty',
-              'leadTimeDays',
-            }) ??
-            {},
-      ],
+      initialData: [_serverMater?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
+        final i = ItemMaster.fromMap(data.first);
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
-          reorderPoint: '${data.first['reorderPoint']}'.asDouble,
-          reorderQty: '${data.first['reorderQty']}'.asDouble,
-          leadTimeDays: '${data.first['leadTimeDays']}'.asInt,
+          reorderPoint: i.reorderPoint,
+          reorderQty: i.reorderQty,
+          leadTimeDays: i.leadTimeDays,
         );
       },
     );
@@ -316,17 +286,16 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.costingFields,
       initialData: [
-        _serverItemMater?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
+        _serverMater?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
       ],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
+        final i = ItemMaster.fromMap(data.first);
 
         // Add new item master
         _newMaster = _newMaster.copyWith(
-          standardCost: '${data.first['standardCost']}'.asDouble,
-          costingMethod: CostingMethodUtil.fromString(
-            data.first['costingMethod'],
-          ),
+          standardCost: i.standardCost,
+          costingMethod: i.costingMethod,
         );
       },
     );

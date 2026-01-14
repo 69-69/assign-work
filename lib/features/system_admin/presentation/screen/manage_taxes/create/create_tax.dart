@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -135,18 +134,11 @@ class _AddTaxFormState extends State<_AddTaxForm> {
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isValid) setState(() {});
 
-                final flattenedData = FieldGroupConfig.flattenList(
-                  data,
-                  nestedKey: 'taxOptions',
-                );
-
                 TaxFormInputs.updateListFromData<Tax>(
                   _taxList,
-                  map: flattenedData,
+                  map: data,
                   fromMap: (map, id) => Tax.fromMap(map),
                 );
-
-                prettyPrint('demo-tax', _taxList.first.isAutoApply);
               },
             ),
           ],

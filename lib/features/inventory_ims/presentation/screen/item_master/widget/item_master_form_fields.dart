@@ -90,13 +90,14 @@ class ItemMasterFormFields {
     FieldGroupConfig(
       key: 'baseUom',
       label: 'Base Unit of Measure',
+      initialValue: initial?['baseUom'],
       helperText:
           'Primary unit used for purchasing, stocking, & selling this item',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return _UnitOfMeasureDropdown(
-          initialValue: initialData,
+          initialValue: initialData ?? initial?['baseUom'],
           onChanged: (String? selected) => onChanged(selected),
         );
       },
@@ -111,6 +112,7 @@ class ItemMasterFormFields {
       key: 'itemRules',
       label: 'Usage & Availability',
       type: TextInputType.text,
+      isNested: true,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
@@ -120,6 +122,7 @@ class ItemMasterFormFields {
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
+              selected: initial?['isActive'] ?? false,
               tooltip: 'Existing transactions are not affected',
               description:
                   'When disabled, this item cannot be selected in new purchase, sales, or inventory transactions.',
@@ -127,6 +130,7 @@ class ItemMasterFormFields {
             CheckboxGroupConfig(
               key: 'isStockItem',
               label: 'Track inventory',
+              selected: initial?['isStockItem'] ?? false,
               tooltip: 'Disable for services and non-physical items',
               description:
                   'Enable if this item is physically stored and its quantity should be tracked in inventory.',
@@ -134,6 +138,7 @@ class ItemMasterFormFields {
             CheckboxGroupConfig(
               key: 'isPurchasable',
               label: 'Available for purchasing',
+              selected: initial?['isPurchasable'] ?? false,
               tooltip: 'Required for procurement documents',
               description:
                   'Allows this item to be requested, quoted, and ordered from suppliers.',
@@ -141,14 +146,15 @@ class ItemMasterFormFields {
             CheckboxGroupConfig(
               key: 'isSellable',
               label: 'Available for sales',
+              selected: initial?['isSellable'] ?? false,
               tooltip: 'Required for customer-facing transactions',
               description:
                   'Allows this item to be offered and sold to customers in sales and POS transactions.',
             ),
           ],
           onCheckChanged: (List<CheckboxGroupConfig> selected) {
-            final selectedMap = CheckboxGroupConfig.mapCheckboxes(selected);
-            onChanged(selectedMap);
+            final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
+            onChanged(mapList);
           },
         );
       },
@@ -307,58 +313,3 @@ class _UnitOfMeasureDropdown extends StatelessWidget {
     );
   }
 }
-
-/*// backup
-  static List<FieldGroupConfig> suppliersFields2({String? key}) => [
-    FieldGroupConfig(
-      key: key ?? 'supplierLinks',
-      label: 'Select Suppliers',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        prettyPrint('initial-Data', initialData);
-        final initial = Map<String, dynamic>.from(initialData ?? {});
-        return FindSuppliers(
-          initialSupplier: initial['supplierId'],
-          initialSupplierRep: initial['supplierRepId'],
-          onSupplierChanged: (id, name) {
-            prettyPrint('supplier-Id--$id', initial['supplierId']);
-            initial
-              ..['supplierId'] = id
-              ..['name'] = name; // Supplier Name is not required
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-          onContactPersonChanged: (contactPersonId) {
-            initial['supplierRepId'] = contactPersonId;
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'status',
-      label: 'Supplier Status',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return _SupplierStatusDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
-        );
-      },
-    ),
-  ];*/
-/* // Alternative-1 approach (now commented out)
-    _lineItems
-      ..clear() // Clear previous entries to prevent duplication
-      ..addAll(data.map((e) => ProLineItem.fromMap(e)));
-   // Alternative-1
-    _lineItems
-          ..clear() // Clear previous entries to prevent duplication
-          ..addAll(
-            data
-                .asMap()
-                .entries
-                .map((e) => ProLineItem.fromMap(e.value, id: '${e.key + 1}'))
-                .toList(),
-          );*/
