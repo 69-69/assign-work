@@ -87,8 +87,8 @@ extension InventoryTiles on dynamic {
       },
       {
         'hasSplit': true,
-        'label': 'return . from customers',
-        'icon': Icons.keyboard_return,
+        'label': 'returns . from customers',
+        'icon': Icons.rotate_left,
         'action': RouteNames.returnsFromCustomers,
         'param': {},
         'access': _getName(InventoryPermission.manageReturns),
@@ -107,8 +107,8 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Warehouse',
         'icon': Icons.store,
-        'action': RouteNames.warehouse,
-        'param': {'openTab': '0'},
+        'action': RouteNames.warehouseStorage,
+        'param': {},
         'access': _getName(InventoryPermission.manageWarehouseAddress),
         'description':
             'Define physical storage facilities such as Main, Store, or Transit warehouses.',
@@ -117,7 +117,7 @@ extension InventoryTiles on dynamic {
         'label': 'Location',
         'icon': Icons.view_kanban,
         'action': RouteNames.warehouseLocation,
-        'param': {'openTab': '1'},
+        'param': {},
         'access': _getName(InventoryPermission.manageWHLocation),
         'description':
             'Define sub-areas within a warehouse, such as racks, aisles, or shelves.',
@@ -126,7 +126,7 @@ extension InventoryTiles on dynamic {
         'label': 'Bin',
         'icon': Icons.inbox,
         'action': RouteNames.warehouseBin,
-        'param': {'openTab': '2'},
+        'param': {},
         'access': _getName(InventoryPermission.manageWHBin),
         'description':
             'Define precise storage bins inside a location for accurate stock placement.',
@@ -138,7 +138,7 @@ extension InventoryTiles on dynamic {
         'label': 'Inbound . Receiving',
         'icon': Icons.call_received,
         'action': RouteNames.inboundReceiving,
-        'param': {'openTab': '3'},
+        'param': {},
         'access': _getName(InventoryPermission.manageWHReceiving),
         'description':
             'Receive incoming goods from purchase orders and place them into warehouse bins.',
@@ -148,7 +148,7 @@ extension InventoryTiles on dynamic {
         'label': 'Internal . Movements',
         'icon': Icons.swap_horiz,
         'action': RouteNames.internalMovements,
-        'param': {'openTab': '4'},
+        'param': {},
         'access': _getName(InventoryPermission.manageWHMovement),
         'description':
             'Move stock internally between bins or locations within the same warehouse.',
@@ -160,7 +160,7 @@ extension InventoryTiles on dynamic {
         'label': 'Picking . Shipments',
         'icon': Icons.local_shipping,
         'action': RouteNames.outboundPickShipping,
-        'param': {'openTab': '5'},
+        'param': {},
         'access': _getName(InventoryPermission.manageWHPickShipping),
         'description':
             'Pick, pack, and ship goods to customers in a single outbound process.',

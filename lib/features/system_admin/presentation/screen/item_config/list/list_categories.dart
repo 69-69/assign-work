@@ -1,6 +1,6 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
@@ -64,10 +64,10 @@ class _ListCategoriesState extends State<ListCategories> {
 
   _buildToolbar(List<Category> sales) {
     return ListToolbarButtons(
-      createLabel: 'Add Categories',
+      primaryLabel: 'Add Categories',
       refreshLabel: 'Refresh Categories',
       dataLength: sales.length,
-      onCreate: () => context.openAddCategory(),
+      onPrimary: () => context.openAddCategory(),
       onRefresh: () =>
           context.read<CategoryBloc>().add(RefreshSetups<Category>()),
     );

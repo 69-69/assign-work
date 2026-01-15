@@ -1,5 +1,6 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/role_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_roles/role_bloc.dart';
@@ -19,11 +20,29 @@ class ListRoles extends StatefulWidget {
 class _ListRolesState extends State<ListRoles> {
   bool? _isChecked;
   Role? _selectedRole;
+
   RoleBloc get _bloc => context.read<RoleBloc>();
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Role> state) {
+    switch (state) {
+      case SetupDeleted<Role>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+      case SetupError<Role>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return _buildBody();
+    return BlocListener<RoleBloc, SetupState<Role>>(
+      listener: _handleBlocState,
+      child: _buildBody(),
+    );
   }
 
   BlocBuilder<RoleBloc, SetupState<Role>> _buildBody() {
@@ -45,7 +64,7 @@ class _ListRolesState extends State<ListRoles> {
     );
   }
 
-  _buildCard(BuildContext c, List<Role> roles) {
+  Widget _buildCard(BuildContext c, List<Role> roles) {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
@@ -62,24 +81,23 @@ class _ListRolesState extends State<ListRoles> {
 
   _buildToolbar(List<Role> roles) {
     return ListToolbarButtons(
-      createLabel: 'Create Role',
+      primaryLabel: 'Create Role',
       refreshLabel: 'Refresh Roles',
       dataLength: roles.length,
-      onCreate: () => context.openCreateNewRole(),
+      tertiaryIcon: Icons.security,
+      secondaryLabel: 'Edit Role',
+      secondaryIcon: Icons.edit,
+      tertiaryLabel: 'Assign Permission',
+      tertiaryTooltip: 'Assign new permissions to role',
+      onPrimary: () => context.openCreateNewRole(),
       onRefresh: () => _bloc.add(RefreshSetups<Role>()),
-      optLabel: 'Assign Permission',
-      optTooltip: 'Assign new permissions to role',
-      optIcon: Icons.security,
-      optOnPressed: _isChecked == true
-          ? () async {
-              if (_selectedRole == null) return;
-
-              /// Assign permission to role
-              await context.openUpdateRole(
-                isAssign: true,
-                role: _selectedRole!,
-              );
-            }
+      onSecondary: _isChecked == true
+          ? () async => _onEditTap(roles, _selectedRole?.id ?? '')
+          : null,
+      onTertiary: _isChecked == true
+          ? () async =>
+                // Assign role & permission to the selected user
+                _onEditTap(roles, _selectedRole?.id ?? '', isAssignRole: true)
           : null,
     );
   }
@@ -100,12 +118,18 @@ class _ListRolesState extends State<ListRoles> {
   Role? _findRole(List<Role> roles, {required String id}) =>
       Role.findById(roles, id);
 
-  Future<void> _onEditTap(List<Role> roles, String id) async {
+  Future<void> _onEditTap(
+    List<Role> roles,
+    String id, {
+    bool? isAssignRole,
+  }) async {
+    if (id.isEmpty || roles.isEmpty) return;
+
     Role? role = _findRole(id: id, roles);
 
     if (role != null) {
       /// Update specific role
-      await context.openUpdateRole(role: role);
+      await context.openUpdateRole(isAssignRole: isAssignRole, role: role);
     }
   }
 

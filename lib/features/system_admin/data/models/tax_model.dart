@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/tax_context.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -35,10 +36,12 @@ class Tax extends Equatable {
   /// [rate] This is the Tax Rate in percentage
   final double rate;
   final String notes;
+  // For Snapshot purpose only
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   Tax({
     this.id = '',
@@ -54,6 +57,7 @@ class Tax extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
+    this.history = const [],
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
@@ -73,6 +77,7 @@ class Tax extends Equatable {
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
       updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -92,6 +97,7 @@ class Tax extends Equatable {
       'autoApplyOn': strList,
       'createdBy': createdBy,
       'updatedBy': updatedBy,
+      'history': history.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -171,6 +177,7 @@ class Tax extends Equatable {
     DateTime? createdAt,
     String? updatedBy,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) => Tax(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -185,6 +192,7 @@ class Tax extends Equatable {
     createdAt: createdAt ?? this.createdAt,
     updatedBy: updatedBy ?? this.updatedBy,
     updatedAt: updatedAt ?? this.updatedAt,
+    history: history ?? this.history,
   );
 
   @override
@@ -202,6 +210,7 @@ class Tax extends Equatable {
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
   /// ToList for tax [itemAsList]

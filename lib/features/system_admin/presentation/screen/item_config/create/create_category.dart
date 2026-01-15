@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -36,57 +37,68 @@ class _AddCategoryForm extends StatefulWidget {
 }
 
 class _AddCategoryFormState extends State<_AddCategoryForm> {
-  final _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
   final List<Category> _categories = [];
+  Key _formResetKey = UniqueKey();
+  final _formKey = GlobalKey<FormState>();
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   Category? get _serverCategory => widget.serverCategory;
+  bool get _isServerNull => _serverCategory == null;
+
+  // Current employee info
   Employee? get _employee => context.employee;
-  bool get _isValid => _formKey.currentState?.validate() ?? false;
+
+  String get _employeeName => _employee!.fullName;
+  String get _employeeStore => _employee!.storeNumber;
+  CategoryBloc get _bloc => context.read<CategoryBloc>();
 
   void _onSubmit() {
-    if (_isValid && _categories.isNotEmpty) {
-      final bloc = context.read<CategoryBloc>();
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
 
-      if (_serverCategory != null) {
-        final updated = _prepareUpdatedCategory();
-
-        bloc.add(UpdateSetup<Category>(documentId: updated.id, data: updated));
-        context.showAlertOverlay('Changes successfully saved');
-      } else {
-        final categories = _prepareNewCategories();
-        bloc.add(AddSetup<List<Category>>(data: categories));
-
-        _formKey.currentState!.reset();
-        context.showAlertOverlay('Categories successfully created');
-        Navigator.pop(context);
-      }
+    // Case 1: Update existing Category
+    if (_isFormValid && (_serverCategory?.isNotEmpty ?? false)) {
+      _updatedCategory();
+      return;
     }
+
+    // Case 2: Form validation or empty Category
+    if (!_isFormValid && _categories.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
+    }
+
+    // Case 3: Create new Categories
+    _newCategories();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    AuditLog(action: action, actionBy: _employee!.employeeId),
+    if (!_isServerNull) ..._serverCategory!.history,
+    AuditLog(action: action, actionBy: _employeeName),
   ];
 
-  Category _prepareUpdatedCategory() {
-    final updated = _categories.first.copyWith(
-      id: _serverCategory!.id,
-      name: _serverCategory!.name,
-      updatedBy: _employee!.fullName,
-      history: history(AuditAction.updated),
-    );
-    return updated;
-  }
-
-  List<Category> _prepareNewCategories() {
+  void _newCategories() {
     final newCats = _categories
         .map(
           (e) => e.copyWith(
-            createdBy: _employee!.fullName,
-            history: history(AuditAction.updated),
+            storeNumber: _employeeStore,
+            createdBy: _employeeName,
+            history: history(),
           ),
         )
         .toList();
-    return newCats;
+    _bloc.add(AddSetup<List<Category>>(data: newCats));
+  }
+
+  void _updatedCategory() {
+    final updated = _categories.first.copyWith(
+      id: _serverCategory!.id,
+      name: _serverCategory!.name,
+      updatedBy: _employeeName,
+      history: history(AuditAction.updated),
+    );
+    _bloc.add(UpdateSetup<Category>(documentId: updated.id, data: updated));
   }
 
   // load existing Categories
@@ -98,6 +110,36 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     }
   }
 
+  void _resetForm() {
+    if (mounted) {
+      setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
+        _isSubmitting = false;
+      });
+    }
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(
+      msg,
+      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
+    );
+    setState(() => _isSubmitting = false);
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Category> state) {
+    final note = _isServerNull ? 'Category created' : 'Changes saved';
+    switch (state) {
+      case SetupAdded<Category>(message: var msg):
+      case SetupUpdated<Category>(message: var msg):
+        _showAlert(msg ?? note);
+      case SetupError<Category>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,10 +148,13 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+    return BlocListener<CategoryBloc, SetupState<Category>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
+      ),
     );
   }
 
@@ -125,7 +170,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
               fieldsConfig: ItemPref.categoryField,
               initialData: [?_serverCategory?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
 
                 // Create a new line item
                 _categories
@@ -136,7 +181,10 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
           ],
         ),
         context.confirmableActionButton(
-          label: _serverCategory == null ? 'Create Category' : null,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Category')
+              : (_isSubmitting ? 'Updating...' : null),
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

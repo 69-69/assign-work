@@ -1,12 +1,11 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/customer_crm/data/models/customer_model.dart';
@@ -31,15 +30,45 @@ class ListSalesQuotations extends StatefulWidget {
 }
 
 class _ListSalesQuotationsState extends State<ListSalesQuotations> {
-  // List to group quotations for printout
+  bool _inProgress = false;
   final List<String> _selectedIds = [];
-  final List<SalesQuotation> _selectedForCompare = [];
 
   bool get _isApproved => widget.isApproved;
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
 
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _handleBlocState(
+    BuildContext cxt,
+    SalesDistributionState<SalesQuotation> state,
+  ) {
+    switch (state) {
+      case SalesDistributionDeleted<SalesQuotation>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case SalesDistributionError<SalesQuotation>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
   @override
   Widget build(BuildContext context) {
+    return BlocListener<
+      SalesQuotationBloc,
+      SalesDistributionState<SalesQuotation>
+    >(listener: _handleBlocState, child: _buildBody());
+  }
+
+  BlocBuilder<SalesQuotationBloc, SalesDistributionState<SalesQuotation>>
+  _buildBody() {
     return BlocBuilder<
       SalesQuotationBloc,
       SalesDistributionState<SalesQuotation>
@@ -90,32 +119,49 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
 
     return DynamicDataTable(
       omitAtIndex: 0,
+      maskAtIndex: 2,
       toolbar: _buildToolbar(quotes),
       headers: SalesQuotation.dataTableHeader,
       rows: filtered.rows,
       childrenRow: filtered.childrenRow,
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
       selectedRowKeyIndex: 0,
-      // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds,
-      // Currently selected row keys
-      onChecked: (bool? isChecked, checkedRow) {
-        setState(() => _updateSelectedIds(isChecked, checkedRow.first, quotes));
-      },
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(
-              () => _updateAllSelectedIds(isChecked, checkedRows, quotes),
-            );
-          },
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintSQ(quotes, row.first),
       onEditTap: (row) async => await _onEditTap(quotes, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(quotes, row.first),
+    );
+  }
+
+  _buildToolbar(List<SalesQuotation> quotes) {
+    return ListToolbarButtons(
+      refreshLabel: 'Refresh Quotes',
+      primaryLabel: 'Create Quote',
+      secondaryLabel: 'Edit Quote',
+      secondaryIcon: Icons.edit,
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Quote',
+      dataLength: quotes.length,
+      onPrimary: () => _openCreateSQ(context),
+      onRefresh: () => _bloc.add(RefreshSalesDistributions<SalesQuotation>()),
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(quotes, _selectedIds.first)
+          : null,
+      onDanger: _selectedIds.isNotEmpty
+          ? () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (mounted && isConfirmed) {
+                _isDeleting(true);
+                _bloc.add(
+                  DeleteSalesDistribution<List<String>>(
+                    documentId: _selectedIds,
+                  ),
+                );
+              }
+            }
+          : null,
     );
   }
 
@@ -135,73 +181,30 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     }
   }
 
-  // Updates selected IDs and triggers additional logic (like selecting quotes)
-  void _updateSelectedIds(
-    bool? isChecked,
-    String id,
-    List<SalesQuotation> quotes,
-  ) {
-    if (isChecked == true) {
-      if (!_selectedIds.contains(id)) {
-        _selectedIds.add(id);
-        _selectedQuotes(quotes); // Only select quotes when IDs are updated
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
       }
-    } else {
-      // Remove item from the selected list if unchecked
-      _selectedIds.removeWhere((selectedId) => selectedId == id);
-    }
+    });
   }
 
-  // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(
+  _onAllChecked(
     bool isChecked,
+    List<bool> isAllChecked,
     List<List<String>> checkedRows,
-    List<SalesQuotation> quotes,
   ) {
-    _selectedIds.clear();
-    if (isChecked) {
+    setState(() {
+      _selectedIds.clear();
       // Add all selected rows, ensuring uniqueness using a Set
-      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      _selectedQuotes(quotes);
-    }
-  }
-
-  // Select quotes for comparison based on selected IDs
-  void _selectedQuotes(List<SalesQuotation> quotes) {
-    if (_selectedIds.length == 2) {
-      // Get the first two selected IDs from _selectedIds
-      _selectedIds.take(2).forEach((id) {
-        final quote = _getSQById(quotes, id);
-        if (quote != null) {
-          _selectedForCompare.add(quote);
-        }
-      });
-    }
-  }
-
-  _buildToolbar(List<SalesQuotation> quotes) {
-    return ListToolbarButtons(
-      refreshLabel: 'Refresh Quotes',
-      createLabel: 'Create Quote',
-      deleteLabel: 'Quote',
-      dataLength: quotes.length,
-      onCreate: () => _openCreateSQ(context),
-      onRefresh: () => _bloc.add(RefreshSalesDistributions<SalesQuotation>()),
-      onDelete: _selectedIds.isNotEmpty
-          ? () async {
-              final isConfirmed = await context.confirmUserActionDialog();
-              if (mounted && isConfirmed) {
-                /// Delete all selected Sales Quotations
-                _bloc.add(
-                  DeleteSalesDistribution<List<String>>(
-                    documentId: _selectedIds,
-                  ),
-                );
-                _selectedIds.clear();
-              }
-            }
-          : null,
-    );
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 
   SalesQuotation? _getSQById(List<SalesQuotation> quotes, String id) {
@@ -231,12 +234,8 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     // Show progress dialog while loading data
     await context.progressBarDialog(
       request: _printout(quotes, id),
-      onSuccess: (_) =>
-          context.showAlertOverlay('Printout successfully created'),
-      onError: (error) => context.showAlertOverlay(
-        'Quote printout failed',
-        bgColor: kDangerColor,
-      ),
+      onSuccess: (_) => _showAlert('Printout successfully created'),
+      onError: (error) => _showAlert('Quote printout failed'),
     );
   }
 

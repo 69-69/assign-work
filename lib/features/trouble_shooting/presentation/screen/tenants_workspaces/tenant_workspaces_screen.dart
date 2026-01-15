@@ -21,11 +21,6 @@ class TenantWorkspacesScreen extends StatelessWidget {
       child: CustomScaffold(
         title: allWorkspacesScreenTitle.toUpperAll,
         body: ListTenantWorkspaces(),
-        /*floatingActionButton: context.buildFloatingBtn(
-          'setup new workspace',
-          icon: Icons.workspaces_outline,
-          onPressed: () => context.openCreateWorkspacePopUp(),
-        ),*/
       ),
     );
   }

@@ -1,6 +1,5 @@
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/procurement/data/model/supplier_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/pro_vendor/suppliers_bloc.dart';
@@ -59,54 +58,52 @@ class _ListSuppliersState extends State<ListSuppliers> {
       onEditTap: (row) async => _onEditTap(suppliers, row.first),
       onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),
       selectedRowKeyIndex: 0,
-      // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds,
-      // Currently selected row keys
-      onChecked: (bool? isChecked, checkedRow) {
-        setState(() => _updateSelectedIds(isChecked, checkedRow.first));
-      },
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(() => _updateAllSelectedIds(isChecked, checkedRows));
-          },
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
     );
   }
 
-  // Updates selected IDs and triggers additional logic (like selecting PRs)
-  void _updateSelectedIds(bool? isChecked, String id) {
-    if (isChecked == true) {
-      if (!_selectedIds.contains(id)) {
-        _selectedIds.add(id);
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
       }
-    } else {
-      // Remove item from the selected list if unchecked
-      _selectedIds.removeWhere((selectedId) => selectedId == id);
-    }
+    });
   }
 
-  // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(bool isChecked, List<List<String>> checkedRows) {
-    _selectedIds.clear();
-    if (isChecked) {
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
       // Add all selected rows, ensuring uniqueness using a Set
-      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-    }
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 
   _buildToolbar(List<Supplier> suppliers) {
-    prettyPrint('_selectedIds', _selectedIds);
     return ListToolbarButtons(
       refreshLabel: 'Refresh Suppliers',
-      createLabel: 'Add Supplier',
-      deleteLabel: 'Supplier',
+      primaryLabel: 'Add Supplier',
+      dangerLabel: 'Delete Supplier',
+      secondaryLabel: 'Edit Supplier',
+      secondaryIcon: Icons.edit,
       dataLength: suppliers.length,
-      onCreate: () => context.openAddSuppliers(),
+      onPrimary: () => context.openAddSuppliers(),
       onRefresh: () => _bloc.add(RefreshProcurements<Supplier>()),
-      onDelete: _selectedIds.isNotEmpty
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(suppliers, _selectedIds.first)
+          : null,
+      onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {

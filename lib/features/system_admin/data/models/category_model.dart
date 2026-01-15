@@ -8,6 +8,7 @@ class Category extends Equatable {
 
   final String id;
   final String name;
+  final String storeNumber;
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;
@@ -17,6 +18,7 @@ class Category extends Equatable {
   Category({
     this.id = '',
     required this.name,
+    required this.storeNumber,
     required this.createdBy,
     DateTime? createdAt,
     this.updatedBy = '',
@@ -31,6 +33,7 @@ class Category extends Equatable {
     return Category(
       id: id ?? map['id'] ?? '',
       name: map['name'] ?? '',
+      storeNumber: map['storeNumber'] ?? '',
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
@@ -43,6 +46,7 @@ class Category extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'name': name,
+    'storeNumber': storeNumber,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'history': history.map((e) => e.toMap()).toList(),
@@ -68,7 +72,11 @@ class Category extends Equatable {
 
   /// A singleton instance representing an empty/default Category.
   /// Used as a fallback when no matching Category is found.
-  static final Category empty = Category(name: '', createdBy: '');
+  static final Category empty = Category(
+    name: '',
+    createdBy: '',
+    storeNumber: '',
+  );
 
   /// Returns true if this instance is the singleton [empty] Category.
   /// Use this to check if the Category is the default/fallback (e.g., not found).
@@ -93,10 +101,8 @@ class Category extends Equatable {
 
   String get itemAsString => name.toTitle;
 
-  static get notFound => Category(name: 'No Data', createdBy: 'No Data');
-
   /// Filter/Search
-  bool filterByAny(String filter) => {name, id}.filterAny(filter);
+  bool filterByAny(String filter) => {name, id, storeNumber}.filterAny(filter);
 
   /// [findCategoriesById]
   static Iterable<Category> findCategoriesById(
@@ -108,6 +114,7 @@ class Category extends Equatable {
   Category copyWith({
     String? id,
     String? name,
+    String? storeNumber,
     String? createdBy,
     DateTime? createdAt,
     String? updatedBy,
@@ -117,6 +124,7 @@ class Category extends Equatable {
     return Category(
       id: id ?? this.id,
       name: name ?? this.name,
+      storeNumber: storeNumber ?? this.storeNumber,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedBy: updatedBy ?? this.updatedBy,
@@ -129,6 +137,7 @@ class Category extends Equatable {
   List<Object?> get props => [
     id,
     name,
+    storeNumber,
     createdBy,
     createdAt,
     updatedBy,

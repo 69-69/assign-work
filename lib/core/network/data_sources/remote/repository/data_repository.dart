@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
 class DataRepository extends FirestoreRepository {
-  late Box<CacheData> _cacheBox;
+  Box<CacheData>? _cacheBox;
 
   final CollectionType? collectionType;
 
@@ -79,12 +79,12 @@ class DataRepository extends FirestoreRepository {
   /// Add to Cache/localStorage [_addToCache]
   /// [key] - The ID of the document to be added to the cache.
   Future<void> _addToCache(String key, CacheData cacheData) async {
-    await _cacheBox.put(key, cacheData);
+    await _cacheBox?.put(key, cacheData);
   }
 
   /// Retrieves all cached data from [_getFromCache].
   List<CacheData> _getFromCache() {
-    final List<CacheData> data = _cacheBox.values.toList();
+    final List<CacheData> data = _cacheBox?.values.toList() ?? [];
 
     // If the collection type is 'stores', filter the data by store number.
     if (collectionType == CollectionType.stores) {
@@ -99,10 +99,10 @@ class DataRepository extends FirestoreRepository {
   }
 
   /// Read/Get cache data by id [_getCacheById]
-  CacheData? _getCacheById(String id) => _cacheBox.get(id);
+  CacheData? _getCacheById(String id) => _cacheBox?.get(id);
 
   /// Read/Get cache data by index position [_getCacheByIndex]
-  CacheData? _getCacheByIndex(int i) => _cacheBox.getAt(i);
+  CacheData? _getCacheByIndex(int i) => _cacheBox?.getAt(i);
 
   /// Add New BackUp Data to Remote-Server (Firestore) [_saveRemoteData]
   Future<String> _saveRemoteData(CacheData item) async {
@@ -122,9 +122,11 @@ class DataRepository extends FirestoreRepository {
 
   /// Helper function to search in local HiveBox
   List<CacheData> _searchLocalCache(Object field, String query) {
+    if (_cacheBox == null) return [];
+
     List<CacheData> dataList = [];
 
-    for (int i = 0; i < _cacheBox.length; i++) {
+    for (int i = 0; i < _cacheBox!.length; i++) {
       final cachedData = _getCacheByIndex(i);
       if (cachedData != null && cachedData.data.containsKey(field)) {
         dynamic fieldValue = cachedData.data[field];
@@ -263,11 +265,11 @@ class DataRepository extends FirestoreRepository {
 
   /// Delete Multiple Data Function [deleteManyData]
   Future<void> deleteManyData(Iterable<String> ids) async {
-    if (ids.isEmpty) return;
+    if (ids.isEmpty || _cacheBox == null) return;
 
     // 1️⃣ Delete from cache & Flush cache to disk
-    await _cacheBox.deleteAll(ids);
-    await _cacheBox.flush();
+    await _cacheBox?.deleteAll(ids);
+    await _cacheBox?.flush();
 
     // 2️⃣ Delete from remote (parallel)
     await Future.wait(ids.map(deleteById));
@@ -323,10 +325,12 @@ class DataRepository extends FirestoreRepository {
     String id, {
     Object? field,
   }) async {
+    if (_cacheBox != null) return [];
+
     List<CacheData> dataList = [];
 
     if (field != null && field.toString().isNotEmpty) {
-      for (int i = 0; i < _cacheBox.length; i++) {
+      for (int i = 0; i < _cacheBox!.length; i++) {
         final cachedData = _getCacheByIndex(i);
 
         if (cachedData != null && cachedData.id == id) {

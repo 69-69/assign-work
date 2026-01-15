@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:flutter/material.dart';
 
 class CompanyFormInputs {

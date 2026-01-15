@@ -5,50 +5,66 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:flutter/material.dart';
 
 class ListToolbarButtons extends StatelessWidget {
+  // Callbacks
   final Function()? onRefresh;
-  final Function()? onCreate;
-  final Function()? onDelete;
+  final Function()? onPrimary;
+  final Function()? onDanger;
   final Function()? onCompare;
-  final Function()? optOnPressed;
-  final Function()? auxOnPressed;
-  final Function()? subOnPressed;
+  final Function()? onTertiary;
+  final Function()? onWarning;
+  final Function()? onSecondary;
+  final Function()? onPermanent;
+  // Labels
   final String refreshLabel;
-  final String createLabel;
-  final String deleteLabel;
+  final String primaryLabel;
+  final String dangerLabel;
   final String compareLabel;
-  final String optLabel;
-  final String auxLabel;
-  final String subLabel;
-  final IconData? subIcon;
-  final IconData? optIcon;
-  final IconData? auxIcon;
-  final String optTooltip;
-  final String subTooltip;
-  final String auxTooltip;
+  final String tertiaryLabel;
+  final String warningLabel;
+  final String secondaryLabel;
+  final String permanentLabel;
+  // Tooltips
+  final String? permanentTooltip;
+  final String? secondaryTooltip;
+  final String? tertiaryTooltip;
+  final String? primaryTooltip;
+  final String? warningTooltip;
+  final String? dangerTooltip;
+  // Icons
+  final IconData? permanentIcon;
+  final IconData? secondaryIcon;
+  final IconData? tertiaryIcon;
+  final IconData? warningIcon;
   final int dataLength;
 
   const ListToolbarButtons({
     super.key,
     this.onRefresh,
-    this.onCreate,
-    this.onDelete,
     this.onCompare,
-    this.optOnPressed,
-    this.auxOnPressed,
-    this.subOnPressed,
-    this.subLabel = '',
-    this.subTooltip = '',
-    this.subIcon,
-    this.createLabel = '',
-    this.deleteLabel = '',
+    this.onPrimary,
+    this.onDanger,
+    this.onWarning,
+    this.onTertiary,
+    this.onSecondary,
+    this.onPermanent,
+    this.permanentLabel = '',
+    this.secondaryLabel = '',
+    this.tertiaryLabel = '',
     this.refreshLabel = '',
     this.compareLabel = '',
-    this.optLabel = '',
-    this.auxLabel = '',
-    this.optTooltip = '',
-    this.auxTooltip = '',
-    this.auxIcon,
-    this.optIcon,
+    this.primaryLabel = '',
+    this.warningLabel = '',
+    this.dangerLabel = '',
+    this.permanentTooltip,
+    this.secondaryTooltip,
+    this.tertiaryTooltip,
+    this.primaryTooltip,
+    this.warningTooltip,
+    this.dangerTooltip,
+    this.permanentIcon,
+    this.secondaryIcon,
+    this.tertiaryIcon,
+    this.warningIcon,
     this.dataLength = 0,
   });
 
@@ -65,9 +81,9 @@ class ListToolbarButtons extends StatelessWidget {
   List<Widget> _buildToolbar(BuildContext context) => [
     if (onRefresh != null) ...{_refreshButton(context)},
 
-    if (onCreate != null) ...[
+    if (onPrimary != null) ...[
       const SizedBox(width: 10),
-      _createButton(context),
+      _primaryButton(context),
     ],
 
     if (onCompare != null) ...[
@@ -75,24 +91,29 @@ class ListToolbarButtons extends StatelessWidget {
       _compareButton(context),
     ],
 
-    if (optOnPressed != null) ...[
+    if (onSecondary != null) ...[
       const SizedBox(width: 10),
-      _optButton(context),
+      _secondaryButton(context),
     ],
 
-    if (subOnPressed != null) ...[
+    if (onTertiary != null) ...[
       const SizedBox(width: 10),
-      _subButton(context),
+      _tertiaryButton(context),
     ],
 
-    if (auxOnPressed != null) ...[
+    if (onWarning != null) ...[
       const SizedBox(width: 10),
-      _auxButton(context),
+      _warningButton(context),
     ],
 
-    if (onDelete != null) ...[
+    if (onDanger != null) ...[
       const SizedBox(width: 10),
-      _deleteButton(context),
+      _dangerButton(context),
+    ],
+
+    if (onPermanent != null) ...[
+      const SizedBox(width: 10),
+      _permanentButton(context),
     ],
   ];
 
@@ -105,13 +126,13 @@ class ListToolbarButtons extends StatelessWidget {
     );
   }
 
-  Widget _createButton(BuildContext context) {
+  Widget _primaryButton(BuildContext context) {
     return _button(
       context,
-      label: createLabel,
-      onPressed: onCreate,
+      label: primaryLabel,
+      onPressed: onPrimary,
       bgColor: kPrimaryColor,
-      tooltip: createLabel,
+      tooltip: primaryTooltip ?? primaryLabel,
       icon: Icons.add,
     );
   }
@@ -139,48 +160,58 @@ class ListToolbarButtons extends StatelessWidget {
     );
   }
 
-  Widget _subButton(BuildContext context) {
+  Widget _secondaryButton(BuildContext context) {
     return _button(
       context,
-      icon: subIcon,
-      label: subLabel,
-      tooltip: subTooltip,
-      onPressed: subOnPressed,
+      icon: secondaryIcon,
+      label: secondaryLabel,
+      tooltip: secondaryTooltip ?? secondaryLabel,
+      onPressed: onSecondary,
       bgColor: kBrightPrimaryColor,
     );
   }
 
-  Widget _optButton(BuildContext context) {
+  Widget _tertiaryButton(BuildContext context) {
     return _button(
       context,
-      icon: optIcon,
-      label: optLabel,
-      tooltip: optTooltip,
-      onPressed: optOnPressed,
+      icon: tertiaryIcon,
+      label: tertiaryLabel,
+      tooltip: tertiaryTooltip ?? tertiaryLabel,
+      onPressed: onTertiary,
       bgColor: kPrimaryAccentColor,
     );
   }
 
-  Widget _auxButton(BuildContext context) {
+  Widget _warningButton(BuildContext context) {
     return _button(
       context,
-      icon: auxIcon,
-      label: auxLabel,
-      tooltip: auxTooltip,
-      onPressed: auxOnPressed,
+      icon: warningIcon,
+      label: warningLabel,
+      tooltip: warningTooltip ?? warningLabel,
+      onPressed: onWarning,
       bgColor: kWarningColor,
     );
   }
 
-  Widget _deleteButton(BuildContext context) {
+  Widget _dangerButton(BuildContext context) {
     return _button(
       context,
-      label: 'Delete',
+      label: dangerLabel,
       bgColor: kDangerColor,
-      txtColor: kWhiteColor,
-      tooltip: 'Delete selected $deleteLabel',
-      onPressed: onDelete,
+      tooltip: dangerTooltip ?? dangerLabel,
+      onPressed: onDanger,
       icon: Icons.delete,
+    );
+  }
+
+  Widget _permanentButton(BuildContext context) {
+    return _button(
+      context,
+      label: permanentLabel,
+      bgColor: kBgLightColor,
+      tooltip: permanentTooltip ?? permanentLabel,
+      onPressed: onPermanent,
+      icon: permanentIcon,
     );
   }
 
@@ -199,7 +230,7 @@ class ListToolbarButtons extends StatelessWidget {
     bgColor: bgColor,
     icon: icon,
     tooltip: tooltip,
-    txtColor: txtColor,
+    txtColor: txtColor ?? kWhiteColor,
     shadowColor: shadowColor,
     onPressed: onPressed,
     showLabel: showLabel,

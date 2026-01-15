@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:hive/hive.dart';
 
 // Use the following command to generate the code with build_runner:
@@ -44,9 +43,16 @@ class CacheData extends HiveObject {
     required String scopeId,
   }) => CacheData(id: id, scopeId: scopeId, data: data['data']);
 
-  bool get isEmpty =>
+  /// [empty] Empty CacheData object.
+  static CacheData get empty => CacheData(id: '', scopeId: '', data: {});
+
+  bool get isEmpty => identical(this, CacheData.empty);
+
+  bool get isNotEmpty => !isEmpty;
+
+  /*bool get isEmpty =>
       id.isNullOrEmpty ||
       scopeId.isNullOrEmpty ||
       data.isEmpty ||
-      data.entries.isEmpty;
+      data.entries.isEmpty;*/
 }

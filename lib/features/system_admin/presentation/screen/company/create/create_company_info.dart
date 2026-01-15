@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -20,21 +19,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension AddCompanyInfo<T> on BuildContext {
-  Future<void> openAddCompanyInfo({Company? serverInfo, Widget? header}) =>
-      openBottomSheet(
-        isExpand: false,
-        child: BottomSheetScaffold(
-          title: 'Company Setup',
-          subtitle: serverInfo?.name.toTitle ?? '',
-          body: _AddCompanyInfoForm(serverInfo: serverInfo),
-        ),
-      );
+  Future<void> openAddCompanyInfo() => openBottomSheet(
+    isExpand: false,
+    child: BottomSheetScaffold(
+      title: 'Company Setup',
+      body: _AddCompanyInfoForm(),
+    ),
+  );
 }
 
 class _AddCompanyInfoForm extends StatefulWidget {
-  final Company? serverInfo;
-
-  const _AddCompanyInfoForm({this.serverInfo});
+  const _AddCompanyInfoForm();
 
   @override
   State<_AddCompanyInfoForm> createState() => _AddCompanyInfoFormState();
@@ -48,7 +43,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
   final _formKey = GlobalKey<FormState>();
 
   Employee? get _employee => context.employee;
-  bool get isFormValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState!.validate();
   final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   // Construct Company Info Object
@@ -61,7 +56,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       AuditLog(
         action: AuditAction.created,
         actionBy: _employee!.employeeId,
-        statusAfterAction: 'unknown',
+        statusAfterAction: AuditAction.unknown.getName,
       ),
     ],
   );
@@ -70,29 +65,13 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _info.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      context.read<CompanyBloc>().add(AddSetup<Company>(data: _info));
-      await _saveToCache();
-
-      if (mounted) {
-        context.showAlertOverlay(
-          'Info successfully created',
-          onCallback: () => Navigator.pop(context),
-        );
-      }
-    } finally {
-      if (mounted) {
-        _resetForm();
-      }
+    if (!_isFormValid || _info.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    context.read<CompanyBloc>().add(AddSetup<Company>(data: _info));
+    await _saveToCache();
   }
 
   // Save Company-info to cache
@@ -120,14 +99,33 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       _companyInfo.clear();
       _addresses.clear();
     });
+    Navigator.pop(context);
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+    setState(() => _isSubmitting = false);
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Company> state) {
+    switch (state) {
+      case SetupAdded<Company>(message: var msg):
+        _showAlert(msg ?? 'Info saved successfully');
+      case SetupError<Company>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+    return BlocListener<CompanyBloc, SetupState<Company>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(context),
+      ),
     );
   }
 
@@ -156,7 +154,8 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
         ),
 
         context.confirmableActionButton(
-          label: 'Create Info',
+          label: _isSubmitting ? 'Creating...' : 'Create Info',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -169,7 +168,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       initialData: [{}],
       fieldsConfig: CompanyFormInputs.companyFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the ProLineItem list
         CompanyFormInputs.updateListFromData<Company>(
@@ -188,7 +187,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       initialData: [{}],
       fieldsConfig: CompanyFormInputs.addressFields(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the address list
         CompanyFormInputs.updateListFromData<AddressInfo>(

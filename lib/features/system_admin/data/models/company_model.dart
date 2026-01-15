@@ -125,7 +125,7 @@ class Company extends Equatable {
     createdBy: '',
   );
 
-  /// [isEmpty] Checks if the PurchaseOrder is empty.
+  /// [isEmpty] Checks if the Company is empty.
   bool get isEmpty => identical(this, Company.empty);
 
   bool get isNotEmpty => !isEmpty;

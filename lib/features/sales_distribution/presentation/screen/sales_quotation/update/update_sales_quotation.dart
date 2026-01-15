@@ -56,9 +56,11 @@ class _UpdateSalesQuote extends StatefulWidget {
 
 class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   final _formKey = GlobalKey<FormState>();
+
   bool get _isFormValid => _formKey.currentState!.validate();
 
   SalesQuotation get _serverQuote => widget.serverQuote;
+
   String get _lineItemType => _serverQuote.lineItems.first.getType;
 
   // Basic fields
@@ -83,6 +85,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
 
   /// Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeId => _employee!.employeeId;
 
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
@@ -93,7 +96,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   /// Construct Sales Quote object
   SalesQuotation get _updateQuote {
     final status = _sqStatus ?? _serverQuote.getSQStatus;
-    prettyPrint('_taxMode-ToApply', _taxModeToApply);
 
     return _serverQuote.copyWith(
       autoConvertSq: _autoConvertSO,
@@ -138,31 +140,19 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!_isFormValid || _updateQuote.isEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _finalizedQuote = _sanitizeTaxCodes(_updateQuote);
-
-      _bloc.add(
-        UpdateSalesDistribution<SalesQuotation>(
-          documentId: _finalizedQuote.id,
-          data: _finalizedQuote,
-        ),
-      );
-
-      // context.showAlertOverlay('Changes successfully saved');
-      // await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+    if (!_isFormValid || _updateQuote.isEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _finalizedQuote = _sanitizeTaxCodes(_updateQuote);
+
+    _bloc.add(
+      UpdateSalesDistribution<SalesQuotation>(
+        documentId: _finalizedQuote.id,
+        data: _finalizedQuote,
+      ),
+    );
   }
 
   /// Ensures tax codes are correctly applied to Sale Quote line items
@@ -192,6 +182,25 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     return quote;
   }
 
+  void _showAlert(String message) {
+    context.showAlertOverlay(message);
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    SalesDistributionState<SalesQuotation> state,
+  ) async {
+    switch (state) {
+      case SalesDistributionUpdated<SalesQuotation>(message: var msg):
+        _showAlert(msg ?? 'Changes saved');
+        await _confirmPrintoutDialog();
+      case SalesDistributionError<SalesQuotation>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     _taxModeToApply = _serverQuote.taxMode;
@@ -202,33 +211,17 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SalesQuotationBloc, SalesDistributionState>(
-      listener: (context, state) async {
-        if (state is SalesDistributionUpdated<SalesQuotation>) {
-          context.showAlertOverlay(
-            state.message ?? 'Changes successfully saved',
-          );
-          await _confirmPrintoutDialog();
-        }
-
-        if (state is SalesDistributionError<SalesQuotation>) {
-          if (context.mounted) {
-            context.showAlertOverlay('Error saving changes');
-          }
-        }
-      },
+    return BlocListener<
+      SalesQuotationBloc,
+      SalesDistributionState<SalesQuotation>
+    >(
+      listener: _handleBlocState,
       child: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: _buildBody(),
       ),
     );
-
-    /*return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
-    );*/
   }
 
   Column _buildBody() {
@@ -289,7 +282,6 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         ),
 
         FormGroupCard(
-          showCollapseButton: false,
           title: 'Financial Summary',
           subTitle: '\nOverview of the Quotation’s Financial Details',
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
@@ -310,7 +302,11 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Updating...' : null,
+        ),
         const SizedBox(height: 20.0),
       ],
     );
@@ -476,11 +472,8 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
-        onError: (e) => context.showAlertOverlay(
-          'RFQ printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('RFQ Printout Successful'),
+        onError: (e) => _showAlert('RFQ printout failed'),
       );
     }
   }

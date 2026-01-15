@@ -24,6 +24,15 @@ class Permission extends Equatable {
     permission: map['permission'] ?? '',
   );
 
+  /// [permissionsSet] Converts a list of maps from the provided [map] under the given [key] into a set of [Permission] objects.
+  static Set<Permission> permissionsSet(List<dynamic>? map) {
+    return map
+            ?.map((perm) => Map<String, dynamic>.from(perm as Map))
+            .map(Permission.fromMap)
+            .toSet() ??
+        {};
+  }
+
   Map<String, dynamic> toMap() => {'module': module, 'permission': permission};
 
   bool filterByAny(String filter) {

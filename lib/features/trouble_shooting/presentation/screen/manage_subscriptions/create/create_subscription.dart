@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -38,11 +37,13 @@ class _CreateNewSubscriptionForm extends StatefulWidget {
 
 class _CreateNewSubscriptionFormState
     extends State<_CreateNewSubscriptionForm> {
+  bool _isSubmitting = false;
   DateTime? _selectedExpiryDate;
   DateTime? _selectedEffectiveDate;
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
-  final _feeController = TextEditingController(); // Subscription fee
-  final _nameController = TextEditingController(); // Subscription name
+  final _feeController = TextEditingController();
+  final _nameController = TextEditingController();
   final Set<License> _assignedLicenses = {};
 
   Subscription get _newLicense => Subscription(
@@ -56,14 +57,12 @@ class _CreateNewSubscriptionFormState
 
   Future<void> _onSubmit() async {
     final noLicensesSelected = _assignedLicenses.isEmpty;
+    if (!noLicensesSelected || _isSubmitting) return;
 
-    if (noLicensesSelected) {
-      final result = await context.confirmAction<bool>(
-        const Text('Licenses are required to create a subscription.'),
-        title: 'Assign Licenses',
-      );
-      if (!result) return;
-    }
+    bool result = await _warnUser();
+    if (!result) return;
+
+    setState(() => _isSubmitting = true);
 
     if (mounted && _formKey.currentState!.validate()) {
       /// Create New Subscription
@@ -71,29 +70,51 @@ class _CreateNewSubscriptionFormState
       context.read<SubscriptionBloc>().add(
         AddSubscription<Subscription>(data: item),
       );
+    }
+  }
 
-      _formKey.currentState!.reset();
+  Future<bool> _warnUser() async {
+    final result = await context.confirmAction<bool>(
+      const Text('Licenses are required to create a subscription.'),
+      title: 'Assign Licenses',
+    );
+    return result;
+  }
 
-      context.showAlertOverlay(
-        '${_nameController.text.toTitle} subscription created',
-      );
-      Navigator.pop(context);
+  void _resetForm() {
+    if (mounted) {
+      setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
+        _isSubmitting = false;
+        _assignedLicenses.clear();
+      });
+    }
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+  }
+
+  void _handleBlocState(BuildContext cxt, TenantState<Subscription> state) {
+    switch (state) {
+      case SubscriptionAdded<Subscription>(message: var msg):
+        _showAlert(msg ?? 'Subscription added successfully');
+      case SubscriptionError<Subscription>():
+        _showAlert('Error saving changes');
+      case _: // no action
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    /*return BlocBuilder<SubscriptionBloc, SetupState<Subscription>>(
-      builder: (context, state) => Form(
+    return BlocListener<SubscriptionBloc, TenantState<Subscription>>(
+      listener: _handleBlocState,
+      child: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: _buildBody(context),
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
       ),
-    );*/
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
     );
   }
 
@@ -123,7 +144,8 @@ class _CreateNewSubscriptionFormState
         const SizedBox(height: 10.0),
 
         context.confirmableActionButton(
-          label: 'Create Subscription',
+          label: _isSubmitting ? 'Submitting...' : 'Create Subscription',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

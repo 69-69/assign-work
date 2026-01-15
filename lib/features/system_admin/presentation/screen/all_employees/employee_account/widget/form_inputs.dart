@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_role.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_role.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_stores.dart';
 import 'package:flutter/material.dart';

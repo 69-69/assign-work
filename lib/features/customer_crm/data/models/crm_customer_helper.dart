@@ -137,7 +137,7 @@ class CrmCustomerUtil {
   static CustomerStatus statusFromString(String? value) =>
       EnumUtil.fromString<CustomerStatus>(CustomerStatus.values, value);
 
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  /// [statusList] Convert enum list to a list of strings (for dropdowns)
   static List<String> statusList([bool includeHeader = true]) {
     final label = includeHeader ? 'customer status' : '';
     return EnumUtil.toStringList<CustomerStatus>(CustomerStatus.values, label);

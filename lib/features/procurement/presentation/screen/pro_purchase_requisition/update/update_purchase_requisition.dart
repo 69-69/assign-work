@@ -115,34 +115,40 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     );
   }
 
-  void _onSubmit() async {
+  void _onSubmit() {
     if (_isSubmitting) return;
 
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _lineItems.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
+    if (!isFormValid || _lineItems.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
+    }
 
-      _bloc.add(
-        UpdateProcurement<PurchaseRequisition>(
-          documentId: _updatedPR.id,
-          data: _updatedPR,
-        ),
-      );
+    _bloc.add(
+      UpdateProcurement<PurchaseRequisition>(
+        documentId: _updatedPR.id,
+        data: _updatedPR,
+      ),
+    );
+  }
 
-      context.showAlertOverlay('Changes successfully saved');
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+    setState(() => _isSubmitting = false);
+  }
 
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<PurchaseRequisition> state,
+  ) async {
+    switch (state) {
+      case ProcurementUpdated<PurchaseRequisition>(message: var msg):
+        _showAlert(msg ?? 'Changes saved successfully');
+        await _confirmPrintoutDialog();
+      case ProcurementError<PurchaseRequisition>():
+        _showAlert('Error saving changes');
+      case _: // no action
     }
   }
 
@@ -155,10 +161,16 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+    return BlocListener<
+      ProPurchaseRequisiteBloc,
+      ProcurementState<PurchaseRequisition>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -206,7 +218,11 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Updating...' : null,
+        ),
         const SizedBox(height: 20.0),
       ],
     );

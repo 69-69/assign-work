@@ -103,11 +103,23 @@ extension ScaffoldSnackBar on BuildContext {
     atBottom(Widget child) =>
         Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
 
+    // If message contains error, use red color, else use green color
+    final isError = [
+      'error',
+      'required',
+      'invalid',
+      'incorrect',
+      'failed',
+      'not found',
+    ].any((k) => message.filterAny(k));
+
+    bgColor = bgColor ?? (isError ? kDangerColor : kDarkSuccessColor);
+
     buildBody(BuildContext context) => Material(
       color: kTransparentColor,
       child: Container(
         decoration: BoxDecoration(
-          color: bgColor ?? kDarkSuccessColor,
+          color: bgColor,
           borderRadius: const BorderRadius.all(Radius.circular(10)),
         ),
         padding: const EdgeInsets.all(8),

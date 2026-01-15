@@ -205,7 +205,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(GuideUpdated<T>(message: 'data updated successfully'));
+      emit(GuideUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(GuideError<T>(e.toString()));
     }
@@ -223,7 +223,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
       add(LoadGuides<T>());
 
       // Update State: Notify that data deleted
-      emit(GuideDeleted<T>(message: 'data deleted successfully'));
+      emit(GuideDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(GuideError<T>(e.toString()));
     }
@@ -241,7 +241,7 @@ class GuideBloc<T> extends Bloc<GuideEvent, GuideState<T>> {
       add(LoadGuides<T>());
 
       // Update State: Notify that data deleted
-      emit(GuideDeleted<T>(message: 'data deleted successfully'));
+      emit(GuideDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(GuideError<T>(e.toString()));
     }

@@ -2,10 +2,10 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
@@ -34,7 +34,7 @@ class ListRequestForQuotes extends StatefulWidget {
 }
 
 class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
-  // List to group quotations for printout
+  bool _inProgress = false;
   final List<RequestForQuote> _selectedForCompare = [];
   final List<RequestForQuote> _rfqsWithTaxes = [];
   final List<String> _selectedIds = [];
@@ -44,8 +44,39 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
+  void _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<RequestForQuote> state,
+  ) {
+    switch (state) {
+      case ProcurementDeleted<RequestForQuote>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case ProcurementError<RequestForQuote>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return BlocListener<
+      ProRequestForQuoteBloc,
+      ProcurementState<RequestForQuote>
+    >(listener: _handleBlocState, child: _buildBody());
+  }
+
+  BlocBuilder<ProRequestForQuoteBloc, ProcurementState<RequestForQuote>>
+  _buildBody() {
     return BlocBuilder<
       ProRequestForQuoteBloc,
       ProcurementState<RequestForQuote>
@@ -102,22 +133,11 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
       childrenRow: filtered.childrenRow,
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
       selectedRowKeyIndex: 0,
-      // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds,
-      // Currently selected row keys
-      onChecked: (bool? isChecked, checkedRow) {
-        setState(() => _updateSelectedIds(isChecked, checkedRow.first, quotes));
-      },
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(
-              () => _updateAllSelectedIds(isChecked, checkedRows, quotes),
-            );
-          },
+      onChecked: (bool? isChecked, checkedRow) =>
+          _onChecked(isChecked, checkedRow.first, quotes),
+      onAllChecked: (bool isChecked, List<bool> isAllChecked, checkedRows) =>
+          _onAllChecked(isChecked, checkedRows, quotes),
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintRFQ(quotes, row.first),
       onEditTap: (row) async => await _onEditTap(quotes, row.first),
@@ -125,35 +145,33 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
     );
   }
 
-  // Updates selected IDs and triggers additional logic (like selecting quotes)
-  void _updateSelectedIds(
-    bool? isChecked,
-    String id,
-    List<RequestForQuote> quotes,
-  ) {
-    if (isChecked == true) {
-      if (!_selectedIds.contains(id)) {
-        _selectedIds.add(id);
-        _selectedRFQs(quotes); // Only select quotes when IDs are updated
+  _onChecked(bool? isChecked, String id, List<RequestForQuote> quotes) {
+    setState(() {
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) {
+          _selectedIds.add(id);
+          _selectedRFQs(quotes); // Only select quotes when IDs are updated
+        }
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
       }
-    } else {
-      // Remove item from the selected list if unchecked
-      _selectedIds.removeWhere((selectedId) => selectedId == id);
-    }
+    });
   }
 
-  // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(
+  _onAllChecked(
     bool isChecked,
     List<List<String>> checkedRows,
     List<RequestForQuote> quotes,
   ) {
-    _selectedIds.clear();
-    if (isChecked) {
+    setState(() {
+      _selectedIds.clear();
       // Add all selected rows, ensuring uniqueness using a Set
-      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      _selectedRFQs(quotes);
-    }
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+        _selectedRFQs(quotes);
+      }
+    });
   }
 
   // Select quotes for comparison based on selected IDs
@@ -181,26 +199,31 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
   _buildToolbar(List<RequestForQuote> rfqs) {
     return ListToolbarButtons(
       refreshLabel: 'Refresh RFQ',
-      createLabel: 'Create RFQ',
-      deleteLabel: 'RFQ',
+      primaryLabel: 'Create RFQ',
+      secondaryLabel: 'Edit RFQ',
+      secondaryIcon: Icons.edit,
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete RFQ',
       compareLabel: 'RFQ',
       dataLength: rfqs.length,
-      onCreate: () => context.openRFQForm(),
+      onPrimary: () => context.openRFQForm(),
       onRefresh: () => _bloc.add(RefreshProcurements<RequestForQuote>()),
-      onDelete: _selectedIds.isNotEmpty
-          ? () async {
-              final isConfirmed = await context.confirmUserActionDialog();
-              if (mounted && isConfirmed) {
-                /// Delete all selected Quotations from RFQ-DB
-                _bloc.add(
-                  DeleteProcurement<List<String>>(documentId: _selectedIds),
-                );
-                _selectedIds.clear();
-              }
-            }
+
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(rfqs, _selectedIds.first)
           : null,
       onCompare: _selectedIds.length == 2
           ? () async => await _onCompareTwoRFQ(context)
+          : null,
+      onDanger: _selectedIds.isNotEmpty
+          ? () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (mounted && isConfirmed) {
+                _isDeleting(true);
+                _bloc.add(
+                  DeleteProcurement<List<String>>(documentId: _selectedIds),
+                );
+              }
+            }
           : null,
     );
   }
@@ -401,181 +424,3 @@ class _ListRequestForQuotesState extends State<ListRequestForQuotes> {
     await onMultipleSuppliers(rfqWithTaxes, supplierLinks);
   }
 }
-
-/* Future<void> _onViewDetails2(List<RequestForQuote> quotes, String id) async {
-    final quote = _getQuoteById(quotes, id);
-    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
-
-    final quoteWithTaxes = await _applyTaxesToQuote(quote);
-    List<SupplierLink> supplierLinks = quote.supplierLinks;
-
-    // Log that User viewed details
-    if (AuditTracker.shouldLog(id: quote.id, type: DocType.rfq)) {
-      _readBloc.add(_updateHistory(quote, action: AuditAction.viewed));
-    }
-
-    // Check the length of supplierLinks
-    // If Single supplier → open RFQ Details directly
-    if (supplierLinks.length == 1) {
-      final supplier = await _getSupplier(supplierLinks.first.supplierId);
-      if (!mounted || supplier == null) return;
-
-      await context.openRFQDetails(
-        quote: quoteWithTaxes,
-        supplier: supplier,
-        bloc: _readBloc,
-      );
-      return;
-    }
-
-    if (!mounted) return;
-    // Otherwise, Multiple supplierLinks → let user select one to view RFQ details
-    await context.openRFQInvitedSuppliers(
-      supplierLinks: supplierLinks,
-      onSelected: (Supplier supplier) async => await context.openRFQDetails(
-        quote: quoteWithTaxes,
-        supplier: supplier,
-        bloc: _readBloc,
-      ), // Open RFQ Details Screen
-    );
-  }
-
-
-  Future<dynamic> _printout2(
-    List<RequestForQuote> quotes,
-    String id,
-  ) => Future.delayed(kRProgressDelay, () async {
-    final quote = _getQuoteById(quotes, id);
-    if (!mounted || quote == null || quote.supplierLinks.isNullOrEmpty) return;
-
-    final quoteWithTaxes = await _applyTaxesToQuote(quote);
-    List<SupplierLink> supplierLinks = quote.supplierLinks;
-
-    _readBloc.add(_updateHistory(quote, action: AuditAction.printed));
-
-    // Check the length of supplierLinks
-    // If Single supplier → print RFQ directly
-    if (supplierLinks.length == 1) {
-      final supplier = await _getSupplier(supplierLinks.first.supplierId);
-      if (!mounted || supplier == null) return;
-
-      await RFQPrinter(quote: quoteWithTaxes, supplier: supplier).printRFQ();
-
-      return;
-    }
-
-    if (!mounted) return;
-    // Otherwise, Multiple supplierLinks → let user select one to print RFQ with
-    await context.openRFQInvitedSuppliers(
-      supplierLinks: quote.supplierLinks,
-      onSelected: (Supplier supplier) async => await RFQPrinter(
-        quote: quoteWithTaxes,
-        supplier: supplier,
-      ).printRFQ(), // Print the RFQ for the selected supplier
-    );
-  });*/
-
-/*/// Print grouped or multiple Purchase Quotes [_IssueMultiQuotesPrintout]
-class _IssueMultiQuotesPrintout extends StatelessWidget {
-  final List<RequestForQuote> quotes;
-  final Function(bool) onDone;
-
-  const _IssueMultiQuotesPrintout({required this.quotes, required this.onDone});
-
-  @override
-  Widget build(BuildContext context) {
-    return quotes.isEmpty
-        ? const SizedBox.shrink()
-        : Center(child: _buildBody(context));
-  }
-
-  _buildBody(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Wrap(
-        spacing: 20,
-        alignment: WrapAlignment.center,
-        runAlignment: WrapAlignment.start,
-        crossAxisAlignment: WrapCrossAlignment.start,
-        children: [
-          _buildPrintButton(context),
-          _buildNote(),
-          _buildDeleteButton(context),
-        ],
-      ),
-    );
-  }
-
-  _buildPrintButton(BuildContext context) {
-    return context.elevatedIconBtn(
-      Icon(Icons.print, color: kWarningColor),
-      style: ElevatedButton.styleFrom(
-        shape: const RoundedRectangleBorder(
-          side: BorderSide(color: kWarningColor),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
-      onPressed: () async {
-        final sup = await GetSuppliers.bySupplierId(quotes.first.supplierId);
-
-        // Perform action after loading
-        RFQPrinter(quote: quotes.first, supplier: sup).printRFQ();
-      },
-      label: const Text('Print', style: TextStyle(color: kWarningColor)),
-    );
-  }
-
-  Future<bool> _confirmDeleteDialog(BuildContext context) async {
-    return context.confirmAction<bool>(
-      const Text('Are you sure you want to delete the selected Quote?'),
-      title: "Confirm Delete",
-      onAccept: "Delete",
-      onReject: "Cancel",
-    );
-  }
-
-  _buildDeleteButton(BuildContext context) {
-    return context.elevatedIconBtn(
-      Icon(Icons.delete, color: kWhiteColor),
-      style: OutlinedButton.styleFrom(backgroundColor: context.errorColor),
-      onPressed: () async {
-        final isConfirmed = await _confirmDeleteDialog(context);
-        if (context.mounted && isConfirmed) {
-          final ids = quotes.map((q) => q.id).toList();
-
-          // Remove quotes from quotes-DB
-          ProRequestForQuoteBloc(
-            firestore: FirebaseFirestore.instance,
-          ).add(DeleteProcurement<List<String>>(documentId: ids));
-
-          // Check if totalDeleted isEqual to total quotes,
-          // is so, then deletion completed
-          onDone(true);
-        }
-      },
-      label: const Text('Delete', style: TextStyle(color: kWhiteColor)),
-    );
-  }
-
-  Padding _buildNote() {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: RichText(
-        text: const TextSpan(
-          text: 'NOTE: ',
-          style: TextStyle(color: kDangerColor, fontWeight: FontWeight.bold),
-          children: [
-            TextSpan(
-              text:
-                  'Multiple or Grouped Quotations Must Have Identical RFQ Numbers',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/

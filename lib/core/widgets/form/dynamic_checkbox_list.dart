@@ -7,11 +7,21 @@ import 'package:flutter/material.dart';
 
 /// Reusable checkbox list with dynamic groups [DynamicCheckboxList]
 class DynamicCheckboxList extends StatefulWidget {
+  final bool isRow;
   final String? title;
   final bool showButton;
   final List<Map<String, dynamic>>? initialData;
   final List<CheckboxGroupConfig> checkboxesConfig;
   final Function(List<CheckboxGroupConfig>) onCheckChanged;
+
+  /// [onBlocked]: Optional callback invoked when a checkbox selection is blocked by business rules.
+  ///
+  /// [context] – the current BuildContext, useful for showing dialogs or snackBars.
+  /// [Set<String>] – the keys of the checkboxes that were blocked in this action.
+  final Function(BuildContext context, String)? onBlocked;
+
+  /// [blockKey] Optional key to indicate that this checkbox has blocking rules
+  final String? blockKey;
 
   const DynamicCheckboxList({
     super.key,
@@ -19,6 +29,9 @@ class DynamicCheckboxList extends StatefulWidget {
     required this.onCheckChanged,
     this.showButton = false,
     this.initialData,
+    this.isRow = true,
+    this.onBlocked,
+    this.blockKey,
     this.title,
   });
 
@@ -44,7 +57,9 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
       for (final groupData in _initialData!) {
         _checkboxGroups.add({
           for (final config in _configs)
-            config.key: (groupData[config.key] == 'true'),
+            config.key:
+                (groupData[config.key] == true ||
+                groupData[config.key] == 'true'),
         });
       }
     } else {
@@ -102,13 +117,22 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
       final selectedValues = _getSelectedKeys(group);
 
       return CustomCheckboxList<String>(
+        isRow: widget.isRow,
         values: selectedValues,
         options: options,
         padding: const EdgeInsets.symmetric(horizontal: 6),
         onChanged: (newValues) {
-          setState(() {
-            _updateGroupFromSelected(group, newValues);
-          });
+          // Determine which keys were just toggled
+          final toggled = newValues.difference(selectedValues);
+
+          // Block only if blockKey was toggled
+          if (toggled.contains(widget.blockKey) && widget.onBlocked != null) {
+            widget.onBlocked!(context, widget.blockKey!);
+            return; // only block this toggle
+          }
+
+          // Otherwise update normally
+          setState(() => _updateGroupFromSelected(group, newValues));
           _notifyParent();
         },
       );
@@ -130,7 +154,7 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ),
-            if (config.description.isNotEmpty)
+            if (config.description.isNotEmpty) ...{
               InkWell(
                 onTap: () =>
                     _showInfoDialog(context, config.label, config.description),
@@ -139,8 +163,10 @@ class _DynamicCheckboxListState extends State<DynamicCheckboxList> {
                   child: const Icon(Icons.info_outline, size: 18),
                 ),
               ),
+            },
           ],
         ),
+        subtitle: config.subtitle.isNotEmpty ? Text(config.subtitle) : null,
       );
     }).toList();
   }
@@ -211,6 +237,7 @@ class CheckboxGroupConfig<T> {
   final String label;
   final bool selected;
   final String? tooltip;
+  final String subtitle;
   final String description;
 
   CheckboxGroupConfig({
@@ -219,6 +246,7 @@ class CheckboxGroupConfig<T> {
     required this.key,
     required this.label,
     this.selected = false,
+    this.subtitle = '',
     required this.description,
   });
 

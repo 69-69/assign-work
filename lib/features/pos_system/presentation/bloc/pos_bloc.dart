@@ -26,7 +26,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
   final T Function(Map<String, dynamic> data, String documentId) fromFirestore;
 
   // Set up the stream subscription
-  late StreamSubscription<List<CacheData>> _getDataStreamObserver;
+  StreamSubscription<List<CacheData>>? _getDataStreamObserver;
 
   POSBloc({
     required FirebaseFirestore firestore,
@@ -113,7 +113,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       );
 
       // Await for the subscription to be done (optional)
-      await _getDataStreamObserver.asFuture();
+      await _getDataStreamObserver?.asFuture();
 
       /*List<CacheData> firstData =  await _posRepository.getAllData().first; // Ensure await
 
@@ -125,7 +125,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
-      _getDataStreamObserver.cancel();
+      _getDataStreamObserver?.cancel();
     }
   }
 
@@ -269,7 +269,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(POSUpdated<T>(message: 'data updated successfully'));
+      emit(POSUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(POSError<T>(e.toString()));
     }
@@ -287,7 +287,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       add(GetPOSs<T>());
 
       // Update State: Notify that data deleted
-      emit(POSDeleted<T>(message: 'data deleted successfully'));
+      emit(POSDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(POSError<T>(e.toString()));
     }
@@ -299,7 +299,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(POSError<T>('POS IDs is empty'));
+        emit(POSError<T>('No POS were selected to delete.'));
         return;
       }
 
@@ -310,7 +310,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       add(GetPOSs<T>());
 
       // Update State: Notify that data deleted
-      emit(POSDeleted<T>(message: 'data deleted successfully'));
+      emit(POSDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(POSError<T>(e.toString()));
     }

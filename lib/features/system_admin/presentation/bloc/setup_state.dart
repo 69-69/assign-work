@@ -53,7 +53,7 @@ class SetupOverridden<T> extends SetupUpdated<T> {
 }
 
 class SetupDeleted<T> extends SetupState<T> {
-  final String message;
+  final String? message;
 
   const SetupDeleted({required this.message});
 

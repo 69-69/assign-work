@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // All of our constant stuff
 
 const kTransparentColor = Colors.transparent;
-const kPrimaryColor = Color(0xFF232B5A); //0xff041363 - 0xff232b5a - 0xFF673AB7
+const kPrimaryColor = Color(0xFF05318E); //0xff232b5a, 0xff041363, 0xFF673AB7
 const kPrimaryLightColor = Color(0xFF4A5D8C);
 const kBrightPrimaryColor = Color(0xFF1DD6EF);
 const kPrimaryAccentColor = Color(0xFF3468EA);

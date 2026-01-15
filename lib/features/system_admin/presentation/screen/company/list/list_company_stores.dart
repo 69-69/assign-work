@@ -1,6 +1,6 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
@@ -19,6 +19,7 @@ class ListCompanyStores extends StatefulWidget {
 }
 
 class _ListCompanyStoresState extends State<ListCompanyStores> {
+  final List<String> _selectedIds = [];
   CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
 
   @override
@@ -62,12 +63,17 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
       headers: CompanyStores.dataTableHeader,
       toolbar: _buildToolbar(stores),
       rows: stores.map((d) => d.itemAsList).toList(),
+      selectedRowKeys: _selectedIds,
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
       onEditTap: (row) async => _onEditTap(stores, row.first),
       onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
       optButtonIcon: Icons.store,
       optButtonLabel: 'Switch',
       onOptButtonTap: (row) async {
         final store = _findStoresById(stores, row.first);
+        if (store == null) return;
+
         await context.onSwitchStore(
           store.storeNumber,
           location: store.location,
@@ -76,33 +82,65 @@ class _ListCompanyStoresState extends State<ListCompanyStores> {
     );
   }
 
-  _buildToolbar(List<CompanyStores> sales) {
+  _buildToolbar(List<CompanyStores> stores) {
     return ListToolbarButtons(
-      createLabel: 'Add Stores',
+      primaryLabel: 'Add Stores',
       refreshLabel: 'Refresh Stores',
-      dataLength: sales.length,
-      onCreate: () => context.openAddStoreLocations(),
+      secondaryLabel: 'Edit Store',
+      secondaryIcon: Icons.edit,
+      dataLength: stores.length,
+      onPrimary: () => context.openAddStoreLocations(),
       onRefresh: () => _bloc.add(RefreshSetups<CompanyStores>()),
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(stores, _selectedIds.first)
+          : null,
     );
   }
 
-  CompanyStores _findStoresById(List<CompanyStores> stores, String id) =>
-      CompanyStores.findStoresById(stores, id).first;
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
+  }
+
+  CompanyStores? _findStoresById(List<CompanyStores> stores, String id) =>
+      CompanyStores.findById(stores, id);
 
   Future<void> _onEditTap(List<CompanyStores> stores, String id) async {
     final store = _findStoresById(stores, id);
+    if (store == null) return;
+
     await context.openAddStoreLocations(serverStore: store);
   }
 
   Future<void> _onDeleteTap(List<CompanyStores> stores, String id) async {
-    {
-      final store = _findStoresById(stores, id);
+    final store = _findStoresById(stores, id);
+    if (store == null) return;
 
-      final isConfirmed = await context.confirmUserActionDialog();
-      if (mounted && isConfirmed) {
-        /// Delete specific Store
-        _bloc.add(DeleteSetup<String>(documentId: store.id));
-      }
+    final isConfirmed = await context.confirmUserActionDialog();
+    if (mounted && isConfirmed) {
+      /// Delete specific Store
+      _bloc.add(DeleteSetup<String>(documentId: store.id));
     }
   }
 }

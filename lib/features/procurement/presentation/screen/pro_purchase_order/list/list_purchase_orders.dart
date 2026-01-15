@@ -1,11 +1,10 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/data_sources/remote/get_suppliers.dart';
@@ -33,15 +32,46 @@ class ListPurchaseOrders extends StatefulWidget {
 }
 
 class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
-  // List to group Purchase Orders for printout
+  bool _inProgress = false;
   final List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
 
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();
 
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
+  void _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<ProPurchaseOrder> state,
+  ) {
+    switch (state) {
+      case ProcurementDeleted<ProPurchaseOrder>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case ProcurementError<ProPurchaseOrder>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return BlocListener<
+      ProPurchaseOrderBloc,
+      ProcurementState<ProPurchaseOrder>
+    >(listener: _handleBlocState, child: _buildBody());
+  }
+
+  BlocBuilder<ProPurchaseOrderBloc, ProcurementState<ProPurchaseOrder>>
+  _buildBody() {
     return BlocBuilder<
       ProPurchaseOrderBloc,
       ProcurementState<ProPurchaseOrder>
@@ -58,7 +88,7 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
                 : _buildCard(context, results),
           ProcurementError<ProPurchaseOrder>(error: final error) =>
             context.buildError(error),
-          _ => const SizedBox.shrink(), // Handle other states if needed
+          _ => const SizedBox.shrink(),
         };
       },
     );
@@ -81,7 +111,6 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
   }
 
   Widget _buildCard(BuildContext context, List<ProPurchaseOrder> orders) {
-    prettyPrint('results', orders.first.addresses);
     // Filter for Purchase orders by date
     final data = _filterPurchaseOrders(orders);
 
@@ -92,22 +121,9 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
       rows: data.rows,
       onViewDetailsTap: (row) async => _onViewDetails(orders, row.first),
       selectedRowKeyIndex: 0,
-      // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds,
-      // Currently selected row keys
-      onChecked: (bool? isChecked, checkedRow) {
-        setState(() => _updateSelectedIds(isChecked, checkedRow.first, orders));
-      },
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(
-              () => _updateAllSelectedIds(isChecked, checkedRows, orders),
-            );
-          },
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintPO(orders, row.first),
       onEditTap: (row) async => await _onEditTap(orders, row.first),
@@ -115,58 +131,53 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     );
   }
 
-  // Updates selected IDs and triggers additional logic (like selecting POs)
-  void _updateSelectedIds(
-    bool? isChecked,
-    String id,
-    List<ProPurchaseOrder> orders,
-  ) {
-    if (isChecked == true) {
-      if (!_selectedIds.contains(id)) {
-        _selectedIds.add(id);
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
       }
-    } else {
-      // Remove item from the selected list if unchecked
-      _selectedIds.removeWhere((selectedId) => selectedId == id);
-    }
+    });
   }
 
-  // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(
+  _onAllChecked(
     bool isChecked,
+    List<bool> isAllChecked,
     List<List<String>> checkedRows,
-    List<ProPurchaseOrder> orders,
   ) {
-    _selectedIds.clear();
-    if (isChecked) {
+    setState(() {
+      _selectedIds.clear();
       // Add all selected rows, ensuring uniqueness using a Set
-      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-    }
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 
-  _buildToolbar(List<ProPurchaseOrder> orders) {
+  Widget _buildToolbar(List<ProPurchaseOrder> orders) {
     return ListToolbarButtons(
-      // Create button
-      createLabel: 'Create PO',
-      onCreate: () async => await context.openPOForm(),
-      // Refresh button
+      primaryLabel: 'Create PO',
       dataLength: orders.length,
+      secondaryLabel: 'Edit PO',
+      secondaryIcon: Icons.edit,
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete PO',
       refreshLabel: '${_isApproved ? 'Approved' : 'Purchase'} Orders',
-      onRefresh: () {
-        // Refresh Purchase orders Data
-        _bloc.add(RefreshProcurements<ProPurchaseOrder>());
-      },
-      // Delete button
-      deleteLabel: 'PO',
-      onDelete: _selectedIds.length > 1
+      onPrimary: () async => await context.openPOForm(),
+      onRefresh: () => _bloc.add(RefreshProcurements<ProPurchaseOrder>()),
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(orders, _selectedIds.first)
+          : null,
+      onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
-                /// Delete all selected Purchase Orders from DB
+                _isDeleting(true);
                 _bloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
-                _selectedIds.clear();
               }
             }
           : null,

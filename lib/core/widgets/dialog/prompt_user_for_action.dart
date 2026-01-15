@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 extension PromptUserFor on BuildContext {
   /// Prompt User to confirm Pending Action [confirmAction]
   Future<T> confirmAction<T>(
-    Widget message, {
+    Widget child, {
     String title = 'Confirm',
     String onAcceptLabel = "Yes",
     String onRejectLabel = "No",
@@ -20,7 +20,7 @@ extension PromptUserFor on BuildContext {
       builder: (context) => _buildBody(
         context,
         title,
-        message,
+        child,
         onAcceptLabel,
         onRejectLabel,
         anyAction: anyAction,
@@ -32,7 +32,7 @@ extension PromptUserFor on BuildContext {
 
   /// Prompt User to agree to Pending Action [confirmDone]
   Future<bool> confirmDone(
-    Widget message, {
+    Widget child, {
     String title = 'Confirm',
     String onDone = "OK",
     bool barrierDismissible = true,
@@ -40,7 +40,7 @@ extension PromptUserFor on BuildContext {
     final result = await showCupertinoDialog<bool>(
       context: this,
       barrierDismissible: barrierDismissible,
-      builder: (context) => _buildBody(context, title, message, onDone, ''),
+      builder: (context) => _buildBody(context, title, child, onDone, ''),
     );
     return result ?? false;
   }
@@ -48,14 +48,14 @@ extension PromptUserFor on BuildContext {
   CupertinoAlertDialog _buildBody(
     BuildContext context,
     String title,
-    Widget message,
+    Widget child,
     String onAccept,
     String onReject, {
     String? anyAction,
   }) {
     var cupertinoAlertDialog = CupertinoAlertDialog(
       title: Padding(padding: const EdgeInsets.all(8.0), child: Text(title)),
-      content: message,
+      content: child,
       actions: [
         _cupertinoDialogAction(context, label: onAccept),
         if (onReject.isNotEmpty) ...{

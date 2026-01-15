@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -47,21 +46,23 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   Employee? get _employee => context.employee;
+  String get _employeeName => _employee!.fullName;
+  String get _employeeId => _employee!.employeeId;
 
   DepartmentBloc get _bloc => context.read<DepartmentBloc>();
 
-  bool get _nullServer => _serverDepart == null;
+  bool get _isServerNull => _serverDepart == null;
 
   void _onSubmit() {
     // Case 1: Update existing department
-    if (_serverDepart != null) {
+    if (_isServerNull) {
       _updateDepartment();
       return;
     }
 
     // Case 2: Form validation or empty departments
     if (!_isFormValid && _departments.isNotEmpty) {
-      _showErrorAlert('Please enter all required fields', kDangerColor);
+      _showAlert('Please enter all required fields');
       return;
     }
 
@@ -75,43 +76,30 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
         .map(
           (e) => e.copyWith(
             code: e.name.generateUniqueCode(),
-            createdBy: _employee!.fullName,
+            createdBy: _employeeName,
             history: history(),
           ),
         )
         .toList();
 
     _bloc.add(AddSetup<List<Department>>(data: newDeparts));
-    _showSuccessAlert('Department(s) successfully created');
   }
 
   void _updateDepartment() {
     final updated = _departments.first.copyWith(
       id: _serverDepart!.id,
       code: _serverDepart!.code,
-      updatedBy: _employee!.fullName,
+      updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
 
     _bloc.add(UpdateSetup<Department>(documentId: updated.id, data: updated));
-    _showSuccessAlert('Changes successfully saved');
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    AuditLog(action: action, actionBy: _employee!.employeeId),
+    if (!_isServerNull) ..._serverDepart!.history,
+    AuditLog(action: action, actionBy: _employeeId),
   ];
-
-  void _showSuccessAlert(String message) {
-    context.showAlertOverlay(
-      message,
-      onCallback: () =>
-          _serverDepart != null ? Navigator.pop(context) : _resetForm(),
-    );
-  }
-
-  void _showErrorAlert(String message, Color bgColor) {
-    context.showAlertOverlay(message, bgColor: bgColor);
-  }
 
   void _resetForm() {
     setState(() {
@@ -121,12 +109,35 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     });
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(
+      msg,
+      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
+    );
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Department> state) {
+    final note = _isServerNull ? 'Department created' : 'Changes saved';
+
+    switch (state) {
+      case SetupAdded<Department>(message: var msg):
+      case SetupUpdated<Department>(message: var msg):
+        _showAlert(msg ?? note);
+      case SetupError<Department>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
+    return BlocListener<DepartmentBloc, SetupState<Department>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
+      ),
     );
   }
 
@@ -135,13 +146,13 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
-          showCollapseButton: _nullServer,
+          showCollapseButton: _isServerNull,
           title: 'Department(s)',
           subTitle: '\nInternal departments within your company',
           children: [_buildForm()],
         ),
         context.confirmableActionButton(
-          label: _nullServer ? 'Create Department' : null,
+          label: _isServerNull ? 'Create Department' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -151,7 +162,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
 
   DynamicTextFields _buildForm() {
     return DynamicTextFields(
-      showButton: _nullServer,
+      showButton: _isServerNull,
       fieldsConfig: CompanyFormInputs.departmentsFields,
       initialData: [?_serverDepart?.toMap()],
       onChanged: (List<Map<String, dynamic>> data) {

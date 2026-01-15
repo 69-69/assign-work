@@ -67,7 +67,7 @@ extension PRDetails on BuildContext {
       Icons.history,
       iconColor: kPrimaryAccentColor,
       bgColor: kPrimaryAccentColor.toAlpha(0.1),
-      borderColor: kPrimaryAccentColor.toAlpha(0.3),
+      // borderColor: kPrimaryAccentColor.toAlpha(0.1),
       tooltip: 'View PO History',
       onPressed: () async => await _onOpenHistory(po),
     );

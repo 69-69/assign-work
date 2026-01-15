@@ -1,13 +1,14 @@
-import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
-import 'package:assign_erp/core/widgets/form/currency_selection.dart';
+import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/pay_methods_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/pay_terms_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/workflow_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
@@ -21,10 +22,9 @@ import 'package:assign_erp/features/procurement/presentation/screen/widget/procu
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_company.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 class POFormInputs {
@@ -222,7 +222,7 @@ class CurrencyAndCostCenterDepartment extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       children: [
-        CurrencySelection(
+        CurrencyDropdown(
           initialCurrency: initialCurrency,
           onChanged: (({String code, String symbol})? s) =>
               onCurrencyChanged(s!.code),
@@ -257,9 +257,10 @@ class POStatusAndRequestedBy extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _POStatusDropdown(
+        WorkflowStatusDropdown(
           initialValue: initialStatus,
           onChanged: onStatusChanged,
+          workflowType: WorkflowType.po,
         ),
         SearchEmployees(
           labelText: 'Requested by',
@@ -291,11 +292,11 @@ class PayMethodAndTermsDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _PayTermsDropdown(
+        PayTermsDropdown(
           initialValue: initialPayTerms,
           onChange: onPayTermsChanged,
         ),
-        _PayTermsMethodDropdown(
+        PayMethodsDropdown(
           initialValue: initialPayMethod,
           onChanged: onPayMethodChanged,
         ),
@@ -327,7 +328,8 @@ class DeliveryDate extends StatelessWidget {
 
     return AdaptiveLayout(
       children: [
-        _BuyerContactPerson(
+        BuyerContactPerson(
+          isDisabled: false,
           initialValue: initialContact,
           onChanged: onContactChanged,
         ),
@@ -367,93 +369,6 @@ class FindSuppliers extends StatelessWidget {
       initialContactPerson: initialSupplierRep,
       onSupplierChanged: onSupplierChanged,
       onContactPersonChanged: onContactPersonChanged,
-    );
-  }
-}
-
-/// Purchase Order Status [_POStatusDropdown]
-class _POStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _POStatusDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'PO Status',
-      initialValue: initialValue,
-      items: WorkflowStatusUtil.toStringList(type: WorkflowType.po),
-      getDisplayText: (status) => status,
-      onChanged: onChanged,
-    );
-  }
-}
-
-/// [_BuyerContactPerson] Buyer Contact Person
-class _BuyerContactPerson extends StatelessWidget {
-  final bool isDisabled;
-  final String? initialValue;
-  final void Function(String empId, String name, String role) onChanged;
-
-  const _BuyerContactPerson({
-    this.initialValue,
-    required this.onChanged,
-    this.isDisabled = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: isDisabled,
-      child: SearchEmployees(
-        labelText: 'Contact Person',
-        initialValue: initialValue,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-/// Payment terms [_PayTermsDropdown]
-class _PayTermsDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChange;
-
-  const _PayTermsDropdown({required this.onChange, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<Map<String, String>>(
-      key: key,
-      items: paymentTerms,
-      label: 'Payment terms',
-      initialValue: paymentTerms.firstWhereOrNull(
-        (term) => term['id'] == initialValue,
-      ),
-      getDisplayText: (term) => term['term']!,
-      onChanged: (term) => onChange(term?['id']),
-    );
-  }
-}
-
-/// Payment method [_PayTermsDropdown]
-class _PayTermsMethodDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _PayTermsMethodDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      items: paymentMethod,
-      label: 'Payment method',
-      initialValue: initialValue,
-      getDisplayText: (method) => method,
-      onChanged: onChanged,
     );
   }
 }

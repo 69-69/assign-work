@@ -274,7 +274,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(SetupUpdated<T>(message: 'data updated successfully'));
+      emit(SetupUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(SetupError<T>(e.toString()));
     }
@@ -312,7 +312,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       add(GetSetups<T>());
 
       // Update State: Notify that data deleted
-      emit(SetupDeleted<T>(message: 'data deleted successfully'));
+      emit(SetupDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(SetupError<T>(e.toString()));
     }
@@ -324,7 +324,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(SetupError<T>('Data IDs are empty'));
+        emit(SetupError<T>('No Data were selected to delete.'));
         return;
       }
       // Delete data from Firestore and update local storage
@@ -334,7 +334,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       add(GetSetups<T>());
 
       // Update State: Notify that data deleted
-      emit(SetupDeleted<T>(message: 'data deleted successfully'));
+      emit(SetupDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(SetupError<T>(e.toString()));
     }

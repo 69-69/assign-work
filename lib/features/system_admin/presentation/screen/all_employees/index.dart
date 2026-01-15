@@ -1,2 +1,2 @@
 export 'attendance/attendance_screen.dart';
-export 'staff_account/staff_account_screen.dart';
+export 'employee_account/employee_screen.dart';

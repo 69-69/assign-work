@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -174,28 +173,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!_isFormValid || _newPO.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _finalizedPO = _sanitizeTaxCodes(_newPO);
-
-      _bloc.add(AddProcurement<ProPurchaseOrder>(data: _finalizedPO));
-
-      context.showAlertOverlay(
-        'PO successfully created',
-        onCallback: () => _resetForm(),
-      );
-
-      await _confirmPrintoutDialog();
-    } finally {
-      _resetForm();
+    if (!_isFormValid || _newPO.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _finalizedPO = _sanitizeTaxCodes(_newPO);
+
+    _bloc.add(AddProcurement<ProPurchaseOrder>(data: _finalizedPO));
   }
 
   /// Ensures tax codes & totalTaxAmount are correctly applied to PO line items
@@ -256,12 +241,37 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     }
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<ProPurchaseOrder> state,
+  ) async {
+    switch (state) {
+      case ProcurementAdded<ProPurchaseOrder>(message: var msg):
+        _showAlert(msg ?? 'PO created successfully');
+        await _confirmPrintoutDialog();
+      case ProcurementError<ProPurchaseOrder>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<
+      ProPurchaseOrderBloc,
+      ProcurementState<ProPurchaseOrder>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -490,11 +500,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
-        onError: (e) => context.showAlertOverlay(
-          'RFQ printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('PO created successfully'),
+        onError: (e) => _showAlert('PO printout failed'),
       );
     }
   }

@@ -319,7 +319,7 @@ return StreamBuilder<FirestoreState>(
               return const Text('Data added successfully');
 
             case const (DataUpdatedState):
-              return const Text('Data updated successfully');
+              return const Text('Changes successfully saved');
 
             case const (DataDeletedState):
               return const Text('Data deleted successfully');

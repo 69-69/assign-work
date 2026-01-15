@@ -86,7 +86,7 @@ class BottomSheetScaffold extends StatelessWidget {
             Icons.close,
             iconColor: kTextColor,
             bgColor: kTransparentColor,
-            borderColor: kTextColor.toAlpha(0.3),
+            borderColor: kTextColor.toAlpha(0.1),
             tooltip: 'Close',
             onPressed: () => Navigator.pop(context),
           ),
@@ -101,7 +101,7 @@ class BottomSheetScaffold extends StatelessWidget {
       Icons.print,
       iconColor: kWarningColor,
       bgColor: kWarningColor.toAlpha(0.1),
-      borderColor: kWarningColor.toAlpha(0.3),
+      // borderColor: kWarningColor.toAlpha(0.3),
       tooltip: tooltip ?? 'Print out',
       onPressed: onPrint!,
     );

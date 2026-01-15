@@ -95,7 +95,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data added
       emit(SubscriptionAdded<T>(message: 'Subscription added successfully'));
     } catch (e) {
-      emit(TenantError<T>(e.toString()));
+      emit(SubscriptionError<T>(e.toString()));
     }
   }
 
@@ -157,7 +157,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(TenantUpdated<T>(message: 'data updated successfully'));
+      emit(TenantUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(TenantError<T>(e.toString()));
     }
@@ -227,7 +227,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       add(LoadTenants<T>());
 
       // Update State: Notify that data deleted
-      emit(TenantDeleted<T>(message: 'data deleted successfully'));
+      emit(TenantDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(TenantError<T>(e.toString()));
     }
@@ -245,7 +245,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       add(LoadTenants<T>());
 
       // Update State: Notify that data deleted
-      emit(TenantDeleted<T>(message: 'data deleted successfully'));
+      emit(TenantDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(TenantError<T>(e.toString()));
     }

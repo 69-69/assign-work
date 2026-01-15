@@ -1,13 +1,13 @@
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/item_master/item_master_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/item_master/create/create_item_master.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,15 +19,34 @@ class ListItemMaster extends StatefulWidget {
 }
 
 class _ListItemMasterState extends State<ListItemMaster> {
+  bool _inProgress = false;
   final List<String> _selectedIds = [];
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
 
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
+  void _handleBlocState(BuildContext cxt, InventoryState<ItemMaster> state) {
+    switch (state) {
+      case InventoryDeleted<ItemMaster>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case InventoryError<ItemMaster>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          ItemMasterBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetInventories<ItemMaster>()),
+    return BlocListener<ItemMasterBloc, InventoryState<ItemMaster>>(
+      listener: _handleBlocState,
       child: _buildBody(),
     );
   }
@@ -60,32 +79,33 @@ class _ListItemMasterState extends State<ListItemMaster> {
       headers: ItemMaster.dataHeader,
       toolbar: _buildToolbar(masters),
       rows: masters.map((d) => d.itemAsList).toList(),
+      selectedRowKeys: _selectedIds,
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
       onEditTap: (row) async => await _onEditTap(masters, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(() {
-              _selectedIds.clear();
-              if (isChecked) {
-                _selectedIds.addAll(checkedRows.map((e) => e.first));
-              }
-            });
-          },
     );
   }
 
   Widget _buildToolbar(List<ItemMaster> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      createLabel: 'Create Item Master',
-      deleteLabel: 'Delete Item Master',
+      primaryLabel: 'Create Item Master',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Item Master',
       refreshLabel: 'Refresh Master Data',
-      onCreate: () => _openItemMasterForm(context),
+      onPrimary: () => _openItemMasterForm(context),
       onRefresh: () => _bloc.add(RefreshInventories<ItemMaster>()),
+      onDanger: _selectedIds.isNotEmpty
+          ? () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (mounted && isConfirmed) {
+                _isDeleting(true);
+                _bloc.add(
+                  DeleteInventory<List<String>>(documentId: _selectedIds),
+                );
+              }
+            }
+          : null,
     );
   }
 
@@ -124,5 +144,31 @@ class _ListItemMasterState extends State<ListItemMaster> {
         },
       );
     }
+  }
+
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 }

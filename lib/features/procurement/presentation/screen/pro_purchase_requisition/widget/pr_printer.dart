@@ -179,7 +179,7 @@ class _PRPdfBuilder {
   late final double _headerFontSize;
 
   /// Sub-header Font Size = 12 [_subHeaderFontSize]
-  late final double _subHeaderFontSize;
+  // late final double _subHeaderFontSize;
 
   /// Table Font Size = 10 [_tableFontSize]
   late final double _tableFontSize;
@@ -193,7 +193,7 @@ class _PRPdfBuilder {
     _bodyFontSize = _pdfColors.bodyFontSize;
     _tableFontSize = _pdfColors.tableFontSize;
     _headerFontSize = _pdfColors.bodyFontSize;
-    _subHeaderFontSize = _pdfColors.subHeaderFontSize;
+    // _subHeaderFontSize = _pdfColors.subHeaderFontSize;
 
     // Request For Quotation: Add page to the PDF
     await _addPRPage(doc, pageFormat, _pdfColors.footerColor);

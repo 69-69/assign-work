@@ -125,9 +125,11 @@ extension AccessControlCubitExtensions on BuildContext {
   /*final canAccess = context.watch((AccessControlCubit c) => c.has(perm));*/
 
   // Watch version (reactive) [_watchAcCubit]
+  // Works only inside build() (or widgets that rebuild), not in callbacks like onTap or async
   AccessControlCubit _watchAcCubit() => watch<AccessControlCubit>();
 
   // Read version (one-time, non-reactive) [_readAcCubit]
+  // Works anywhere, including callbacks like onTap, async functions, or lifecycle methods.
   AccessControlCubit _readAcCubit() => read<AccessControlCubit>();
 
   /// Reactive methods (using watch)

@@ -19,16 +19,6 @@ class _LiveSupport extends StatefulWidget {
 
 class _LiveSupportState extends State<_LiveSupport> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

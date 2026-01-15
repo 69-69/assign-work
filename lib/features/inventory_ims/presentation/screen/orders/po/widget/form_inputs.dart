@@ -4,7 +4,7 @@ import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/form/currency_selection.dart';
+import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
@@ -55,7 +55,7 @@ class POStatusCurrencyDropdown extends StatelessWidget {
           initialValue: initialStatus,
           onChanged: onStatusChange,
         ),
-        CurrencySelection(
+        CurrencyDropdown(
           initialCurrency: initialCurrency,
           onChanged: (({String code, String symbol})? s) =>
               onCurrencyChanged(s!.code),
@@ -95,8 +95,7 @@ class PayTermsAndMethodDropdown extends StatelessWidget {
           getDisplayText: (term) => term['term'] ?? '',
           onChanged: (v) => onPayTermsChanged(v?['id']),
           buttonDecoration: const InputDecoration(
-            helperText:
-                'Specifies the agreed-upon terms from RFQ negotiations.',
+            helperText: 'Specify the agreed-upon terms from RFQ negotiations.',
           ),
         ),
         StaticDropdown<String>(

@@ -1,9 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
-import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -14,28 +14,30 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateStaffAcc<T> on BuildContext {
-  Future<void> openCreateStaffAcc() => openBottomSheet(
+extension CreateEmployeeAcc<T> on BuildContext {
+  Future<void> openCreateEmployee() => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
       title: 'Add New Employee',
-      body: _CreateStaffAccForm(),
+      body: _CreateEmployeeForm(),
     ),
   );
 }
 
-class _CreateStaffAccForm extends StatefulWidget {
-  const _CreateStaffAccForm();
+class _CreateEmployeeForm extends StatefulWidget {
+  const _CreateEmployeeForm();
 
   @override
-  State<_CreateStaffAccForm> createState() => _CreateStaffAccFormState();
+  State<_CreateEmployeeForm> createState() => _CreateEmployeeFormState();
 }
 
-class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
+class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
+  bool _isSubmitting = false;
+  Key _formResetKey = UniqueKey();
   String _selectedRoleId = '';
   String _selectedRole = '';
   String _selectedDepartCode = '';
@@ -54,12 +56,6 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
     );
   }
 
-  @override
-  void initState() {
-    _generateEmployeeId();
-    super.initState();
-  }
-
   Employee get _employee => Employee(
     employeeId: _newEmployeeId,
     fullName: _nameController.text,
@@ -73,25 +69,53 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
     workspaceId: context.workspace!.id,
     passCode: SecretHasher.hash(_passcodeController.text),
     createdBy: context.employee!.fullName,
+    history: [
+      AuditLog(
+        action: AuditAction.created,
+        actionBy: context.employee!.employeeId,
+      ),
+    ],
   );
 
-  Future<void> _onSubmit() async {
-    if (_isValid) {
-      /// Create employee account
-      final item = _employee;
+  void _onSubmit() {
+    if (!_isFormValid || _isSubmitting) return;
+    setState(() => _isSubmitting = true);
 
-      context.read<EmployeeBloc>().add(AddSetup<Employee>(data: item));
+    /// Create employee account
+    final item = _employee;
 
-      _formKey.currentState!.reset();
+    context.read<EmployeeBloc>().add(AddSetup<Employee>(data: item));
+  }
 
-      if (mounted) {
-        context.showAlertOverlay(
-          '${_nameController.text.toTitle} successfully created',
-        );
-        _generateEmployeeId(); // get a new staff id
-        Navigator.pop(context);
-      }
+  void _resetForm() {
+    if (mounted) {
+      setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
+        _isSubmitting = false;
+      });
+      _generateEmployeeId();
     }
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Employee> state) {
+    switch (state) {
+      case SetupAdded<Employee>(message: var msg):
+        _showAlert(msg ?? 'Employee created successfully');
+      case SetupError<Employee>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
+  @override
+  void initState() {
+    _generateEmployeeId();
+    super.initState();
   }
 
   @override
@@ -104,10 +128,13 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+    return BlocListener<EmployeeBloc, SetupState<Employee>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
+      ),
     );
   }
 
@@ -137,10 +164,10 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
               nameController: _nameController,
               mobileController: _phoneController,
               onNameChanged: (s) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
               },
               onMobileChanged: (s) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
               },
             ),
             const SizedBox(height: 20.0),
@@ -148,10 +175,10 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
               emailController: _emailController,
               passcodeController: _passcodeController,
               onEmailChanged: (s) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
               },
               onPasscodeChanged: (s) {
-                if (_isValid) setState(() {});
+                if (_isFormValid) setState(() {});
               },
             ),
           ],
@@ -161,7 +188,7 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
           children: [
             StoreLocationsAndDepartment(
               onDepartChanged: (id, code, name) {
-                if (_isValid) setState(() => _selectedDepartCode = code);
+                if (_isFormValid) setState(() => _selectedDepartCode = code);
               },
               onStoresChange: (id, store) =>
                   setState(() => _selectedStoreNumber = id),
@@ -177,7 +204,8 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: 'Add Employee',
+          label: _isSubmitting ? 'Submitting...' : 'Add Employee',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -185,5 +213,5 @@ class _CreateStaffAccFormState extends State<_CreateStaffAccForm> {
     );
   }
 
-  bool get _isValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState!.validate();
 }

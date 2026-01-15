@@ -54,7 +54,7 @@ class ProfileMenuDropdown extends StatelessWidget {
       decoration: isAppbar
           ? null
           : BoxDecoration(
-              color: kPrimaryLightColor,
+              color: kPrimaryColor.toAlpha(0.8),
               borderRadius: borderRadius,
             ),
       child: PopupMenuButton<String>(
@@ -263,7 +263,7 @@ class ProfileMenuDropdown extends StatelessWidget {
       padding: EdgeInsets.all(15),
       margin: EdgeInsets.zero,
       decoration: BoxDecoration(
-        color: kPrimaryLightColor,
+        color: kPrimaryColor.toAlpha(0.9),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(12),
           bottomRight: Radius.circular(12),

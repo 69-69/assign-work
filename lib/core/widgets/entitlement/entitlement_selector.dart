@@ -144,6 +144,7 @@ class _EntitlementSelectorState<T> extends State<EntitlementSelector<T>> {
         ),
         const SizedBox(height: 6),
         CustomRadioList<AccessMode>(
+          isRow: false,
           groupValue: _mode,
           onChanged: (value) {
             if (value == null) return;

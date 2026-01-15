@@ -6,4 +6,4 @@ export 'screen/items/item_screen.dart';
 export 'screen/orders/index.dart';
 export 'screen/reports_analytics/reports_analytics_screen.dart';
 export 'screen/sales/sale_screen.dart';
-export 'screen/warehouse/index.dart';
+export 'screen/warehouse_management/index.dart';

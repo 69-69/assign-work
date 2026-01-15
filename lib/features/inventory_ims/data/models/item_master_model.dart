@@ -67,7 +67,7 @@ ItemMaster(
   sku: itemSKUController.text.trim(),
   name: itemNameController.text.trim(),
   description: itemDescriptionController.text.trim(),
-  categoryId: selectedCategory.id,
+  category: selectedCategory.id,
   itemType: selectedItemType,       // LineItemType.product / service
   baseUom: uomController.text, // EA, KG, LTR
   isActive: isActiveToggle.value,
@@ -217,14 +217,14 @@ class ItemMaster extends Equatable {
 
   /// 2. Classification
   // Electronics, Furniture, Raw Materials, Finished Goods, Services, Packaging, Consumables.
-  final String categoryId;
+  final String category;
   final LineItemType itemType; // raw, material/product, service
 
   /// 3. Units & Rules
   final UnitOfMeasure baseUom; // EA, KG, LTR
-  // Is this item allowed to participate in inventory processes?
-  // false for 'itemType' as services
   final bool isActive;
+  // isStockItem: Is this item allowed to participate in inventory processes?
+  // false for 'itemType' as services
   final bool isStockItem;
   final bool isPurchasable; // Can this item appear on PR / RFQ / PO lines?
   final bool
@@ -287,8 +287,8 @@ class ItemMaster extends Equatable {
     required this.name,
     this.description = '',
     this.itemType = LineItemType.material,
-    required this.categoryId,
-    this.baseUom = UnitOfMeasure.unknown,
+    required this.category,
+    required this.baseUom,
     this.isStockItem = false,
     this.isPurchasable = false,
     this.isSellable = false,
@@ -313,7 +313,7 @@ class ItemMaster extends Equatable {
       sku: map['sku'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
-      categoryId: map['categoryId'] ?? '',
+      category: map['category'] ?? '',
       itemType: LineItemTypeUtil.fromString(map['itemType']),
       baseUom: UOMUtil.fromString(map['baseUom']),
       isStockItem: map['isStockItem'] ?? false,
@@ -340,7 +340,7 @@ class ItemMaster extends Equatable {
     'sku': sku,
     'name': name,
     'description': description,
-    'categoryId': categoryId,
+    'category': category,
     'itemType': itemType.getName,
     'baseUom': baseUom.getName,
     'isActive': isActive,
@@ -390,11 +390,12 @@ class ItemMaster extends Equatable {
     sku: '',
     name: '',
     description: '',
-    categoryId: '',
+    category: '',
     createdBy: '',
+    baseUom: UnitOfMeasure.unknown,
   );
 
-  /// [isEmpty] Checks if the ProPurchaseOrder is empty.
+  /// [isEmpty] Checks if the ItemMaster is empty.
   bool get isEmpty => identical(this, ItemMaster.empty);
 
   bool get isNotEmpty => !isEmpty;
@@ -402,7 +403,7 @@ class ItemMaster extends Equatable {
   /// Filter/search
   bool filterByAny(String filter) =>
       itemAsList.filterAny(filter) ||
-      {description, categoryId, standardCost, costingMethod}.filterAny(filter);
+      {description, category, standardCost, costingMethod}.filterAny(filter);
 
   /// [findById] Find ItemMaster by ID.
   static ItemMaster? findById(List<ItemMaster> items, String id) =>
@@ -414,7 +415,7 @@ class ItemMaster extends Equatable {
     String? sku,
     String? name,
     String? description,
-    String? categoryId,
+    String? category,
     LineItemType? itemType,
     UnitOfMeasure? baseUom,
     bool? isActive,
@@ -437,7 +438,7 @@ class ItemMaster extends Equatable {
     sku: sku ?? this.sku,
     name: name ?? this.name,
     description: description ?? this.description,
-    categoryId: categoryId ?? this.categoryId,
+    category: category ?? this.category,
     itemType: itemType ?? this.itemType,
     baseUom: baseUom ?? this.baseUom,
     isActive: isActive ?? this.isActive,
@@ -489,7 +490,7 @@ class ItemMaster extends Equatable {
     id,
     sku,
     name,
-    categoryId,
+    category,
     baseUom,
     isActive,
     isStockItem,
@@ -516,7 +517,7 @@ class ItemMaster extends Equatable {
   final String description; // Optional detailed description
 
   /// 2. Categorization
-  final String categoryId; // FK to ItemCategory
+  final String category; // FK to ItemCategory
   final String categoryName; // Denormalized for reporting
 
   /// 3. Unit of Measure
@@ -553,7 +554,7 @@ class ItemMaster extends Equatable {
     required this.sku,
     required this.name,
     this.description = '',
-    required this.categoryId,
+    required this.category,
     this.categoryName = '',
     required this.baseUom,
     this.conversionFactor,
@@ -579,7 +580,7 @@ class ItemMaster extends Equatable {
       sku: map['sku'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
-      categoryId: map['categoryId'] ?? '',
+      category: map['category'] ?? '',
       categoryName: map['categoryName'] ?? '',
       baseUom: map['baseUom'] ?? 'pcs',
       conversionFactor: '${map['conversionFactor']}'.asDouble,
@@ -604,7 +605,7 @@ class ItemMaster extends Equatable {
     'sku': sku,
     'name': name,
     'description': description,
-    'categoryId': categoryId,
+    'category': category,
     'categoryName': categoryName,
     'baseUom': baseUom,
     'conversionFactor': conversionFactor,
@@ -643,7 +644,7 @@ class ItemMaster extends Equatable {
     String? sku,
     String? name,
     String? description,
-    String? categoryId,
+    String? category,
     String? categoryName,
     String? baseUom,
     double? conversionFactor,
@@ -664,7 +665,7 @@ class ItemMaster extends Equatable {
     sku: sku ?? this.sku,
     name: name ?? this.name,
     description: description ?? this.description,
-    categoryId: categoryId ?? this.categoryId,
+    category: category ?? this.category,
     categoryName: categoryName ?? this.categoryName,
     baseUom: baseUom ?? this.baseUom,
     conversionFactor: conversionFactor ?? this.conversionFactor,
@@ -687,7 +688,7 @@ class ItemMaster extends Equatable {
     id,
     sku,
     name,
-    categoryId,
+    category,
     baseUom,
     purchasePrice,
     sellingPrice,

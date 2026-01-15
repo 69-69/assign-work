@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -7,6 +8,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
@@ -34,37 +36,38 @@ class _AddTaxForm extends StatefulWidget {
 }
 
 class _AddTaxFormState extends State<_AddTaxForm> {
+  bool _isSubmitting = false;
   final List<Tax> _taxList = [];
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   bool get _isEditing => _serverTax.hasValue;
+  TaxBloc get _bloc => context.read<TaxBloc>();
 
   Tax? get _serverTax => widget.serverTax;
-  String get _employeeName => context.employee!.fullName;
-  bool get _isValid => _formKey.currentState?.validate() ?? false;
+  bool get _isServerNull => _serverTax == null;
+  Employee? get _employee => context.employee;
+  String get _employeeName => _employee!.fullName;
+  String get _employeeId => _employee!.employeeId;
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   void _onSubmit() {
-    if (_isValid && _taxList.isNotEmpty) {
-      final bloc = context.read<TaxBloc>();
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
 
-      if (_isEditing) {
-        final updatedTax = _prepareUpdatedTax();
-        bloc.add(UpdateSetup<Tax>(documentId: updatedTax.id, data: updatedTax));
-      } else {
-        final newTaxes = _prepareNewTaxes();
-        bloc.add(AddSetup<List<Tax>>(data: newTaxes));
-      }
-
-      context.showAlertOverlay(
-        'Taxes successfully ${_isEditing ? 'updated' : 'created'}',
-        onCallback: () {
-          if (!_isEditing) {
-            _formKey.currentState!.reset();
-            _taxList.clear();
-          }
-          Navigator.pop(context);
-        },
-      );
+    // Case 1: Update existing Tax
+    if (_isFormValid && (_serverTax?.isNotEmpty ?? false)) {
+      _updatedTax();
+      return;
     }
+
+    // Case 2: Form validation or empty Tax
+    if (!_isFormValid && _taxList.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
+    }
+
+    // Case 3: Add new Taxes
+    _createNewTaxes();
   }
 
   // load existing Taxes
@@ -76,22 +79,30 @@ class _AddTaxFormState extends State<_AddTaxForm> {
     }
   }
 
-  List<Tax> _prepareNewTaxes() {
+  List<AuditLog> history([action = AuditAction.created]) => [
+    if (!_isServerNull) ..._serverTax!.history,
+    AuditLog(action: action, actionBy: _employeeId),
+  ];
+
+  void _createNewTaxes() {
     // Append tax-code & createdBy to each tax
-    final newDeparts = _taxList
+    final newTaxes = _taxList
         .map(
           (e) => e.copyWith(
             code: e.name.generateTaxCode(e.rate),
             createdBy: _employeeName,
+            history: history(),
           ),
         )
         .toList();
-    return newDeparts;
+
+    _bloc.add(AddSetup<List<Tax>>(data: newTaxes));
   }
 
-  Tax _prepareUpdatedTax() {
+  void _updatedTax() {
     final tax = _taxList.first;
-    return _serverTax!.copyWith(
+
+    final updatedTax = _serverTax!.copyWith(
       id: _serverTax!.id,
       name: tax.name,
       rate: tax.rate,
@@ -101,7 +112,36 @@ class _AddTaxFormState extends State<_AddTaxForm> {
       isShippingTaxed: tax.isShippingTaxed,
       isWithholding: tax.isWithholding,
       updatedBy: _employeeName,
+      history: history(AuditAction.updated),
     );
+
+    _bloc.add(UpdateSetup<Tax>(documentId: updatedTax.id, data: updatedTax));
+  }
+
+  void _resetForm() {
+    _taxList.clear();
+    _formKey.currentState!.reset();
+    _formResetKey = UniqueKey();
+    setState(() => _isSubmitting = false);
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(
+      msg,
+      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
+    );
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Tax> state) {
+    final note = _isServerNull ? 'Taxes created' : 'Changes saved';
+    switch (state) {
+      case SetupAdded<Tax>(message: var msg):
+      case SetupUpdated<Tax>(message: var msg):
+        _showAlert(msg ?? note);
+      case SetupError<Tax>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
   }
 
   @override
@@ -112,10 +152,13 @@ class _AddTaxFormState extends State<_AddTaxForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+    return BlocListener<TaxBloc, SetupState<Tax>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
+      ),
     );
   }
 
@@ -145,8 +188,11 @@ class _AddTaxFormState extends State<_AddTaxForm> {
         ),
 
         context.confirmableActionButton(
-          label: _serverTax == null ? 'Create Taxes' : null,
           onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Taxes')
+              : (_isSubmitting ? 'Updating...' : null),
         ),
         const SizedBox(height: 20.0),
       ],

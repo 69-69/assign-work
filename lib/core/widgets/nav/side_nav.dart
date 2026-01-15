@@ -76,8 +76,9 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   double get _dynamicWidth =>
       _shouldExpand ? (_widthAnimation?.value ?? 200) : _size;
 
-  Color get _bgColor =>
-      _shouldExpand ? kPrimaryLightColor : kTransparentColor; // secondaryColor
+  Color get _bgColor => _shouldExpand
+      ? kPrimaryColor.toAlpha(0.8)
+      : kTransparentColor; // secondaryColor
   Color get _iconColor =>
       _shouldExpand ? kWhiteColor : kLightBlueColor; // surfaceTintColor
 

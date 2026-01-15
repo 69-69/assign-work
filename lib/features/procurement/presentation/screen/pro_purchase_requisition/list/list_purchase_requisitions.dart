@@ -1,13 +1,12 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
@@ -33,7 +32,7 @@ class ListPurchaseRequisitions extends StatefulWidget {
 }
 
 class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
-  // List to group Requisitions for printout
+  bool _inProgress = false;
   final List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
@@ -41,8 +40,39 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
   ProPurchaseRequisiteBloc get _bloc =>
       context.read<ProPurchaseRequisiteBloc>();
 
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+  }
+
+  void _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<PurchaseRequisition> state,
+  ) {
+    switch (state) {
+      case ProcurementDeleted<PurchaseRequisition>(message: var msg):
+        _showAlert(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case ProcurementError<PurchaseRequisition>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return BlocListener<
+      ProPurchaseRequisiteBloc,
+      ProcurementState<PurchaseRequisition>
+    >(listener: _handleBlocState, child: _buildBody());
+  }
+
+  BlocBuilder<ProPurchaseRequisiteBloc, ProcurementState<PurchaseRequisition>>
+  _buildBody() {
     return BlocBuilder<
       ProPurchaseRequisiteBloc,
       ProcurementState<PurchaseRequisition>
@@ -111,20 +141,9 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       rows: data.rows,
       onViewDetailsTap: (row) async => _onViewDetails(requisitions, row.first),
       selectedRowKeyIndex: 0,
-      // Column index used as row key (e.g., ID)
       selectedRowKeys: _selectedIds,
-      // Currently selected row keys
-      onChecked: (bool? isChecked, checkedRow) {
-        setState(() => _updateSelectedIds(isChecked, checkedRow.first));
-      },
-      onAllChecked:
-          (
-            bool isChecked,
-            List<bool> isAllChecked,
-            List<List<String>> checkedRows,
-          ) {
-            setState(() => _updateAllSelectedIds(isChecked, checkedRows));
-          },
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintPR(requisitions, row.first),
       onEditTap: (row) async => await _onEditTap(requisitions, row.first),
@@ -132,43 +151,53 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     );
   }
 
-  // Updates selected IDs and triggers additional logic (like selecting PRs)
-  void _updateSelectedIds(bool? isChecked, String id) {
-    if (isChecked == true) {
-      if (!_selectedIds.contains(id)) {
-        _selectedIds.add(id);
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
       }
-    } else {
-      // Remove item from the selected list if unchecked
-      _selectedIds.removeWhere((selectedId) => selectedId == id);
-    }
+    });
   }
 
-  // Updates selected IDs for all checked rows
-  void _updateAllSelectedIds(bool isChecked, List<List<String>> checkedRows) {
-    _selectedIds.clear();
-    if (isChecked) {
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
       // Add all selected rows, ensuring uniqueness using a Set
-      _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-    }
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 
   _buildToolbar(List<PurchaseRequisition> requisitions) {
     return ListToolbarButtons(
       refreshLabel: 'Refresh PR',
-      createLabel: 'Create PR',
-      deleteLabel: 'PR',
+      primaryLabel: 'Create PR',
+      secondaryLabel: 'Edit PR',
+      secondaryIcon: Icons.edit,
       dataLength: requisitions.length,
-      onCreate: () async => await _openCreatePR(context),
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete PR',
+      onPrimary: () async => await _openCreatePR(context),
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(requisitions, _selectedIds.first)
+          : null,
       onRefresh: () => _bloc.add(RefreshProcurements<PurchaseRequisition>()),
-      onDelete: _selectedIds.isNotEmpty
+      onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
+                _isDeleting(true);
                 _bloc.add(
                   DeleteProcurement<List<String>>(documentId: _selectedIds),
                 );
-                _selectedIds.clear();
               }
             }
           : null,
@@ -221,9 +250,8 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     // Show progress dialog while loading data
     await context.progressBarDialog(
       request: _printout(requisites, id),
-      onSuccess: (_) => context.showAlertOverlay('PR Printout successful'),
-      onError: (error) =>
-          context.showAlertOverlay('PR printout failed', bgColor: kDangerColor),
+      onSuccess: (_) => _showAlert('PR Printout successful'),
+      onError: (error) => _showAlert('PR printout failed'),
     );
   }
 

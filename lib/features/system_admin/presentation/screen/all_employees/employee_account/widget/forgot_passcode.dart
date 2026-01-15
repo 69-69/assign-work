@@ -15,7 +15,7 @@ import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

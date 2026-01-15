@@ -1,11 +1,11 @@
-import 'package:assign_erp/core/util/extensions/item_category.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
-import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/form/costing_method_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
+import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/item_master_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
 
@@ -32,7 +32,7 @@ class ItemMasterFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _ItemCategoryDropdown(
+        return ItemCategoryDropdown(
           isService: itemType?.isService ?? false,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
@@ -83,31 +83,29 @@ class ItemMasterFormFields {
     ),*/
   ];
 
-  static List<FieldGroupConfig> unitRuleFields({
-    Map<String, dynamic>? initial,
-  }) => [
-    /// 3. Units & Rules
+  static List<FieldGroupConfig> get baseUomFields => [
+    /// 3. Units of Measure
     FieldGroupConfig(
       key: 'baseUom',
       label: 'Base Unit of Measure',
-      initialValue: initial?['baseUom'],
       helperText:
           'Primary unit used for purchasing, stocking, & selling this item',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _UnitOfMeasureDropdown(
-          initialValue: initialData ?? initial?['baseUom'],
+        return UOMDropdown(
+          initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
         );
       },
     ),
+  ];
 
-    // If Item Type = Service and Track inventory = ON
-    // ⚠ Services cannot be inventory-tracked
-
-    // If Track inventory = OFF
-    // ℹ Inventory planning and reorder settings are ignored
+  static List<FieldGroupConfig> unitRuleFields({
+    Map<String, dynamic>? initial,
+    bool isService = false,
+  }) => [
+    /// 3. Master Rules
     FieldGroupConfig(
       key: 'itemRules',
       label: 'Usage & Availability',
@@ -118,6 +116,19 @@ class ItemMasterFormFields {
         return DynamicCheckboxList(
           showButton: false,
           initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
+          blockKey: 'isStockItem',
+          onBlocked: isService
+              ? (cxt, blockKey) async {
+                  if (blockKey.filterAny('isStockItem')) {
+                    await cxt.confirmDone(
+                      Text(
+                        'Inventory tracking is only available for material items. Services and non-material items cannot be tracked.',
+                      ),
+                      title: 'Inventory Tracking Disabled',
+                    );
+                  }
+                }
+              : null,
           checkboxesConfig: [
             CheckboxGroupConfig(
               key: 'isActive',
@@ -131,7 +142,7 @@ class ItemMasterFormFields {
               key: 'isStockItem',
               label: 'Track inventory',
               selected: initial?['isStockItem'] ?? false,
-              tooltip: 'Disable for services and non-physical items',
+              tooltip: 'Enable if this item is physically stored',
               description:
                   'Enable if this item is physically stored and its quantity should be tracked in inventory.',
             ),
@@ -152,7 +163,7 @@ class ItemMasterFormFields {
                   'Allows this item to be offered and sold to customers in sales and POS transactions.',
             ),
           ],
-          onCheckChanged: (List<CheckboxGroupConfig> selected) {
+          onCheckChanged: (List<CheckboxGroupConfig> selected) async {
             final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
             onChanged(mapList);
           },
@@ -202,7 +213,7 @@ class ItemMasterFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _CostingMethodDropdown(
+        return CostingMethodDropdown(
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
         );
@@ -227,89 +238,5 @@ class ItemMasterFormFields {
             .map((e) => fromMap(e.value, '${e.key + 1}'))
             .toList(),
       );
-  }
-}
-
-/// Item Category [ItemCategoryDropdown]
-class _ItemCategoryDropdown extends StatelessWidget {
-  final String? label;
-  final bool isService;
-  final String? initialValue;
-  final void Function(String? s) onChanged;
-
-  const _ItemCategoryDropdown({
-    required this.onChanged,
-    this.isService = false,
-    this.initialValue,
-    this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = ItemCategoryUtil.toStringList(isService: isService);
-    // If label is provided, replace it with the first in the list
-    if (label != null) strList[0] = label!;
-
-    return StaticDropdown<String>(
-      key: key,
-      label: strList.first,
-      initialValue: initialValue,
-      items: strList,
-      getDisplayText: (category) => category.toTitle,
-      onChanged: onChanged,
-    );
-  }
-}
-
-/// Costing Method Category [ItemCategoryDropdown]
-class _CostingMethodDropdown extends StatelessWidget {
-  final String? label;
-  final String? initialValue;
-  final void Function(String? s) onChanged;
-
-  const _CostingMethodDropdown({
-    required this.onChanged,
-    this.initialValue,
-    this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = CostingMethodUtil.toStringList();
-    // If label is provided, replace it with the first in the list
-    if (label != null) strList[0] = label!;
-
-    return StaticDropdown<String>(
-      key: key,
-      label: strList.first,
-      initialValue: initialValue,
-      items: strList,
-      getDisplayText: (method) => method.toTitle,
-      onChanged: onChanged,
-    );
-  }
-}
-
-/// PO unit of measure [UnitOfMeasureDropdown]
-class _UnitOfMeasureDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(String? s) onChanged;
-
-  const _UnitOfMeasureDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = UOMUtil.toStringList();
-    // If label is provided, replace it with the first in the list
-    // if (label != null) strList[0] = label!;
-
-    return StaticDropdown<String>(
-      key: key,
-      label: strList.first,
-      initialValue: initialValue,
-      items: strList,
-      getDisplayText: (uom) => uom.toTitle,
-      onChanged: onChanged,
-    );
   }
 }

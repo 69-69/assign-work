@@ -1,22 +1,22 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/index.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/assign_department_dialog.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/index.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/assign_department_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ListStaffs extends StatefulWidget {
-  const ListStaffs({super.key});
+class ListEmployees extends StatefulWidget {
+  const ListEmployees({super.key});
 
   @override
-  State<ListStaffs> createState() => _ListStaffsState();
+  State<ListEmployees> createState() => _ListEmployeesState();
 }
 
-class _ListStaffsState extends State<ListStaffs> {
+class _ListEmployeesState extends State<ListEmployees> {
   bool? _isChecked;
   Employee? _selectedEmployee;
   EmployeeBloc get _bloc => context.read<EmployeeBloc>();
@@ -35,7 +35,7 @@ class _ListStaffsState extends State<ListStaffs> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Add Employee',
-                    onPressed: () => context.openCreateStaffAcc(),
+                    onPressed: () => context.openCreateEmployee(),
                   )
                 : _buildCard(context, results),
           SetupError<Employee>(error: final error) => context.buildError(error),
@@ -79,34 +79,42 @@ class _ListStaffsState extends State<ListStaffs> {
   }
 
   _buildToolbar(List<Employee> employees) {
+    var isSelected = _isChecked == true;
+
     return ListToolbarButtons(
-      createLabel: 'Add Employee',
+      primaryLabel: 'Add Employee',
       refreshLabel: 'Refresh Employees',
       dataLength: employees.length,
-      auxLabel: 'Assign Store',
-      auxTooltip: 'Assign Employee to Store',
-      auxIcon: Icons.store,
-      subLabel: 'Assign Department',
-      subTooltip: 'Assign Employee to Department',
-      subIcon: Icons.apartment,
-      optLabel: 'Assign Role',
-      optTooltip: 'Assign Employee to Role',
-      optIcon: Icons.security,
-      onCreate: () => context.openCreateStaffAcc(),
+      warningLabel: 'Assign Store',
+      warningTooltip: 'Assign Employee to Store',
+      warningIcon: Icons.store,
+      secondaryIcon: Icons.edit,
+      secondaryLabel: 'Edit Employee',
+      secondaryTooltip: 'Edit Employee',
+      permanentIcon: Icons.apartment,
+      permanentLabel: 'Assign Department',
+      permanentTooltip: 'Assign Employee to Department',
+      tertiaryLabel: 'Assign Role',
+      tertiaryTooltip: 'Assign Employee to Role',
+      tertiaryIcon: Icons.security,
+      onPrimary: () => context.openCreateEmployee(),
       onRefresh: () => _bloc.add(RefreshSetups<Employee>()),
-      subOnPressed: _isChecked == true
+      onPermanent: isSelected
           ? () async => await context.openAssignEmployeeDepartmentDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
             )
           : null,
-      auxOnPressed: _isChecked == true
+      onSecondary: isSelected
+          ? () async => await _onEditTap(employees, _selectedEmployee!.id)
+          : null,
+      onWarning: isSelected
           ? () async => await context.assignEmployeeToStoreLocationDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
             )
           : null,
-      optOnPressed: _isChecked == true
+      onTertiary: isSelected
           ? () async => await context.openAssignEmployeeRoleDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
@@ -124,7 +132,7 @@ class _ListStaffsState extends State<ListStaffs> {
     Employee employee = _findEmployee(id, employees);
 
     /// Update specific Employee Account
-    await context.openUpdateStaffAcc(employee: employee);
+    await context.openUpdateEmployee(employee: employee);
   }
 
   Future<void> _onDeleteTap(List<Employee> employees, String id) async {

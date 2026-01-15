@@ -219,15 +219,19 @@ GoRoute _stockManagementRoute() {
 GoRoute _wmsRoute() {
   // Sub routes for Warehouse Management
   final List<({String name, Widget screen})> wmsSubRoutes = [
-    (name: RouteNames.warehouse, screen: const WarehouseScreen()),
+    (name: RouteNames.warehouseStorage, screen: const WarehouseScreen()),
     (name: RouteNames.warehouseLocation, screen: const WarehouseScreen()),
     (name: RouteNames.warehouseBin, screen: const WarehouseScreen()),
+    (name: RouteNames.inboundReceiving, screen: const WarehouseScreen()),
+    (name: RouteNames.internalMovements, screen: const WarehouseScreen()),
+    (name: RouteNames.outboundPickShipping, screen: const WarehouseScreen()),
   ];
 
   return GoRoute(
     name: RouteNames.wmsModule,
     path: RouteNames.wmsModule,
-    pageBuilder: (_, state) => _animateTransition(state, const WMSScreen()),
+    pageBuilder: (_, state) =>
+        _animateTransition(state, const WarehouseManagementScreen()),
     routes: _mapStaticRoutes(wmsSubRoutes),
   );
 }

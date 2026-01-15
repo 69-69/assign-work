@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/features/system_admin/data/models/permission_model.dart';
@@ -15,6 +16,7 @@ class Role extends Equatable {
   final String updatedBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<AuditLog> history;
 
   Role({
     this.id = '',
@@ -24,6 +26,7 @@ class Role extends Equatable {
     DateTime? createdAt,
     this.updatedBy = '',
     DateTime? updatedAt,
+    this.history = const [],
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
@@ -31,21 +34,17 @@ class Role extends Equatable {
 
   /// fromFirestore / fromJson Function [Role.fromMap]
   factory Role.fromMap(Map<String, dynamic> map, {String? id}) {
-    final rawPermissions = map['permissions'] as List<dynamic>? ?? [];
-
-    final perms = rawPermissions
-        .map((perm) => Map<String, dynamic>.from(perm as Map))
-        .map(Permission.fromMap)
-        .toSet();
-
     return Role(
       id: (id ?? map['id']) ?? '',
       name: map['name'] ?? '',
-      permissions: perms,
+      permissions: Permission.permissionsSet(
+        map['permissions'] as List<dynamic>?,
+      ),
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedBy: map['updatedBy'] ?? '',
       updatedAt: toDateTimeFn(map['updatedAt']),
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
@@ -58,6 +57,7 @@ class Role extends Equatable {
     'createdAt': createdAt,
     'updatedBy': updatedBy,
     'updatedAt': updatedAt,
+    'history': history.map((a) => a.toMap()).toList(),
   };
 
   /// Convert Role to a map for storing in Firestore [toMap]
@@ -86,6 +86,7 @@ class Role extends Equatable {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<AuditLog>? history,
   }) {
     return Role(
       id: id ?? this.id,
@@ -95,8 +96,16 @@ class Role extends Equatable {
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
+      history: history ?? this.history,
     );
   }
+
+  /// A singleton instance representing an empty/default Role.
+  /// Used as a fallback when no matching Role is found.
+  static get empty => Role(id: '', name: '', permissions: {});
+
+  /// [isEmpty] Checks if the Role is empty.
+  bool get isEmpty => identical(this, Role.empty);
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;
@@ -123,6 +132,7 @@ class Role extends Equatable {
     createdAt,
     updatedBy,
     updatedAt,
+    history,
   ];
 
   /// ToList for PRODUCTS [itemAsList]

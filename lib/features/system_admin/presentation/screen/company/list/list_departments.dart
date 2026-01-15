@@ -1,5 +1,5 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/department_bloc.dart';
@@ -17,6 +17,7 @@ class ListDepartments extends StatefulWidget {
 }
 
 class _ListDepartmentsState extends State<ListDepartments> {
+  final List<String> _selectedIds = [];
   DepartmentBloc get _bloc => context.read<DepartmentBloc>();
 
   @override
@@ -59,16 +60,34 @@ class _ListDepartmentsState extends State<ListDepartments> {
       rows: departments.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(departments, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(departments, row.first),
+      selectedRowKeys: _selectedIds,
+      onChecked: _onChecked,
+      onAllChecked: _onAllChecked,
     );
   }
 
   Widget _buildToolbar(List<Department> departments) {
     return ListToolbarButtons(
-      createLabel: 'Create Departments',
+      primaryLabel: 'Create Departments',
       refreshLabel: 'Refresh Departments',
+      dangerLabel: 'Delete Department',
+      secondaryLabel: 'Edit Department',
+      secondaryIcon: Icons.edit,
       dataLength: departments.length,
-      onCreate: () => context.openAddDepartment(),
+      onPrimary: () => context.openAddDepartment(),
       onRefresh: () => _bloc.add(RefreshSetups<Department>()),
+      onSecondary: _selectedIds.length == 1
+          ? () async => _onEditTap(departments, _selectedIds.first)
+          : null,
+      onDanger: _selectedIds.isNotEmpty
+          ? () async {
+              final isConfirmed = await context.confirmUserActionDialog();
+              if (mounted && isConfirmed) {
+                // Delete all selected items
+                _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
+              }
+            }
+          : null,
     );
   }
 
@@ -87,5 +106,31 @@ class _ListDepartmentsState extends State<ListDepartments> {
     if (mounted && isConfirmed) {
       _bloc.add(DeleteSetup<String>(documentId: depart.id));
     }
+  }
+
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
   }
 }

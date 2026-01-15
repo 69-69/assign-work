@@ -142,32 +142,19 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!_isFormValid || _updatePO.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _finalizedPO = _sanitizeTaxCodes(_updatePO);
-
-      _bloc.add(
-        UpdateProcurement<ProPurchaseOrder>(
-          documentId: _finalizedPO.id,
-          data: _finalizedPO,
-        ),
-      );
-
-      context.showAlertOverlay('Changes successfully saved');
-
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+    if (!_isFormValid || _updatePO.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _finalizedPO = _sanitizeTaxCodes(_updatePO);
+
+    _bloc.add(
+      UpdateProcurement<ProPurchaseOrder>(
+        documentId: _finalizedPO.id,
+        data: _finalizedPO,
+      ),
+    );
   }
 
   /// Ensures tax codes & totalTaxAmount are correctly applied to PO line items
@@ -197,6 +184,25 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return quote;
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+    setState(() => _isSubmitting = false);
+  }
+
+  _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<ProPurchaseOrder> state,
+  ) async {
+    switch (state) {
+      case ProcurementAdded<ProPurchaseOrder>(message: var msg):
+        _showAlert(msg ?? 'Changes successfully saved');
+        await _confirmPrintoutDialog();
+      case ProcurementError<ProPurchaseOrder>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     _taxModeToApply = _serverPO.taxMode;
@@ -205,10 +211,16 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+    return BlocListener<
+      ProPurchaseOrderBloc,
+      ProcurementState<ProPurchaseOrder>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -260,7 +272,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         ),
 
         FormGroupCard(
-          showCollapseButton: false,
           title: 'Financial Summary',
           subTitle: '\nOverview of the Quotation’s Financial Details',
           contentPadding: const EdgeInsets.fromLTRB(10, 20, 22, 20),
@@ -281,7 +292,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Updating...' : null,
+        ),
         const SizedBox(height: 20.0),
       ],
     );

@@ -266,7 +266,19 @@ extension ScreenHelper on BuildContext {
   Center get loader =>
       Center(child: AsyncProgressBarDialog(future: null, isDialog: false));
 
-  Center buildError(String error) => Center(child: Text('Error: $error'));
+  Center buildError(String error) => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Oops! Something went wrong...\n[ $error ]',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        outlinedButton('Go Back', onPressed: () => Navigator.pop(this)),
+      ],
+    ),
+  );
 
   buildNoResult() => const Center(child: Text('No results found'));
 

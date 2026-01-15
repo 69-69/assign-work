@@ -1,17 +1,16 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
+import 'package:assign_erp/core/widgets/form/auto_convert_workflow.dart';
+import 'package:assign_erp/core/widgets/form/priority_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/workflow_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/procurement/data/model/purchase_requisition_model.dart';
 import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bloc.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/widget/procurement_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_employees.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
 import 'package:flutter/material.dart';
 
@@ -155,9 +154,12 @@ class AutoAndCostCenterDepartment extends StatelessWidget {
     return AdaptiveLayout(
       children: [
         // Auto-convert PR to RFQ after approval
-        _AutoCreatePr(
+        AutoConvertWorkflow(
+          from: 'PR',
+          to: 'RFQ',
+          action: 'approval',
           isSelected: isSelected,
-          onAutoConvertChanged: onAutoConvertChanged,
+          onChanged: onAutoConvertChanged,
         ),
         SearchDepartments(
           label: 'Cost Center...',
@@ -189,13 +191,14 @@ class PriorityAndPRStatusDropdown extends StatelessWidget {
     return AdaptiveLayout(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _PriorityDropdown(
+        PriorityDropdown(
           initialValue: initialPriority,
           onChanged: onPriorityChanged,
         ),
-        _PRStatusDropdown(
+        WorkflowStatusDropdown(
           initialValue: initialStatus,
           onChanged: onStatusChanged,
+          workflowType: WorkflowType.pr,
         ),
       ],
     );
@@ -251,113 +254,6 @@ class RequestAndExpectedDate extends StatelessWidget {
           validator: (v) => v == null ? _msgExpected : null,
         ),
       ],
-    );
-  }
-}
-
-/*/// Purchase Requisition unit of measure [UnitOfMeasureDropdown]
-class UnitOfMeasureDropdown extends StatelessWidget {
-  final String? label;
-  final String? initialValue;
-  final void Function(String? s) onChanged;
-
-  const UnitOfMeasureDropdown({
-    super.key,
-    required this.onChanged,
-    this.initialValue,
-    this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = UOMUtil.toStringList();
-    // If label is provided, replace it with the first in the list
-    if (label != null) strList[0] = label!;
-
-    return StaticDropdown<String>(
-      key: key,
-      label: strList.first,
-      initialValue: initialValue,
-      items: strList,
-      getDisplayText: (uom) => uom.toTitle,
-      onChanged: onChanged,
-    );
-  }
-}*/
-
-/// [_AutoCreatePr] Auto-convert PR to RFQ after approval
-class _AutoCreatePr extends StatelessWidget {
-  final bool isSelected;
-  final void Function(bool) onAutoConvertChanged;
-
-  const _AutoCreatePr({
-    required this.isSelected,
-    required this.onAutoConvertChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Auto-Convert RFQ to PR when PR is Approved
-    return CustomCheckboxTile(
-      title: Text(
-        'Auto Convert PR?',
-        style: context.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text('Auto-convert PR to RFQ after approval'),
-      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
-      value: isSelected,
-      onChanged: (v) => onAutoConvertChanged(v ?? false),
-    );
-    /*CustomSwitchTile(
-      title: 'Auto Create RFQ',
-      subtitle: 'Generate RFQ when PR is approved',
-      padding: EdgeInsets.symmetric(horizontal: 6.0),
-      isSelected: isSelected,
-      onChanged: onChanged,
-    );*/
-  }
-}
-
-/// Purchase Requisition Status [_PRStatusDropdown]
-class _PRStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _PRStatusDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'PR status',
-      initialValue: initialValue,
-      items: WorkflowStatusUtil.toStringList(type: WorkflowType.pr),
-      getDisplayText: (status) => status,
-      onChanged: onChanged,
-    );
-  }
-}
-
-/// Purchase Requisition Priority/Urgency [_PriorityDropdown]
-class _PriorityDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _PriorityDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = PriorityUtil.toStringList();
-
-    return StaticDropdown<String>(
-      key: key,
-      label: 'priority',
-      initialValue: initialValue,
-      items: strList,
-      getDisplayText: (priority) => priority,
-      onChanged: onChanged,
     );
   }
 }

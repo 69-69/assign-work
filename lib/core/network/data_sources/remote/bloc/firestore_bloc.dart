@@ -317,7 +317,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       );
 
       // Update State: Notify that data updated
-      emit(ItemUpdated<T>(message: 'data updated successfully'));
+      emit(ItemUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(ItemError<T>(e.toString()));
     }
@@ -336,7 +336,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       // add(GetData<T>());
 
       // Update State: Notify that data deleted
-      emit(ItemDeleted<T>(message: 'data deleted successfully'));
+      emit(ItemDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(ItemError<T>(e.toString()));
     }
@@ -348,7 +348,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(ItemError<T>('Data IDs are empty'));
+        emit(ItemError<T>('No Data were selected to delete.'));
         return;
       }
 
@@ -360,7 +360,7 @@ class FirestoreBloc<T> extends Bloc<FirestoreEvent, FirestoreState<T>> {
       // add(GetData<T>());
 
       // Update State: Notify that data deleted
-      emit(ItemDeleted<T>(message: 'data deleted successfully'));
+      emit(ItemDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(ItemError<T>(e.toString()));
     }

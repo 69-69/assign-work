@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
@@ -139,31 +138,12 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _newPR.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _bloc.add(AddProcurement<PurchaseRequisition>(data: _newPR));
-
-      context.showAlertOverlay(
-        'PR successfully created',
-        onCallback: () => _resetForm(),
-      );
-
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-          _resetForm();
-        });
-      }
+    if (!isFormValid || _newPR.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _bloc.add(AddProcurement<PurchaseRequisition>(data: _newPR));
   }
 
   void _resetForm() {
@@ -187,12 +167,37 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     }
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<PurchaseRequisition> state,
+  ) async {
+    switch (state) {
+      case ProcurementAdded<PurchaseRequisition>(message: var msg):
+        _showAlert(msg ?? 'PR created successfully');
+        await _confirmPrintoutDialog();
+      case ProcurementError<PurchaseRequisition>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<
+      ProPurchaseRequisiteBloc,
+      ProcurementState<PurchaseRequisition>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -244,8 +249,9 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: 'Create PR',
           onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Creating...' : 'Create PR',
         ),
         const SizedBox(height: 20.0),
       ],
@@ -342,11 +348,8 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('PR successfully created'),
-        onError: (e) => context.showAlertOverlay(
-          'PR printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('PR successfully created'),
+        onError: (e) => _showAlert('PR printout failed'),
       );
     }
   }

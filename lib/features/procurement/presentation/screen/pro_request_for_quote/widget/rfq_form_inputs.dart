@@ -6,10 +6,11 @@ import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
-import 'package:assign_erp/core/widgets/form/currency_selection.dart';
+import 'package:assign_erp/core/widgets/form/auto_convert_workflow.dart';
+import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
+import 'package:assign_erp/core/widgets/form/workflow_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
@@ -22,7 +23,7 @@ import 'package:assign_erp/features/procurement/presentation/screen/widget/procu
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_company.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
 import 'package:flutter/material.dart';
@@ -135,7 +136,8 @@ class RFQFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _BuyerContactPerson(
+        return BuyerContactPerson(
+          isDisabled: false,
           initialValue: initialData,
           onChanged: (id, firstName, lastName) => onChanged(id),
         );
@@ -301,7 +303,7 @@ class CurrencyAndCostCenterDepartment extends StatelessWidget {
   Widget build(BuildContext context) {
     return AdaptiveLayout(
       children: [
-        CurrencySelection(
+        CurrencyDropdown(
           initialCurrency: initialCurrency,
           onChanged: (({String code, String symbol})? s) =>
               onCurrencyChanged(s!.code),
@@ -337,10 +339,17 @@ class AutoCreateAndRFQStatus extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Auto-convert RFQ to PO after acceptance
-        _AutoCreateRFQ(isChecked: isSelected, onChanged: onAutoConvertChanged),
-        _RFQStatusDropdown(
+        AutoConvertWorkflow(
+          from: 'RFQ',
+          to: 'PO',
+          action: 'acceptance',
+          isSelected: isSelected,
+          onChanged: onAutoConvertChanged,
+        ),
+        WorkflowStatusDropdown(
           initialValue: initialStatus,
-          onChange: onStatusChanged,
+          onChanged: onStatusChanged,
+          workflowType: WorkflowType.rfq,
         ),
       ],
     );
@@ -412,82 +421,5 @@ class UseDefaultAddress extends StatelessWidget {
       value: isChecked,
       onChanged: (v) => onChanged(v ?? false),
     );
-  }
-}
-
-/// [_BuyerContactPerson] Buyer Contact Person
-class _BuyerContactPerson extends StatelessWidget {
-  final bool isDisabled;
-  final String? initialValue;
-  final void Function(String, String, String) onChanged;
-
-  const _BuyerContactPerson({
-    this.isDisabled = false,
-    this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: isDisabled,
-      child: SearchEmployees(
-        labelText: 'Contact Person',
-        initialValue: initialValue,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-/// Request for Price Quote Status [RFQStatusDropdown]
-class _RFQStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChange;
-
-  const _RFQStatusDropdown({required this.onChange, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'RFQ Status',
-      initialValue: initialValue,
-      items: WorkflowStatusUtil.toStringList(type: WorkflowType.rfq),
-      getDisplayText: (status) => status,
-      onChanged: onChange,
-    );
-  }
-}
-
-/// [_AutoCreateRFQ] Auto-convert RFQ to PO after acceptance
-class _AutoCreateRFQ extends StatelessWidget {
-  final bool isChecked;
-  final void Function(bool) onChanged;
-
-  const _AutoCreateRFQ({required this.isChecked, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    // Auto-Convert PO to RFQ when RFQ is Accepted
-    return CustomCheckboxTile(
-      title: Text(
-        'Auto Convert RFQ?',
-        style: context.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text('Auto-convert RFQ to PO after acceptance'),
-      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
-      value: isChecked,
-      onChanged: (v) => onChanged(v ?? false),
-    );
-    /*CustomSwitchTile(
-      title: 'Auto Create PO',
-      subtitle: 'Generate PO when RFQ is accepted',
-      padding: EdgeInsets.symmetric(horizontal: 6.0),
-      isSelected: isSelected,
-      onChanged: onChanged,
-    );*/
   }
 }

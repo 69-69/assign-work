@@ -38,7 +38,7 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
     final departments = await GetDepartments.byAnyTerm(filterBy);
-    if (initial.hasValue && departments.hasValue) {
+    if (mounted && initial.hasValue && departments.hasValue) {
       setState(() => _department = departments.first);
     }
     return departments;

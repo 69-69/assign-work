@@ -62,6 +62,7 @@ class _GuideForm extends StatefulWidget {
 }
 
 class _GuideFormState extends State<_GuideForm> {
+  bool _isSubmitting = false;
   Key _formResetKey = UniqueKey();
   final List<UserGuide> _userGuides = [];
   final _formKey = GlobalKey<FormState>();
@@ -74,18 +75,21 @@ class _GuideFormState extends State<_GuideForm> {
 
   UserGuide? get _serverGuide => widget.serverGuide;
 
-  bool get _nullServer => _serverGuide == null;
+  bool get _isServerNull => _serverGuide == null;
 
   void _onSubmit() {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
     // Case 1: Update existing Guides/Manuals
-    if (_serverGuide != null) {
+    if (_isFormValid && (_serverGuide?.isNotEmpty ?? false)) {
       _updateManual();
       return;
     }
 
     // Case 2: Form validation or empty _userGuides
     if (!_isFormValid && _userGuides.isNotEmpty) {
-      _showErrorAlert('Please enter all required fields', kDangerColor);
+      _showAlert('Please enter all required fields');
       return;
     }
 
@@ -100,7 +104,6 @@ class _GuideFormState extends State<_GuideForm> {
         .toList();
 
     _bloc.add(AddGuide<List<UserGuide>>(data: manuals));
-    _showSuccessAlert('Manual(s) successfully created');
   }
 
   void _updateManual() {
@@ -110,48 +113,50 @@ class _GuideFormState extends State<_GuideForm> {
     );
 
     _bloc.add(UpdateGuide<UserGuide>(documentId: updated.id, data: updated));
-    _showSuccessAlert('Changes successfully saved');
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
+    if (!_isServerNull) ..._serverGuide!.history,
     AuditLog(action: action, actionBy: _employee!.employeeId),
   ];
 
-  void _showSuccessAlert(String message) {
-    context.showAlertOverlay(
-      message,
-      onCallback: () =>
-          _serverGuide != null ? Navigator.pop(context) : _resetForm(),
-    );
-  }
-
-  void _showErrorAlert(String message, Color bgColor) {
-    context.showAlertOverlay(message, bgColor: bgColor);
-  }
-
   void _resetForm() {
     setState(() {
+      _userGuides.clear();
+      _isSubmitting = false;
       _formKey.currentState?.reset();
       _formResetKey = UniqueKey(); // 💥 full rebuild
-      _userGuides.clear();
     });
   }
 
-  /*// load existing Guides/Manuals
-  void _loadExistingManuals() {
-    if (_serverGuide != null) {
-      _userGuides
-        ..clear()
-        ..add(_serverGuide!);
+  void _showAlert(String msg) {
+    context.showAlertOverlay(
+      msg,
+      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
+    );
+  }
+
+  void _handleBlocState(BuildContext cxt, GuideState<UserGuide> state) {
+    final note = _isServerNull ? 'Guides/Manuals created' : 'Changes saved';
+    switch (state) {
+      case GuideAdded<UserGuide>(message: var msg):
+      case GuideUpdated<UserGuide>(message: var msg):
+        _showAlert(msg ?? note);
+      case GuideError<UserGuide>():
+        _showAlert('Error saving changes');
+      case _: // no action
     }
-  }*/
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<HowToBloc, GuideState<UserGuide>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -160,7 +165,7 @@ class _GuideFormState extends State<_GuideForm> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         FormGroupCard(
-          showCollapseButton: _nullServer,
+          showCollapseButton: _isServerNull,
           title: _serverGuide?.title.toTitle ?? 'User Manual',
           subTitle:
               '\nA guide to help users understand and use the ${_serverGuide?.category ?? 'software'}.',
@@ -168,7 +173,7 @@ class _GuideFormState extends State<_GuideForm> {
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: _nullServer ? 'Create Manual' : null,
+          label: _isServerNull ? 'Create Manual' : null,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -179,7 +184,7 @@ class _GuideFormState extends State<_GuideForm> {
   DynamicTextFields _buildForm() {
     return DynamicTextFields(
       fullWidthKey: 'title',
-      showButton: _nullServer,
+      showButton: _isServerNull,
       initialData: [?_serverGuide?.toMap()],
       fieldsConfig: UserGuideConfig.formFields,
       onChanged: (List<Map<String, dynamic>> data) {

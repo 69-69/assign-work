@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
@@ -77,7 +76,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
         AuditLog(
           action: AuditAction.updated,
           actionBy: _employee!.employeeId,
-          statusAfterAction: 'created',
+          statusAfterAction: AuditAction.updated.getName,
         ),
       ],
     );
@@ -87,28 +86,15 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _addresses.isNullOrEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      context.read<CompanyBloc>().add(
-        UpdateSetup<Company>(documentId: _serverInfo.id, data: _updatedCompany),
-      );
-      await _saveToCache();
-
-      if (mounted) {
-        context.showAlertOverlay('Changes successfully saved');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+    if (!isFormValid || _addresses.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    context.read<CompanyBloc>().add(
+      UpdateSetup<Company>(documentId: _serverInfo.id, data: _updatedCompany),
+    );
+    await _saveToCache();
   }
 
   // Update Company-info to cache
@@ -129,12 +115,30 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
     }
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
+    setState(() => _isSubmitting = false);
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Company> state) {
+    switch (state) {
+      case SetupUpdated<Company>(message: var msg):
+        _showAlert(msg ?? 'Changes saved');
+      case SetupError<Company>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+    return BlocListener<CompanyBloc, SetupState<Company>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(context),
+      ),
     );
   }
 
@@ -165,7 +169,11 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Updating...' : null,
+        ),
       ],
     );
   }

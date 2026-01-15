@@ -97,11 +97,12 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     try {
       _getDataStreamObserver = _inventoryRepository.getAllCacheData().listen((
         snapshot,
-      ) {
+      ) async {
         final data = _toList(snapshot);
         emit(InventoriesLoaded<T>(data));
       }, onError: (e) => add(_InventoryLoadError('Error loading data: $e')));
     } catch (e) {
+      add(_InventoryLoadError('Error loading data: $e'));
       emit(InventoryError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -256,7 +257,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(InventoryUpdated<T>(message: 'data updated successfully'));
+      emit(InventoryUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(InventoryError<T>(e.toString()));
     }
@@ -274,7 +275,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       add(GetInventories<T>());
 
       // Update State: Notify that data deleted
-      emit(InventoryDeleted<T>(message: 'data deleted successfully'));
+      emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(InventoryError<T>(e.toString()));
     }
@@ -286,7 +287,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(InventoryError<T>('Inventory IDs are empty'));
+        emit(InventoryError<T>('No Inventory were selected to delete.'));
         return;
       }
 
@@ -297,7 +298,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       add(GetInventories<T>());
 
       // Update State: Notify that data deleted
-      emit(InventoryDeleted<T>(message: 'data deleted successfully'));
+      emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(InventoryError<T>(e.toString()));
     }
@@ -368,7 +369,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   @override
   Future<void> close() {
     _inventoryRepository.cancelDataSubscription();
-    _getDataStreamObserver?.cancel();
+    // _getDataStreamObserver?.cancel();
     return super.close();
   }
 }

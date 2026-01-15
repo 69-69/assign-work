@@ -1,7 +1,7 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -28,8 +28,9 @@ extension IMFormExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       onBackPress: onBackPress,
-      title: '${serverItem != null ? 'Edit' : 'Create'} Item Master',
-      subtitle: serverItem?.name.toTitle ?? '',
+      title: serverItem != null
+          ? serverItem.name.toTitle
+          : 'Create Item Master',
       body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
     ),
   );
@@ -54,37 +55,37 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   // Current employee info
   Employee? get _employee => context.employee;
 
-  // String get _employeeId => _employee!.employeeId;
   String get _employeeName => _employee!.fullName;
-
+  String get _employeeId => _employee!.employeeId;
   String get _employeeStore => _employee!.storeNumber;
 
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
 
-  ItemMaster? get _serverMater => widget.serverItem;
+  ItemMaster? get _serverItem => widget.serverItem;
 
-  bool get _nullServer => _serverMater == null;
+  bool get _isServerNull => _serverItem == null;
 
-  String get _itemType => widget.itemType ?? '';
+  String get _itemType =>
+      widget.itemType ?? _serverItem?.itemType.getLabel ?? '';
 
   // Basic fields
-  String _itemMasterNumber = '';
+  String _imNumber = '';
   bool _isSubmitting = false;
-  ItemMaster _newMaster = ItemMaster.empty;
+  late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
 
   void _onSubmit() async {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
     // Case 1: Update existing ItemMaster
-    if (_serverMater != null) {
-      _updateItemMaster();
+    if (_isFormValid && (_serverItem?.isNotEmpty ?? false)) {
+      _updatedItemMaster();
       return;
     }
 
     // Case 2: Form validation or empty ItemMaster
-    if (!_isFormValid && (_serverMater?.isNullOrEmpty ?? true)) {
-      _showErrorAlert('Please enter all required fields', kDangerColor);
+    if (!_isFormValid && _itemMaster.isNullOrEmpty) {
+      _showAlert('Please enter all required fields');
       return;
     }
 
@@ -93,28 +94,25 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   void _addNewItemMaster() {
-    final newItemMaster = _newMaster.copyWith(
+    final newData = _itemMaster.copyWith(
+      sku: _imNumber,
       storeNumber: _employeeStore,
-      sku: _itemMasterNumber,
       createdBy: _employeeName,
       history: history(),
     );
 
-    _bloc.add(AddInventory<ItemMaster>(data: newItemMaster));
-    _showSuccessAlert('Item Master successfully created');
+    _bloc.add(AddInventory<ItemMaster>(data: newData));
   }
 
-  void _updateItemMaster() {
-    final updated = _serverMater?.copyWith(
-      id: _newMaster.id,
-      updatedBy: _employee!.fullName,
+  void _updatedItemMaster() {
+    final updated = _itemMaster.copyWith(
+      updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
 
     _bloc.add(
-      UpdateInventory<ItemMaster>(documentId: updated!.id, data: updated),
+      UpdateInventory<ItemMaster>(documentId: _itemMaster.id, data: updated),
     );
-    _showSuccessAlert('Changes successfully saved');
   }
 
   void _resetForm() {
@@ -123,7 +121,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
-        _newMaster = ItemMaster.empty;
+        _itemMaster = ItemMaster.empty;
       });
       _generateIMNumber(); // fresh IM number
     }
@@ -132,26 +130,34 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   void _generateIMNumber() async {
     await DocType.itemMaster.getShortUID(
       onChanged: (s) {
-        if (mounted) setState(() => _itemMasterNumber = s);
+        if (mounted) setState(() => _imNumber = s);
       },
     );
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    AuditLog(action: action, actionBy: _employee!.employeeId),
+    if (!_isServerNull) ..._serverItem!.history,
+    AuditLog(action: action, actionBy: _employeeId),
   ];
 
-  void _showSuccessAlert(String message) {
+  void _showAlert(String msg) {
     context.showAlertOverlay(
-      message,
-      onCallback: () =>
-          _serverMater != null ? Navigator.pop(context) : _resetForm(),
+      msg,
+      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
     );
+    setState(() => _isSubmitting = false);
   }
 
-  void _showErrorAlert(String message, Color bgColor) {
-    context.showAlertOverlay(message, bgColor: bgColor);
-    setState(() => _isSubmitting = false);
+  void _handleBlocState(BuildContext cxt, InventoryState<ItemMaster> state) {
+    final note = _isServerNull ? 'Item created' : 'Changes saved';
+    switch (state) {
+      case InventoryAdded<ItemMaster>(message: var msg):
+      case InventoryUpdated<ItemMaster>(message: var msg):
+        _showAlert(msg ?? note);
+      case InventoryError<ItemMaster>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
   }
 
   @override
@@ -162,10 +168,13 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<ItemMasterBloc, InventoryState<ItemMaster>>(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -175,7 +184,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       children: <Widget>[
         ItemMasterFormFields.buildIMNumber(
           context,
-          _itemMasterNumber,
+          _imNumber,
           _generateIMNumber,
         ),
 
@@ -192,7 +201,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           isExpanded: false,
           title: '3. Units & Stock Rules',
           subTitle: '\nBase unit of measure and inventory control rules.',
-          children: [_buildUsageAndAvailability()],
+          children: [_baseUOM(), _buildUsageAndAvailability()],
         ),
 
         /// 4️⃣ Planning & Procurement
@@ -215,8 +224,11 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         const SizedBox(height: 20),
 
         context.confirmableActionButton(
-          label: _nullServer ? 'Create Item' : '',
           onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Item')
+              : (_isSubmitting ? 'Updating...' : null),
         ),
 
         const SizedBox(height: 20),
@@ -225,39 +237,54 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   Widget _buildNameAndDesc() {
-    final itemType =
-        _serverMater?.itemType ?? LineItemTypeUtil.fromString(_itemType);
+    final itemType = LineItemTypeUtil.fromString(_itemType);
 
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.nameAndDescFields(itemType: itemType),
-      initialData: [_serverMater?.toMap() ?? {}],
+      initialData: [_serverItem?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
 
-        _newMaster = _newMaster.copyWith(
+        _itemMaster = _itemMaster.copyWith(
           name: i.name,
+          itemType: i.itemType,
+          category: i.category,
           description: i.description,
         );
       },
     );
   }
 
-  Widget _buildUsageAndAvailability() {
+  Widget _baseUOM() {
     return DynamicTextFields(
-      fullWidthKey: 'baseUom',
-      // initialData: [_serverMater?.toMap() ?? {}],
-      fieldsConfig: ItemMasterFormFields.unitRuleFields(
-        initial: _serverMater?.toMap() ?? {},
-      ),
-      onChanged: (List<Map<String, dynamic>> data) {
-        // if (_isFormValid) setState(() {});
+      fieldsConfig: ItemMasterFormFields.baseUomFields,
+      initialData: [
+        {'baseUom': _serverItem?.baseUom.getName},
+      ],
+      onChanged: (List<Map<String, dynamic>> data) async {
         final i = ItemMaster.fromMap(data.first);
 
-        _newMaster = _newMaster.copyWith(
-          baseUom: i.baseUom,
+        _itemMaster = _itemMaster.copyWith(baseUom: i.baseUom);
+      },
+    );
+  }
+
+  Widget _buildUsageAndAvailability() {
+    final itemType = LineItemTypeUtil.fromString(_itemType);
+
+    return DynamicTextFields(
+      fieldsConfig: ItemMasterFormFields.unitRuleFields(
+        initial: _serverItem?.toMap() ?? {},
+        isService: itemType.isService,
+      ),
+      onChanged: (List<Map<String, dynamic>> data) async {
+        final i = ItemMaster.fromMap(data.first);
+
+        _itemMaster = _itemMaster.copyWith(
           isActive: i.isActive,
           isSellable: i.isSellable,
+          isStockItem: i.isStockItem,
           isPurchasable: i.isPurchasable,
         );
       },
@@ -267,13 +294,13 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Widget _buildPlanningAndProcurement() {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.planningFields,
-      initialData: [_serverMater?.toMap() ?? {}],
+      initialData: [_serverItem?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
 
         // Add new item master
-        _newMaster = _newMaster.copyWith(
+        _itemMaster = _itemMaster.copyWith(
           reorderPoint: i.reorderPoint,
           reorderQty: i.reorderQty,
           leadTimeDays: i.leadTimeDays,
@@ -286,14 +313,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.costingFields,
       initialData: [
-        _serverMater?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
+        _serverItem?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
       ],
       onChanged: (List<Map<String, dynamic>> data) {
         // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
 
         // Add new item master
-        _newMaster = _newMaster.copyWith(
+        _itemMaster = _itemMaster.copyWith(
           standardCost: i.standardCost,
           costingMethod: i.costingMethod,
         );

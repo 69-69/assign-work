@@ -107,9 +107,9 @@ extension UniversalIsNullOrEmpty on Object? {
 
 // Filter or search a Iterable or String
 extension FilterExtension on dynamic {
-  bool filterAny(String filter) {
+  bool filterAny(String keyword) {
     final regex = RegExp(
-      filter, // Pass the filter as the pattern
+      keyword, // Pass the filter as the pattern
       caseSensitive: false, // Makes it case-insensitive
     );
 

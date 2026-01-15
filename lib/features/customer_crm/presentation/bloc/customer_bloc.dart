@@ -292,7 +292,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(CustomerUpdated<T>(message: 'data updated successfully'));
+      emit(CustomerUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(CustomerError<T>(e.toString()));
     }
@@ -310,7 +310,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       add(GetCustomers<T>());
 
       // Update State: Notify that data deleted
-      emit(CustomerDeleted<T>(message: 'data deleted successfully'));
+      emit(CustomerDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(CustomerError<T>(e.toString()));
     }
@@ -322,7 +322,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(CustomerError<T>('Customer IDs are empty'));
+        emit(CustomerError<T>('No Customer were selected to delete.'));
         return;
       }
 
@@ -333,7 +333,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       add(GetCustomers<T>());
 
       // Update State: Notify that data deleted
-      emit(CustomerDeleted<T>(message: 'data deleted successfully'));
+      emit(CustomerDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(CustomerError<T>(e.toString()));
     }

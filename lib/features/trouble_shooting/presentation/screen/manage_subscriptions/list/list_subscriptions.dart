@@ -1,5 +1,5 @@
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/subscription_model.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/subscription/subscription_bloc.dart';
@@ -64,15 +64,20 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
 
   _buildToolbar(BuildContext context, List<Subscription> subscriptions) {
     return ListToolbarButtons(
-      createLabel: 'Create Subscription',
-      onCreate: () => context.openCreateNewSubscription(),
-      refreshLabel: 'Refresh Subscriptions',
+      secondaryIcon: Icons.edit,
+      tertiaryIcon: Icons.vpn_key,
       dataLength: subscriptions.length,
+      secondaryLabel: 'Edit Subscription',
+      tertiaryLabel: 'Assign License',
+      primaryLabel: 'Create Subscription',
+      refreshLabel: 'Refresh Subscriptions',
+      tertiaryTooltip: 'Assign new licenses to subscription',
+      onPrimary: () => context.openCreateNewSubscription(),
       onRefresh: () => _bloc.add(RefreshTenants<Subscription>()),
-      optLabel: 'Assign License',
-      optTooltip: 'Assign new licenses to subscription',
-      optIcon: Icons.vpn_key,
-      optOnPressed: _isChecked == true
+      onSecondary: _isChecked == true
+          ? () async => _onEditTap(subscriptions, _selectedSubscription!.id)
+          : null,
+      onTertiary: _isChecked == true
           ? () async {
               if (_selectedSubscription == null) return;
 

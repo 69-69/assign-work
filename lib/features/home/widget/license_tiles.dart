@@ -53,7 +53,7 @@ extension LicenseTiles on BuildContext {
         'description': 'Manage sales orders, deliveries, and tracking.',
       },
       // Warehouse Package
-      {
+      /*{
         'label': MainModuleId.warehouse.getLabel,
         'icon': MainModuleId.warehouse.getIcon,
         'action': RouteNames.warehouseApp,
@@ -61,7 +61,7 @@ extension LicenseTiles on BuildContext {
         'access': _getName(SubscriptionLicenses.warehouse),
         'description':
             'Manage warehouse operations, stock movement, and storage locations.',
-      },
+      },*/
       // Customer Package
       {
         'label': MainModuleId.crm.getLabel,

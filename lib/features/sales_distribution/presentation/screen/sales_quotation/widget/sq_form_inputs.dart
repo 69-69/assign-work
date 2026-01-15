@@ -1,14 +1,13 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/form/currency_selection.dart';
-import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
+import 'package:assign_erp/core/widgets/form/auto_convert_workflow.dart';
+import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/sales_channel_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/workflow_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/customer_crm/data/data_sources/remote/get_customers.dart';
@@ -18,7 +17,7 @@ import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_d
 import 'package:assign_erp/features/sales_distribution/presentation/screen/widget/sales_dist_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/staff_account/widget/search_employees.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/manage_taxes/widget/search_taxes.dart';
 import 'package:flutter/material.dart';
 
@@ -125,7 +124,7 @@ class SQFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return CurrencySelection(
+        return CurrencyDropdown(
           initialCurrency: initialData,
           onChanged: (({String code, String symbol})? s) => onChanged(s!.code),
         );
@@ -282,10 +281,17 @@ class AutoCreateAndSQStatus extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Auto-Convert Sales Quote to 'Sales Order' when after Acceptance
-        _AutoCreateSO(isChecked: isSelected, onChanged: onAutoConvertChanged),
-        _SQStatusDropdown(
+        AutoConvertWorkflow(
+          from: 'Quote',
+          to: 'Sales Order',
+          action: 'customer acceptance',
+          isSelected: isSelected,
+          onChanged: onAutoConvertChanged,
+        ),
+        WorkflowStatusDropdown(
           initialValue: initialStatus,
-          onChange: onStatusChanged,
+          onChanged: onStatusChanged,
+          workflowType: WorkflowType.sq,
         ),
       ],
     );
@@ -355,57 +361,5 @@ class SalesChannelChoice extends StatelessWidget {
         onChanged: (s) => onChannelChange.call(s),
       ),
     );
-  }
-}
-
-/// Sales Quotation Status [SQStatusDropdown]
-class _SQStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChange;
-
-  const _SQStatusDropdown({required this.onChange, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'Quote Status',
-      initialValue: initialValue,
-      items: WorkflowStatusUtil.toStringList(type: WorkflowType.sq),
-      getDisplayText: (status) => status,
-      onChanged: onChange,
-    );
-  }
-}
-
-/// [_AutoCreateSO] Auto-Convert Sales Quote to Sales Order if SQ is Approved
-class _AutoCreateSO extends StatelessWidget {
-  final bool isChecked;
-  final void Function(bool) onChanged;
-
-  const _AutoCreateSO({required this.isChecked, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    // Auto-Convert Sales Quote to Sales Order if SQ after Acceptance
-    return CustomCheckboxTile(
-      title: Text(
-        'Auto Convert Quote?',
-        style: context.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text('Auto-convert Quote to Orders after customer acceptance'),
-      contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
-      value: isChecked,
-      onChanged: (v) => onChanged(v ?? false),
-    );
-    /*CustomSwitchTile(
-      title: 'Auto Create PO',
-      subtitle: 'Auto-convert Quote to Orders after customer acceptance',
-      padding: EdgeInsets.symmetric(horizontal: 6.0),
-      isSelected: isSelected,
-      onChanged: onChanged,
-    );*/
   }
 }

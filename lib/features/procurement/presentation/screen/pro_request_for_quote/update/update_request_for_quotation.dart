@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -88,20 +87,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       ? AuditAction.approved
       : AuditAction.updated;
 
-  @override
-  void initState() {
-    super.initState();
-    /*_buyerTerms.addAll({
-      'notes': _serverRFQ.notes,
-      'buyerContactPerson': _serverRFQ.buyerContactPersonId,
-      'deadline': _serverRFQ.getDeadlineDate,
-      'expectedDate': _serverRFQ.getExpectedDate,
-    });
-    _lineItems.addAll(_serverRFQ.lineItems);
-    _supplierLinks.addAll(_serverRFQ.supplierLinks);
-    */
-  }
-
   /// Construct Request For Quote object
   RequestForQuote get _updatedRFQ {
     final status = _rfqStatus ?? _serverRFQ.getRFQStatus;
@@ -137,32 +122,47 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _lineItems.isNullOrEmpty) return;
+    if (!isFormValid || _lineItems.isNullOrEmpty) return;
 
-      _bloc.add(
-        UpdateProcurement<RequestForQuote>(
-          documentId: _updatedRFQ.id,
-          data: _updatedRFQ,
-        ),
-      );
+    _bloc.add(
+      UpdateProcurement<RequestForQuote>(
+        documentId: _updatedRFQ.id,
+        data: _updatedRFQ,
+      ),
+    );
+  }
 
-      context.showAlertOverlay(
-        'Changes successfully saved',
-        onCallback: () => Navigator.pop(context),
-      );
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg);
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<RequestForQuote> state,
+  ) async {
+    switch (state) {
+      case ProcurementUpdated<RequestForQuote>(message: var msg):
+        _showAlert(msg ?? 'Changes saved successfully');
+        await _confirmPrintoutDialog();
+      case ProcurementError<RequestForQuote>():
+        _showAlert('Error saving changes');
+      case _: // no action
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(),
+    return BlocListener<
+      ProRequestForQuoteBloc,
+      ProcurementState<RequestForQuote>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -219,7 +219,11 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         ),
 
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Submitting...' : null,
+        ),
         const SizedBox(height: 20.0),
       ],
     );
@@ -380,13 +384,8 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) {
-          context.showAlertOverlay('RFQ Printout successful');
-        },
-        onError: (e) => context.showAlertOverlay(
-          'RFQ printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('RFQ Printout successful'),
+        onError: (e) => _showAlert('RFQ printout failed'),
       );
     }
   }

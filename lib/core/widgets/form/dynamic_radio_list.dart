@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 /// Reusable radio list with dynamic groups [DynamicRadioList]
 /// @TODO - This [DynamicRadioList] was upgraded due to Flutter 3.38
 class DynamicRadioList extends StatefulWidget {
+  final bool isRow;
   final String? title;
   final List<RadioGroupConfig> radiosConfig;
   final List<Map<String, dynamic>>? initialData;
@@ -17,6 +18,7 @@ class DynamicRadioList extends StatefulWidget {
     super.key,
     required this.radiosConfig,
     required this.onChanged,
+    this.isRow = true,
     this.initialData,
     this.title,
   });
@@ -95,10 +97,12 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
             ),
           ],
         ),
+        subtitle: config.subtitle.isNotEmpty ? Text(config.subtitle) : null,
       );
     }).toList();
 
     return CustomRadioList<String>(
+      isRow: widget.isRow,
       groupValue: _selectedKey ?? '',
       onChanged: (value) {
         setState(() {
@@ -143,12 +147,14 @@ class RadioGroupConfig {
   final bool selected;
   final String? data;
   final String? tooltip;
+  final String subtitle;
   final String description;
 
   RadioGroupConfig({
     required this.key,
     required this.label,
     this.selected = false,
+    this.subtitle = '',
     this.data,
     this.tooltip,
     required this.description,

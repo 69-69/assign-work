@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -138,32 +137,14 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _newQuote.isEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _finalizedQuote = _sanitizeTaxCodes(_newQuote);
-
-      _bloc.add(AddSalesDistribution<SalesQuotation>(data: _finalizedQuote));
-      context.showAlertOverlay(
-        'Quote successfully created',
-        onCallback: () => _resetForm(),
-      );
-
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-          _resetForm();
-        });
-      }
+    if (!isFormValid || _newQuote.isEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _finalizedQuote = _sanitizeTaxCodes(_newQuote);
+
+    _bloc.add(AddSalesDistribution<SalesQuotation>(data: _finalizedQuote));
   }
 
   /// Ensures tax codes are correctly applied to Sale Quote line items
@@ -222,6 +203,25 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     _generateSQNumber();
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    SalesDistributionState<SalesQuotation> state,
+  ) async {
+    switch (state) {
+      case SalesDistributionAdded<SalesQuotation>(message: var msg):
+        _showAlert(msg ?? 'Quote created successfully');
+        await _confirmPrintoutDialog();
+      case SalesDistributionError<SalesQuotation>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     _generateSQNumber();
@@ -230,10 +230,16 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<
+      SalesQuotationBloc,
+      SalesDistributionState<SalesQuotation>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -298,7 +304,8 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: 'Create Quote',
+          label: _isSubmitting ? 'Creating...' : 'Create Quote',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -442,11 +449,8 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
-        onError: (e) => context.showAlertOverlay(
-          'RFQ printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('Sales Quote printout created'),
+        onError: (e) => _showAlert('Sales Quote printout failed'),
       );
     }
   }

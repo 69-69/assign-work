@@ -155,7 +155,12 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   int? _visibleRowIdIndex;
   String _searchQuery = '';
 
+  Function(bool, List<bool>, List<List<String>>)? get _onAllChecked =>
+      widget.onAllChecked;
+
   int get totalRows => widget.rows.length + (widget.childrenRow?.length ?? 0);
+
+  Function(bool?, List<String>)? get _onChecked => widget.onChecked;
 
   int? get _skipAtIndex => widget.omitAtIndex;
 
@@ -189,8 +194,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       }
 
       // Notify if a callback is provided
-      if (widget.onAllChecked != null && _selectedRowsStatus.hasValue) {
-        widget.onAllChecked!(
+      if (_onAllChecked != null && _selectedRowsStatus.hasValue) {
+        _onAllChecked!(
           _allSelectedStatus,
           _selectedRowsStatus,
           _getSelectedRows(),
@@ -534,8 +539,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               .length;
 
           // If two or more checkboxes are selected, call the `onAllChecked` callback
-          if (selectedCount >= 2 && widget.onAllChecked != null) {
-            widget.onAllChecked!(
+          if (selectedCount >= 2 && _onAllChecked != null) {
+            _onAllChecked!(
               true, // or pass the actual "Select All" status if needed
               _selectedRowsStatus,
               _getSelectedRows(),
@@ -543,8 +548,8 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           }
 
           // Notify the individual checkbox selection change if the callback is provided
-          if (widget.onChecked != null) {
-            widget.onChecked!(selected, row);
+          if (_onChecked != null) {
+            _onChecked!(selected, row);
           }
         },
       ),

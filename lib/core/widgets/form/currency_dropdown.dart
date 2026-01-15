@@ -3,13 +3,13 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-/// Currency Selection Dropdown [CurrencySelection]
-class CurrencySelection extends StatelessWidget {
+/// Currency Selection Dropdown [CurrencyDropdown]
+class CurrencyDropdown extends StatelessWidget {
   final String? label;
   final String? initialCurrency;
   final void Function(({String code, String symbol})? s) onChanged;
 
-  const CurrencySelection({
+  const CurrencyDropdown({
     super.key,
     this.label,
     this.initialCurrency,

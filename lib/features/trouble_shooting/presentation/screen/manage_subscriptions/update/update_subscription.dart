@@ -48,6 +48,7 @@ class _UpdateSubscriptionForm extends StatefulWidget {
 }
 
 class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
+  bool _isSubmitting = false;
   Subscription get _subscription => widget.subscription;
   DateTime? _selectedExpiryDate;
   DateTime? _selectedEffectiveDate;
@@ -60,61 +61,86 @@ class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
 
   bool? get _isAssign => widget.isAssign;
 
+  Future<void> _onSubmit() async {
+    final isRemovingAllLicenses = _assignedLicenses.isEmpty;
+    if (!isRemovingAllLicenses || _isSubmitting) return;
+
+    bool result = await _warnUser();
+    if (!result) return;
+
+    setState(() => _isSubmitting = true);
+
+    if (mounted && _formKey.currentState!.validate()) {
+      _updatedSubscription();
+    }
+  }
+
+  void _updatedSubscription() {
+    final updatedSubscription = _subscription.copyWith(
+      fee: double.parse(_feeController.text),
+      name: _nameController.text,
+      licenses: _assignedLicenses,
+      expiresOn: _selectedExpiryDate,
+      effectiveFrom: _selectedEffectiveDate,
+      updatedBy: context.employee?.fullName ?? 'unknown',
+    );
+
+    context.read<SubscriptionBloc>().add(
+      OverrideTenant<Subscription>(
+        documentId: _subscription.id,
+        data: updatedSubscription,
+      ),
+    );
+  }
+
+  Future<bool> _warnUser() async {
+    final result = await context.confirmAction<bool>(
+      const Text('Are you sure you want to remove all licenses?'),
+      title: 'Remove All Licenses',
+    );
+    return result;
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
+    setState(() => _isSubmitting = false);
+  }
+
+  void _handleBlocState(BuildContext cxt, TenantState<Subscription> state) {
+    switch (state) {
+      case TenantUpdated<Subscription>(message: var msg):
+        _showAlert(msg ?? 'Changes saved');
+      case TenantError<Subscription>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     _assignedLicenses = Set.from(_subscription.licenses);
     super.initState();
   }
 
-  Future<void> _onSubmit() async {
-    final isRemovingAllLicenses = _assignedLicenses.isEmpty;
-
-    if (isRemovingAllLicenses) {
-      final result = await context.confirmAction<bool>(
-        const Text('Are you sure you want to remove all licenses?'),
-        title: 'Remove All Licenses',
-      );
-      if (!result) return;
-    }
-
-    if (mounted && _formKey.currentState!.validate()) {
-      final updatedSubscription = _subscription.copyWith(
-        fee: double.parse(_feeController.text),
-        name: _nameController.text,
-        licenses: _assignedLicenses,
-        expiresOn: _selectedExpiryDate,
-        effectiveFrom: _selectedEffectiveDate,
-        updatedBy: context.employee?.fullName ?? 'unknown',
-      );
-
-      context.read<SubscriptionBloc>().add(
-        OverrideTenant<Subscription>(
-          documentId: _subscription.id,
-          data: updatedSubscription,
-        ),
-      );
-
-      _formKey.currentState!.reset();
-
-      context.showAlertOverlay(
-        '${_nameController.text.toTitle} subscription successfully updated',
-      );
-      Navigator.pop(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    return BlocListener<SubscriptionBloc, TenantState<Subscription>>(
+      listener: _handleBlocState,
+      child: _buildBody(),
+    );
+  }
+
+  BlocBuilder<SubscriptionBloc, TenantState<Subscription>> _buildBody() {
     return BlocBuilder<SubscriptionBloc, TenantState<Subscription>>(
       builder: (context, state) => Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: _buildBody(context),
+        child: _buildCard(context),
       ),
     );
   }
 
-  Column _buildBody(BuildContext context) {
+  Column _buildCard(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[

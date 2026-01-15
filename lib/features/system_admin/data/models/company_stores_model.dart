@@ -2,6 +2,7 @@ import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
 class CompanyStores extends Equatable {
@@ -83,7 +84,18 @@ class CompanyStores extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  bool get isEmpty => id.isEmpty && storeNumber.isEmpty;
+  /// Used as a fallback when no matching CompanyStores is found.
+  static get empty => CompanyStores(
+    id: '',
+    name: '',
+    phone: '',
+    location: '',
+    storeNumber: '',
+    createdBy: '',
+  );
+
+  /// Use this to check if the CompanyStores is the default/fallback (e.g., not found).
+  bool get isEmpty => identical(this, CompanyStores.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -107,11 +119,9 @@ class CompanyStores extends Equatable {
   /// Filter/Search
   bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
-  /// [findStoresById]
-  static Iterable<CompanyStores> findStoresById(
-    List<CompanyStores> stores,
-    String id,
-  ) => stores.where((d) => d.id == id);
+  /// [findById]
+  static CompanyStores? findById(List<CompanyStores> departs, String id) =>
+      departs.firstWhereOrNull((d) => d.id == id);
 
   /// copyWith method
   CompanyStores copyWith({

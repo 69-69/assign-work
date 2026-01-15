@@ -1,7 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/agent/data/models/agent_client_model.dart';
 import 'package:assign_erp/features/agent/presentation/bloc/agent_bloc.dart';
@@ -83,8 +83,8 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
     return ListToolbarButtons(
       refreshLabel: 'Workspaces',
       dataLength: tenants.length,
-      createLabel: 'Setup New Workspace',
-      onCreate: () async => await context.openCreateWorkspacePopUp(),
+      primaryLabel: 'Setup New Workspace',
+      onPrimary: () async => await context.openCreateWorkspacePopUp(),
       onRefresh: () =>
           context.read<AgentClientBloc>().add(RefreshClients<AgentClient>()),
     );

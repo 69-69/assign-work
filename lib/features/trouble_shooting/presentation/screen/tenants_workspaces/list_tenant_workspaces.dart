@@ -1,7 +1,7 @@
 import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/nav/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/create/create_workspace_acc.dart';
@@ -69,7 +69,8 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
   Widget _buildCard(BuildContext context, List<Workspace> workspaces) {
     final data = _filterExpiry(workspaces);
     final expiredWorkspaces = data.expired.map((w) => w.itemAsList()).toList();
-    // These are FAKE/UNKNOWN Workspaces
+
+    /// These are FAKE/UNKNOWN Tenant Workspaces
     final unKnownWorkspaces = data.unKnown.map((w) => w.itemAsList()).toList();
 
     return DynamicDataTable(
@@ -95,15 +96,20 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
 
   _buildToolbar(List<Workspace> tenants) {
     return ListToolbarButtons(
-      createLabel: 'Setup New Workspace',
-      onCreate: () => context.openCreateWorkspacePopUp(),
-      refreshLabel: 'Refresh Workspaces',
-      optLabel: 'Assign Subscription',
-      optTooltip: 'Assign Workspace Subscription & License',
+      secondaryIcon: Icons.edit,
       dataLength: tenants.length,
+      tertiaryIcon: Icons.vpn_key,
+      secondaryLabel: 'Edit Workspace',
+      refreshLabel: 'Refresh Workspaces',
+      primaryLabel: 'Setup New Workspace',
+      tertiaryLabel: 'Assign Subscription',
+      tertiaryTooltip: 'Assign Workspace Subscription & License',
+      onPrimary: () => context.openCreateWorkspacePopUp(),
       onRefresh: () => _bloc.add(RefreshTenants<Workspace>()),
-      optIcon: Icons.vpn_key,
-      optOnPressed: _isChecked == true
+      onSecondary: _isChecked == true
+          ? () async => _onEditTap(tenants, _selectedWorkspace!.id)
+          : null,
+      onTertiary: _isChecked == true
           ? () async {
               await context.assignSubscriptionToWorkspaceDialog(
                 workspaceId: _selectedWorkspace!.id,

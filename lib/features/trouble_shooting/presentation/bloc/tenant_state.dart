@@ -11,15 +11,6 @@ sealed class TenantState<T> extends Equatable {
 
 class LoadingTenants<T> extends TenantState<T> {}
 
-class SubscriptionAdded<T> extends TenantState<T> {
-  final String? message;
-
-  const SubscriptionAdded({this.message});
-
-  @override
-  List<Object?> get props => [message];
-}
-
 // multiple clients
 class TenantsLoaded<T> extends TenantState<T> {
   final List<T> data;
@@ -66,6 +57,24 @@ class TenantError<T> extends TenantState<T> {
   final String error;
 
   const TenantError(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+class SubscriptionAdded<T> extends TenantState<T> {
+  final String? message;
+
+  const SubscriptionAdded({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class SubscriptionError<T> extends TenantState<T> {
+  final String error;
+
+  const SubscriptionError(this.error);
 
   @override
   List<Object?> get props => [error];

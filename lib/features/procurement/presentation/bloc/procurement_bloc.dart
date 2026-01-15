@@ -279,7 +279,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(ProcurementUpdated<T>(message: 'data updated successfully'));
+      emit(ProcurementUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(ProcurementError<T>(e.toString()));
     }
@@ -313,7 +313,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       add(GetProcurements<T>());
 
       // Update State: Notify that data deleted
-      emit(ProcurementDeleted<T>(message: 'data deleted successfully'));
+      emit(ProcurementDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(ProcurementError<T>(e.toString()));
     }
@@ -325,7 +325,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   ) async {
     try {
       if (event.documentId.isEmpty) {
-        emit(ProcurementError<T>('Procurement IDs are empty'));
+        emit(ProcurementError<T>('No Procurement were selected to delete.'));
         return;
       }
 
@@ -336,7 +336,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       add(GetProcurements<T>());
 
       // Update State: Notify that data deleted
-      emit(ProcurementDeleted<T>(message: 'data deleted successfully'));
+      emit(ProcurementDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(ProcurementError<T>(e.toString()));
     }

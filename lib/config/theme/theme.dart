@@ -9,7 +9,7 @@ class MaterialTheme {
   static MaterialScheme lightScheme() {
     return const MaterialScheme(
       brightness: Brightness.light,
-      primary: Color(0xff232b5a), // 0xff232b5a
+      primary: Color(0xFF05318E), //0xff232b5a, 0xff041363, 0xFF673AB7
       // 0xff515b92
       surfaceTint: Color(0xff232b5a),
       // 0xff515b92
@@ -70,7 +70,7 @@ class MaterialTheme {
   static MaterialScheme darkScheme() {
     return const MaterialScheme(
       brightness: Brightness.dark,
-      primary: Color(0xff232b5a), // 0xff232b5a
+      primary: Color(0xFF05318E), //0xff232b5a, 0xff041363, 0xFF673AB7
       // 0xff515b92
       surfaceTint: Color(0xffbac3ff),
       onPrimary: Color(0xff222c61),

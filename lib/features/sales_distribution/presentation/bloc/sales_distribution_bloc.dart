@@ -100,7 +100,7 @@ class SalesDistributionBloc<T>
 
     try {
       _getDataStreamObserver = _salesQuoteRepository.getAllCacheData().listen(
-        (snapshot) {
+        (snapshot) async {
           final data = _toList(snapshot);
           emit(SalesDistributionsLoaded<T>(data));
         },
@@ -262,7 +262,7 @@ class SalesDistributionBloc<T>
       // add(LoadDataEvent<T>());
 
       // Update State: Notify that data updated
-      emit(SalesDistributionUpdated<T>(message: 'data updated successfully'));
+      emit(SalesDistributionUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
       emit(SalesDistributionError<T>(e.toString()));
     }
@@ -296,7 +296,7 @@ class SalesDistributionBloc<T>
       add(GetSalesDistributions<T>());
 
       // Update State: Notify that data deleted
-      emit(SalesDistributionDeleted<T>(message: 'data deleted successfully'));
+      emit(SalesDistributionDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(SalesDistributionError<T>(e.toString()));
     }
@@ -314,7 +314,7 @@ class SalesDistributionBloc<T>
       add(GetSalesDistributions<T>());
 
       // Update State: Notify that data deleted
-      emit(SalesDistributionDeleted<T>(message: 'data deleted successfully'));
+      emit(SalesDistributionDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
       emit(SalesDistributionError<T>(e.toString()));
     }

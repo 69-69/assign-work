@@ -1,10 +1,11 @@
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/permission_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/role_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_roles/role_bloc.dart';
@@ -32,53 +33,83 @@ class _CreateNewRoleForm extends StatefulWidget {
 }
 
 class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
-  // final Set<String> _touchedModules = {};
+  bool _isSubmitting = false;
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   final Set<Permission> _assignedPermissions = {};
   final _nameController = TextEditingController();
 
+  Employee? get _employee => context.employee;
+  String get _employeeId => _employee!.employeeId;
+  String get _employeeName => _employee!.fullName;
+
   Future<void> _onSubmit() async {
     final noPermissionsSelected = _assignedPermissions.isEmpty;
+    if (!noPermissionsSelected || _isSubmitting) return;
 
-    if (noPermissionsSelected) {
-      final result = await context.confirmAction<bool>(
-        const Text('Permissions are required to create a role.'),
-        title: 'Assign Permissions',
-      );
-      if (!result) return;
-    }
+    bool result = await _warnUser();
+    if (!result) return;
+
+    setState(() => _isSubmitting = true);
 
     if (mounted && _formKey.currentState!.validate()) {
       /// Create New Role
-      final newRole = Role(
-        name: _nameController.text,
-        permissions: _assignedPermissions,
-        createdBy: context.employee?.fullName ?? 'unknown',
-      );
-      context.read<RoleBloc>().add(AddSetup<Role>(data: newRole));
+      _createNewRole();
+    }
+  }
 
-      _formKey.currentState!.reset();
+  Future<bool> _warnUser() async {
+    final result = await context.confirmAction<bool>(
+      const Text('Permissions are required to create a role.'),
+      title: 'Assign Permissions',
+    );
+    return result;
+  }
 
-      context.showAlertOverlay(
-        '${_nameController.text.toTitle} role successfully created',
-      );
-      Navigator.pop(context);
+  void _createNewRole() {
+    final newRole = Role(
+      name: _nameController.text,
+      permissions: _assignedPermissions,
+      createdBy: _employeeName,
+      history: [AuditLog(action: AuditAction.created, actionBy: _employeeId)],
+    );
+    context.read<RoleBloc>().add(AddSetup<Role>(data: newRole));
+  }
+
+  void _resetForm() {
+    if (mounted) {
+      setState(() {
+        _formKey.currentState?.reset();
+        _formResetKey = UniqueKey();
+        _isSubmitting = false;
+        _assignedPermissions.clear();
+      });
+    }
+  }
+
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Role> state) {
+    switch (state) {
+      case SetupAdded<Role>(message: var msg):
+        _showAlert(msg ?? 'Role created successfully');
+      case SetupError<Role>():
+        _showAlert('Error saving changes');
+      case _: // no action
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    /*return BlocBuilder<RoleBloc, SetupState<Role>>(
-      builder: (context, state) => Form(
+    return BlocListener<RoleBloc, SetupState<Role>>(
+      listener: _handleBlocState,
+      child: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: _buildBody(context),
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody(context)),
       ),
-    );*/
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
     );
   }
 
@@ -97,7 +128,8 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
         const SizedBox(height: 10.0),
 
         context.confirmableActionButton(
-          label: 'Create Role',
+          label: _isSubmitting ? 'Creating...' : 'Create Role',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

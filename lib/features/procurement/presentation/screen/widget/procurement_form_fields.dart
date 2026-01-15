@@ -1,16 +1,15 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/extensions/item_category.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
-import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
-import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/supplier_status_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/procurement/data/model/supplier_link_model.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_purchase_order/widget/po_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:flutter/material.dart';
 
 class ProcurementFormFields {
@@ -108,7 +107,7 @@ class ProcurementFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _ItemCategoryDropdown(
+        return ItemCategoryDropdown(
           isDisabled: isDisabled,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
@@ -121,7 +120,7 @@ class ProcurementFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _UnitOfMeasureDropdown(
+        return UOMDropdown(
           isDisabled: isDisabled,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
@@ -231,7 +230,7 @@ class ProcurementFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _ItemCategoryDropdown(
+        return ItemCategoryDropdown(
           isService: true,
           label: 'Service Category',
           initialValue: initialData,
@@ -246,7 +245,7 @@ class ProcurementFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return _UnitOfMeasureDropdown(
+        return UOMDropdown(
           initialValue: initialData,
           isDisabled: isDisabled,
           onChanged: (String? selected) => onChanged(selected),
@@ -368,7 +367,7 @@ class ProcurementFormFields {
       customBuilder: ({required initialData, required onChanged}) {
         // prettyPrint('my-status', initialData);
 
-        return _SupplierStatusDropdown(
+        return SupplierStatusDropdown(
           initialValue: initialData,
           onChanged: onChanged,
         );
@@ -396,136 +395,32 @@ class ProcurementFormFields {
   }
 }
 
-/// Supplier Status [_SupplierStatusDropdown]
-class _SupplierStatusDropdown extends StatelessWidget {
-  final String? initialValue;
-  final void Function(dynamic s) onChanged;
-
-  const _SupplierStatusDropdown({required this.onChanged, this.initialValue});
-
-  @override
-  Widget build(BuildContext context) {
-    return StaticDropdown<String>(
-      key: key,
-      label: 'Supplier Status',
-      initialValue: initialValue,
-      items: SupplierLink.toStringList(),
-      getDisplayText: (status) => status,
-      onChanged: onChanged,
-    );
-  }
-}
-
-/// Purchase Requisition Item Category [ItemCategoryDropdown]
-class _ItemCategoryDropdown extends StatelessWidget {
-  final String? label;
-  final bool isService;
+/// [_BuyerContactPerson] Buyer Contact Person
+class BuyerContactPerson extends StatelessWidget {
   final bool isDisabled;
   final String? initialValue;
-  final void Function(String? s) onChanged;
+  final void Function(String empId, String name, String role) onChanged;
 
-  const _ItemCategoryDropdown({
-    required this.onChanged,
-    this.isDisabled = false,
-    this.isService = false,
+  const BuyerContactPerson({
+    super.key,
     this.initialValue,
-    this.label,
+    required this.onChanged,
+    required this.isDisabled,
   });
 
   @override
   Widget build(BuildContext context) {
-    final strList = ItemCategoryUtil.toStringList(isService: isService);
-    // If label is provided, replace it with the first in the list
-    if (label != null) strList[0] = label!;
-
     return IgnorePointer(
       ignoring: isDisabled,
-      child: StaticDropdown<String>(
-        key: key,
-        label: strList.first,
+      child: SearchEmployees(
+        labelText: 'Contact Person',
         initialValue: initialValue,
-        items: strList,
-        getDisplayText: (category) => category.toTitle,
         onChanged: onChanged,
       ),
     );
   }
 }
 
-/// PO unit of measure [UnitOfMeasureDropdown]
-class _UnitOfMeasureDropdown extends StatelessWidget {
-  // final String? label;
-  final bool isDisabled;
-  final String? initialValue;
-  final void Function(String? s) onChanged;
-
-  const _UnitOfMeasureDropdown({
-    required this.onChanged,
-    this.isDisabled = false,
-    this.initialValue,
-    // this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final strList = UOMUtil.toStringList();
-    // If label is provided, replace it with the first in the list
-    // if (label != null) strList[0] = label!;
-
-    return IgnorePointer(
-      ignoring: isDisabled,
-      child: StaticDropdown<String>(
-        key: key,
-        label: strList.first,
-        initialValue: initialValue,
-        items: strList,
-        getDisplayText: (uom) => uom.toTitle,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-/*// backup
-  static List<FieldGroupConfig> suppliersFields2({String? key}) => [
-    FieldGroupConfig(
-      key: key ?? 'supplierLinks',
-      label: 'Select Suppliers',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        prettyPrint('initial-Data', initialData);
-        final initial = Map<String, dynamic>.from(initialData ?? {});
-        return FindSuppliers(
-          initialSupplier: initial['supplierId'],
-          initialSupplierRep: initial['supplierRepId'],
-          onSupplierChanged: (id, name) {
-            prettyPrint('supplier-Id--$id', initial['supplierId']);
-            initial
-              ..['supplierId'] = id
-              ..['name'] = name; // Supplier Name is not required
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-          onContactPersonChanged: (contactPersonId) {
-            initial['supplierRepId'] = contactPersonId;
-            onChanged(Map<String, dynamic>.from(initial));
-          },
-        );
-      },
-    ),
-    FieldGroupConfig(
-      key: 'status',
-      label: 'Supplier Status',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return _SupplierStatusDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
-        );
-      },
-    ),
-  ];*/
 /* // Alternative-1 approach (now commented out)
     _lineItems
       ..clear() // Clear previous entries to prevent duplication

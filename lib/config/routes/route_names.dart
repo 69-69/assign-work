@@ -22,16 +22,14 @@ abstract class RouteNames {
   static const wAddMissingSocialAuthInfo = 'add_missing_social_auth_info';
   // static const workspaceSignup = 'create_workspace_acc';
 
-  /// ──────────────────────── 🏠 Sales & Distribution Modules / Tiles ────────────────────────
-  static const salesDistributionApp = 'sales_distribution_app';
-
   /// ──────────────────────── 🏠 Home Modules / Tiles ────────────────────────
+  static const salesDistributionApp = 'sales_distribution_app';
   static const inventoryApp = 'inventory_app';
   static const procurementApp = 'procurement_app';
   static const posApp = 'pos_app';
   static const systemAdminApp = 'setup_app';
-  static const warehouseApp = 'warehouse_app';
   static const customersApp = 'customers_app';
+  // static const warehouseApp = 'warehouse_app';
 
   /// ───────────────────────── 🔧 Trouble Shooting ─────────────────────────
   static const troubleShootingApp = 'trouble_shooting_app';
@@ -94,12 +92,12 @@ abstract class RouteNames {
 
   /// ─────────────────────── 🏢 Warehouse Module ───────────────────────
   static const wmsModule = 'warehouse_module_screen';
-  static const warehouse = 'warehouse_storage_screen';
-  static const warehouseLocation = 'warehouse_location_screen';
-  static const warehouseBin = 'warehouse_bin_screen';
-  static const inboundReceiving = 'warehouse_inbound_receiving_screen';
-  static const internalMovements = 'warehouse_internal_movements_screen';
-  static const outboundPickShipping = 'warehouse_outbound_pick_shipping_screen';
+  static const warehouseStorage = 'wms_storage_screen';
+  static const warehouseLocation = 'wms_location_screen';
+  static const warehouseBin = 'wms_bin_screen';
+  static const inboundReceiving = 'wms_inbound_receiving_screen';
+  static const internalMovements = 'wms_internal_movements_screen';
+  static const outboundPickShipping = 'wms_outbound_pick_shipping_screen';
 
   /// ─────────────────────── 🏢 Stock Management Module ───────────────────────
   static const stockManagementModule = 'stock_management_screen';

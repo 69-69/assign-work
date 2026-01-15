@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
@@ -165,35 +164,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     ],
   );
 
-  void _onSubmit() async {
+  void _onSubmit() {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    try {
-      if (!isFormValid || _newRFQ.isEmpty) {
-        context.showAlertOverlay(
-          'Please enter all required fields',
-          bgColor: kDangerColor,
-        );
-        return;
-      }
-
-      _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
-
-      context.showAlertOverlay(
-        'RFQ successfully created',
-        onCallback: () => _resetForm(),
-      );
-
-      await _confirmPrintoutDialog();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-          _resetForm();
-        });
-      }
+    if (!isFormValid || _newRFQ.isEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
     }
+
+    _bloc.add(AddProcurement<RequestForQuote>(data: _newRFQ));
   }
 
   void _resetForm() {
@@ -223,6 +203,25 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     _generateRFQNumber();
   }
 
+  void _showAlert(String msg) {
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
+    setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _handleBlocState(
+    BuildContext cxt,
+    ProcurementState<RequestForQuote> state,
+  ) async {
+    switch (state) {
+      case ProcurementAdded<RequestForQuote>(message: var msg):
+        _showAlert(msg ?? 'RFQ created successfully');
+        await _confirmPrintoutDialog();
+      case ProcurementError<RequestForQuote>():
+        _showAlert('Error saving changes');
+      case _: // no action
+    }
+  }
+
   @override
   void initState() {
     _generateRFQNumber();
@@ -233,10 +232,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+    return BlocListener<
+      ProRequestForQuoteBloc,
+      ProcurementState<RequestForQuote>
+    >(
+      listener: _handleBlocState,
+      child: Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+      ),
     );
   }
 
@@ -310,7 +315,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         ),
 
         context.confirmableActionButton(
-          label: 'Create Quote',
+          label: _isSubmitting ? 'Submitting...' : 'Create RFQ',
+          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -472,11 +478,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       // Show progress dialog while loading data
       await context.progressBarDialog(
         request: _printout(),
-        onSuccess: (_) => context.showAlertOverlay('RFQ successfully created'),
-        onError: (e) => context.showAlertOverlay(
-          'RFQ printout failed',
-          bgColor: kDangerColor,
-        ),
+        onSuccess: (_) => _showAlert('RFQ successfully created'),
+        onError: (e) => _showAlert('RFQ printout failed'),
       );
     }
   }
