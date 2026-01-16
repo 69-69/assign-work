@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
@@ -17,16 +18,42 @@ class ListDepartments extends StatefulWidget {
 }
 
 class _ListDepartmentsState extends State<ListDepartments> {
+  bool _inProgress = false;
   final List<String> _selectedIds = [];
-  DepartmentBloc get _bloc => context.read<DepartmentBloc>();
+  late final DepartmentBloc _bloc;
+  // DepartmentBloc get _bloc => context.read<DepartmentBloc>();
+
+  void _isDeleting(bool status) {
+    setState(() => _inProgress = status);
+    if (!status) _selectedIds.clear(); // Clear selected items
+  }
+
+  void _handleBlocState(BuildContext cxt, SetupState<Department> state) {
+    switch (state) {
+      case SetupDeleted<Department>(message: var msg):
+        cxt.showAlertOverlay(msg ?? 'Deleted successfully');
+        _isDeleting(false);
+      case SetupError<Department>():
+        cxt.showAlertOverlay('Error saving changes');
+      case _: // no action
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = DepartmentBloc(firestore: FirebaseFirestore.instance)
+      ..add(GetSetups<Department>());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<DepartmentBloc>(
-      create: (_) =>
-          DepartmentBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetSetups<Department>()),
-      child: _buildBody(),
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocListener<DepartmentBloc, SetupState<Department>>(
+        listener: _handleBlocState,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -70,8 +97,8 @@ class _ListDepartmentsState extends State<ListDepartments> {
     return ListToolbarButtons(
       primaryLabel: 'Create Departments',
       refreshLabel: 'Refresh Departments',
-      dangerLabel: 'Delete Department',
       secondaryLabel: 'Edit Department',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Department',
       secondaryIcon: Icons.edit,
       dataLength: departments.length,
       onPrimary: () => context.openAddDepartment(),
@@ -83,7 +110,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
-                // Delete all selected items
+                _isDeleting(true);
                 _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
               }
             }

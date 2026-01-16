@@ -32,16 +32,36 @@ class AssignEmployeeRole extends StatelessWidget {
 
   String get _employeeName => (employeeName ?? 'Employee').toTitle;
 
+  void _handleBlocState(BuildContext cxt, SetupState<Employee> state) {
+    switch (state) {
+      case SetupUpdated<Employee>(message: _):
+        _showAlert(cxt);
+      case SetupError<Employee>():
+        _showAlert(cxt, 'Error saving changes');
+      case _: // no action
+    }
+  }
+
+  void _showAlert(BuildContext cxt, [String? msg]) {
+    return cxt.showAlertOverlay(
+      msg ?? 'Role successfully assigned to $_employeeName',
+      onCallback: () => Navigator.pop(cxt),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return _buildAlertDialog(context);
+    return BlocListener<EmployeeBloc, SetupState<Employee>>(
+      listener: _handleBlocState,
+      child: _buildAlertDialog(context),
+    );
   }
 
   _buildAlertDialog(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
         title: 'Assign Role',
-        subtitle: 'Assign role to $_employeeName',
+        subtitle: 'Assign a role to $_employeeName',
       ),
       body: _buildBody(context),
       actions: [],
@@ -60,10 +80,6 @@ class AssignEmployeeRole extends StatelessWidget {
                 documentId: employeeId,
                 mapData: {'roleId': id, 'role': role},
               ),
-            );
-
-            context.showAlertOverlay(
-              'Role assigned to $_employeeName successfully',
             );
           },
         ),

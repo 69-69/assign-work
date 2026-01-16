@@ -423,7 +423,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           _buildListTile(
             context,
             title: 'Hosting: ${workspace!.hostingType.getName}',
-            subtitle: 'Store Location: ${employee?.storeNumber}',
+            subtitle: 'Store Branch: ${employee?.storeNumber}',
           ),
         ],
       ],

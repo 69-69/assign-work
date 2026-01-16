@@ -1023,10 +1023,7 @@ class _DataTableActionBar extends StatelessWidget {
     );
 
     return toolbar == null
-        ? Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: exportBtn,
-          )
+        ? exportBtn
         : SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -1034,7 +1031,7 @@ class _DataTableActionBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [?toolbar, const SizedBox(width: 10.0), exportBtn],
+              children: [?toolbar, exportBtn],
             ),
           );
   }
@@ -1120,28 +1117,31 @@ class _ExportButton extends StatelessWidget {
 
     return selectedRows.isEmpty
         ? const SizedBox.shrink()
-        : context.toolbarButton(
-            label: 'Export',
-            icon: Icons.file_download,
-            tooltip: 'Export Data to Excel or PDF',
-            bgColor: kSuccessColor,
-            onPressed: () async {
-              final isExcel = await _buildPreference(context);
-              prettyPrint('is-Excel', isExcel);
-              if (isExcel == null) return;
+        : Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: context.toolbarButton(
+              label: 'Export',
+              icon: Icons.file_download,
+              tooltip: 'Export Data to Excel or PDF',
+              bgColor: kSuccessColor,
+              onPressed: () async {
+                final isExcel = await _buildPreference(context);
+                prettyPrint('is-Excel', isExcel);
+                if (isExcel == null) return;
 
-              if (isExcel == true) {
-                await FileDocManager.exportDataToExcel(
-                  headers: headers,
-                  data: selectedRows,
-                );
-              } else {
-                await FileDocManager.exportDataToPdf(
-                  headers: headers,
-                  data: selectedRows,
-                );
-              }
-            },
+                if (isExcel == true) {
+                  await FileDocManager.exportDataToExcel(
+                    headers: headers,
+                    data: selectedRows,
+                  );
+                } else {
+                  await FileDocManager.exportDataToPdf(
+                    headers: headers,
+                    data: selectedRows,
+                  );
+                }
+              },
+            ),
           );
   }
 

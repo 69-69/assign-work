@@ -109,7 +109,7 @@ class _ListEmployeesState extends State<ListEmployees> {
           ? () async => await _onEditTap(employees, _selectedEmployee!.id)
           : null,
       onWarning: isSelected
-          ? () async => await context.assignEmployeeToStoreLocationDialog(
+          ? () async => await context.assignEmployeeToStoreBranchDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,
             )

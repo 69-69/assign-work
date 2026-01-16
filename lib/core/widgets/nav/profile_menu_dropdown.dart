@@ -305,7 +305,7 @@ class ProfileMenuDropdown extends StatelessWidget {
           _buildListTile(
             context,
             title: 'Hosting: ${workspace.hostingType.getName}',
-            subtitle: 'Store Location: ${employee?.storeNumber}',
+            subtitle: 'Store Branch: ${employee?.storeNumber}',
           ),
         ],
       ),
@@ -556,7 +556,7 @@ class ProfileMenuDropdown2 extends StatelessWidget {
           _buildListTile(
             context,
             title: 'Hosting: ${workspace.hostingType.label}',
-            subtitle: 'Store Location: ${employee?.storeNumber}',
+            subtitle: 'Store Branch: ${employee?.storeNumber}',
           ),
         ],
       ),

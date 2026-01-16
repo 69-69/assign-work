@@ -5,7 +5,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-class CompanyStores extends Equatable {
+class CompanyStore extends Equatable {
   static get _today => DateTime.now();
 
   final String id;
@@ -20,7 +20,7 @@ class CompanyStores extends Equatable {
   final DateTime updatedAt;
   final List<AuditLog> history;
 
-  CompanyStores({
+  CompanyStore({
     this.id = '',
     required this.name,
     this.phone = '',
@@ -37,8 +37,8 @@ class CompanyStores extends Equatable {
        updatedAt = updatedAt ?? _today; // Set default value
 
   /// fromFirestore / fromJson Function [StoreLocation.fromMap]
-  factory CompanyStores.fromMap(Map<String, dynamic> map, {String? id}) {
-    return CompanyStores(
+  factory CompanyStore.fromMap(Map<String, dynamic> map, {String? id}) {
+    return CompanyStore(
       id: id ?? map['id'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
@@ -85,7 +85,7 @@ class CompanyStores extends Equatable {
   }
 
   /// Used as a fallback when no matching CompanyStores is found.
-  static get empty => CompanyStores(
+  static get empty => CompanyStore(
     id: '',
     name: '',
     phone: '',
@@ -95,7 +95,7 @@ class CompanyStores extends Equatable {
   );
 
   /// Use this to check if the CompanyStores is the default/fallback (e.g., not found).
-  bool get isEmpty => identical(this, CompanyStores.empty);
+  bool get isEmpty => identical(this, CompanyStore.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -120,11 +120,11 @@ class CompanyStores extends Equatable {
   bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
   /// [findById]
-  static CompanyStores? findById(List<CompanyStores> departs, String id) =>
+  static CompanyStore? findById(List<CompanyStore> departs, String id) =>
       departs.firstWhereOrNull((d) => d.id == id);
 
   /// copyWith method
-  CompanyStores copyWith({
+  CompanyStore copyWith({
     String? id,
     String? name,
     String? phone,
@@ -137,7 +137,7 @@ class CompanyStores extends Equatable {
     DateTime? updatedAt,
     List<AuditLog>? history,
   }) {
-    return CompanyStores(
+    return CompanyStore(
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
@@ -195,14 +195,14 @@ class CompanyStores extends Equatable {
   ];
 }
 
-/// [businessOwnerDefaultStoreLocation] This is the Business owner's default Store Location
+/// [businessOwnerDefaultStoreLocation] This is the Business owner's default Store Branch
 /// during first-time workspace setup(Workspace Creation)
 Map<String, dynamic> businessOwnerDefaultStoreLocation({
   required String id,
   required String name,
   required String location,
 }) {
-  return CompanyStores(
+  return CompanyStore(
     id: id,
     name: name,
     location: location,

@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -67,7 +66,7 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
     );
   }
 
-  _buildFormBody(BuildContext context) {
+  Widget _buildFormBody(BuildContext context) {
     return Container(
       width: context.screenWidth,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
@@ -125,10 +124,7 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
       request: _processPasscodeReset(),
       onSuccess: (_) =>
           context.showAlertOverlay('Copied & Passcode Reset successful'),
-      onError: (error) => context.showAlertOverlay(
-        'Passcode Reset failed',
-        bgColor: kDangerColor,
-      ),
+      onError: (error) => context.showAlertOverlay('Passcode Reset failed'),
     );
   }
 
@@ -138,8 +134,6 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
 
       await context.toClipboard(passcode); // Copy to clipboard
       final hashed = SecretHasher.hash(passcode);
-
-      prettyPrint('data ', passcode);
 
       if (mounted) {
         context.read<EmployeeBloc>().add(

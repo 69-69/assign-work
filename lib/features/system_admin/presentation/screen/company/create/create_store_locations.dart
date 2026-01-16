@@ -8,7 +8,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_store_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
@@ -20,7 +20,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// Add Company Stores or Branches
 extension AddStoreLocations<T> on BuildContext {
   Future<void> openAddStoreLocations({
-    CompanyStores? serverStore,
+    CompanyStore? serverStore,
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
@@ -32,7 +32,7 @@ extension AddStoreLocations<T> on BuildContext {
 }
 
 class _AddStoreFormBody extends StatefulWidget {
-  final CompanyStores? serverStore;
+  final CompanyStore? serverStore;
 
   const _AddStoreFormBody({this.serverStore});
 
@@ -43,8 +43,8 @@ class _AddStoreFormBody extends StatefulWidget {
 class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
   bool _isSubmitting = false;
   final _formKey = GlobalKey<FormState>();
-  final List<CompanyStores> _storeList = [];
-  CompanyStores? get _serverStore => widget.serverStore;
+  final List<CompanyStore> _storeList = [];
+  CompanyStore? get _serverStore => widget.serverStore;
   bool get _isFormValid => _formKey.currentState?.validate() ?? false;
   bool get _isServerNull => _serverStore == null;
 
@@ -84,7 +84,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
           ),
         )
         .toList();
-    _bloc.add(AddSetup<List<CompanyStores>>(data: newStores));
+    _bloc.add(AddSetup<List<CompanyStore>>(data: newStores));
   }
 
   void _updateStore() {
@@ -94,9 +94,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
-    _bloc.add(
-      UpdateSetup<CompanyStores>(documentId: updated.id, data: updated),
-    );
+    _bloc.add(UpdateSetup<CompanyStore>(documentId: updated.id, data: updated));
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
@@ -121,14 +119,14 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
     setState(() => _isSubmitting = false);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<CompanyStores> state) {
+  void _handleBlocState(BuildContext cxt, SetupState<CompanyStore> state) {
     final note = _isServerNull ? 'Stores created' : 'Changes saved';
 
     switch (state) {
-      case SetupAdded<CompanyStores>(message: var msg):
-      case SetupUpdated<CompanyStores>(message: var msg):
+      case SetupAdded<CompanyStore>(message: var msg):
+      case SetupUpdated<CompanyStore>(message: var msg):
         _showAlert(msg ?? note);
-      case SetupError<CompanyStores>():
+      case SetupError<CompanyStore>():
         _showAlert('Error saving changes');
       case _: // no action
     }
@@ -142,7 +140,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CompanyStoresBloc, SetupState<CompanyStores>>(
+    return BlocListener<CompanyStoresBloc, SetupState<CompanyStore>>(
       listener: _handleBlocState,
       child: Form(
         key: _formKey,
@@ -185,7 +183,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
         // Create a new line item
         _storeList
           ..clear() // Clear previous entries to prevent duplication
-          ..addAll(data.map((e) => CompanyStores.fromMap(e)));
+          ..addAll(data.map((e) => CompanyStore.fromMap(e)));
       },
     );
   }

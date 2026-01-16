@@ -32,12 +32,32 @@ class AssignEmployeeDepartment extends StatelessWidget {
 
   String get _employeeName => (employeeName ?? 'Employee').toTitle;
 
-  @override
-  Widget build(BuildContext context) {
-    return _buildAlertDialog(context);
+  void _handleBlocState(BuildContext cxt, SetupState<Employee> state) {
+    switch (state) {
+      case SetupUpdated<Employee>(message: _):
+        _showAlert(cxt);
+      case SetupError<Employee>():
+        _showAlert(cxt, 'Error saving changes');
+      case _: // no action
+    }
   }
 
-  _buildAlertDialog(BuildContext context) {
+  void _showAlert(BuildContext cxt, [String? msg]) {
+    return cxt.showAlertOverlay(
+      msg ?? 'Department successfully assigned to $_employeeName',
+      onCallback: () => Navigator.pop(cxt),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<EmployeeBloc, SetupState<Employee>>(
+      listener: _handleBlocState,
+      child: _buildAlertDialog(context),
+    );
+  }
+
+  Widget _buildAlertDialog(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
         title: 'Assign Department',
@@ -60,10 +80,6 @@ class AssignEmployeeDepartment extends StatelessWidget {
                 documentId: employeeId,
                 mapData: {'departmentCode': code},
               ),
-            );
-
-            context.showAlertOverlay(
-              'Department assigned to $_employeeName successfully',
             );
           },
         ),

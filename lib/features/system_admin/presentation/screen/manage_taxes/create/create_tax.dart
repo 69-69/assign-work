@@ -20,7 +20,7 @@ extension CreateTaxes<T> on BuildContext {
   Future<void> openAddTax({Tax? serverTax}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: '${serverTax != null ? 'Edit' : 'Create'} Tax',
+      title: serverTax?.name.toTitle ?? 'Create Tax',
       body: _AddTaxForm(serverTax: serverTax),
     ),
   );

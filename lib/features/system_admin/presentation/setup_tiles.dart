@@ -25,7 +25,7 @@ extension SetupTiles on dynamic {
         'param': {'openTab': '1'},
         'access': _getName(SetupPermission.manageEmployee),
         'description':
-            'create staff attendance, accounts, assign roles for their utilization of the software',
+            'create & manage users permissions, roles, departments for their utilization of the software',
       },
       {
         'hasSplit': true,

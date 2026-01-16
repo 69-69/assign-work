@@ -14,11 +14,6 @@
 -------------------------
 
 - @Continue
-    - Refactor classes for Bloc Listeners 
-      - AssignDepartmentDialog
-      - AssignRoleDialog
-      - ForgotPasscodeDialog
-      - AssignStoreLocationDialog
     - Inventory System
       - ~~Item Master Updates~~
       - Stock mangement

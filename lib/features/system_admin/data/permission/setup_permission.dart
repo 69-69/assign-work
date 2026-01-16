@@ -13,13 +13,13 @@ enum SetupPermission {
   updateCompanyInfo,
   deleteCompanyInfo,
 
-  // store Location
-  manageStoreLocation,
-  createStoreLocation,
-  viewStoreLocation,
-  updateStoreLocation,
-  deleteStoreLocation,
-  assignStoreLocation,
+  // store Branch
+  manageStoreBranch,
+  createStoreBranch,
+  viewStoreBranch,
+  updateStoreBranch,
+  deleteStoreBranch,
+  assignStoreBranch,
 
   // Employee
   manageEmployee,
@@ -130,40 +130,40 @@ final List<AccessControl> _companyInfoPermissions = [
 
 final List<AccessControl> _storeLocationPermissions = [
   AccessControl(
-    module: "store locations",
-    title: "Manage store locations",
-    description: "Allow users to create, edit, and delete store locations.",
-    access: SetupPermission.manageStoreLocation,
+    module: "store branch",
+    title: "Manage store branches",
+    description: "Allow users to create, edit, and delete store branches.",
+    access: SetupPermission.manageStoreBranch,
   ),
   AccessControl(
-    module: "store location",
-    title: "Create new store location",
-    description: "Allow users to create new store locations.",
-    access: SetupPermission.createStoreLocation,
+    module: "store branch",
+    title: "Create new store branch",
+    description: "Allow users to create new store branches.",
+    access: SetupPermission.createStoreBranch,
   ),
   AccessControl(
-    module: "store location",
-    title: "View store locations",
-    description: "Allow access to a list of all store locations.",
-    access: SetupPermission.viewStoreLocation,
+    module: "store branch",
+    title: "View store branches",
+    description: "Allow access to a list of all store branches.",
+    access: SetupPermission.viewStoreBranch,
   ),
   AccessControl(
-    module: "store location",
-    title: "Edit store locations",
-    description: "Allow users to modify details of an existing store location.",
-    access: SetupPermission.updateStoreLocation,
+    module: "store branch",
+    title: "Edit store branches",
+    description: "Allow users to modify details of an existing store branch.",
+    access: SetupPermission.updateStoreBranch,
   ),
   AccessControl(
-    module: "store location",
-    title: "Delete store locations",
-    description: "Allow users to permanently remove a store location record.",
-    access: SetupPermission.deleteStoreLocation,
+    module: "store branch",
+    title: "Delete store branches",
+    description: "Allow users to permanently remove a store branch record.",
+    access: SetupPermission.deleteStoreBranch,
   ),
   AccessControl(
-    module: "store location",
-    title: "Assign store locations",
-    description: "Allow users to assign store locations to employees.",
-    access: SetupPermission.assignStoreLocation,
+    module: "store branch",
+    title: "Assign store branches",
+    description: "Allow users to assign store branches to employees.",
+    access: SetupPermission.assignStoreBranch,
   ),
 ];
 

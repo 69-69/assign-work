@@ -10,21 +10,21 @@ import 'package:assign_erp/features/system_admin/presentation/screen/company/wid
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension AssignStoreLocationDialog on BuildContext {
-  Future<void> assignEmployeeToStoreLocationDialog({
+extension AssignStoreBranchDialog on BuildContext {
+  Future<void> assignEmployeeToStoreBranchDialog({
     required String employeeId,
     String? employeeName,
-  }) async => await AssignStoreLocation(
+  }) async => await AssignStoreBranch(
     employeeId: employeeId,
     employeeName: employeeName,
   ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
 
-class AssignStoreLocation extends StatelessWidget {
+class AssignStoreBranch extends StatelessWidget {
   final String employeeId;
   final String? employeeName;
 
-  const AssignStoreLocation({
+  const AssignStoreBranch({
     super.key,
     required this.employeeId,
     this.employeeName,
@@ -32,16 +32,36 @@ class AssignStoreLocation extends StatelessWidget {
 
   String get _employeeName => (employeeName ?? 'Employee').toTitle;
 
+  void _handleBlocState(BuildContext cxt, SetupState<Employee> state) {
+    switch (state) {
+      case SetupUpdated<Employee>(message: _):
+        _showAlert(cxt);
+      case SetupError<Employee>():
+        _showAlert(cxt, 'Error saving changes');
+      case _: // no action
+    }
+  }
+
+  void _showAlert(BuildContext cxt, [String? msg]) {
+    return cxt.showAlertOverlay(
+      msg ?? '$_employeeName is now working at this branch',
+      onCallback: () => Navigator.pop(cxt),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return _buildAlertDialog(context);
+    return BlocListener<EmployeeBloc, SetupState<Employee>>(
+      listener: _handleBlocState,
+      child: _buildAlertDialog(context),
+    );
   }
 
   _buildAlertDialog(BuildContext context) {
     return CustomDialog(
       title: DialogTitle(
-        title: 'Assign Store Location',
-        subtitle: 'Assign store to $_employeeName',
+        title: 'Assign Store Branch',
+        subtitle: 'Assign $_employeeName to a store branch',
       ),
       body: _buildBody(context),
       actions: [],
@@ -53,17 +73,13 @@ class AssignStoreLocation extends StatelessWidget {
       width: context.screenWidth,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       child: AutofillGroup(
-        child: SearchStores(
+        child: SearchStoreBranches(
           onChanged: (id, store) {
             context.read<EmployeeBloc>().add(
               UpdateSetup<Employee>(
                 documentId: employeeId,
                 mapData: {'storeNumber': id},
               ),
-            );
-
-            context.showAlertOverlay(
-              'Store Location assigned to $_employeeName successfully',
             );
           },
         ),

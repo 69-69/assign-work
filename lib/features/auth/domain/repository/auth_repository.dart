@@ -23,8 +23,8 @@ import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_status_enum.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/sign_in/workspace/workspace_creation_stages.dart';
-import 'package:assign_erp/features/system_admin/data/models/attendance_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/activity_log_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_store_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
@@ -511,7 +511,7 @@ class AuthRepository extends FirestoreRepository {
         onProgress(WorkspaceCreationStage.creatingDefaultRolePermission);
         final role = await _businessOwnerDefaultPermissions();
 
-        // FOR STORE LOCATION CREATION (Business Owner)
+        // FOR STORE Branch CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingDefaultBusinessLocation);
         final storeNumber = await _businessOwnerDefaultBusinessLocation(
           address: address,
@@ -761,10 +761,10 @@ class AuthRepository extends FirestoreRepository {
     return defaultDepart['code'] as String;
   }
 
-  /// [_businessOwnerDefaultBusinessLocation] This is the Business owner's default store location
+  /// [_businessOwnerDefaultBusinessLocation] This is the Business owner's default store Branch
   /// during first-time workspace setup(Workspace Creation)
   ///
-  /// @param address - The address of the store location.
+  /// @param address - The address of the store Branch.
   /// @param company - The name of the company.
   /// @return `Future<String>`
   Future<String> _businessOwnerDefaultBusinessLocation({
@@ -1050,7 +1050,7 @@ class AuthRepository extends FirestoreRepository {
           .toList();
 
       // Prepare log data
-      final log = Attendance(
+      final log = ActivityLog(
         id: colRef.id,
         type: type,
         userId: id,
@@ -1065,9 +1065,9 @@ class AuthRepository extends FirestoreRepository {
       // Write to Firestore
       await colRef.set(log.toMap());
 
-      prettyPrint('Attendance $type', 'logged successfully.');
+      prettyPrint('Activity-Log $type', 'saved successfully.');
     } catch (e) {
-      prettyPrint('Failed to log attendance', '$e');
+      prettyPrint('Failed to saved Activity-Log', '$e');
     }
   }
 

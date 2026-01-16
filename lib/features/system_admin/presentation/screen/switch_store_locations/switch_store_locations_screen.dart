@@ -10,7 +10,7 @@ import 'package:assign_erp/core/widgets/layout/custom_scroll_bar.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_store_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/create/create_store_locations.dart';
@@ -29,7 +29,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
     return BlocProvider<CompanyStoresBloc>(
       create: (context) =>
           CompanyStoresBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetSetups<CompanyStores>()),
+            ..add(GetSetups<CompanyStore>()),
       child: CustomScaffold(
         isGradientBg: true,
         title: storeSwitcherAppTitle.toUpperAll,
@@ -44,16 +44,16 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
     );
   }
 
-  BlocBuilder<CompanyStoresBloc, SetupState<CompanyStores>> _buildBody() {
-    return BlocBuilder<CompanyStoresBloc, SetupState<CompanyStores>>(
+  BlocBuilder<CompanyStoresBloc, SetupState<CompanyStore>> _buildBody() {
+    return BlocBuilder<CompanyStoresBloc, SetupState<CompanyStore>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingSetup<CompanyStores>() => context.loader,
-          SetupsLoaded<CompanyStores>(data: var results) => _buildCard(
+          LoadingSetup<CompanyStore>() => context.loader,
+          SetupsLoaded<CompanyStore>(data: var results) => _buildCard(
             context,
             results,
           ),
-          SetupError<CompanyStores>(error: final error) => context.buildError(
+          SetupError<CompanyStore>(error: final error) => context.buildError(
             error,
           ),
           _ => const SizedBox.shrink(),
@@ -62,7 +62,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(BuildContext context, List<CompanyStores> stores) {
+  Widget _buildCard(BuildContext context, List<CompanyStore> stores) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,7 +74,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
     );
   }
 
-  Wrap _buildStoreSwitchList(BuildContext context, List<CompanyStores> stores) {
+  Wrap _buildStoreSwitchList(BuildContext context, List<CompanyStore> stores) {
     return Wrap(
       spacing: 1,
       runSpacing: 1,
@@ -83,7 +83,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
         _addStores(context),
         ...stores.asMap().entries.map((entry) {
           int index = entry.key;
-          CompanyStores store = entry.value;
+          CompanyStore store = entry.value;
           final ranColor = randomBgColors[index % randomBgColors.length];
 
           return _buildContainer(
@@ -235,7 +235,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 10),
                   child: _buildTitle(
                     context,
-                    title: 'Switch Store Locations',
+                    title: 'Switch Store Branches',
                     style: context.textTheme.titleMedium?.copyWith(
                       color: kWhiteColor,
                       fontWeight: FontWeight.normal,

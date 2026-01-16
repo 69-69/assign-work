@@ -14,7 +14,7 @@ const _nChar = '⏺';
 // WORKSPACE/WORKER/WORKING, HEALTHSPACE, EDUSPACE
 const appName = 'ASSIGN.WORK';
 const appSubName =
-    'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Reports $_nChar Multi-Location';
+    'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Manufacturing $_nChar Multi-Location $_nChar Reports';
 const ghanaCedis = 'GHS';
 
 /// APP LOGO
@@ -53,7 +53,7 @@ const warehouseAppTitle = 'warehouse - wms';
 const stockManagementAppTitle = 'stock management';
 const customerAppTitle = 'customer - crm';
 const systemAdminAppTitle = 'System Administration';
-const storeSwitcherAppTitle = 'switch store locations';
+const storeSwitcherAppTitle = 'switch store branch';
 const userGuideAppTitle = 'user guide';
 
 /// MANAGEMENT SUB-SCREENS TITLES

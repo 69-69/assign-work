@@ -74,7 +74,7 @@ class AuthCacheService {
     await _addToCache(_empCacheKey, cacheData);
   }
 
-  /// Switch between store Locations [switchStores]
+  /// Switch between store Branch [switchStores]
   Future<bool> switchStores(String storeNumber) async {
     Employee? employee = getEmployee();
     if (employee == null) return false;

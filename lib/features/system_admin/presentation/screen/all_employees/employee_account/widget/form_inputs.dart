@@ -105,14 +105,14 @@ class EmailAndPasscode extends StatelessWidget {
   }
 }
 
-/// Passcode & Store locations Dropdown [StoreLocationsAndDepartment]
-class StoreLocationsAndDepartment extends StatelessWidget {
+/// Passcode & Store branches Dropdown [StoreBranchesAndDepartment]
+class StoreBranchesAndDepartment extends StatelessWidget {
   final Function(String, String) onStoresChange;
   final String? initialStore;
   final Function(String, String, String) onDepartChanged;
   final String? initialValue;
 
-  const StoreLocationsAndDepartment({
+  const StoreBranchesAndDepartment({
     super.key,
     this.initialStore,
     this.initialValue,
@@ -129,7 +129,7 @@ class StoreLocationsAndDepartment extends StatelessWidget {
           initialValue: initialValue,
           onChanged: onDepartChanged,
         ),
-        StoreLocationsDropdown(
+        StoreBranchesDropdown(
           onChange: onStoresChange,
           initialValue: initialValue,
         ),
@@ -234,12 +234,12 @@ class _TemporaryPasscodeState extends State<TemporaryPasscode> {
   }
 }
 
-/// Store locations Dropdown [StoreLocationsDropdown]
-class StoreLocationsDropdown extends StatelessWidget {
+/// Store branches Dropdown [StoreBranchesDropdown]
+class StoreBranchesDropdown extends StatelessWidget {
   final String? initialValue;
   final Function(String, String) onChange;
 
-  const StoreLocationsDropdown({
+  const StoreBranchesDropdown({
     super.key,
     required this.onChange,
     this.initialValue,
@@ -247,7 +247,7 @@ class StoreLocationsDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SearchStores(
+    return SearchStoreBranches(
       initialValue: initialValue,
       onChanged: (id, store) => onChange(id, store),
     );

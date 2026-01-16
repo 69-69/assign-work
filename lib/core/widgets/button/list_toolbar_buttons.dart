@@ -34,7 +34,9 @@ class ListToolbarButtons extends StatelessWidget {
   final IconData? permanentIcon;
   final IconData? secondaryIcon;
   final IconData? tertiaryIcon;
+  final IconData? primaryIcon;
   final IconData? warningIcon;
+  final IconData? dangerIcon;
   final int dataLength;
 
   const ListToolbarButtons({
@@ -64,7 +66,9 @@ class ListToolbarButtons extends StatelessWidget {
     this.permanentIcon,
     this.secondaryIcon,
     this.tertiaryIcon,
+    this.primaryIcon,
     this.warningIcon,
+    this.dangerIcon,
     this.dataLength = 0,
   });
 
@@ -133,7 +137,7 @@ class ListToolbarButtons extends StatelessWidget {
       onPressed: onPrimary,
       bgColor: kPrimaryColor,
       tooltip: primaryTooltip ?? primaryLabel,
-      icon: Icons.add,
+      icon: primaryIcon ?? Icons.add,
     );
   }
 
@@ -200,7 +204,7 @@ class ListToolbarButtons extends StatelessWidget {
       bgColor: kDangerColor,
       tooltip: dangerTooltip ?? dangerLabel,
       onPressed: onDanger,
-      icon: Icons.delete,
+      icon: dangerIcon ?? Icons.delete,
     );
   }
 

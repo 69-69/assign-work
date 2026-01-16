@@ -17,7 +17,7 @@ class CompanyScreen extends StatelessWidget {
       tabs: [
         CustomTabModel(label: 'Company', icon: Icons.home_work),
         CustomTabModel(label: 'Departments', icon: Icons.groups),
-        CustomTabModel(label: 'Stores', icon: Icons.store),
+        CustomTabModel(label: 'Store Branches', icon: Icons.store),
         CustomTabModel(label: 'PDFs / Print Setup', icon: Icons.print),
       ],
       children: [

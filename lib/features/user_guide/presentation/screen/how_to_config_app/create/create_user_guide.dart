@@ -35,6 +35,7 @@ extension CreateGuideForm<T> on BuildContext {
       Icons.delete,
       iconColor: kDangerColor,
       bgColor: kDangerColor.toAlpha(0.1),
+      borderColor: kTransparentColor,
       tooltip: 'Delete manual',
       onPressed: () async {
         final isConfirmed = await confirmUserActionDialog();

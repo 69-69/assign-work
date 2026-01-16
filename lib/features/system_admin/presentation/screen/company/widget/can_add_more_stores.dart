@@ -8,7 +8,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/refresh_entire_app.dart';
-import 'package:assign_erp/features/system_admin/data/models/company_stores_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/company_store_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:flutter/material.dart';
@@ -35,32 +35,29 @@ extension CompanyStoreBranches on BuildContext {
   /// [totalStores] Returns the total number of branch stores or shops a company (subscriber) has added.
   int get totalStores {
     final state = watch<CompanyStoresBloc>().state;
-    if (state is! SetupsLoaded<CompanyStores>) return 0;
+    if (state is! SetupsLoaded<CompanyStore>) return 0;
     return state.data.length;
   }
 
   Future<void> onSwitchStore(String storeNumber, {String location = ''}) async {
     // Confirm the action
     final isConfirmed = await confirmUserActionDialog(
-      onAcceptLabel: 'Switch Branch (Store)',
+      onAcceptLabel: 'Switch Store',
     );
 
     if (mounted && isConfirmed) {
       final msg =
-          'Branch (Store) location changed to ${location.toTitle}\nBranch (Store) number $storeNumber';
+          'Store Branch changed to ${location.toTitle} (Branch #$storeNumber)';
       // Show progress dialog while updating store number
       await progressBarDialog(
-        child: const Text('Please wait...while switching Branch (Store)'),
+        child: const Text('Please wait while updating the store branch...'),
         request: _updateStoreNumber(
           msg,
           storeNumber: storeNumber,
           location: location,
         ),
         onSuccess: (_) => showAlertOverlay(msg),
-        onError: (error) => showAlertOverlay(
-          'Branch (Store) switching failed',
-          bgColor: kDangerColor,
-        ),
+        onError: (error) => showAlertOverlay('Failed to update store branch'),
       );
     }
   }

@@ -239,9 +239,9 @@ extension ScreenHelper on BuildContext {
       onPressed: null,
       style: OutlinedButton.styleFrom(
         elevation: 30,
-        shape: const StadiumBorder(),
+        shape: StadiumBorder(),
         padding: const EdgeInsets.fromLTRB(1, 1, 10, 1),
-        backgroundColor: (bgColor ?? kDangerColor).toAlpha(0.7),
+        backgroundColor: (bgColor ?? kDangerColor).toAlpha(0.4),
       ),
       label: Text(
         total,

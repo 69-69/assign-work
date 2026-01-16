@@ -1,3 +1,4 @@
+export 'activity_log/activity_log_bloc.dart';
 export 'company/company_bloc.dart';
 export 'company/company_stores_bloc.dart';
 export 'company/department_bloc.dart';

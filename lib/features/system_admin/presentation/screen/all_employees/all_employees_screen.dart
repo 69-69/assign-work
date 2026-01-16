@@ -21,9 +21,9 @@ class _AllEmployeesScreenState extends State<AllEmployeesScreen> {
       length: 2,
       tabs: [
         CustomTabModel(label: 'Employees', icon: Icons.people),
-        CustomTabModel(label: 'Attendance', icon: Icons.fact_check_outlined),
+        CustomTabModel(label: 'Activity logs', icon: Icons.fact_check_outlined),
       ],
-      children: [CreateUserAccScreen(), AttendanceScreen()],
+      children: [CreateUserAccScreen(), ActivityLogsScreen()],
     );
   }
 }

@@ -4,10 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _today = DateTime.now();
 
-class Attendance {
+class ActivityLog {
   final String id;
 
-  /// [type] attendance type (sign in/out)
+  /// [type] Activity type (sign in/out)
   final String type;
 
   /// [userId] employee/workspace ID
@@ -24,7 +24,7 @@ class Attendance {
   /// [areasViewed] list of areas viewed by employee/workspace
   final List<String> areasViewed;
 
-  Attendance({
+  ActivityLog({
     this.id = '',
     required this.type,
     required this.userId,
@@ -37,7 +37,7 @@ class Attendance {
     DateTime? createdAt,
   }) : createdAt = createdAt ?? _today;
 
-  static const String cacheKey = 'log_attendance';
+  static const String cacheKey = 'log_activity_logs';
 
   Map<String, dynamic> _mapTemp() => {
     'id': id,
@@ -54,10 +54,10 @@ class Attendance {
         : null,
   };
 
-  factory Attendance.fromMap(Map<String, dynamic> map, {String? id}) {
+  factory ActivityLog.fromMap(Map<String, dynamic> map, {String? id}) {
     final loc = map['location'];
 
-    return Attendance(
+    return ActivityLog(
       id: (id ?? map['id']) ?? '',
       type: map['type'] ?? '',
       userId: map['userId'] ?? '',
@@ -74,7 +74,7 @@ class Attendance {
     );
   }
 
-  /// Convert Attendance to a map for storing in Firestore [toMap]
+  /// Convert ActivityLog to a map for storing in Firestore [toMap]
   Map<String, dynamic> toMap() {
     var newMap = _mapTemp();
     newMap['createdAt'] = createdAt.toISOString;
@@ -82,7 +82,7 @@ class Attendance {
     return newMap;
   }
 
-  /// Convert Attendance to toCache Function [toCache]
+  /// Convert ActivityLog to toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
     newMap['createdAt'] = createdAt.toMilliseconds;
@@ -90,8 +90,8 @@ class Attendance {
     return {'id': cacheKey, 'data': newMap};
   }
 
-  static Attendance findById(List<Attendance> attendances, String id) =>
-      attendances.firstWhere((attendance) => attendance.id == id);
+  static ActivityLog findById(List<ActivityLog> logs, String id) =>
+      logs.firstWhere((log) => log.id == id);
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;

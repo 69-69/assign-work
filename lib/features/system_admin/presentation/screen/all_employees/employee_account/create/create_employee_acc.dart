@@ -186,7 +186,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
         FormGroupCard(
           title: 'Role & Permission',
           children: [
-            StoreLocationsAndDepartment(
+            StoreBranchesAndDepartment(
               onDepartChanged: (id, code, name) {
                 if (_isFormValid) setState(() => _selectedDepartCode = code);
               },
