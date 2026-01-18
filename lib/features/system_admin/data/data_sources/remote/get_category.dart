@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/item_config/category_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

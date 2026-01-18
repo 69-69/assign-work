@@ -3,8 +3,6 @@ import 'package:assign_erp/features/access_control/data/model/access_control_mod
 /// PERMISSION BASED ACCESS-CONTROL
 enum InventoryPermission {
   manageInventory,
-  // Item / Product Master
-  manageItemMaster,
   // Warehouse Management System
   manageWarehouse,
   manageWarehouseAddress,
@@ -78,16 +76,6 @@ enum InventoryPermission {
   viewReport,
   viewImsSecrets, // For viewing items IDs
 }
-
-final List<AccessControl> _itemMasterPermissions = [
-  AccessControl(
-    module: "item master",
-    title: "Manage Item Master",
-    description:
-        "Allow users to create, edit, and delete items in the inventory system.",
-    access: InventoryPermission.manageItemMaster,
-  ),
-];
 
 final List<AccessControl> _warehousePermissions = [
   // ───────────── Master Data ─────────────
@@ -485,7 +473,6 @@ final inventoryDisplayName = 'inventory';
 
 final List<AccessControl> inventoryPermissions = [
   ..._inventoryPermissions,
-  ..._itemMasterPermissions,
   ..._warehousePermissions,
   ..._stockManagementPermissions,
   ..._stockPermissions,

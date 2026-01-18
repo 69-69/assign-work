@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
@@ -83,6 +83,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   /// Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeId => _employee!.employeeId;
 
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
@@ -243,65 +244,15 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        SQFormInputs.buildSQNumber(context, _quoteNumber, _generateSQNumber),
-
-        FormGroupCard(
-          title: '1. Quotation Overview',
-          subTitle: '\nGeneral quotation info & document status.',
-          children: [_buildAutoCreateAndStatus()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Customer & Sales',
-          subTitle:
-              '\nCustomer details, sales channel, & sales representative.',
-          children: [_buildSalesChannel(), _buildSalesRepAndCustomer()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. Pricing & Tax Determination',
-          subTitle: '\nCurrency, pricing conditions, & tax preferences.',
-          children: [
-            _buildCurrencyPricing(),
-            HorizontalDivider(space: 0.4),
-            _buildTaxModeSelector(),
-          ],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '4. ${_lineItemType.toSentence} Line Items',
-          subTitle: '\nYou can add more ${_lineItemType}s to the Quotation.',
-          children: [_buildLineItems()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '5. Dates & Validity',
-          subTitle: '\nQuotation date, validity period, & delivery timeline.',
-          children: [_buildDateValidity()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '6. Addresses',
-          subTitle: '\nCustomer Bill-to, Ship-to, & other address details.',
-          children: [_buildAddresses()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '7. Terms & Conditions',
-          subTitle: '\nPayment terms, warranty, & commercial conditions.',
-          children: [_buildTermsConditions()],
-        ),
-
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: SQFormInputs.buildSQNumber(
+        context,
+        _quoteNumber,
+        _generateSQNumber,
+      ),
+      footers: [
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
           label: _isSubmitting ? 'Creating...' : 'Create Quote',
@@ -312,6 +263,54 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       ],
     );
   }
+
+  List<Map<String, dynamic>> get formGroupCards => [
+    {
+      'title': 'Quotation Overview',
+      'subTitle': '\nGeneral quotation info & document status.',
+      'children': [_buildAutoCreateAndStatus()],
+    },
+
+    {
+      'title': 'Customer & Sales',
+      'subTitle': '\nCustomer details, sales channel, & sales representative.',
+      'children': [_buildSalesChannel(), _buildSalesRepAndCustomer()],
+    },
+
+    {
+      'title': 'Pricing & Tax Determination',
+      'subTitle': '\nCurrency, pricing conditions, & tax preferences.',
+      'children': [
+        _buildCurrencyPricing(),
+        HorizontalDivider(space: 0.4),
+        _buildTaxModeSelector(),
+      ],
+    },
+
+    {
+      'title': '${_lineItemType.toSentence} Line Items',
+      'subTitle': '\nYou can add more ${_lineItemType}s to the Quotation.',
+      'children': [_buildLineItems()],
+    },
+
+    {
+      'title': 'Dates & Validity',
+      'subTitle': '\nQuotation date, validity period, & delivery timeline.',
+      'children': [_buildDateValidity()],
+    },
+
+    {
+      'title': 'Addresses',
+      'subTitle': '\nCustomer Bill-to, Ship-to, & other address details.',
+      'children': [_buildAddresses()],
+    },
+
+    {
+      'title': 'Terms & Conditions',
+      'subTitle': '\nPayment terms, warranty, & commercial conditions.',
+      'children': [_buildTermsConditions()],
+    },
+  ];
 
   // -------------------------
   // Section Builders

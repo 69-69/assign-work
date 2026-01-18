@@ -272,44 +272,59 @@ extension Custombutton on BuildContext {
 
     return Tooltip(
       message: tooltip ?? label,
-      child: ElevatedButton.icon(
-        statesController: controller,
-        onPressed: onPressed,
-        icon: icon is IconData
-            ? Icon(icon, color: txtColor ?? kWhiteColor)
-            : icon,
-        label: AnimatedBuilder(
-          animation: controller,
-          builder: (_, __) {
-            final isHoveredOrFocused =
-                controller.value.contains(WidgetState.hovered) ||
-                controller.value.contains(WidgetState.focused);
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutSine, // smooth & slow expansion
+        alignment: Alignment.centerRight,
+        child: ElevatedButton.icon(
+          statesController: controller,
+          onPressed: onPressed,
+          icon: icon is IconData
+              ? Icon(icon, color: txtColor ?? kWhiteColor)
+              : icon,
+          label: AnimatedBuilder(
+            animation: controller,
+            builder: (_, __) {
+              final isHoveredOrFocused =
+                  controller.value.contains(WidgetState.hovered) ||
+                  controller.value.contains(WidgetState.focused);
 
-            final shouldShowLabel = showLabel || isHoveredOrFocused;
+              final shouldShowLabel = showLabel || isHoveredOrFocused;
 
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 150),
-              child: shouldShowLabel
-                  ? Text(
-                      label,
-                      key: const ValueKey('label'),
-                      style: TextStyle(color: txtColor ?? kWhiteColor),
-                    )
-                  : const SizedBox(key: ValueKey('empty'), width: 0),
-            );
-          },
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          alignment: Alignment.centerRight,
-          shadowColor: shadowColor,
-          shape: RoundedRectangleBorder(
-            side: borderColor != null
-                ? BorderSide(color: borderColor)
-                : BorderSide.none,
-            borderRadius: BorderRadius.circular(15),
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axis: Axis.horizontal,
+                      child: child,
+                    ),
+                  );
+                },
+                child: shouldShowLabel
+                    ? Text(
+                        label,
+                        key: const ValueKey('label'),
+                        style: TextStyle(color: txtColor ?? kWhiteColor),
+                      )
+                    : const SizedBox(key: ValueKey('empty'), width: 0),
+              );
+            },
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: bgColor,
+            alignment: Alignment.centerRight,
+            shadowColor: shadowColor,
+            shape: RoundedRectangleBorder(
+              side: borderColor != null
+                  ? BorderSide(color: borderColor)
+                  : BorderSide.none,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+          ),
         ),
       ),
     );

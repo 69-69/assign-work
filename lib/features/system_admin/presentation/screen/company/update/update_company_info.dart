@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -142,41 +142,43 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
     );
   }
 
-  Column _buildBody(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        const SizedBox(height: 20.0),
-        FormGroupCard(
-          title: 'Company Information',
-          subTitle: '\nEnter your company information to complete setup.',
-          children: [_buildCompanyInfo()],
-        ),
-        FormGroupCard(
-          title: 'Addresses',
-          subTitle:
-              '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
-          children: [
-            _buildAddresses(),
-            const SizedBox(height: 20.0),
-            UploadCompanyLogo(
-              serverFilePath: _serverInfo.logo,
-              uploadedFilePath: (s) {
-                setState(() => _uploadedLogoPath = s);
-              },
-            ),
-          ],
-        ),
-
+  Widget _buildBody(BuildContext context) {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      footers: [
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,
           label: _isSubmitting ? 'Updating...' : null,
         ),
+        const SizedBox(height: 20.0),
       ],
     );
   }
+
+  List<Map<String, dynamic>> get formGroupCards => [
+    {
+      'title': 'Company Information',
+      'subTitle': '\nEnter your company information to complete setup.',
+      'children': [_buildCompanyInfo()],
+    },
+    {
+      'title': 'Addresses',
+      'subTitle':
+          '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
+      'children': [
+        _buildAddresses(),
+        const SizedBox(height: 20.0),
+        UploadCompanyLogo(
+          serverFilePath: _serverInfo.logo,
+          uploadedFilePath: (s) {
+            setState(() => _uploadedLogoPath = s);
+          },
+        ),
+      ],
+    },
+  ];
 
   DynamicTextFields _buildCompanyInfo() {
     return DynamicTextFields(

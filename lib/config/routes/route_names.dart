@@ -65,9 +65,6 @@ abstract class RouteNames {
   static const sales = 'sales_screen';
   static const inventReports = 'invent_reports_screen';
 
-  /// ───────────────────────── 📦 Item Master Module ─────────────────────────
-  static const itemMasterModule = 'item_master_module_screen';
-
   // for procurement
   /// ───────────────────────── 📦 Procurement Module ─────────────────────────
   static const purchaseRequisition = 'purchase_requisition_screen';
@@ -92,7 +89,7 @@ abstract class RouteNames {
 
   /// ─────────────────────── 🏢 Warehouse Module ───────────────────────
   static const wmsModule = 'warehouse_module_screen';
-  static const warehouseStorage = 'wms_storage_screen';
+  static const warehouse = 'wms_storage_screen';
   static const warehouseLocation = 'wms_location_screen';
   static const warehouseBin = 'wms_bin_screen';
   static const inboundReceiving = 'wms_inbound_receiving_screen';
@@ -110,14 +107,22 @@ abstract class RouteNames {
   static const returnsFromCustomers = 'return_goods_screen';
 
   /// ─────────────────────── ⚙️ Setup / Settings Module ───────────────────────
-  // static const switchStoresAccount = 'switch_stores_account_screen';
   static const companyInfo = 'company_info_screen';
+  static const coreMasterData = 'master_data_screen';
   static const allEmployees = 'all_employees_screen';
   static const manageRoles = 'manage_roles_screen';
-  static const workflowApprovalRules = 'workflow_approval_rules_screen';
-  static const productConfig = 'product_config_screen';
   static const backup = 'backup_screen';
-  static const manageTaxes = 'manage_taxes_screen';
+
+  /// ─────────────────────────  📋 Master Sub-Screens ─────────────────────────
+  static const itemMaster = 'item_master_screen';
+  static const taxMaster = 'tax_master_screen';
+  // workflow Approval Rules
+  static const workflowMaster = 'workflow_master_screen';
+  static const referenceMaster = 'reference_master_screen';
+  static const priceListMaster = 'price_list_master_screen';
+  static const currenciesMaster = 'currencies_master_screen';
+  // static const variantsMaster = 'variants_master_screen';
+  // static const uomMaster = 'uom_master_screen';
 
   /// ───────────────────────── 🔄 Switch/Change Store/Shop Locations ─────────────────────────
   static const switchStoresAccount = 'switch_store_locations_screen';

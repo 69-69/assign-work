@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -19,7 +21,11 @@ class ListEmployees extends StatefulWidget {
 class _ListEmployeesState extends State<ListEmployees> {
   bool? _isChecked;
   Employee? _selectedEmployee;
+
   EmployeeBloc get _bloc => context.read<EmployeeBloc>();
+
+  bool get _isMainStoreBranch =>
+      _selectedEmployee!.storeNumber.filterAny(defaultStoreNumber);
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +114,8 @@ class _ListEmployeesState extends State<ListEmployees> {
       onSecondary: isSelected
           ? () async => await _onEditTap(employees, _selectedEmployee!.id)
           : null,
-      onWarning: isSelected
+      // Prevent reassignment when the employee belongs to the tenant's main store branch.
+      onWarning: isSelected && !_isMainStoreBranch
           ? () async => await context.assignEmployeeToStoreBranchDialog(
               employeeId: _selectedEmployee!.id,
               employeeName: _selectedEmployee?.fullName,

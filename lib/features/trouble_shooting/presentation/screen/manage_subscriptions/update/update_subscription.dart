@@ -63,14 +63,16 @@ class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
 
   Future<void> _onSubmit() async {
     final isRemovingAllLicenses = _assignedLicenses.isEmpty;
-    if (!isRemovingAllLicenses || _isSubmitting) return;
 
-    bool result = await _warnUser();
-    if (!result) return;
-
-    setState(() => _isSubmitting = true);
+    if (_isSubmitting) return;
+    if (isRemovingAllLicenses) {
+      bool result = await _warnUser();
+      if (!result) return;
+    }
 
     if (mounted && _formKey.currentState!.validate()) {
+      setState(() => _isSubmitting = true);
+
       _updatedSubscription();
     }
   }

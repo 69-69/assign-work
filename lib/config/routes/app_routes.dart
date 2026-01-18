@@ -21,11 +21,16 @@ import 'package:assign_erp/features/user_guide/presentation/index.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-typedef DynamicRoute = ({
+/*typedef DynamicRoute = ({
   String name,
   String? path,
   Widget Function(BuildContext context, GoRouterState state) builder,
   List<GoRoute> subRoutes,
+});*/
+typedef StaticRouteConfig = ({
+  String name,
+  Widget Function({String? openTab}) screen,
+  bool openTab,
 });
 
 final DashboardGuard dashboardGuard = DashboardGuard();
@@ -89,13 +94,20 @@ List<GoRoute> _mapDynamicRoutes(List<DynamicRoute> routes) => routes
     .toList();
 */
 
-List<GoRoute> _mapStaticRoutes(List<({String name, Widget screen})> routes) =>
-    routes
-        .map(
-          (r) =>
-              GoRoute(name: r.name, path: r.name, builder: (_, __) => r.screen),
-        )
-        .toList();
+List<GoRoute> _mapStaticRoutes(List<StaticRouteConfig> routes) {
+  return routes.map((r) {
+    final path = r.openTab ? '${r.name}/:openTab' : r.name;
+
+    return GoRoute(
+      name: r.name,
+      path: path,
+      builder: (_, state) {
+        final tab = r.openTab ? state.pathParameters['openTab'] : null;
+        return r.screen(openTab: tab);
+      },
+    );
+  }).toList();
+}
 
 GoRoute _configBaseRoute({
   required String name,
@@ -134,11 +146,27 @@ GoRoute _customerRoute() {
 /// POS App
 GoRoute _posRoute() {
   // Sub routes for POS App
-  final List<({String name, Widget screen})> posSubScreens = [
-    (name: RouteNames.posOrders, screen: const PosOrdersScreen()),
-    (name: RouteNames.posSales, screen: const PosSalesScreen()),
-    (name: RouteNames.posReports, screen: const ReportsAnalyticsScreen()),
-    (name: RouteNames.posPayments, screen: const PosSalesScreen()),
+  final List<StaticRouteConfig> posSubScreens = [
+    (
+      name: RouteNames.posOrders,
+      openTab: false,
+      screen: ({openTab}) => const PosOrdersScreen(),
+    ),
+    (
+      name: RouteNames.posSales,
+      openTab: false,
+      screen: ({openTab}) => const PosSalesScreen(),
+    ),
+    (
+      name: RouteNames.posReports,
+      openTab: false,
+      screen: ({openTab}) => const ReportsAnalyticsScreen(),
+    ),
+    (
+      name: RouteNames.posPayments,
+      openTab: false,
+      screen: ({openTab}) => const PosSalesScreen(),
+    ),
   ];
 
   return GoRoute(
@@ -149,17 +177,65 @@ GoRoute _posRoute() {
   );
 }
 
+/// Master Data Module
+GoRoute _masterDataRoute() {
+  // Sub routes for Master Data
+  final List<StaticRouteConfig> wmsSubRoutes = [
+    (
+      name: RouteNames.itemMaster,
+      openTab: false,
+      screen: ({openTab}) => const ItemMasterScreen(),
+    ),
+    (
+      name: RouteNames.taxMaster,
+      openTab: false,
+      screen: ({openTab}) => const ManageTaxScreen(),
+    ),
+    (
+      name: RouteNames.referenceMaster,
+      openTab: false,
+      screen: ({openTab}) => const ReferenceMasterScreen(),
+    ),
+    (
+      name: RouteNames.workflowMaster,
+      openTab: false,
+      screen: ({openTab}) => const ApprovalRulesScreen(),
+    ),
+  ];
+
+  return GoRoute(
+    name: RouteNames.coreMasterData,
+    path: RouteNames.coreMasterData,
+    pageBuilder: (_, state) =>
+        _animateTransition(state, const MasterDataScreen()),
+    routes: _mapStaticRoutes(wmsSubRoutes),
+  );
+}
+
 /// Setup App
 GoRoute _setupRoute() {
   // Sub routes for Setup App
-  final List<String> setupSubRoutes = [
-    RouteNames.companyInfo,
-    RouteNames.allEmployees,
-    RouteNames.manageRoles,
-    RouteNames.workflowApprovalRules,
-    RouteNames.manageTaxes,
-    RouteNames.productConfig,
-    RouteNames.backup,
+  final List<StaticRouteConfig> setupSubRoutes = [
+    (
+      name: RouteNames.companyInfo,
+      openTab: true,
+      screen: ({openTab}) => SetupScreen(openTab: openTab ?? '0'),
+    ),
+    (
+      name: RouteNames.manageRoles,
+      openTab: true,
+      screen: ({openTab}) => SetupScreen(openTab: openTab ?? '0'),
+    ),
+    (
+      name: RouteNames.allEmployees,
+      openTab: true,
+      screen: ({openTab}) => SetupScreen(openTab: openTab ?? '0'),
+    ),
+    (
+      name: RouteNames.backup,
+      openTab: true,
+      screen: ({openTab}) => SetupScreen(openTab: openTab ?? '0'),
+    ),
   ];
 
   return GoRoute(
@@ -167,16 +243,19 @@ GoRoute _setupRoute() {
     path: RouteNames.systemAdminApp,
     pageBuilder: (context, state) =>
         _animateTransition(state, const SetupApp()),
-    routes: setupSubRoutes
-        .map(
-          (routeName) => GoRoute(
-            name: routeName,
-            path: '$routeName/:openTab',
-            builder: (context, state) =>
-                SetupScreen(openTab: state.pathParameters['openTab'] ?? ''),
-          ),
-        )
-        .toList(),
+    routes: [
+      // Setup subroutes
+      ..._mapStaticRoutes(setupSubRoutes),
+      _masterDataRoute(),
+      /*...setupSubRoutes.map(
+        (routeName) => GoRoute(
+          name: routeName,
+          path: '$routeName/:openTab',
+          builder: (context, state) =>
+              SetupScreen(openTab: state.pathParameters['openTab'] ?? ''),
+        ),
+      ),*/
+    ],
   );
 }
 
@@ -193,16 +272,41 @@ GoRoute _storesSwitcherRoute() {
 /// Stock Management Module
 GoRoute _stockManagementRoute() {
   // Sub routes for Stock Management
-  final List<({String name, Widget screen})> stockManageSubRoutes = [
-    (name: RouteNames.goodsReceipt, screen: const GoodsReceiptScreen()),
-    (name: RouteNames.serviceReceipt, screen: const GoodsReceiptScreen()),
-    (name: RouteNames.goodsIssue, screen: const GoodsIssueScreen()),
-    (name: RouteNames.stockTransfer, screen: const StockTransferScreen()),
-    (name: RouteNames.stockAdjustment, screen: const StockAdjustmentScreen()),
-    (name: RouteNames.reserveStocks, screen: const StockAdjustmentScreen()),
+  final List<StaticRouteConfig> stockManageSubRoutes = [
+    (
+      name: RouteNames.goodsReceipt,
+      openTab: false,
+      screen: ({openTab}) => const GoodsReceiptScreen(),
+    ),
+    (
+      name: RouteNames.serviceReceipt,
+      openTab: false,
+      screen: ({openTab}) => const GoodsReceiptScreen(),
+    ),
+    (
+      name: RouteNames.goodsIssue,
+      openTab: false,
+      screen: ({openTab}) => const GoodsIssueScreen(),
+    ),
+    (
+      name: RouteNames.stockTransfer,
+      openTab: false,
+      screen: ({openTab}) => const StockTransferScreen(),
+    ),
+    (
+      name: RouteNames.stockAdjustment,
+      openTab: false,
+      screen: ({openTab}) => const StockAdjustmentScreen(),
+    ),
+    (
+      name: RouteNames.reserveStocks,
+      openTab: false,
+      screen: ({openTab}) => const StockAdjustmentScreen(),
+    ),
     (
       name: RouteNames.returnsFromCustomers,
-      screen: const StockAdjustmentScreen(),
+      openTab: false,
+      screen: ({openTab}) => const StockAdjustmentScreen(),
     ),
   ];
 
@@ -218,13 +322,37 @@ GoRoute _stockManagementRoute() {
 /// Warehouse Management Module
 GoRoute _wmsRoute() {
   // Sub routes for Warehouse Management
-  final List<({String name, Widget screen})> wmsSubRoutes = [
-    (name: RouteNames.warehouseStorage, screen: const WarehouseScreen()),
-    (name: RouteNames.warehouseLocation, screen: const WarehouseScreen()),
-    (name: RouteNames.warehouseBin, screen: const WarehouseScreen()),
-    (name: RouteNames.inboundReceiving, screen: const WarehouseScreen()),
-    (name: RouteNames.internalMovements, screen: const WarehouseScreen()),
-    (name: RouteNames.outboundPickShipping, screen: const WarehouseScreen()),
+  final List<StaticRouteConfig> wmsSubRoutes = [
+    (
+      name: RouteNames.warehouse,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.warehouseLocation,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.warehouseBin,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.inboundReceiving,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.internalMovements,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.outboundPickShipping,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
   ];
 
   return GoRoute(
@@ -239,10 +367,22 @@ GoRoute _wmsRoute() {
 /// Orders Module
 GoRoute _ordersRoute() {
   // Sub routes for Orders
-  final List<({String name, Widget screen})> orderSubRoutes = [
-    (name: RouteNames.salesOrders, screen: const OrderScreen()),
-    (name: RouteNames.imsPurchaseOrders, screen: const PurchaseOrderScreen()),
-    (name: RouteNames.miscOrders, screen: const MiscOrderScreen()),
+  final List<StaticRouteConfig> orderSubRoutes = [
+    (
+      name: RouteNames.salesOrders,
+      openTab: false,
+      screen: ({openTab}) => const OrderScreen(),
+    ),
+    (
+      name: RouteNames.imsPurchaseOrders,
+      openTab: false,
+      screen: ({openTab}) => const PurchaseOrderScreen(),
+    ),
+    (
+      name: RouteNames.miscOrders,
+      openTab: false,
+      screen: ({openTab}) => const MiscOrderScreen(),
+    ),
   ];
 
   return GoRoute(
@@ -256,13 +396,32 @@ GoRoute _ordersRoute() {
 /// Inventory App
 GoRoute _inventoryRoute() {
   // Sub routes for Inventory
-  final List<({String name, Widget screen})> inventoryRoutes = [
-    (name: RouteNames.itemMasterModule, screen: const ItemMasterScreen()),
-    (name: RouteNames.invoice, screen: const InvoiceScreen()),
-    (name: RouteNames.deliveries, screen: const DeliveryScreen()),
-    (name: RouteNames.items, screen: const ProductScreen()),
-    (name: RouteNames.sales, screen: const SaleScreen()),
-    (name: RouteNames.inventReports, screen: const ReportsAnalyticsScreen()),
+  final List<StaticRouteConfig> inventoryRoutes = [
+    (
+      name: RouteNames.invoice,
+      openTab: false,
+      screen: ({openTab}) => const InvoiceScreen(),
+    ),
+    (
+      name: RouteNames.deliveries,
+      openTab: false,
+      screen: ({openTab}) => const DeliveryScreen(),
+    ),
+    (
+      name: RouteNames.items,
+      openTab: false,
+      screen: ({openTab}) => const ProductScreen(),
+    ),
+    (
+      name: RouteNames.sales,
+      openTab: false,
+      screen: ({openTab}) => const SaleScreen(),
+    ),
+    (
+      name: RouteNames.inventReports,
+      openTab: false,
+      screen: ({openTab}) => const ReportsAnalyticsScreen(),
+    ),
   ];
 
   return GoRoute(
@@ -288,38 +447,49 @@ GoRoute _inventoryRoute() {
 
 /// Procurement App
 GoRoute _procurementRoute() {
-  final List<({String name, Widget screen})> procurementRoutes = [
+  final List<StaticRouteConfig> procurementRoutes = [
     (
       name: RouteNames.purchaseRequisition,
-      screen: const ProPurchaseRequisitionScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ProPurchaseRequisitionScreen(),
     ),
     (
       name: RouteNames.proRequestForQuote,
-      screen: const ProRequestForQuoteScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ProRequestForQuoteScreen(),
     ),
     (
       name: RouteNames.proPurchaseOrders,
-      screen: const ProPurchaseOrderScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ProPurchaseOrderScreen(),
     ),
     (
       name: RouteNames.proMyApprovals,
-      screen: const ProWorkflowApprovalsScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ProWorkflowApprovalsScreen(),
     ),
     /*(
       name: RouteNames.imsRequestForQuote,
-      screen: const RequestForQuotationScreen(),
+      openTab: false,
+    screen: ({openTab}) => const RequestForQuotationScreen(),
     ),*/
   ];
 
-  final List<({String name, Widget screen})> supplierSubRoutes = [
-    (name: RouteNames.supplierAccount, screen: const SupplierAccountScreen()),
+  final List<StaticRouteConfig> supplierSubRoutes = [
+    (
+      name: RouteNames.supplierAccount,
+      openTab: false,
+      screen: ({openTab}) => const SupplierAccountScreen(),
+    ),
     (
       name: RouteNames.supplierEvaluation,
-      screen: const SupplierEvaluationScreen(),
+      openTab: false,
+      screen: ({openTab}) => const SupplierEvaluationScreen(),
     ),
     (
       name: RouteNames.contractManagement,
-      screen: const ContractManagementScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ContractManagementScreen(),
     ),
   ];
 
@@ -346,10 +516,22 @@ GoRoute _procurementRoute() {
 /// Sales and Distribution App
 GoRoute _salesDistributionRoute() {
   // Sub routes for Sales and Distribution
-  final List<({String name, Widget screen})> salesDistributionRoutes = [
-    (name: RouteNames.salesOrders2, screen: const SalesOrderScreen()),
-    (name: RouteNames.shippingDelivery, screen: const OrderDeliveryScreen()),
-    (name: RouteNames.salesQuotation, screen: const SalesQuotationScreen()),
+  final List<StaticRouteConfig> salesDistributionRoutes = [
+    (
+      name: RouteNames.salesOrders2,
+      openTab: false,
+      screen: ({openTab}) => const SalesOrderScreen(),
+    ),
+    (
+      name: RouteNames.shippingDelivery,
+      openTab: false,
+      screen: ({openTab}) => const OrderDeliveryScreen(),
+    ),
+    (
+      name: RouteNames.salesQuotation,
+      openTab: false,
+      screen: ({openTab}) => const SalesQuotationScreen(),
+    ),
   ];
 
   return GoRoute(
@@ -395,11 +577,16 @@ GoRoute _agentRoute() {
 /// User User Guide App
 GoRoute _userGuideRoute() {
   // Sub routes for User Guide
-  final List<({String name, Widget screen})> userGuideRoutes = [
-    (name: RouteNames.howToConfigApp, screen: const HowToConfigAppScreen()),
+  final List<StaticRouteConfig> userGuideRoutes = [
+    (
+      name: RouteNames.howToConfigApp,
+      openTab: false,
+      screen: ({openTab}) => const HowToConfigAppScreen(),
+    ),
     (
       name: RouteNames.howToRenewLicense,
-      screen: const HowToRenewLicenseScreen(),
+      openTab: false,
+      screen: ({openTab}) => const HowToRenewLicenseScreen(),
     ),
   ];
 
@@ -425,15 +612,21 @@ GoRoute _liveSupportRoute() {
 /// Developer Only: Trouble Shooting App
 GoRoute _troubleShootRoute() {
   // Sub routes for Trouble Shooting
-  final List<({String name, Widget screen})> troubleShootRoutes = [
-    (name: RouteNames.diagnoseIssues, screen: const DiagnosticScreen()),
+  final List<StaticRouteConfig> troubleShootRoutes = [
+    (
+      name: RouteNames.diagnoseIssues,
+      openTab: false,
+      screen: ({openTab}) => const DiagnosticScreen(),
+    ),
     (
       name: RouteNames.allTenantWorkspaces,
-      screen: const TenantWorkspacesScreen(),
+      openTab: false,
+      screen: ({openTab}) => const TenantWorkspacesScreen(),
     ),
     (
       name: RouteNames.manageSubscriptions,
-      screen: const ManageSubscriptionScreen(),
+      openTab: false,
+      screen: ({openTab}) => const ManageSubscriptionScreen(),
     ),
   ];
 

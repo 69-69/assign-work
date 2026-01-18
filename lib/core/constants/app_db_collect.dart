@@ -48,6 +48,12 @@ const rolesDBColPath = 'roles_db';
 
 // Item Master
 const itemMasterDBColPath = 'item_master_inventory_db';
+// Warehouse Facilities (Represents a physical storage place)
+const warehouseDBColPath = 'warehouse_facilities_inventory_db';
+// Functional Area
+const whLocationDBColPath = 'warehouse_location_inventory_db';
+// Physical slot/position inside the location
+const whBinDBColPath = 'warehouse_bin_inventory_db';
 // Invoices
 const invoiceDBColPath = 'invoice_inventory_db';
 // Items
@@ -92,7 +98,7 @@ const employeeSessionLogsColPath = 'employee_session_logs';
 // Company internal departments
 const departmentsDBColPath = 'departments_db';
 // Company store locations/branches (Multi-Locations Feature)
-const storeLocationsDBColPath = 'store_locations_db';
+const storeLocationsDBColPath = 'store_branches';
 // company tax rates
 const taxesDBColPath = 'taxes_db';
 // Company setup: logo, name, address, etc.
@@ -149,6 +155,10 @@ const erpCacheBoxes = [
   customersDBColPath,
 
   // Inventory / Sales / Procurement
+  itemMasterDBColPath,
+  warehouseDBColPath,
+  whLocationDBColPath,
+  whBinDBColPath,
   itemsDBColPath,
   invoiceDBColPath,
   salesDBColPath,
@@ -159,6 +169,7 @@ const erpCacheBoxes = [
   purchaseRequisitionDBColPath,
   requestPriceQuoteDBColPath,
   salesQuotationDBColPath,
+  salesShippingDelDBColPath,
 
   // POS
   posSalesDBColPath,

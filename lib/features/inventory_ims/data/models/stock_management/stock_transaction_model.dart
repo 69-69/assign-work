@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/extensions/stock_txn_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -204,47 +205,38 @@ StockTransaction(
   txnType: StockTxnType.adjustment,
   sourceDocNo: 'CYCLE-COUNT',
   itemId: item.id,  // FK to ItemMaster.id
-  uom: item.baseUom,
+  status: status,
   quantity: diff.abs(),
   toWarehouseId: warehouse.id,
   createdBy: user.id,
   remarks: reason,
 );*/
 
-/// StockTransaction table
+enum StockStatus { draft, posted }
+
+extension StockStatusExt on StockStatus {
+  String get getName => EnumUtil<StockStatus>(this).getName;
+}
+
+/// Stock Transaction table
 class StockTransaction extends Equatable {
   static DateTime get _today => DateTime.now();
 
   /// 1. Identification
   final String id; // UUID
-  final StockTxnType txnType;
+  final StockTxnType txnType; // (GR | GI | TRANSFER | ADJUSTMENT)
   final String? sourceDocType; // PO, SO, ADJ
   final String? sourceDocNo; // Unique PO, SO Number
 
-  /// 2. Item
-  final String itemId; // (FK → ItemMaster.id)
-  final String uom;
+  /// 2. Line Items
+  final List<StockTransactionLine> lines;
+  final StockStatus status;
 
-  /// 3. Quantity (always positive)
-  final double quantity;
-
-  /// 4. Source (nullable for GRN)
-  final String? fromWarehouseId; // (FK → Warehouse.id)
-  final String? fromLocationId; // (FK → Location.id)
-
-  /// 5. Destination (nullable for ISSUE)
-  final String? toWarehouseId; // (FK → Warehouse.id)
-  final String? toLocationId; // (FK → Location.id)
-
-  /// 6. Traceability
+  /// 3. Traceability
   final String lotNumber; // (optional)
   final String serialNumber; // (optional)
 
-  /// 7. Financial: Cost snapshot (important!)
-  final double unitCost;
-  final double totalCost;
-
-  /// 8. Audit
+  /// 4. Audit
   final String remarks;
   final String createdBy;
   final String? updatedBy;
@@ -257,25 +249,17 @@ class StockTransaction extends Equatable {
     required this.txnType,
     this.sourceDocNo,
     this.sourceDocType,
-    required this.itemId,
-    required this.uom,
-    required this.quantity,
-    this.fromWarehouseId,
-    this.fromLocationId,
-    this.toWarehouseId,
-    this.toLocationId,
+    required this.lines,
+    this.status = StockStatus.draft,
     this.lotNumber = '',
     this.serialNumber = '',
-    this.unitCost = 0,
-    double totalCost = 0,
     required this.createdBy,
     this.updatedBy,
     this.remarks = '',
     DateTime? createdAt,
     DateTime? updatedAt,
     this.history = const [],
-  }) : totalCost = quantity * unitCost,
-       createdAt = createdAt ?? _today,
+  }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
   factory StockTransaction.fromMap(Map<String, dynamic> map, {String? id}) {
@@ -284,22 +268,16 @@ class StockTransaction extends Equatable {
       txnType: StockTxnTypeUtil.fromString(map['txnType']),
       sourceDocNo: map['sourceDocNo'],
       sourceDocType: map['sourceDocType'],
-      itemId: map['itemId'],
-      uom: map['uom'],
-      quantity: '${map['quantity']}'.asDouble,
-      fromWarehouseId: map['fromWarehouseId'],
-      fromLocationId: map['fromLocationId'],
-      toWarehouseId: map['toWarehouseId'],
-      toLocationId: map['toLocationId'],
+      status: fromString(map['status']),
       lotNumber: map['lotNumber'] ?? '',
       serialNumber: map['serialNumber'] ?? '',
-      unitCost: '${map['unitCost']}'.asDouble,
       remarks: map['remarks'] ?? '',
       createdBy: map['createdBy'],
       updatedBy: map['updatedBy'],
       createdAt: toDateTimeFn(map['createdAt']),
       updatedAt: toDateTimeFn(map['updatedAt']),
       history: AuditLog.auditLogs(map['history']),
+      lines: [],
     );
   }
 
@@ -309,17 +287,10 @@ class StockTransaction extends Equatable {
     'txnType': txnType.getName,
     'sourceDocNo': sourceDocNo,
     'sourceDocType': sourceDocType,
-    'itemId': itemId,
-    'uom': uom,
-    'quantity': quantity,
-    'fromWarehouseId': fromWarehouseId,
-    'fromLocationId': fromLocationId,
-    'toWarehouseId': toWarehouseId,
-    'toLocationId': toLocationId,
+    'status': status.getName,
     'lotNumber': lotNumber,
     'serialNumber': serialNumber,
-    'unitCost': unitCost,
-    'totalCost': totalCost,
+    'lines': lines.map((e) => e.toMap()).toList(),
     'remarks': remarks,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
@@ -350,17 +321,10 @@ class StockTransaction extends Equatable {
     StockTxnType? txnType,
     String? sourceDocNo,
     String? sourceDocType,
-    String? itemId,
-    String? uom,
-    double? quantity,
-    String? fromWarehouseId,
-    String? fromLocationId,
-    String? toWarehouseId,
-    String? toLocationId,
+    StockStatus? status,
+    List<StockTransactionLine>? lines,
     String? lotNumber,
     String? serialNumber,
-    double? unitCost,
-    double? totalCost,
     String? remarks,
     String? createdBy,
     String? updatedBy,
@@ -372,17 +336,10 @@ class StockTransaction extends Equatable {
     txnType: txnType ?? this.txnType,
     sourceDocNo: sourceDocNo ?? this.sourceDocNo,
     sourceDocType: sourceDocType ?? this.sourceDocType,
-    itemId: itemId ?? this.itemId,
-    uom: uom ?? this.uom,
-    quantity: quantity ?? this.quantity,
-    fromWarehouseId: fromWarehouseId ?? this.fromWarehouseId,
-    fromLocationId: fromLocationId ?? this.fromLocationId,
-    toWarehouseId: toWarehouseId ?? this.toWarehouseId,
-    toLocationId: toLocationId ?? this.toLocationId,
+    status: status ?? this.status,
     lotNumber: lotNumber ?? this.lotNumber,
     serialNumber: serialNumber ?? this.serialNumber,
-    unitCost: unitCost ?? this.unitCost,
-    totalCost: totalCost ?? this.totalCost,
+    lines: lines ?? this.lines,
     remarks: remarks ?? this.remarks,
     createdBy: createdBy ?? this.createdBy,
     updatedBy: updatedBy ?? this.updatedBy,
@@ -397,20 +354,169 @@ class StockTransaction extends Equatable {
     txnType,
     sourceDocNo,
     sourceDocType,
-    itemId,
-    uom,
-    quantity,
-    fromWarehouseId,
-    fromLocationId,
-    toWarehouseId,
-    toLocationId,
+    status,
     lotNumber,
     serialNumber,
-    unitCost,
+    lines,
     createdBy,
     remarks,
     createdAt,
     updatedAt,
     history,
+  ];
+
+  /// [fromString] Converts String/Label to enum value.
+  static StockStatus fromString(String? value) =>
+      EnumUtil.fromString<StockStatus>(StockStatus.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'Warehouse type' : '';
+    return EnumUtil.toStringList<StockStatus>(StockStatus.values, label);
+  }
+}
+
+/// Stock Transaction Line
+class StockTransactionLine extends Equatable {
+  /// 1. Identification
+  final String id;
+  final String stockTxnId;
+
+  /// 2. Item Master
+  final String itemId; // (FK → ItemMaster.id)
+
+  /// 3. Financial: Cost snapshot &Quantity (always positive)
+  final double quantity;
+  //snapshot
+  final double unitCost;
+  final double totalCost;
+
+  /// 4. Source (nullable for GRN)
+  final String? fromWarehouseId; // (FK → Warehouse.id)
+  final String? fromLocationId; // (FK → Location.id)
+  final String? fromBinId; // (FK → Bin.id)
+
+  /// 5. Destination (nullable for ISSUE)
+  final String? toWarehouseId; // (FK → Warehouse.id)
+  final String? toLocationId; // (FK → Location.id)
+  final String? toBinId; // (FK → Bin.id)
+
+  const StockTransactionLine({
+    required this.id,
+    required this.stockTxnId,
+    required this.itemId,
+    required this.quantity,
+    this.unitCost = 0,
+    this.fromWarehouseId,
+    this.fromLocationId,
+    this.fromBinId,
+    this.toWarehouseId,
+    this.toLocationId,
+    this.toBinId,
+    double totalCost = 0,
+  }) : totalCost = quantity * unitCost;
+
+  factory StockTransactionLine.fromMap(Map<String, dynamic> map, {String? id}) {
+    return StockTransactionLine(
+      id: id ?? map['id'] ?? '',
+      stockTxnId: map['stockTxnId'],
+      itemId: map['itemId'],
+      quantity: '${map['quantity']}'.asDouble,
+      unitCost: '${map['unitCost']}'.asDouble,
+      fromWarehouseId: map['fromWarehouseId'],
+      fromLocationId: map['fromLocationId'],
+      fromBinId: map['fromBinId'],
+      toWarehouseId: map['toWarehouseId'],
+      toLocationId: map['toLocationId'],
+      toBinId: map['toBinId'],
+    );
+  }
+
+  /// Convert Model to toFirestore / toJson Function [toMap]
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'stockTxnId': stockTxnId,
+    'itemId': itemId,
+    'quantity': quantity,
+    'fromWarehouseId': fromWarehouseId,
+    'fromLocationId': fromLocationId,
+    'fromBinId': fromBinId,
+    'toWarehouseId': toWarehouseId,
+    'toLocationId': toLocationId,
+    'toBinId': toBinId,
+    'unitCost': unitCost,
+  };
+
+  /// A singleton instance representing an empty/default StockTransactionLine.
+  static get empty =>
+      StockTransactionLine(id: '', stockTxnId: '', itemId: '', quantity: 0);
+
+  /// Returns true if this instance is the singleton [empty] StockTransactionLine.
+  bool get isEmpty => identical(this, StockTransactionLine.empty);
+
+  bool filterByAny(String keyword) => props.filterAny(keyword);
+
+  StockTransactionLine copyWith({
+    String? id,
+    String? stockTxnId,
+    String? itemId,
+    double? quantity,
+    double? unitCost,
+    String? fromWarehouseId,
+    String? fromLocationId,
+    String? fromBinId,
+    String? toWarehouseId,
+    String? toLocationId,
+    String? toBinId,
+  }) => StockTransactionLine(
+    id: id ?? this.id,
+    stockTxnId: stockTxnId ?? this.stockTxnId,
+    itemId: itemId ?? this.itemId,
+    quantity: quantity ?? this.quantity,
+    unitCost: unitCost ?? this.unitCost,
+    fromWarehouseId: fromWarehouseId ?? this.fromWarehouseId,
+    fromLocationId: fromLocationId ?? this.fromLocationId,
+    fromBinId: fromBinId ?? this.fromBinId,
+    toWarehouseId: toWarehouseId ?? this.toWarehouseId,
+    toLocationId: toLocationId ?? this.toLocationId,
+    toBinId: toBinId ?? this.toBinId,
+  );
+
+  @override
+  List<Object?> get props => [
+    id,
+    stockTxnId,
+    itemId,
+    quantity,
+    unitCost,
+    fromWarehouseId,
+    fromLocationId,
+    fromBinId,
+    toWarehouseId,
+    toLocationId,
+    toBinId,
+  ];
+
+  List<String> get itemAsList => [
+    '$quantity',
+    '$unitCost',
+    itemId,
+    fromWarehouseId ?? '',
+    fromLocationId ?? '',
+    fromBinId ?? '',
+    toWarehouseId ?? '',
+    toLocationId ?? '',
+  ];
+
+  List<String> get dataTableHeader => [
+    'Quantity',
+    'Unit Cost',
+    'Item ID',
+    'From Warehouse',
+    'From Location',
+    'From Bin',
+    'To Warehouse',
+    'To Location'
+        'To Bin',
   ];
 }

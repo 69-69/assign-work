@@ -6,6 +6,13 @@ import 'package:assign_erp/features/system_admin/data/models/role_model.dart';
 enum SetupPermission {
   manageSetup,
   manageTaxes,
+  manageMasterData,
+  manageItemMaster,
+  managePriceListMaster,
+  manageCurrencyMaster,
+  referenceMaster,
+  manageVariants,
+  manageUOM,
   // Company Info
   manageCompany,
   createCompanyInfo,
@@ -63,13 +70,6 @@ enum SetupPermission {
   updateItemSupplier,
   deleteItemSupplier,
 
-  // item categories
-  manageItemCategory,
-  createItemCategory,
-  viewItemCategory,
-  updateItemCategory,
-  deleteItemCategory,
-
   // print settings
   updatePrintSetting,
   viewSetupSecrets, // For viewing configuration IDs
@@ -92,6 +92,64 @@ final List<AccessControl> _taxesPermissions = [
     title: "Manage taxes",
     description: "Allow users to create, edit, and delete taxes.",
     access: SetupPermission.manageTaxes,
+  ),
+];
+
+final List<AccessControl> _masterDataPermissions = [
+  AccessControl(
+    module: "master data",
+    title: "Manage core master data",
+    description: "Allow users to create, edit, and delete ERP master data.",
+    access: SetupPermission.manageMasterData,
+  ),
+];
+
+final List<AccessControl> _itemMasterPermissions = [
+  AccessControl(
+    module: "item master",
+    title: "Manage item master",
+    description: "Allow users to create, edit, and delete item master data.",
+    access: SetupPermission.manageItemMaster,
+  ),
+];
+
+final List<AccessControl> _priceListMasterPermissions = [
+  AccessControl(
+    module: "price list",
+    title: "Manage price list master",
+    description:
+        "Allow users to create, edit, and delete price list & discounts data.",
+    access: SetupPermission.managePriceListMaster,
+  ),
+];
+
+final List<AccessControl> _currenciesMasterPermissions = [
+  AccessControl(
+    module: "currencies",
+    title: "Manage currencies master",
+    description: "Allow users to create, edit, and delete currencies.",
+    access: SetupPermission.manageCurrencyMaster,
+  ),
+];
+
+final List<AccessControl> _referenceMasterPermissions = [
+  AccessControl(
+    module: "reference master",
+    title: "Manage reference master",
+    description: "Allow users to create, edit, and delete reference master.",
+    access: SetupPermission.referenceMaster,
+  ),
+  AccessControl(
+    module: "variants",
+    title: "Manage variants",
+    description: "Allow users to create, edit, and delete variants.",
+    access: SetupPermission.manageVariants,
+  ),
+  AccessControl(
+    module: "Unit of Measure",
+    title: "Manage UOM",
+    description: "Allow users to create, edit, and delete UOM.",
+    access: SetupPermission.manageUOM,
   ),
 ];
 
@@ -344,39 +402,6 @@ final List<AccessControl> _itemSupplierPermissions = [
   ),
 ];
 
-final List<AccessControl> _itemCategoryPermissions = [
-  AccessControl(
-    module: "item category",
-    title: "Manage item categories",
-    description: "Allow users to create, edit, and delete item categories.",
-    access: SetupPermission.manageItemCategory,
-  ),
-  AccessControl(
-    module: "item category",
-    title: "Create new item category",
-    description: "Allow users to create new item categories.",
-    access: SetupPermission.createItemCategory,
-  ),
-  AccessControl(
-    module: "item category",
-    title: "View item categories",
-    description: "Allow access to a list of all item categories.",
-    access: SetupPermission.viewItemCategory,
-  ),
-  AccessControl(
-    module: "item category",
-    title: "Edit item categories",
-    description: "Allow users to modify details of an existing item category.",
-    access: SetupPermission.updateItemCategory,
-  ),
-  AccessControl(
-    module: "item category",
-    title: "Delete item categories",
-    description: "Allow users to permanently remove a item category record.",
-    access: SetupPermission.deleteItemCategory,
-  ),
-];
-
 final List<AccessControl> _printSettingPermissions = [
   AccessControl(
     module: "print setting",
@@ -410,6 +435,8 @@ final systemAdminDisplayName = 'system admin';
 /// Low-level = control button-level permissions (Create, Edit, Delete)
 final List<AccessControl> setupPermissions = [
   ..._setupPermissions,
+  ..._masterDataPermissions,
+  ..._itemMasterPermissions,
   ..._taxesPermissions,
   ..._companyInfoPermissions,
   ..._storeLocationPermissions,
@@ -418,8 +445,10 @@ final List<AccessControl> setupPermissions = [
   ..._workflowApprovalPermissions,
   ..._assignPermissions,
   ..._backupPermissions,
+  ..._referenceMasterPermissions,
+  ..._priceListMasterPermissions,
+  ..._currenciesMasterPermissions,
   ..._itemSupplierPermissions,
-  ..._itemCategoryPermissions,
   ..._printSettingPermissions,
   ..._licensePermissions,
   ..._secretPermissions,

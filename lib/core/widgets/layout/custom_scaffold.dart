@@ -254,13 +254,6 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
       optFallback: 'Back',
     );
 
-    /*final backTitle = routePath.isEmpty || breadcrumbs.isNotEmpty
-        ? 'Back'
-        : breadcrumbs.last.isNullOrEmpty
-        ? 'Back'
-        : breadcrumbs
-              .last
-              .label;*/
     // Check if breadcrumbs is empty or not, and set backTitle accordingly
     final backTitle = breadcrumbs.isNotEmpty
         ? breadcrumbs.last.isNullOrEmpty
@@ -280,7 +273,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Padding(
                 padding: EdgeInsets.all(8),
                 child: Tooltip(
-                  message: backTitle.toTitle,
+                  message: 'Exit $backTitle'.toTitle,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

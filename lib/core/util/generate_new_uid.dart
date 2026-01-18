@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/firestore_bloc.dart';
 import 'package:assign_erp/core/network/data_sources/remote/bloc/short_id_bloc.dart';
@@ -22,6 +24,9 @@ extension GenerateUID on DocType {
     DocType.customer: customersDBColPath,
     DocType.pOrder: posOrdersDBColPath,
     DocType.itemMaster: itemMasterDBColPath,
+    DocType.warehouse: warehouseDBColPath,
+    DocType.whLocation: whLocationDBColPath,
+    DocType.whBin: whBinDBColPath,
     DocType.pSale: posSalesDBColPath,
     DocType.employee: employeesDBColPath,
   };
@@ -68,7 +73,7 @@ extension GenerateUID on DocType {
       await _generateAndHandleId(onChanged: onChanged);
 }
 
-extension FirestoreExtension on String {
+extension UniqueCodeExtension on String {
   /// Generates a unique department code based on the provided name and existing codes [generateUniqueCode].
   /// @param name The name of the department.
   /// @param existingCodes (Optional) A list of existing department codes.
@@ -119,4 +124,48 @@ extension FirestoreExtension on String {
     final newRate = rate.toString().replaceAll('.', '-');
     return '${name}_$newRate';
   }
+
+  /// [_nextCode] Find & generate the next code based on existing codes & optional separator
+  /// @param existingCodes (Optional) A list of existing codes.
+  /// @param prefix The prefix for the code.
+  /// @return The generated code.
+  /// @example _nextCode(['WH01', 'WH02'], 'WH')
+  //// OUTPUT: WH03
+  String _nextCode(List<String>? existingCodes, {String separator = ''}) {
+    final prefix = this;
+    existingCodes ??= [];
+
+    // Extract numbers from codes that start with this prefix
+    final numbers = existingCodes.where((c) => c.startsWith(prefix)).map((c) {
+      if (separator.isEmpty) {
+        // No separator: remove prefix
+        return int.tryParse(c.replaceFirst(prefix, '')) ?? 0;
+      } else {
+        // Separator exists: take last segment after separator
+        final parts = c.split(separator);
+        return int.tryParse(parts.last) ?? 0;
+      }
+    });
+
+    // Find max and add 1
+    final next = numbers.isEmpty ? 1 : (numbers.reduce(max) + 1);
+
+    // Return formatted code
+    return '$prefix$separator${next.toString().padLeft(2, '0')}';
+  }
+
+  /// [nextWarehouseCode] @example 'WH'.nextWarehouseCode(['WH01', 'WH02'])
+  /// OUTPUT: WH03
+  String nextWarehouseCode(List<String>? existingCodes) =>
+      _nextCode(existingCodes);
+
+  /// [nextLocationCode] @example 'REC'.nextLocationCode(['REC01', 'REC02'])
+  /// OUTPUT: REC03
+  String nextLocationCode(List<String>? existingCodes) =>
+      _nextCode(existingCodes);
+
+  /// [nextBinCode] @example 'BIN'.nextBinCode(['BIN-01', 'A-01'])
+  /// OUTPUT: BIN03
+  String nextBinCode(List<String>? existingCodes) =>
+      _nextCode(existingCodes, separator: '-');
 }

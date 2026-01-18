@@ -78,7 +78,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
     final newStores = _storeList
         .map(
           (e) => e.copyWith(
-            storeNumber: '${e.name}${e.location}'.generateUniqueCode(),
+            storeNumber: '${e.name}${e.address}'.generateUniqueCode(),
             createdBy: _employeeName,
             history: history(),
           ),

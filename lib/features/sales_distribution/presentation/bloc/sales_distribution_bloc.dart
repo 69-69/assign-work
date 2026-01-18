@@ -107,6 +107,8 @@ class SalesDistributionBloc<T>
         onError: (e) =>
             add(_SalesDistributionLoadError('Error loading data: $e')),
       );
+      // Await for the subscription to be done (optional)
+      await _getDataStreamObserver?.asFuture();
     } catch (e) {
       emit(SalesDistributionError<T>('Error loading data: $e'));
     } finally {

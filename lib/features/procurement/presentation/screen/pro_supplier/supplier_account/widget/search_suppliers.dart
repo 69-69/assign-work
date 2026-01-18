@@ -131,7 +131,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
 
     if (context.mounted && isNewSupplier) {
       context.goNamed(
-        RouteNames.productConfig,
+        RouteNames.referenceMaster,
         pathParameters: {'openTab': '3'},
       );
     }

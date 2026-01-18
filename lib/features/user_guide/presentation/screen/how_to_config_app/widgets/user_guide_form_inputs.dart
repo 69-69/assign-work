@@ -1,6 +1,6 @@
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/extensions/main_modules.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:flutter/material.dart';
 

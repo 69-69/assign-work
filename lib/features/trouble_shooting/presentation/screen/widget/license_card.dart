@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/widgets/entitlement/entitlement_selector.dart';
-import 'package:assign_erp/core/widgets/entitlement/entitlement_tab_view.dart';
+import 'package:assign_erp/core/widgets/nav/tab/entitlement_selector.dart';
+import 'package:assign_erp/core/widgets/nav/tab/entitlement_tab_view.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/license_model.dart';
 import 'package:assign_erp/features/trouble_shooting/data/models/license_tab_content_model.dart';
@@ -45,11 +46,11 @@ class LicenseCard extends StatelessWidget {
       child: EntitlementTabView(
         tabs: _tabContent
             .map(
-              (tab) => {
-                'label': tab.label,
-                'icon': tab.icon,
-                'tooltip': tab.displayName,
-              },
+              (tab) => CustomTabModel(
+                label: tab.label,
+                icon: tab.icon,
+                tooltip: tab.displayName,
+              ),
             )
             .toList(),
         isVerticalTab: true,

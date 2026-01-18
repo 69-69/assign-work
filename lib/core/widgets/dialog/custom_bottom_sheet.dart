@@ -61,11 +61,13 @@ extension ShowBottomSheet<T> on BuildContext {
             maxWidth: screenWidth * (isSmall ? 1 : value),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (!isSmall && showZoomIcon) ...{
                 _buildZoomIcon(value, context, zoomLevel),
                 const SizedBox(height: 10),
               },
+              // Flexible(fit: FlexFit.loose, child: child!),
               Expanded(child: child!),
             ],
           ),
@@ -198,9 +200,12 @@ class CustomDraggableBottomSheet extends StatelessWidget {
         children: [
           Icon(Icons.remove, color: context.surfaceColor),
           if (header != null) ...{header!, const HorizontalDivider()},
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(controller: controller, child: child),
           ),
+          /*Expanded(
+            child: SingleChildScrollView(controller: controller, child: child),
+          ),*/
         ],
       ),
     );

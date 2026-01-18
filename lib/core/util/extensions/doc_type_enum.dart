@@ -15,6 +15,9 @@ enum DocType {
   customer,
   pOrder,
   itemMaster,
+  warehouse,
+  whLocation,
+  whBin,
   pSale,
   employee,
 }

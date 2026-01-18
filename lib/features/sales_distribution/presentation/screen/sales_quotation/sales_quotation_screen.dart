@@ -1,7 +1,8 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:assign_erp/features/sales_distribution/data/model/sales_quotation_model.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_quotation/sales_quotation_bloc.dart';

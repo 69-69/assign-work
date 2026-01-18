@@ -232,8 +232,8 @@ class Tax extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Tax / Levy',
-    'Tax type',
+    'Taxes',
+    'type',
     'Code',
     'Rate %',
     'Shipping',

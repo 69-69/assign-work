@@ -4,6 +4,13 @@ import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/features/inventory_ims/data/permission/inventory_permission.dart';
 import 'package:flutter/material.dart';
 
+/*ChatGPT QA: Im developing an ERP system in dart flutter: Im done with Procurement (PR-RFQ-PO), Sales & Distribution (Sales Quote) and Item master.
+Currently working on Stock management (StockTransaction = Goods Receipt, Goods Issue, Transfer, Adjustment) & Warehouses.
+
+NOTE: However, since StockTXN depends on "(FK → Warehouse.id), (FK → Location.id)"
+- im developing the warehouse management (warehouse, location, bin,
+Inbound-Receiving, Internal-Movements & Picking-Shipments)?*/
+
 /// Inventory Management System App(IMS) Dashboard tiles [InventoryTiles]
 extension InventoryTiles on dynamic {
   /// Sub Menu Tiles under orders tab
@@ -107,7 +114,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Warehouse',
         'icon': Icons.store,
-        'action': RouteNames.warehouseStorage,
+        'action': RouteNames.warehouse,
         'param': {},
         'access': _getName(InventoryPermission.manageWarehouseAddress),
         'description':
@@ -174,46 +181,6 @@ extension InventoryTiles on dynamic {
   List<DashboardTile> get inventoryTiles {
     final tilesData = [
       /// NEW Modules (These will be added)
-      /*1️⃣ Item / Product Master
-          Purpose: Define what the item is -Central definition of everything that can be stocked.
-          Key objects:
-          Items / Products
-          Item Categories
-          Units of Measure (UOM)
-          Barcodes / SKUs
-          Variants (size, color, model)
-          Lot / Serial tracking flags
-        📌 Shared across Sales, Procurement, POS, Manufacturing.
-        =========================
-        1️⃣ Item / Product Master
-          Purpose: This module acts as the central repository for defining and categorizing all items/products that are stocked, sold, or procured. It’s essential for standardizing product information across all other ERP modules.
-        Key Objects:
-          Items / Products: Defines each individual item in the system.
-          Item Categories: Groups products by type (e.g., electronics, furniture, raw materials).
-          Units of Measure (UOM): Defines how items are measured (e.g., pieces, kilograms, liters).
-          Barcodes / SKUs: Unique identifiers for easy tracking and sales processing.
-          Variants: Variations of a product like size, color, or model (e.g., “T-shirt (Large, Red)”).
-          Lot / Serial Tracking Flags: Helps track inventory at a lot or serial number level for high-value or regulated items.
-        Shared Across:
-          Sales: Products defined here show up in catalogs and sales orders.
-          Procurement: Products managed here are ordered and tracked.
-          POS (Point of Sale): Items are identified and sold through POS systems.
-          Manufacturing: Products can be raw materials or finished goods.
-          Finance: Product costs and inventory valuation affect financial reporting.
-
-        =========================
-        /// NOTE: There'll be Horizonal-tabs under the Item/Product Master tab (for: Items Stocking, Expiry, Warranty start/end).
-        */
-      {
-        'hasSplit': true,
-        'label': 'Item . Master',
-        'icon': Icons.inventory_2,
-        'action': RouteNames.itemMasterModule,
-        'param': {},
-        'access': _getName(InventoryPermission.manageItemMaster),
-        'description':
-            'Create, update, and manage inventory, SKUs, and attributes.',
-      },
 
       /* 2️⃣ Stock Management
           Purpose: Define where stock can exist - Real-time stock control.
@@ -432,6 +399,7 @@ extension InventoryTiles on dynamic {
         'description': 'monitor the progress of order placement and deliveries',
       },
     ];
+
     final defaultTiles = tilesData
         .map((e) => DashboardTile.fromMap(e))
         .toList();

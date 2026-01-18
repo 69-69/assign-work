@@ -45,14 +45,16 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
 
   Future<void> _onSubmit() async {
     final noPermissionsSelected = _assignedPermissions.isEmpty;
-    if (!noPermissionsSelected || _isSubmitting) return;
 
-    bool result = await _warnUser();
-    if (!result) return;
-
-    setState(() => _isSubmitting = true);
+    if (_isSubmitting) return;
+    if (noPermissionsSelected) {
+      bool result = await _warnUser();
+      if (!result) return;
+    }
 
     if (mounted && _formKey.currentState!.validate()) {
+      setState(() => _isSubmitting = true);
+
       /// Create New Role
       _createNewRole();
     }

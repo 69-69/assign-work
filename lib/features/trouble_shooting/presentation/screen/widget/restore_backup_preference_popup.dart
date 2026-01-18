@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/restore_data/index.dart';
 import 'package:flutter/material.dart';
 

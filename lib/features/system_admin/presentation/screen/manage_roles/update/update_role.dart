@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -51,14 +52,14 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
   Future<void> _onSubmit() async {
     final isRemovingAllPermissions = _assignedPermissions.isEmpty;
 
-    if (!isRemovingAllPermissions || _isSubmitting) return;
-
-    bool result = await _warnUser();
-    if (!result) return;
-
-    setState(() => _isSubmitting = true);
+    if (_isSubmitting) return;
+    if (isRemovingAllPermissions) {
+      bool result = await _warnUser();
+      if (!result) return;
+    }
 
     if (mounted && _formKey.currentState!.validate()) {
+      setState(() => _isSubmitting = true);
       _updatedRole();
     }
   }
@@ -72,6 +73,8 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
   }
 
   void _updatedRole() {
+    prettyPrint('testing-6', 6);
+
     final updatedRole = _role.copyWith(
       name: _nameController.text,
       permissions: _assignedPermissions,

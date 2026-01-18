@@ -57,14 +57,16 @@ class _CreateNewSubscriptionFormState
 
   Future<void> _onSubmit() async {
     final noLicensesSelected = _assignedLicenses.isEmpty;
-    if (!noLicensesSelected || _isSubmitting) return;
 
-    bool result = await _warnUser();
-    if (!result) return;
-
-    setState(() => _isSubmitting = true);
+    if (_isSubmitting) return;
+    if (noLicensesSelected) {
+      bool result = await _warnUser();
+      if (!result) return;
+    }
 
     if (mounted && _formKey.currentState!.validate()) {
+      setState(() => _isSubmitting = true);
+
       /// Create New Subscription
       final item = _newLicense;
       context.read<SubscriptionBloc>().add(

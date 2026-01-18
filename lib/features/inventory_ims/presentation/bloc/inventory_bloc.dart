@@ -101,9 +101,10 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
         final data = _toList(snapshot);
         emit(InventoriesLoaded<T>(data));
       }, onError: (e) => add(_InventoryLoadError('Error loading data: $e')));
+      // Await for the subscription to be done (optional)
+      await _getDataStreamObserver?.asFuture();
     } catch (e) {
       add(_InventoryLoadError('Error loading data: $e'));
-      emit(InventoryError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC

@@ -1,26 +1,22 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/update/update_workspace_password.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:flutter/material.dart';
 
-final _sideTabs = [
-  CustomTabModel(label: 'company setup', icon: Icons.home_work),
-  CustomTabModel(label: 'employees', icon: Icons.manage_accounts),
-  CustomTabModel(
-    label: 'Roles & Permissions',
-    icon: Icons.admin_panel_settings,
-  ),
-  CustomTabModel(label: 'workflow approval rules', icon: Icons.approval),
-  CustomTabModel(label: 'Tax rates', icon: Icons.calculate),
-  CustomTabModel(label: 'item preference', icon: Icons.category),
-  CustomTabModel(label: 'back up', icon: Icons.backup),
-  /*CustomTabModel(
-    label: 'renew license', icon: Icons.local_police,
-  )*/
+const List<Map<String, dynamic>> _tabData = [
+  {'label': 'Company Setup', 'icon': Icons.home_work},
+  {'label': 'Employees', 'icon': Icons.manage_accounts},
+  {'label': 'Roles & Permissions', 'icon': Icons.admin_panel_settings},
+  {'label': 'Backup', 'icon': Icons.backup},
+  // {'label': 'Workflow Approval Rules', 'icon': Icons.approval},
+  // {'label': 'Tax Rates', 'icon': Icons.calculate},
+  // {'label': 'Item Preference', 'icon': Icons.category},
+  // { 'label': 'renew license', 'icon': Icons.local_police,}
 ];
 
 class SetupScreen extends StatelessWidget {
@@ -36,7 +32,7 @@ class SetupScreen extends StatelessWidget {
       floatingActionBtnLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: context.buildFloatingBtn(
         'Change Workspace Password',
-        icon: Icons.workspaces_outline,
+        icon: Icons.workspaces,
         onPressed: () async => await context.openUpdateWorkspacePopUp(),
       ),
     );
@@ -49,15 +45,14 @@ class SetupScreen extends StatelessWidget {
       isVertical: true,
       isScrollable: true,
       openThisTab: openThisTab,
-      length: 7,
-      tabs: _sideTabs,
+      length: 4,
+      tabs: _tabData
+          .map((tab) => CustomTabModel(label: tab['label'], icon: tab['icon']))
+          .toList(),
       children: [
         const CompanyScreen(),
         const AllEmployeesScreen(),
         const ManageRolesScreen(),
-        const ApprovalRulesScreen(),
-        const ManageTaxScreen(),
-        const ProductConfigScreen(),
         const BackUp(),
       ],
     );

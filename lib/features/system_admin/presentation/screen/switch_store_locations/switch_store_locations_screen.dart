@@ -93,7 +93,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
               color: ranColor,
               onPressed: () async => await context.onSwitchStore(
                 store.storeNumber,
-                location: store.location,
+                location: store.address,
               ),
             ),
             subtitle: _buildSubtitle(

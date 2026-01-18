@@ -1,4 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
+import 'package:assign_erp/core/widgets/nav/tab/entitlement_tab_view.dart';
 import 'package:flutter/material.dart';
 
 class FormGroupCard extends StatefulWidget {
@@ -38,8 +40,11 @@ class FormGroupCard extends StatefulWidget {
 class _FormGroupCardState extends State<FormGroupCard> {
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
+
   bool get _isExpanded => widget.isExpanded;
+
   String get _title => widget.title;
+
   String get _subTitle => widget.subTitle;
 
   // Generate a unique key for each card based on the title
@@ -203,6 +208,92 @@ class _FormGroupCardState extends State<FormGroupCard> {
             : Icons.keyboard_arrow_down,
       ),
     );
+  }
+}
+
+class FormGroupTabView extends StatefulWidget {
+  final Widget? header;
+  final List<Widget>? footers;
+  final List<Map<String, dynamic>> contents;
+
+  const FormGroupTabView({
+    super.key,
+    required this.contents,
+    this.header,
+    this.footers,
+  });
+
+  @override
+  State<FormGroupTabView> createState() => _FormGroupTabViewState();
+}
+
+class _FormGroupTabViewState extends State<FormGroupTabView> {
+  bool _isGridView = false;
+  List<Map<String, dynamic>> get _tabsData => widget.contents;
+  Widget? get _header => widget.header;
+  List<Widget>? get _footers => widget.footers;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeaderRow(),
+        const SizedBox(height: 2),
+
+        if (_isGridView)
+          Flexible(fit: FlexFit.loose, child: _buildTabs())
+        else
+          ..._buildFormGroupCards(),
+
+        if (_footers != null) ..._footers!,
+      ],
+    );
+  }
+
+  Row _buildHeaderRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _header ?? const SizedBox.shrink(),
+        IconButton(
+          icon: Icon(
+            _isGridView ? Icons.view_list : Icons.grid_view,
+            color: kPrimaryAccentColor,
+          ),
+          tooltip: "Switch to ${_isGridView ? "List" : "Tab"} view",
+          onPressed: () {
+            setState(() => _isGridView = !_isGridView);
+          },
+        ),
+      ],
+    );
+  }
+
+  EntitlementTabView _buildTabs() {
+    final tabs = _tabsData
+        .map((t) => CustomTabModel(label: t['title'], tooltip: t['subTitle']))
+        .toList();
+
+    List<Widget> children = _buildFormGroupCards();
+
+    return EntitlementTabView(tabs: tabs, children: children);
+  }
+
+  List<Widget> _buildFormGroupCards() {
+    return _tabsData.asMap().entries.map((entry) {
+      final val = entry.value;
+      final index = entry.key;
+      final title = _isGridView ? '' : '${index + 1}. ${val['title']}';
+
+      return FormGroupCard(
+        isExpanded: index == 0 || _isGridView,
+        title: title,
+        subTitle: val['subTitle'],
+        contentPadding: val['contentPadding'],
+        children: List<Widget>.from(val['children'] as List),
+      );
+    }).toList();
   }
 }
 

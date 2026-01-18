@@ -1,4 +1,5 @@
-import 'package:assign_erp/core/widgets/nav/custom_tab.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
+import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:flutter/material.dart';
 
 import 'index.dart';

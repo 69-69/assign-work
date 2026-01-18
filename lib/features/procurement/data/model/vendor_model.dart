@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/network/data_sources/models/address_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:equatable/equatable.dart';
 
 class Supplier extends Equatable {

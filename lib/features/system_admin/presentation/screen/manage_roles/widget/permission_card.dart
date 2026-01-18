@@ -1,8 +1,9 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/subscription_licenses_enum.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
-import 'package:assign_erp/core/widgets/entitlement/entitlement_selector.dart';
-import 'package:assign_erp/core/widgets/entitlement/entitlement_tab_view.dart';
+import 'package:assign_erp/core/widgets/nav/tab/entitlement_selector.dart';
+import 'package:assign_erp/core/widgets/nav/tab/entitlement_tab_view.dart';
 import 'package:assign_erp/features/access_control/data/model/access_control_model.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
 import 'package:assign_erp/features/agent/data/permission/agent_permission.dart';
@@ -115,11 +116,11 @@ class PermissionCard extends StatelessWidget {
       child: EntitlementTabView(
         tabs: filteredTabs
             .map(
-              (tab) => {
-                'label': tab.label,
-                'icon': tab.icon,
-                'tooltip': tab.displayName,
-              },
+              (tab) => CustomTabModel(
+                label: tab.label,
+                icon: tab.icon,
+                tooltip: tab.displayName,
+              ),
             )
             .toList(),
         isVerticalTab: true,

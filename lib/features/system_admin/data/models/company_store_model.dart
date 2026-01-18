@@ -1,6 +1,6 @@
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
-import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
@@ -12,7 +12,7 @@ class CompanyStore extends Equatable {
   final String storeNumber;
   final String name;
   final String phone;
-  final String location;
+  final String address;
   final String? notes;
   final String createdBy;
   final DateTime createdAt;
@@ -24,7 +24,7 @@ class CompanyStore extends Equatable {
     this.id = '',
     required this.name,
     this.phone = '',
-    required this.location,
+    required this.address,
     required this.storeNumber,
     this.notes,
     required this.createdBy,
@@ -36,13 +36,13 @@ class CompanyStore extends Equatable {
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
-  /// fromFirestore / fromJson Function [StoreLocation.fromMap]
+  /// fromFirestore / fromJson Function [Storeaddress.fromMap]
   factory CompanyStore.fromMap(Map<String, dynamic> map, {String? id}) {
     return CompanyStore(
       id: id ?? map['id'] ?? '',
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
-      location: map['location'] ?? '',
+      address: map['address'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       notes: map['notes'] ?? '',
       createdBy: map['createdBy'] ?? '',
@@ -58,7 +58,7 @@ class CompanyStore extends Equatable {
     'id': id,
     'name': name,
     'phone': phone,
-    'location': location,
+    'address': address,
     'storeNumber': storeNumber,
     'notes': notes,
     'createdBy': createdBy,
@@ -89,7 +89,7 @@ class CompanyStore extends Equatable {
     id: '',
     name: '',
     phone: '',
-    location: '',
+    address: '',
     storeNumber: '',
     createdBy: '',
   );
@@ -128,7 +128,7 @@ class CompanyStore extends Equatable {
     String? id,
     String? name,
     String? phone,
-    String? location,
+    String? address,
     String? storeNumber,
     String? notes,
     String? createdBy,
@@ -141,7 +141,7 @@ class CompanyStore extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
-      location: location ?? this.location,
+      address: address ?? this.address,
       storeNumber: storeNumber ?? this.storeNumber,
       notes: notes ?? this.notes,
       createdBy: createdBy ?? this.createdBy,
@@ -157,7 +157,7 @@ class CompanyStore extends Equatable {
     id,
     name,
     phone,
-    location,
+    address,
     storeNumber,
     notes,
     createdBy,
@@ -167,13 +167,12 @@ class CompanyStore extends Equatable {
     history,
   ];
 
-  /// ToList for StoreLocation [itemAsList]
   List<String> get itemAsList => [
     id,
     storeNumber,
     name.toTitle,
     phone,
-    location.toTitle,
+    address.toTitle,
     (notes ?? 'none').toTitle,
     createdBy.toTitle,
     getCreatedAt,
@@ -186,7 +185,7 @@ class CompanyStore extends Equatable {
     'Store Number',
     'Name',
     'Phone',
-    'Address / Location',
+    'Address',
     'Notes',
     'Created By',
     'Created At',
@@ -195,18 +194,18 @@ class CompanyStore extends Equatable {
   ];
 }
 
-/// [businessOwnerDefaultStoreLocation] This is the Business owner's default Store Branch
+/// [businessOwnerDefaultStoreBranch] This is the Business owner's default Store Branch
 /// during first-time workspace setup(Workspace Creation)
-Map<String, dynamic> businessOwnerDefaultStoreLocation({
+Map<String, dynamic> businessOwnerDefaultStoreBranch({
   required String id,
   required String name,
-  required String location,
+  required String address,
 }) {
   return CompanyStore(
     id: id,
     name: name,
-    location: location,
-    storeNumber: location.generateUniqueCode(),
+    address: address,
+    storeNumber: defaultStoreNumber, // address.generateUniqueCode(),
     notes: 'this is the business headquarters',
     createdBy: 'system',
   ).toMap();

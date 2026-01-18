@@ -6,6 +6,10 @@
 /// if customer doesn't exist, while placing Orders [autoID]
 const autoID = 'auto-id';
 
+/// Default Store Number during Tenant Workspace Setup [defaultStoreNumber]
+/// NOTE: It can't be changed after Tenant Workspace Setup
+const defaultStoreNumber = 'main';
+
 /// Assign: is prefix error message to distinguish Generic (Firestore) error [errorPrefix]
 const errorPrefix = 'Assign';
 // rhoda= 172298 - steve = 60438
@@ -57,7 +61,10 @@ const storeSwitcherAppTitle = 'switch store branch';
 const userGuideAppTitle = 'user guide';
 
 /// MANAGEMENT SUB-SCREENS TITLES
+const masterDataScreenTitle = 'master data';
 const itemMasterScreenTitle = 'item master';
+const taxMasterScreenTitle = 'tax master';
+const referenceMasterScreenTitle = 'reference master';
 const goodsReceiptScreenTitle = 'goods receipt';
 const goodsIssueScreenTitle = 'goods issue';
 const stockAdjustScreenTitle = 'stock adjustment';
@@ -80,10 +87,13 @@ const miscOrderScreenTitle = 'miscellaneous order (mo)';
 const requestPriceQuoteScreenTitle = 'request for quote';
 const purchaseRequisiteScreenTitle = 'purchase Requisition';
 const proWorkflowApprovalsScreenTitle = 'workflow approvals';
+const workflowRulesScreenTitle = 'workflow rules';
 const deliveryScreenTitle = 'delivery management';
 const reportsAnalyticsScreenTitle = 'reports analytics';
 const salesScreenTitle = 'sales management';
 const warehouseScreenTitle = 'warehouse management';
+const whLocationScreenTitle = 'WH Location management';
+const whBinScreenTitle = 'WH Bin management';
 const customersScreenTitle = 'customer management';
 const posSalesScreenTitle = 'p.o.s - sales';
 const posOrdersScreenTitle = 'p.o.s - orders';

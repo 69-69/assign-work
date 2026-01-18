@@ -16,7 +16,7 @@
 - @Continue
     - Inventory System
       - ~~Item Master Updates~~
-      - Stock mangement
+      - Stock management
         - Goods Receipt
         - Goods Issue
         - Goods Transfer
@@ -32,7 +32,7 @@
 ```shell
 git init
 git add .
-git commit -m "Working on Inventory System"
+git commit -m "Re-organized Modules and Tabs. Also option to switch between TabsView and ListView in Forms"
 git branch -M main
 git push -u origin main
 ```

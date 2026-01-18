@@ -513,7 +513,7 @@ class AuthRepository extends FirestoreRepository {
 
         // FOR STORE Branch CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingDefaultBusinessLocation);
-        final storeNumber = await _businessOwnerDefaultBusinessLocation(
+        final storeNumber = await _businessOwnerDefaultBusinessBranch(
           address: address,
           company: workspaceName,
         );
@@ -761,13 +761,13 @@ class AuthRepository extends FirestoreRepository {
     return defaultDepart['code'] as String;
   }
 
-  /// [_businessOwnerDefaultBusinessLocation] This is the Business owner's default store Branch
+  /// [_businessOwnerDefaultBusinessBranch] This is the Business owner's default store Branch
   /// during first-time workspace setup(Workspace Creation)
   ///
   /// @param address - The address of the store Branch.
   /// @param company - The name of the company.
   /// @return `Future<String>`
-  Future<String> _businessOwnerDefaultBusinessLocation({
+  Future<String> _businessOwnerDefaultBusinessBranch({
     required String address,
     required String company,
   }) async {
@@ -780,10 +780,10 @@ class AuthRepository extends FirestoreRepository {
       collectionPath: storeLocationsDBColPath,
     ).doc();
 
-    final defaultBranch = businessOwnerDefaultStoreLocation(
+    final defaultBranch = businessOwnerDefaultStoreBranch(
       id: docRef.id,
       name: company,
-      location: address,
+      address: address,
     );
 
     // update map
