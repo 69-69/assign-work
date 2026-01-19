@@ -7,7 +7,7 @@ class PurchaseOrder extends Equatable {
   static get _today => DateTime.now();
 
   final String id; // Firestore will assign a unique ID (documentId)
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String poNumber;
   final String supplierId;
   // final List<POLineItem> lineItems; // A list of items in the RFQ

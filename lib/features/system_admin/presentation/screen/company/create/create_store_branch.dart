@@ -17,30 +17,30 @@ import 'package:assign_erp/features/system_admin/presentation/screen/company/wid
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Add Company Stores or Branches
-extension AddStoreLocations<T> on BuildContext {
-  Future<void> openAddStoreLocations({
+/// Add Company Store Branches
+extension CreateStoreBranches<T> on BuildContext {
+  Future<void> openAddStoreBranches({
     CompanyStore? serverStore,
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
       title:
-          '${serverStore == null ? 'Add Stores (Branches)' : 'Edit ${serverStore.name.toTitle}'} ',
-      body: _AddStoreFormBody(serverStore: serverStore),
+          '${serverStore == null ? 'New Store Branches' : 'Edit ${serverStore.name.toTitle}'} ',
+      body: _AddStoreBranchForm(serverStore: serverStore),
     ),
   );
 }
 
-class _AddStoreFormBody extends StatefulWidget {
+class _AddStoreBranchForm extends StatefulWidget {
   final CompanyStore? serverStore;
 
-  const _AddStoreFormBody({this.serverStore});
+  const _AddStoreBranchForm({this.serverStore});
 
   @override
-  State<_AddStoreFormBody> createState() => _AddStoreFormBodyState();
+  State<_AddStoreBranchForm> createState() => _AddStoreBranchFormState();
 }
 
-class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
+class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   bool _isSubmitting = false;
   final _formKey = GlobalKey<FormState>();
   final List<CompanyStore> _storeList = [];
@@ -74,7 +74,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
   }
 
   void _createNewStores() {
-    // append store number to each stores/branches
+    // append storeNumber to each store branch
     final newStores = _storeList
         .map(
           (e) => e.copyWith(
@@ -157,7 +157,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
         FormGroupCard(children: [_buildStoresFields()]),
         context.confirmableActionButton(
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Add Store (Branch)')
+              ? (_isSubmitting ? 'Creating...' : 'Create Branch')
               : (_isSubmitting ? 'Updating...' : null),
           isDisabled: _isSubmitting,
           onPressed: _onSubmit,
@@ -171,7 +171,7 @@ class _AddStoreFormBodyState extends State<_AddStoreFormBody> {
     ({bool addMore, int maxAllowed}) canAdd = context.canAddMoreStores;
 
     return DynamicTextFields(
-      title: _serverStore?.name ?? 'Stores (Branches)',
+      title: _serverStore?.name ?? 'Store Branch',
       fieldsConfig: CompanyFormInputs.addStoresFields,
       initialData: [?_serverStore?.toMap()],
       showButton: canAdd.addMore || _serverStore != null,

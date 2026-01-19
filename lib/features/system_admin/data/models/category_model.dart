@@ -8,7 +8,7 @@ class Category extends Equatable {
 
   final String id;
   final String name;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;

@@ -2,6 +2,7 @@ import 'package:assign_erp/core/network/data_sources/models/address_info_model.d
 import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
 enum WarehouseType {
@@ -11,7 +12,7 @@ enum WarehouseType {
 }
 
 extension WarehouseTypeExtension on WarehouseType {
-  String get getName => EnumUtil<WarehouseType>(this).getName;
+  String get getdescription => EnumUtil<WarehouseType>(this).getName;
 }
 
 /// [Warehouse] Purpose: Represents a physical storage place (Main, Store, Transit, etc.)
@@ -19,8 +20,9 @@ class Warehouse extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id; // PK
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String code; // Unique warehouse code, e.g., "WH01"
-  final String name; // Full warehouse name
+  final String description; // Full warehouse description
   final WarehouseType type; // (Main, Store, Transit)
   final AddressInfo address; // Optional: physical address
   final bool isActive; // Active/inactive warehouse
@@ -38,8 +40,9 @@ class Warehouse extends Equatable {
 
   Warehouse({
     required this.id,
+    required this.storeNumber,
     required this.code,
-    required this.name,
+    required this.description,
     required this.type,
     required this.address,
     this.isActive = true,
@@ -54,21 +57,21 @@ class Warehouse extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  /// Create a new warehouse from a map.
   factory Warehouse.fromMap(Map<String, dynamic> map, {String? id}) =>
       Warehouse(
         id: id ?? map['id'] ?? '',
-        code: map['code'],
-        name: map['name'],
+        storeNumber: map['storeNumber'] ?? '',
+        code: map['code'] ?? '',
+        description: map['description'] ?? '',
         type: fromString(map['type']),
-        address: map['address'],
-        isActive: map['isActive'],
-        isDefault: map['isDefault'],
-        isBinManaged: map['isBinManaged'],
+        address: map['address'] ?? AddressInfo.empty,
+        isActive: map['isActive'] ?? false,
+        isDefault: map['isDefault'] ?? false,
+        isBinManaged: map['isBinManaged'] ?? false,
         maxItems: '${map['maxItems']}'.asDouble,
         maxWeight: '${map['maxWeight']}'.asDouble,
-        createdBy: map['createdBy'],
-        updatedBy: map['updatedBy'],
+        createdBy: map['createdBy'] ?? '',
+        updatedBy: map['updatedBy'] ?? '',
         createdAt: toDateTimeFn(map['createdAt']),
         updatedAt: toDateTimeFn(map['updatedAt']),
       );
@@ -76,8 +79,9 @@ class Warehouse extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'storeNumber': storeNumber,
     'code': code,
-    'name': name,
+    'description': description,
     'type': getType,
     'address': address,
     'isActive': isActive,
@@ -88,8 +92,6 @@ class Warehouse extends Equatable {
     'createdBy': createdBy,
     'updatedBy': updatedBy,
   };
-
-  String get getType => type.getName;
 
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
@@ -114,7 +116,8 @@ class Warehouse extends Equatable {
   static Warehouse get empty => Warehouse(
     id: '',
     code: '',
-    name: '',
+    description: '',
+    storeNumber: '',
     type: WarehouseType.main,
     address: AddressInfo.empty,
   );
@@ -122,10 +125,31 @@ class Warehouse extends Equatable {
   /// Check if the Warehouse is empty.
   bool get isEmpty => identical(this, Warehouse.empty);
 
+  bool get isNotEmpty => !isEmpty;
+
+  String get getType => type.getdescription;
+
+  // filter/search
+  bool filterByAny(String term) =>
+      itemAsList.filterAny(term) || address.filterByAny(term);
+
+  static Warehouse? findById(List<Warehouse> warehouses, String id) =>
+      warehouses.firstWhereOrNull((w) => w.id == id);
+
+  /// Extract all codes from a list of Warehouse objects
+  static List<String> getCodes(List<Warehouse> warehouses) =>
+      warehouses.map((w) => w.code).toList();
+
+  /// Returns warehouse codes filtered by [code].
+  /// If [code] is empty, all codes are returned.
+  static List<String> getCodesByCode(List<String> codes, [String code = '']) =>
+      codes.where((c) => code.isEmpty || c.filterAny(code)).toList();
+
   Warehouse copyWith({
     String? id,
     String? code,
-    String? name,
+    String? description,
+    String? storeNumber,
     WarehouseType? type,
     AddressInfo? address,
     bool? isActive,
@@ -139,8 +163,9 @@ class Warehouse extends Equatable {
     DateTime? updatedAt,
   }) => Warehouse(
     id: id ?? this.id,
+    storeNumber: storeNumber ?? this.storeNumber,
     code: code ?? this.code,
-    name: name ?? this.name,
+    description: description ?? this.description,
     type: type ?? this.type,
     address: address ?? this.address,
     isActive: isActive ?? this.isActive,
@@ -157,8 +182,9 @@ class Warehouse extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    storeNumber,
     code,
-    name,
+    description,
     type,
     address,
     isActive,
@@ -173,8 +199,10 @@ class Warehouse extends Equatable {
   ];
 
   List<String> get itemAsList => [
+    id,
+    storeNumber,
     code,
-    name,
+    description,
     getType,
     isDefault ? 'Yes' : 'No',
     isActive ? 'Yes' : 'No',
@@ -183,9 +211,11 @@ class Warehouse extends Equatable {
     updatedBy ?? '',
   ];
 
-  List<String> get dataTableHeader => [
+  static List<String> get dataTableHeader => [
+    'ID',
+    'Store Number',
     'WH Code',
-    'Name',
+    'description',
     'Type',
     'Default',
     'Active',

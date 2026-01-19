@@ -263,7 +263,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
         DashboardTile(
           icon: Icons.dashboard,
           label: 'Dashboard',
-          action: RouteNames.homeDashboard,
+          route: RouteNames.homeDashboard,
           description: 'Access to dashboard',
           access: EnumUtil<MainPermission>(MainPermission.unknown).getName,
         ),
@@ -313,9 +313,9 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
               tile.label.contains('dashboard')
                   ? context.pop()
                   : (tile.param.entries.isEmpty
-                        ? context.goNamed(tile.action)
+                        ? context.goNamed(tile.route)
                         : context.goNamed(
-                            tile.action,
+                            tile.route,
                             extra: tile.param,
                             pathParameters: tile.param,
                           ));

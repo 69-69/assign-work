@@ -15,6 +15,18 @@ extension AddressTypeExtension on AddressType {
   bool get isOffice => this == AddressType.office;
 }
 
+class AddressTypeUtil {
+  /// [fromString] Converts String/Label to enum value.
+  static AddressType fromString(String? value) =>
+      EnumUtil.fromString<AddressType>(AddressType.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'Address type' : '';
+    return EnumUtil.toStringList<AddressType>(AddressType.values, label);
+  }
+}
+
 /// Address Class [Address]
 class AddressInfo extends Equatable {
   final String id;
@@ -39,11 +51,11 @@ class AddressInfo extends Equatable {
   factory AddressInfo.fromMap(Map<String, dynamic> map, {String? id}) {
     return AddressInfo(
       id: id ?? map['id'] ?? '',
+      type: AddressTypeUtil.fromString(map['type']),
       city: map['city'] ?? '',
       state: map['state'] ?? '',
       postalCode: map['postalCode'] ?? '',
       country: map['country'] ?? '',
-      type: fromString(map['type']),
       address: map['address'] ?? '',
     );
   }
@@ -143,16 +155,5 @@ class AddressInfo extends Equatable {
     'Address',
   ];
 
-  bool filterByAny(String query) =>
-      itemAsList.any((item) => item.contains(query));
-
-  /// [fromString] Converts String/Label to enum value.
-  static AddressType fromString(String? value) =>
-      EnumUtil.fromString<AddressType>(AddressType.values, value);
-
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Address type' : '';
-    return EnumUtil.toStringList<AddressType>(AddressType.values, label);
-  }
+  bool filterByAny(String keyword) => itemAsList.filterAny(keyword);
 }

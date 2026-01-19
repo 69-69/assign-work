@@ -238,7 +238,7 @@ class SQFormInputs {
 
   /// Addresses (e.g., Buyer Shipping Address)
   static List<FieldGroupConfig> get addressesFields =>
-      SalesDistFormFields.addressFields();
+      SalesDistFormFields.addressFields(maxItems: 2);
 
   static AuditSalesDistribution<SalesQuotation> updateHistory({
     required String empId,

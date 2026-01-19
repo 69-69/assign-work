@@ -15,7 +15,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.invent.getLabel,
         'icon': MainModuleId.invent.getIcon,
-        'action': RouteNames.inventoryApp,
+        'route': RouteNames.inventoryApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.inventory),
         'description':
@@ -26,7 +26,7 @@ extension LicenseTiles on BuildContext {
         'hasSplit': true,
         'label': MainModuleId.procure.getLabel,
         'icon': MainModuleId.procure.getIcon,
-        'action': RouteNames.procurementApp,
+        'route': RouteNames.procurementApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.procurement),
         'description':
@@ -36,7 +36,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.pos.getLabel,
         'icon': MainModuleId.pos.getIcon,
-        'action': RouteNames.posApp,
+        'route': RouteNames.posApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.pos),
         'description':
@@ -47,7 +47,7 @@ extension LicenseTiles on BuildContext {
         'hasSplit': true,
         'label': MainModuleId.sales.getLabel,
         'icon': MainModuleId.sales.getIcon,
-        'action': RouteNames.salesDistributionApp,
+        'route': RouteNames.salesDistributionApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.salesDistribution),
         'description': 'Manage sales orders, deliveries, and tracking.',
@@ -56,7 +56,7 @@ extension LicenseTiles on BuildContext {
       /*{
         'label': MainModuleId.warehouse.getLabel,
         'icon': MainModuleId.warehouse.getIcon,
-        'action': RouteNames.warehouseApp,
+        'route': RouteNames.warehouseApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.warehouse),
         'description':
@@ -66,7 +66,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.crm.getLabel,
         'icon': MainModuleId.crm.getIcon,
-        'action': RouteNames.customersApp,
+        'route': RouteNames.customersApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.crm),
         'description':
@@ -78,7 +78,7 @@ extension LicenseTiles on BuildContext {
         'hasSplit': true,
         'label': MainModuleId.system.getLabel,
         'icon': MainModuleId.system.getIcon,
-        'action': RouteNames.systemAdminApp,
+        'route': RouteNames.systemAdminApp,
         'param': {},
         'access': EnumUtil<SetupPermission>(
           SetupPermission.manageSetup,
@@ -91,7 +91,7 @@ extension LicenseTiles on BuildContext {
         'hasSplit': true,
         'label': MainModuleId.guide.getLabel,
         'icon': MainModuleId.guide.getIcon,
-        'action': RouteNames.userGuideApp,
+        'route': RouteNames.userGuideApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.paidTraining),
         'description':
@@ -101,7 +101,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.support.getLabel,
         'icon': MainModuleId.support.getIcon,
-        'action': RouteNames.liveChatSupport,
+        'route': RouteNames.liveChatSupport,
         'param': {},
         'access': _getName(SubscriptionLicenses.paidTraining),
         'description': 'Get 24/7 live chat support from our agents and experts',
@@ -110,7 +110,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.agent.getLabel,
         'icon': MainModuleId.agent.getIcon,
-        'action': RouteNames.agent,
+        'route': RouteNames.agent,
         'param': {},
         'access': _getName(SubscriptionLicenses.agent),
         'description': 'setup, oversee, and monitor workspaces for clients',
@@ -119,7 +119,7 @@ extension LicenseTiles on BuildContext {
       {
         'label': MainModuleId.trouble.getLabel,
         'icon': MainModuleId.trouble.getIcon,
-        'action': RouteNames.troubleShootingApp,
+        'route': RouteNames.troubleShootingApp,
         'param': {},
         'access': _getName(SubscriptionLicenses.dev),
         'description':

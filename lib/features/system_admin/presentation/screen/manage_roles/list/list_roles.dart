@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
@@ -137,6 +139,7 @@ class _ListRolesState extends State<ListRoles> {
     {
       Role? role = _findRole(id: id, roles);
       if (role == null) return;
+      if (!_guardPrimaryRole(role)) return;
 
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
@@ -145,5 +148,17 @@ class _ListRolesState extends State<ListRoles> {
         setState(() => roles.remove(role));
       }
     }
+  }
+
+  // Prevent deletion of the primary Role associated with the [business owner]
+  bool _guardPrimaryRole(Role role) {
+    if (!role.canBeDeleted) {
+      context.showAlertOverlay(
+        '[ ${role.name.toUpperAll} ] Role is associated with the business owner and cannot be deleted.',
+        bgColor: kDangerColor,
+      );
+      return false;
+    }
+    return true;
   }
 }

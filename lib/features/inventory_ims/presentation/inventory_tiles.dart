@@ -20,7 +20,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'sales . order',
         'icon': Icons.trending_up,
-        'action': RouteNames.salesOrders,
+        'route': RouteNames.salesOrders,
         'param': {},
         'access': _getName(InventoryPermission.manageSOs),
         'description': 'Create orders for customers or clients',
@@ -29,7 +29,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'purchase . order',
         'icon': Icons.paypal,
-        'action': RouteNames.imsPurchaseOrders,
+        'route': RouteNames.imsPurchaseOrders,
         'param': {},
         'access': _getName(InventoryPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
@@ -46,7 +46,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'goods . receipt',
         'icon': Icons.receipt_long,
-        'action': RouteNames.goodsReceipt,
+        'route': RouteNames.goodsReceipt,
         'param': {},
         'access': _getName(InventoryPermission.manageGoodsReceipt),
         'description':
@@ -56,7 +56,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'goods . issue',
         'icon': Icons.output,
-        'action': RouteNames.goodsIssue,
+        'route': RouteNames.goodsIssue,
         'param': {},
         'access': _getName(InventoryPermission.manageGoodsIssue),
         'description':
@@ -66,7 +66,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'stock . transfer',
         'icon': Icons.compare_arrows,
-        'action': RouteNames.stockTransfer,
+        'route': RouteNames.stockTransfer,
         'param': {},
         'access': _getName(InventoryPermission.manageStockTransfer),
         'description':
@@ -76,7 +76,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'stock . adjustment',
         'icon': Icons.tune,
-        'action': RouteNames.stockAdjustment,
+        'route': RouteNames.stockAdjustment,
         'param': {},
         'access': _getName(InventoryPermission.manageStockAdjustment),
         'description':
@@ -86,7 +86,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'reserve . stocks',
         'icon': Icons.lock_outline,
-        'action': RouteNames.reserveStocks,
+        'route': RouteNames.reserveStocks,
         'param': {},
         'access': _getName(InventoryPermission.manageReserveStocks),
         'description':
@@ -96,7 +96,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'returns . from customers',
         'icon': Icons.rotate_left,
-        'action': RouteNames.returnsFromCustomers,
+        'route': RouteNames.returnsFromCustomers,
         'param': {},
         'access': _getName(InventoryPermission.manageReturns),
         'description':
@@ -114,7 +114,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Warehouse',
         'icon': Icons.store,
-        'action': RouteNames.warehouse,
+        'route': RouteNames.warehouse,
         'param': {},
         'access': _getName(InventoryPermission.manageWarehouseAddress),
         'description':
@@ -123,7 +123,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Location',
         'icon': Icons.view_kanban,
-        'action': RouteNames.warehouseLocation,
+        'route': RouteNames.warehouseLocation,
         'param': {},
         'access': _getName(InventoryPermission.manageWHLocation),
         'description':
@@ -132,7 +132,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Bin',
         'icon': Icons.inbox,
-        'action': RouteNames.warehouseBin,
+        'route': RouteNames.warehouseBin,
         'param': {},
         'access': _getName(InventoryPermission.manageWHBin),
         'description':
@@ -144,7 +144,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Inbound . Receiving',
         'icon': Icons.call_received,
-        'action': RouteNames.inboundReceiving,
+        'route': RouteNames.inboundReceiving,
         'param': {},
         'access': _getName(InventoryPermission.manageWHReceiving),
         'description':
@@ -154,7 +154,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Internal . Movements',
         'icon': Icons.swap_horiz,
-        'action': RouteNames.internalMovements,
+        'route': RouteNames.internalMovements,
         'param': {},
         'access': _getName(InventoryPermission.manageWHMovement),
         'description':
@@ -166,7 +166,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Picking . Shipments',
         'icon': Icons.local_shipping,
-        'action': RouteNames.outboundPickShipping,
+        'route': RouteNames.outboundPickShipping,
         'param': {},
         'access': _getName(InventoryPermission.manageWHPickShipping),
         'description':
@@ -210,7 +210,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Stock . Management',
         'icon': Icons.assignment_returned,
-        'action': RouteNames.stockManagementModule,
+        'route': RouteNames.stockManagementModule,
         'param': {},
         'access': _getName(InventoryPermission.manageStock),
         'description':
@@ -240,9 +240,10 @@ extension InventoryTiles on dynamic {
           It’s crucial for large businesses with multiple warehouses or complex inventory flows.
         */
       {
-        'label': 'Warehouses',
+        'hasSplit': true,
+        'label': 'Warehouse . Management',
         'icon': Icons.warehouse,
-        'action': RouteNames.wmsModule,
+        'route': RouteNames.wmsModule,
         'param': {},
         'access': _getName(
           InventoryPermission.manageWarehouse,
@@ -268,8 +269,8 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'Inventory . Reports',
         'icon': Icons.bar_chart,
-        // 'action': RouteNames.inventoryReports,
-        'action': RouteNames.items,
+        // 'route': RouteNames.inventoryReports,
+        'route': RouteNames.items,
         // Temporal Placeholder
         'param': {},
         // 'access': _getName(InventoryPermission.viewInventoryReports),
@@ -285,7 +286,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'stocks',
         'icon': Icons.receipt_long,
-        'action': RouteNames.items,
+        'route': RouteNames.items,
         'param': {},
         'access': _getName(InventoryPermission.manageStock),
         'description': 'add or create new items to the inventory.',
@@ -294,7 +295,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'orders',
         'icon': Icons.shopping_cart,
-        'action': RouteNames.orders,
+        'route': RouteNames.orders,
         'param': {},
         'access': _getName(InventoryPermission.manageOrders),
         'description':
@@ -305,7 +306,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'misc . order',
         'icon': Icons.payments_outlined,
-        'action': RouteNames.miscOrders,
+        'route': RouteNames.miscOrders,
         'param': {},
         'access': _getName(InventoryPermission.manageMOs),
         'description':
@@ -314,7 +315,7 @@ extension InventoryTiles on dynamic {
       /*{
         'label': 'Item Categories',
         'icon': Icons.dashboard_customize_outlined,
-        'action': RouteNames.itemCategories,
+        'route': RouteNames.itemCategories,
         'param': {},
         'access': _getName(InventoryPermission.manageItemCategory),
         'description':
@@ -323,7 +324,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'Item Suppliers',
         'icon': Icons.local_shipping,
-        'action': RouteNames.itemSuppliers,
+        'route': RouteNames.itemSuppliers,
         'param': {},
         'access': _getName(InventoryPermission.manageItemSuppliers),
         'description':
@@ -333,7 +334,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'deliveries',
         'icon': Icons.delivery_dining,
-        'action': RouteNames.deliveries,
+        'route': RouteNames.deliveries,
         'param': {},
         'access': _getName(InventoryPermission.manageDeliveries),
         'description':
@@ -343,7 +344,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'sales',
         'icon': Icons.shopping_basket,
-        'action': RouteNames.sales,
+        'route': RouteNames.sales,
         'param': {},
         'access': _getName(InventoryPermission.manageSales),
         'description': 'keep track of, and oversee the progress of sales.',
@@ -352,7 +353,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'payment',
         'icon': Icons.payments_outlined,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': _getName(InventoryPermission.manageOrders),
         'description':
@@ -362,7 +363,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'finance',
         'icon': Icons.money,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': _getName(InventoryPermission.manageOrders),
         'description':
@@ -372,7 +373,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'invoice',
         'icon': Icons.receipt,
-        'action': RouteNames.invoice,
+        'route': RouteNames.invoice,
         'param': {},
         'access': _getName(InventoryPermission.viewInvoice),
         'description':
@@ -383,7 +384,7 @@ extension InventoryTiles on dynamic {
         'hasSplit': true,
         'label': 'report . Analytics',
         'icon': Icons.add_chart,
-        'action': RouteNames.inventReports,
+        'route': RouteNames.inventReports,
         'param': {},
         'access': _getName(InventoryPermission.viewReport),
         'description':
@@ -393,7 +394,7 @@ extension InventoryTiles on dynamic {
       {
         'label': 'tracking',
         'icon': Icons.location_on,
-        'action': RouteNames.ordersTracking,
+        'route': RouteNames.ordersTracking,
         'param': {},
         'access': _getName(InventoryPermission.manageOrders),
         'description': 'monitor the progress of order placement and deliveries',
@@ -755,9 +756,9 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
         'hasSplit': true,
         'label': 'Goods / Service Receipt',
         'icon': Icons.assignment_returned,
-        'action': RouteNames.items,
+        'route': RouteNames.items,
         // Temporal Placeholder
-        // 'action': RouteNames.goodsReceipt,
+        // 'route': RouteNames.goodsReceipt,
         'param': {},
         'access': _getName(InventoryPermission.manageStock),
         // Temporal Placeholder
@@ -784,8 +785,8 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
         'hasSplit': true,
         'label': 'Goods . Issue',
         'icon': Icons.call_made,
-        // 'action': RouteNames.goodsIssue,
-        'action': RouteNames.items, // Temporal Placeholder
+        // 'route': RouteNames.goodsIssue,
+        'route': RouteNames.items, // Temporal Placeholder
         'param': {},
         // 'access': _getName(InventoryPermission.issueStock),
         'access': _getName(
@@ -802,7 +803,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'stocks',
         'icon': Icons.receipt_long,
-        'action': RouteNames.products,
+        'route': RouteNames.products,
         'param': {},
         'access': InventoryPermission.manageStock.name,
         'description': 'add or create new products to the inventory.',
@@ -811,7 +812,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'orders',
         'icon': Icons.shopping_cart,
-        'action': RouteNames.orders,
+        'route': RouteNames.orders,
         'param': {},
         'access': InventoryPermission.manageOrders.name,
         'description':
@@ -821,7 +822,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'deliveries',
         'icon': Icons.delivery_dining,
-        'action': RouteNames.deliveries,
+        'route': RouteNames.deliveries,
         'param': {},
         'access': InventoryPermission.manageDeliveries.name,
         'description':
@@ -831,7 +832,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'sales',
         'icon': Icons.shopping_basket,
-        'action': RouteNames.sales,
+        'route': RouteNames.sales,
         'param': {},
         'access': InventoryPermission.manageSales.name,
         'description': 'keep track of, and oversee the progress of sales.',
@@ -840,7 +841,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'payment',
         'icon': Icons.payments_outlined,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': InventoryPermission.manageOrders.name,
         'description':
@@ -850,7 +851,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'finance',
         'icon': Icons.money,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': InventoryPermission.manageOrders.name,
         'description':
@@ -860,7 +861,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'invoice',
         'icon': Icons.receipt,
-        'action': RouteNames.invoice,
+        'route': RouteNames.invoice,
         'param': {},
         'access': InventoryPermission.viewInvoice.name,
         'description':
@@ -870,7 +871,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'report - Analytics',
         'icon': Icons.add_chart,
-        'action': RouteNames.inventReports,
+        'route': RouteNames.inventReports,
         'param': {},
         'access': InventoryPermission.viewReport.name,
         'description':
@@ -880,7 +881,7 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
       {
         'label': 'tracking',
         'icon': Icons.location_on,
-        'action': RouteNames.ordersTracking,
+        'route': RouteNames.ordersTracking,
         'param': {},
         'access': InventoryPermission.manageOrders.name,
         'description': 'monitor the progress of order placement and deliveries',

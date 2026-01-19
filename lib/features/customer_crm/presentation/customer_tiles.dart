@@ -12,7 +12,7 @@ extension CustomerTiles on dynamic {
         'hasSplit': true,
         'label': 'manage - account',
         'icon': Icons.group,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '0'},
         'access': CrmPermission.createCustomer.name,
         'description':
@@ -21,7 +21,7 @@ extension CustomerTiles on dynamic {
       {
         'label': 'activities',
         'icon': Icons.account_tree,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '1'},
         'access': CrmPermission.viewLeads.name,
         'description': 'track customer activities throughout the software',
@@ -30,7 +30,7 @@ extension CustomerTiles on dynamic {
         'hasSplit': true,
         'label': 'Statement - of Account',
         'icon': Icons.pending_actions,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '2'},
         'access': CrmPermission.viewCustomerProfile.name,
         'description':
@@ -50,7 +50,7 @@ extension CustomerTiles on dynamic {
       {
         'label': 'manage - account',
         'icon': Icons.group,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '0'},
         'description':
             'Create a new customer account, modify, or remove it as needed',
@@ -58,14 +58,14 @@ extension CustomerTiles on dynamic {
       {
         'label': 'activities',
         'icon': Icons.account_tree,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '1'},
         'description': 'track customer activities throughout the software',
       },
       {
         'label': 'Statement - of Account',
         'icon': Icons.pending_actions,
-        'action': RouteNames.createCustomer,
+        'route': RouteNames.createCustomer,
         'param': {'openTab': '2'},
         'description':
             'Statement detailing purchases, outstanding balances, and due dates',

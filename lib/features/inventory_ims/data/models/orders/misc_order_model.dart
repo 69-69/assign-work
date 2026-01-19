@@ -8,7 +8,7 @@ class MiscOrder extends Equatable {
 
   final String id; // Firestore will assign a unique ID (documentId)
   final String moNumber;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String supplierId;
   final String itemId;
   final double unitPrice;

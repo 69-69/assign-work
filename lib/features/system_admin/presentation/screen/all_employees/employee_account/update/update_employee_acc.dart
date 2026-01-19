@@ -117,16 +117,18 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        FormGroupCard(
-          title: 'Account Status',
-          children: [
-            AccountStatusDropdown(
-              initialValue: _selectedStatus ?? _employee.status,
-              onStatusChanged: (v) =>
-                  v.isNullOrEmpty ? null : _updateAccountStatus(v!),
-            ),
-          ],
-        ),
+        if (_employee.canBeReassigned) ...{
+          FormGroupCard(
+            title: 'Account Status',
+            children: [
+              AccountStatusDropdown(
+                initialValue: _selectedStatus ?? _employee.status,
+                onStatusChanged: (v) =>
+                    v.isNullOrEmpty ? null : _updateAccountStatus(v!),
+              ),
+            ],
+          ),
+        },
         HorizontalDivider(thickness: 8.0),
         FormGroupCard(
           title: 'Employee\'s Details',
@@ -151,7 +153,11 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
           ],
         ),
         const SizedBox(height: 20.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isSubmitting ? 'Updating...' : null,
+        ),
       ],
     );
   }

@@ -14,6 +14,8 @@
 -------------------------
 
 - @Continue
+    - Generate WH, BIN, Loc code not working
+    - WMS forms processing
     - Inventory System
       - ~~Item Master Updates~~
       - Stock management
@@ -24,15 +26,15 @@
         - Returns from Customer
         - Reserve Stock
       - Warehouse
-          - Storage
-          - Location/Bin
+          - ~~Storage~~
+          - ~~Location/Bin~~
 
 
 
 ```shell
 git init
 git add .
-git commit -m "Re-organized Modules and Tabs. Also option to switch between TabsView and ListView in Forms"
+git commit -m "Warehouse partially completed"
 git branch -M main
 git push -u origin main
 ```

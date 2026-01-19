@@ -10,9 +10,14 @@ class Employee extends Equatable {
 
   final String id;
 
+  /// [isBusinessOwner] Indicates whether this user is the business owner.
+  /// Business owners have tenant-level privileges and are restricted
+  /// from certain operations (e.g., reassignment Store-Branch, Role).
+  final bool isBusinessOwner;
+
   /// [employeeId] employee/staff Unique ID for Employee's Tag or Card
   final String employeeId;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String workspaceId;
   final String fullName;
   final String mobileNumber;
@@ -35,6 +40,7 @@ class Employee extends Equatable {
     this.employeeId = '',
     required this.workspaceId,
     this.storeNumber = '', // fallback main-Store,
+    this.isBusinessOwner = false,
     this.username = '',
     required this.fullName,
     required this.mobileNumber,
@@ -62,6 +68,7 @@ class Employee extends Equatable {
       employeeId: map['employeeId'] ?? '',
       workspaceId: map['workspaceId'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
+      isBusinessOwner: map['isBusinessOwner'] ?? false,
       role: map['role'] ?? '',
       roleId: map['roleId'] ?? '',
       departmentCode: map['departmentCode'] ?? '',
@@ -85,6 +92,7 @@ class Employee extends Equatable {
     'employeeId': employeeId,
     'workspaceId': workspaceId,
     'storeNumber': storeNumber,
+    'isBusinessOwner': isBusinessOwner,
     'username': email.emailToUsername,
     'role': role,
     'roleId': roleId,
@@ -120,7 +128,9 @@ class Employee extends Equatable {
   Employee copyWith({
     String? id,
     String? employeeId,
+    String? workspaceId,
     String? storeNumber,
+    bool? isBusinessOwner,
     String? username,
     String? fullName,
     String? mobileNumber,
@@ -130,7 +140,6 @@ class Employee extends Equatable {
     String? email,
     String? passCode,
     String? status,
-    String? workspaceId,
     String? updatedBy,
     String? createdBy,
     DateTime? createdAt,
@@ -140,7 +149,9 @@ class Employee extends Equatable {
     return Employee(
       id: id ?? this.id,
       employeeId: employeeId ?? this.employeeId,
+      workspaceId: workspaceId ?? this.workspaceId,
       storeNumber: storeNumber ?? this.storeNumber,
+      isBusinessOwner: isBusinessOwner ?? this.isBusinessOwner,
       username: username ?? this.username,
       fullName: fullName ?? this.fullName,
       mobileNumber: mobileNumber ?? this.mobileNumber,
@@ -154,10 +165,17 @@ class Employee extends Equatable {
       createdBy: createdBy ?? this.createdBy,
       updatedBy: updatedBy ?? this.updatedBy,
       updatedAt: updatedAt ?? this.updatedAt,
-      workspaceId: workspaceId ?? this.workspaceId,
       history: history ?? this.history,
     );
   }
+
+  /// Indicates whether this employee can be [disabled] or [reassigned] to new role, department, store branch.
+  /// NOTE: [Business owners] cannot be reassigned or modified in tenant-level workflows.
+  bool get canBeReassigned => !isBusinessOwner;
+
+  /// Indicates whether this employee's role, department, store branch can be deleted.
+  /// NOTE: [Business owners] cannot be deleted.
+  bool get canBeDeleted => !isBusinessOwner;
 
   /// Check if 'CreatedAt' DateTime is within one week after it was created [isWithinOneWeek]
   bool isWithinOneWeek() {
@@ -218,6 +236,8 @@ class Employee extends Equatable {
     id,
     employeeId,
     workspaceId,
+    storeNumber,
+    isBusinessOwner,
     role,
     roleId,
     departmentCode,
@@ -227,7 +247,6 @@ class Employee extends Equatable {
     mobileNumber,
     passCode,
     status,
-    storeNumber,
     createdBy,
     createdAt,
     updatedBy,

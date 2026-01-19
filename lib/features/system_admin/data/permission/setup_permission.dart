@@ -463,11 +463,14 @@ Set<Permission> _defaultBusinessOwnerPermissions = setupPermissions
     )
     .toSet();
 
-/// [businessOwnerDefaultPermissions] This is the Business owner's default permissions
-/// during first-time workspace setup(Workspace Creation)
-Map<String, dynamic> businessOwnerDefaultPermissions({required String id}) =>
+/// Creates the default permission set for the business owner
+/// during initial workspace setup (first-time tenant creation).
+/// System-defined role with full tenant privileges.
+/// NOTE: Created automatically and not user-editable.
+Map<String, dynamic> createBusinessOwnerRoleAndPerm({required String id}) =>
     Role(
       id: id,
+      isPrimary: true, // Business Owner Role: Primary Role (Cannot be deleted)
       name: 'business owner',
       permissions: _defaultBusinessOwnerPermissions,
       createdBy: 'system',

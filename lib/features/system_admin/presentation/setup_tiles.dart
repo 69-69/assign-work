@@ -43,7 +43,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Item . Master',
         'icon': Icons.inventory_2,
-        'action': RouteNames.itemMaster,
+        'route': RouteNames.itemMaster,
         'param': {},
         'access': _getName(SetupPermission.manageItemMaster),
         'description':
@@ -53,7 +53,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Tax . master',
         'icon': Icons.calculate,
-        'action': RouteNames.taxMaster,
+        'route': RouteNames.taxMaster,
         'param': {},
         'access': _getName(SetupPermission.manageTaxes),
         'description':
@@ -63,7 +63,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'workflow . master',
         'icon': Icons.approval,
-        'action': RouteNames.workflowMaster,
+        'route': RouteNames.workflowMaster,
         'param': {},
         'access': _getName(SetupPermission.manageWorkflowApproval),
         'description':
@@ -74,7 +74,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Price List . master',
         'icon': Icons.price_change,
-        'action': RouteNames.priceListMaster,
+        'route': RouteNames.priceListMaster,
         'param': {},
         'access': _getName(SetupPermission.managePriceListMaster),
         'description':
@@ -84,7 +84,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Currencies . master',
         'icon': Icons.currency_exchange,
-        'action': RouteNames.currenciesMaster,
+        'route': RouteNames.currenciesMaster,
         'param': {},
         'access': _getName(SetupPermission.manageCurrencyMaster),
         'description':
@@ -94,7 +94,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'reference . master',
         'icon': Icons.list_alt,
-        'action': RouteNames.referenceMaster,
+        'route': RouteNames.referenceMaster,
         'param': {},
         'access': _getName(SetupPermission.referenceMaster),
         'description':
@@ -104,7 +104,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Variants & Attributes',
         'icon': Icons.tune,
-        'action': RouteNames.variantsMaster,
+        'route': RouteNames.variantsMaster,
         'param': {'openTab': '1'},
         'access': _getName(SetupPermission.manageVariants),
         'description':
@@ -114,7 +114,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Units of . Measure',
         'icon': Icons.straighten,
-        'action': RouteNames.uomMaster,
+        'route': RouteNames.uomMaster,
         'param': {'openTab': '2'},
         'access': _getName(SetupPermission.manageUOM),
         'description':
@@ -132,7 +132,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'company . setup',
         'icon': Icons.home_work,
-        'action': RouteNames.companyInfo,
+        'route': RouteNames.companyInfo,
         'param': {'openTab': '0'},
         'access': _getName(SetupPermission.manageCompany),
         'description': 'enter organization details; name, logo, address, etc.',
@@ -141,7 +141,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Master . Data',
         'icon': Icons.storage,
-        'action': RouteNames.coreMasterData,
+        'route': RouteNames.coreMasterData,
         'param': {},
         'access': _getName(SetupPermission.manageMasterData),
         'description':
@@ -150,7 +150,7 @@ extension SetupTiles on dynamic {
       {
         'label': 'employees',
         'icon': Icons.manage_accounts,
-        'action': RouteNames.allEmployees,
+        'route': RouteNames.allEmployees,
         'param': {'openTab': '1'},
         'access': _getName(SetupPermission.manageEmployee),
         'description':
@@ -160,7 +160,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'roles . permissions',
         'icon': Icons.admin_panel_settings,
-        'action': RouteNames.manageRoles,
+        'route': RouteNames.manageRoles,
         'param': {'openTab': '2'},
         'access': _getName(SetupPermission.manageRole),
         'description':
@@ -169,7 +169,7 @@ extension SetupTiles on dynamic {
       {
         'label': 'backup',
         'icon': Icons.backup,
-        'action': RouteNames.backup,
+        'route': RouteNames.backup,
         'param': {'openTab': '3'},
         'access': _getName(SetupPermission.manageBackup),
         'description':
@@ -178,7 +178,7 @@ extension SetupTiles on dynamic {
       /*{
         'label': 'license - renewal',
         'icon': Icons.local_police,
-        'action': RouteNames.licenseRenewal,
+        'route': RouteNames.licenseRenewal,
         'param': {'openTab': '6'},
         'access': _getName(SetupPermission.viewLicense),
         'description':

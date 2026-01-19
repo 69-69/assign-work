@@ -22,7 +22,7 @@ class ProPurchaseOrder extends Equatable {
   final String rfqNumber;
 
   final String poNumber;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final SupplierLink supplierLink;
   final List<LineItem> lineItems; // A list of items in the RFQ
   final TaxMode taxMode;

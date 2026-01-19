@@ -11,7 +11,7 @@ extension UserGuideTiles on dynamic {
       {
         'label': 'guide to',
         'icon': Icons.how_to_reg,
-        'action': RouteNames.howToConfigApp,
+        'route': RouteNames.howToConfigApp,
         'param': {},
         'access': _getName(UserGuidePermission.userGuide),
         'description':
@@ -21,7 +21,7 @@ extension UserGuideTiles on dynamic {
         'hasSplit': true,
         'label': 'license . renewal',
         'icon': Icons.local_police,
-        'action': RouteNames.howToRenewLicense,
+        'route': RouteNames.howToRenewLicense,
         'param': {},
         'access': _getName(UserGuidePermission.licenseRenewalGuide),
         'description': 'create user-manual on renewing or activating software',

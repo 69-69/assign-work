@@ -26,42 +26,9 @@ import 'package:go_router/go_router.dart';
   String? path,
   Widget Function(BuildContext context, GoRouterState state) builder,
   List<GoRoute> subRoutes,
-});*/
-typedef StaticRouteConfig = ({
-  String name,
-  Widget Function({String? openTab}) screen,
-  bool openTab,
 });
 
-final DashboardGuard dashboardGuard = DashboardGuard();
-// final EmailVerificationGuard emailVerificationGuard = EmailVerificationGuard();
-// final WorkspaceRoleGuard canAccessAgentPanel = WorkspaceRoleGuard();
-
-// Helper methods for authentication and verification checks
-/*Future<bool> _checkAuthentication(context, GoRouterState state) async {
-  return await dashboardGuard.redirect(context);
-}
-Future<bool> _checkEmailVerification(context, GoRouterState state) async {
-  return await emailVerificationGuard.redirect(context, state);
-}*/
-
-CustomTransitionPage<dynamic> _animateTransition(
-  GoRouterState state,
-  Widget child,
-) {
-  return CustomTransitionPage(
-    key: state.pageKey,
-    child: child,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: CurveTween(curve: Curves.easeInOutCirc).animate(animation),
-        child: child,
-      );
-    },
-  );
-}
-
-/* USAGE:
+ USAGE:
 final dynamicRoutes = <DynamicRoute>[
   (
     name: RouteNames.createCustomer,
@@ -92,7 +59,41 @@ List<GoRoute> _mapDynamicRoutes(List<DynamicRoute> routes) => routes
       ),
     )
     .toList();
-*/
+
+// final EmailVerificationGuard emailVerificationGuard = EmailVerificationGuard();
+// final WorkspaceRoleGuard canAccessAgentPanel = WorkspaceRoleGuard();
+
+// Helper methods for authentication and verification checks
+Future<bool> _checkAuthentication(context, GoRouterState state) async {
+  return await dashboardGuard.redirect(context);
+}
+Future<bool> _checkEmailVerification(context, GoRouterState state) async {
+  return await emailVerificationGuard.redirect(context, state);
+}*/
+
+typedef StaticRouteConfig = ({
+  String name,
+  Widget Function({String? openTab}) screen,
+  bool openTab,
+});
+
+final DashboardGuard dashboardGuard = DashboardGuard();
+
+CustomTransitionPage<dynamic> _animateTransition(
+  GoRouterState state,
+  Widget child,
+) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurveTween(curve: Curves.easeInOutCirc).animate(animation),
+        child: child,
+      );
+    },
+  );
+}
 
 List<GoRoute> _mapStaticRoutes(List<StaticRouteConfig> routes) {
   return routes.map((r) {
@@ -331,12 +332,12 @@ GoRoute _wmsRoute() {
     (
       name: RouteNames.warehouseLocation,
       openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
+      screen: ({openTab}) => const WHLocationScreen(),
     ),
     (
       name: RouteNames.warehouseBin,
       openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
+      screen: ({openTab}) => const WHBinScreen(),
     ),
     (
       name: RouteNames.inboundReceiving,

@@ -1,6 +1,6 @@
-import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
@@ -9,6 +9,10 @@ class CompanyStore extends Equatable {
   static get _today => DateTime.now();
 
   final String id;
+
+  /// [isPrimary] Primary store-branch created during initial workspace setup.
+  /// This branch is associated with the `business owner` and `cannot be changed`.
+  final bool isPrimary;
   final String storeNumber;
   final String name;
   final String phone;
@@ -22,6 +26,7 @@ class CompanyStore extends Equatable {
 
   CompanyStore({
     this.id = '',
+    this.isPrimary = false,
     required this.name,
     this.phone = '',
     required this.address,
@@ -36,10 +41,11 @@ class CompanyStore extends Equatable {
        createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today; // Set default value
 
-  /// fromFirestore / fromJson Function [Storeaddress.fromMap]
+  /// fromFirestore / fromJson Function [CompanyStore.fromMap]
   factory CompanyStore.fromMap(Map<String, dynamic> map, {String? id}) {
     return CompanyStore(
       id: id ?? map['id'] ?? '',
+      isPrimary: map['isPrimary'] ?? false,
       name: map['name'] ?? '',
       phone: map['phone'] ?? '',
       address: map['address'] ?? '',
@@ -56,6 +62,7 @@ class CompanyStore extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
+    'isPrimary': isPrimary,
     'name': name,
     'phone': phone,
     'address': address,
@@ -94,6 +101,10 @@ class CompanyStore extends Equatable {
     createdBy: '',
   );
 
+  /// If its any other [store-branches], then it can be deleted.
+  /// The [primary store] created during initial workspace creation `cannot be deleted`.
+  bool get canBeDeleted => !isPrimary;
+
   /// Use this to check if the CompanyStores is the default/fallback (e.g., not found).
   bool get isEmpty => identical(this, CompanyStore.empty);
 
@@ -126,6 +137,7 @@ class CompanyStore extends Equatable {
   /// copyWith method
   CompanyStore copyWith({
     String? id,
+    bool? isPrimary,
     String? name,
     String? phone,
     String? address,
@@ -139,6 +151,7 @@ class CompanyStore extends Equatable {
   }) {
     return CompanyStore(
       id: id ?? this.id,
+      isPrimary: isPrimary ?? this.isPrimary,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       address: address ?? this.address,
@@ -155,6 +168,7 @@ class CompanyStore extends Equatable {
   @override
   List<Object?> get props => [
     id,
+    isPrimary,
     name,
     phone,
     address,
@@ -169,6 +183,7 @@ class CompanyStore extends Equatable {
 
   List<String> get itemAsList => [
     id,
+    isPrimary ? 'Yes' : 'No',
     storeNumber,
     name.toTitle,
     phone,
@@ -183,6 +198,7 @@ class CompanyStore extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Store Number',
+    'Default',
     'Name',
     'Phone',
     'Address',
@@ -194,19 +210,23 @@ class CompanyStore extends Equatable {
   ];
 }
 
-/// [businessOwnerDefaultStoreBranch] This is the Business owner's default Store Branch
-/// during first-time workspace setup(Workspace Creation)
-Map<String, dynamic> businessOwnerDefaultStoreBranch({
+/// [createBusinessOwnerPrimaryBranch] Creates the primary store-branch for the business owner during
+/// initial workspace setup (first-time tenant creation).
+Map<String, dynamic> createBusinessOwnerPrimaryBranch({
   required String id,
   required String name,
   required String address,
 }) {
   return CompanyStore(
     id: id,
+
+    /// Primary branch associated with the business owner.
+    /// This branch is created during workspace setup and cannot be changed.
+    isPrimary: true,
     name: name,
     address: address,
-    storeNumber: defaultStoreNumber, // address.generateUniqueCode(),
-    notes: 'this is the business headquarters',
+    storeNumber: address.generateUniqueCode(),
+    notes: 'Business headquarters',
     createdBy: 'system',
   ).toMap();
 }

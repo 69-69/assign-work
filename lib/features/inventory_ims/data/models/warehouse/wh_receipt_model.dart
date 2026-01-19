@@ -17,8 +17,8 @@ receiptId (FK)
 itemId (FK)
 quantity */
 
-/// [WarehouseReceipt] Receiving (Inbound Execution)
-class WarehouseReceipt extends Equatable {
+/// [WHReceipt] Receiving (Inbound Execution)
+class WHReceipt extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id;
@@ -33,7 +33,7 @@ class WarehouseReceipt extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  WarehouseReceipt({
+  WHReceipt({
     required this.id,
     required this.warehouseId,
     required this.referenceType,
@@ -48,8 +48,8 @@ class WarehouseReceipt extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory WarehouseReceipt.fromMap(Map<String, dynamic> map, {String? id}) =>
-      WarehouseReceipt(
+  factory WHReceipt.fromMap(Map<String, dynamic> map, {String? id}) =>
+      WHReceipt(
         id: id ?? map['id'],
         warehouseId: map['warehouseId'],
         referenceType: map['referenceType'],
@@ -96,7 +96,7 @@ class WarehouseReceipt extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  WarehouseReceipt copyWith({
+  WHReceipt copyWith({
     String? id,
     String? warehouseId,
     String? referenceType,
@@ -108,7 +108,7 @@ class WarehouseReceipt extends Equatable {
     String? updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) => WarehouseReceipt(
+  }) => WHReceipt(
     id: id ?? this.id,
     warehouseId: warehouseId ?? this.warehouseId,
     referenceType: referenceType ?? this.referenceType,

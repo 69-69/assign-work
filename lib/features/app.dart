@@ -56,11 +56,20 @@ class App extends StatelessWidget {
       _bloc<ItemBloc>(() => ItemBloc(firestore: _fireStore)),
       _bloc<ActivityLogBloc>(() => ActivityLogBloc(firestore: _fireStore)),
       _bloc<ItemMasterBloc>(() => ItemMasterBloc(firestore: _fireStore)),
+      _bloc<WarehouseBloc>(() => WarehouseBloc(firestore: _fireStore)),
+      _bloc<WHLocationBloc>(() => WHLocationBloc(firestore: _fireStore)),
+      _bloc<WHBinBloc>(() => WHBinBloc(firestore: _fireStore)),
+
+      /// @TODO: Old Inventory Bloc - Remove (POS needs refactoring before Removing this)
       _bloc<OrderBloc>(() => OrderBloc(firestore: _fireStore)),
       _bloc<PurchaseOrderBloc>(() => PurchaseOrderBloc(firestore: _fireStore)),
       _bloc<MiscOrderBloc>(() => MiscOrderBloc(firestore: _fireStore)),
       _bloc<DeliveryBloc>(() => DeliveryBloc(firestore: _fireStore)),
       _bloc<SaleBloc>(() => SaleBloc(firestore: _fireStore)),
+
+      /// @TODO: End Old Inventory Bloc - Remove
+      _bloc<POSSaleBloc>(() => POSSaleBloc(firestore: _fireStore)),
+      _bloc<POSOrderBloc>(() => POSOrderBloc(firestore: _fireStore)),
       _bloc<ProRequestForQuoteBloc>(
         () => ProRequestForQuoteBloc(firestore: _fireStore),
       ),
@@ -76,8 +85,6 @@ class App extends StatelessWidget {
       _bloc<CustomerAccountBloc>(
         () => CustomerAccountBloc(firestore: _fireStore),
       ),
-      _bloc<POSSaleBloc>(() => POSSaleBloc(firestore: _fireStore)),
-      _bloc<POSOrderBloc>(() => POSOrderBloc(firestore: _fireStore)),
       _bloc<AgentClientBloc>(() => AgentClientBloc(firestore: _fireStore)),
       // Live Support/Chat BlocProvider
       _bloc<ChatBloc>(() => ChatBloc(firestore: _fireStore)),

@@ -12,7 +12,7 @@ class GoodsReceiptNote extends Equatable {
   final String poNumber;
   final String supplierId;
   final String warehouseId;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final GRNSESStatus status;
   final List<GRNLineItem> lineItems;
   final List<String> attachments;

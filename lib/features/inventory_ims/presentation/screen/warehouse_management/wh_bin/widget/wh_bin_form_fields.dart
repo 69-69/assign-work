@@ -1,11 +1,12 @@
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/location_type_dropdown.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/bin_type_dropdown.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
 
 class WHBinFormFields {
-  static Widget buildIMNumber(
+  static Widget buildBinNumber(
     BuildContext context,
     String count,
     void Function()? onPressed,
@@ -16,9 +17,11 @@ class WHBinFormFields {
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whBinFields(Map<String, dynamic>? initial) => [
+  static List<FieldGroupConfig> whBinFields({
+    Map<String, dynamic>? initial,
+  }) => [
     FieldGroupConfig(
-      key: 'name',
+      key: 'description',
       label: 'Bin Name',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
@@ -26,12 +29,14 @@ class WHBinFormFields {
       validator: (_) => null,
     ),
     FieldGroupConfig(
-      key: 'capacity',
-      label: 'Capacity',
+      key: 'type',
+      label: 'Bin type',
+      helperText: 'Select the type of bin this is.',
       type: TextInputType.text,
-      widgetType: FieldWidgetType.textField,
-      helperText: 'Maximum number of items this bin can hold (optional)',
-      validator: (_) => null,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return BinTypeDropdown(initialValue: initialData, onChanged: onChanged);
+      },
     ),
     FieldGroupConfig(
       key: 'sequence',
@@ -44,13 +49,14 @@ class WHBinFormFields {
     ),
     FieldGroupConfig(
       key: 'locationId',
-      label: 'Location',
+      label: 'Parent Location',
+      helperText: 'Select the location this bin belongs to.',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return LocationTypeDropdown(
+        return SearchWHLocation(
           initialValue: initialData,
-          onChanged: onChanged,
+          onChanged: (id, code, description) => onChanged(code),
         );
       },
     ),
@@ -69,7 +75,7 @@ class WHBinFormFields {
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initialData?['isActive'] ?? true,
+              selected: initial?['isActive'] ?? true,
               tooltip: 'Enable or disable this bin',
               description:
                   'Turn this on if the bin is currently in use for storing items.',
@@ -79,6 +85,42 @@ class WHBinFormFields {
             final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
             onChanged(mapList);
           },
+        );
+      },
+    ),
+  ];
+
+  static List<FieldGroupConfig> get whStorageFields => [
+    FieldGroupConfig(
+      key: 'maxItems',
+      label: 'Maximum Items',
+      helperText: 'Maximum number of items this bin or shelf can store.',
+      type: TextInputType.number,
+      widgetType: FieldWidgetType.textField,
+    ),
+    FieldGroupConfig(
+      key: 'maxWeight',
+      label: 'Maximum Weight',
+      helperText: 'Maximum total weight this bin or shelf can safely hold.',
+      type: TextInputType.number,
+    ),
+    FieldGroupConfig(
+      key: 'minQty',
+      label: 'Minimum Quantity',
+      helperText:
+          'Min. quantity that trigger replenishment alert if below this.',
+      type: TextInputType.number,
+    ),
+    FieldGroupConfig(
+      key: 'uomRestriction',
+      label: 'Unit of Measure Restriction',
+      helperText: 'What units are allowed in the bin.',
+      type: TextInputType.none,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return SearchWHLocation(
+          initialValue: initialData,
+          onChanged: (id, code, description) => onChanged(code),
         );
       },
     ),

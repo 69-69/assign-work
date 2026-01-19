@@ -17,7 +17,7 @@ class SalesOrder extends Equatable {
   /// 1. Identification & Status
   final String id;
   // Specific Store Sales happened
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   // Sales Quote Number: If only SO was generated from Sales Quotation
   final String sqNumber;
   final String orderNumber;

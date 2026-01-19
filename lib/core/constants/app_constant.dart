@@ -6,10 +6,6 @@
 /// if customer doesn't exist, while placing Orders [autoID]
 const autoID = 'auto-id';
 
-/// Default Store Number during Tenant Workspace Setup [defaultStoreNumber]
-/// NOTE: It can't be changed after Tenant Workspace Setup
-const defaultStoreNumber = 'main';
-
 /// Assign: is prefix error message to distinguish Generic (Firestore) error [errorPrefix]
 const errorPrefix = 'Assign';
 // rhoda= 172298 - steve = 60438
@@ -91,9 +87,10 @@ const workflowRulesScreenTitle = 'workflow rules';
 const deliveryScreenTitle = 'delivery management';
 const reportsAnalyticsScreenTitle = 'reports analytics';
 const salesScreenTitle = 'sales management';
-const warehouseScreenTitle = 'warehouse management';
-const whLocationScreenTitle = 'WH Location management';
-const whBinScreenTitle = 'WH Bin management';
+const wmsScreenTitle = 'warehouse - WMS'; // Warehouse Management System
+const warehouseScreenTitle = 'warehouse';
+const whLocStorageScreenTitle = 'WH Location Storage';
+const whBinStorageScreenTitle = 'WH Bin Storage';
 const customersScreenTitle = 'customer management';
 const posSalesScreenTitle = 'p.o.s - sales';
 const posOrdersScreenTitle = 'p.o.s - orders';

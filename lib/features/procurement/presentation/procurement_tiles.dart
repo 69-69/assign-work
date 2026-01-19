@@ -13,7 +13,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'suppliers . account',
         'icon': Icons.account_balance,
-        'action': RouteNames.supplierAccount,
+        'route': RouteNames.supplierAccount,
         'param': {},
         'access': _getName(ProcurementPermission.createSuppliers),
         'description': 'create and manage supplier accounts',
@@ -22,7 +22,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'suppliers . evaluation',
         'icon': Icons.star_half_outlined,
-        'action': RouteNames.supplierEvaluation,
+        'route': RouteNames.supplierEvaluation,
         'param': {},
         'access': _getName(ProcurementPermission.evaluateSuppliers),
         'description':
@@ -32,7 +32,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'contract . management',
         'icon': Icons.assignment_outlined,
-        'action': RouteNames.contractManagement,
+        'route': RouteNames.contractManagement,
         'param': {},
         'access': _getName(ProcurementPermission.manageContracts),
         'description':
@@ -42,7 +42,7 @@ extension ProcurementTiles on dynamic {
       /* {
         'label': 'quotation - comparison',
         'icon': Icons.compare_arrows_outlined,
-        'action': RouteNames.rfqComparison,
+        'route': RouteNames.rfqComparison,
         'param': {},
         'access': _getName(ProcurementPermission.compareQuotations),
         'description': 'compare supplier quotations side by side before converting to a PO',
@@ -50,7 +50,7 @@ extension ProcurementTiles on dynamic {
       {
         'label': 'approval - workflow',
         'icon': Icons.verified_outlined,
-        'action': RouteNames.procurementApprovals,
+        'route': RouteNames.procurementApprovals,
         'param': {},
         'access': _getName(ProcurementPermission.approveProcurements),
         'description': 'manage and approve requisitions, RFQs, and POs according to rules',
@@ -58,7 +58,7 @@ extension ProcurementTiles on dynamic {
       {
         'label': 'procurement - reports',
         'icon': Icons.bar_chart,
-        'action': RouteNames.procurementReports,
+        'route': RouteNames.procurementReports,
         'param': {},
         'access': _getName(ProcurementPermission.viewProcurementReports),
         'description': 'analyze procurement trends, spending, supplier performance, and more',
@@ -75,7 +75,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'purchase . requisition',
         'icon': Icons.edit_document,
-        'action': RouteNames.purchaseRequisition,
+        'route': RouteNames.purchaseRequisition,
         'param': {},
         'access': _getName(ProcurementPermission.managePRs),
         'description':
@@ -85,7 +85,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'request . for quotes',
         'icon': Icons.request_page_outlined,
-        'action': RouteNames.proRequestForQuote,
+        'route': RouteNames.proRequestForQuote,
         'param': {},
         'access': _getName(ProcurementPermission.manageRFQs),
         'description':
@@ -95,7 +95,7 @@ extension ProcurementTiles on dynamic {
         'hasSplit': true,
         'label': 'purchase . orders',
         'icon': Icons.paypal,
-        'action': RouteNames.proPurchaseOrders,
+        'route': RouteNames.proPurchaseOrders,
         'param': {},
         'access': _getName(ProcurementPermission.managePOs),
         'description': 'generate POs to suppliers to request goods or services',
@@ -106,7 +106,7 @@ extension ProcurementTiles on dynamic {
       {
         'label': 'my approvals',
         'icon': Icons.verified_outlined,
-        'action': RouteNames.proMyApprovals,
+        'route': RouteNames.proMyApprovals,
         'param': {},
         'access': _getName(ProcurementPermission.approvePO),
         'description':
@@ -117,7 +117,7 @@ extension ProcurementTiles on dynamic {
         'label': 'suppliers . management',
         'icon': Icons.store_mall_directory_outlined,
         // local_shipping
-        'action': RouteNames.supplierManagement,
+        'route': RouteNames.supplierManagement,
         'param': {},
         'access': _getName(ProcurementPermission.manageSuppliers),
         'description':

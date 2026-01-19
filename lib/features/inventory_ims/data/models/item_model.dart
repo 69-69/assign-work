@@ -11,7 +11,7 @@ class Item extends Equatable {
   final String batchId;
   final String supplierId;
   final String name;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
 
   /// The price at which the product is acquired from the producer or manufacturer [costPrice]
   final double costPrice;

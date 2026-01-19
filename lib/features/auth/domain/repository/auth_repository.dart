@@ -509,20 +509,20 @@ class AuthRepository extends FirestoreRepository {
 
         // FOR ROLE-PERMISSION CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingDefaultRolePermission);
-        final role = await _businessOwnerDefaultPermissions();
+        final role = await _createBusinessOwnerRoleAndPerm();
 
-        // FOR STORE Branch CREATION (Business Owner)
+        // FOR DEFAULT(Main) STORE-BRANCH CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingDefaultBusinessLocation);
-        final storeNumber = await _businessOwnerDefaultBusinessBranch(
+        final storeNumber = await _createBusinessOwnerPrimaryBranch(
           address: address,
           company: workspaceName,
         );
 
         // FOR DEPARTMENT CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingDefaultDepartment);
-        final departmentCode = await _businessOwnerDefaultDepartment();
+        final departmentCode = await _createBusinessOwnerDepartment();
 
-        // FOR EMPLOYEE CREATION (Business Owner/Manager)
+        // FOR EMPLOYEE CREATION (Business Owner)
         onProgress(WorkspaceCreationStage.creatingEmployee);
         await _createEmployee(
           email: email,
@@ -690,15 +690,16 @@ class AuthRepository extends FirestoreRepository {
     // Create an Employee instance with the document ID
     final employee = Employee(
       id: docRef.id,
-      workspaceId: workspaceId,
       employeeId: empId ?? '',
+      workspaceId: workspaceId,
+      storeNumber: storeNumber,
+      isBusinessOwner: true,
       roleId: role.id,
       role: role.name,
       departmentCode: code,
       email: email,
       fullName: fullName,
       mobileNumber: mobileNumber,
-      storeNumber: storeNumber,
       status: AccountStatus.enabled.getName,
       createdBy: byWho?.fullName ?? createdBy,
       passCode: SecretHasher.hash(employeePasscode),
@@ -713,10 +714,10 @@ class AuthRepository extends FirestoreRepository {
     await docRef.set(newMap);
   }
 
-  /// [_businessOwnerDefaultPermissions] This is the Business owner's default permissions
-  /// during first-time workspace setup(Workspace Creation)
+  /// [_createBusinessOwnerRoleAndPerm] Creates the default permission set for the business owner
+  /// during initial workspace setup (first-time tenant creation).
   /// @return `Future<({String id, String name})>`
-  Future<({String id, String name})> _businessOwnerDefaultPermissions() async {
+  Future<({String id, String name})> _createBusinessOwnerRoleAndPerm() async {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
@@ -726,7 +727,7 @@ class AuthRepository extends FirestoreRepository {
       collectionPath: rolesDBColPath,
     ).doc();
 
-    final defaultPerm = businessOwnerDefaultPermissions(id: docRef.id);
+    final defaultPerm = createBusinessOwnerRoleAndPerm(id: docRef.id);
 
     // update map
     defaultPerm['updatedAt'] = _today.toMilliseconds;
@@ -737,10 +738,10 @@ class AuthRepository extends FirestoreRepository {
     return (id: docRef.id, name: defaultPerm['name'] as String);
   }
 
-  /// [_businessOwnerDefaultDepartment] This is the Business owner's default department
-  /// during first-time workspace setup(Workspace Creation)
+  /// [_createBusinessOwnerDepartment] Creates the default department for the business owner
+  /// during initial workspace setup (first-time tenant creation)
   /// @return `Future<String>`
-  Future<String> _businessOwnerDefaultDepartment() async {
+  Future<String> _createBusinessOwnerDepartment() async {
     final workspaceId = _newWorkspaceId;
     final workspaceRole = EnumUtil<WorkspaceRole>(assignWorkspaceRole).getName;
 
@@ -750,7 +751,7 @@ class AuthRepository extends FirestoreRepository {
       collectionPath: departmentsDBColPath,
     ).doc();
 
-    final defaultDepart = businessOwnerDefaultDepartment(id: docRef.id);
+    final defaultDepart = createBusinessOwnerDepartment(id: docRef.id);
 
     // update map
     defaultDepart['updatedAt'] = _today.toMilliseconds;
@@ -761,13 +762,14 @@ class AuthRepository extends FirestoreRepository {
     return defaultDepart['code'] as String;
   }
 
-  /// [_businessOwnerDefaultBusinessBranch] This is the Business owner's default store Branch
-  /// during first-time workspace setup(Workspace Creation)
+  /// [_createBusinessOwnerPrimaryBranch] This is the Business owner's default(main) Store-Branch
+  /// created during first-time tenant workspace setup(Workspace Creation)
+  /// Its save in the Company's Store Branches DB
   ///
   /// @param address - The address of the store Branch.
   /// @param company - The name of the company.
   /// @return `Future<String>`
-  Future<String> _businessOwnerDefaultBusinessBranch({
+  Future<String> _createBusinessOwnerPrimaryBranch({
     required String address,
     required String company,
   }) async {
@@ -780,7 +782,8 @@ class AuthRepository extends FirestoreRepository {
       collectionPath: storeLocationsDBColPath,
     ).doc();
 
-    final defaultBranch = businessOwnerDefaultStoreBranch(
+    // Save into DB
+    final defaultBranch = createBusinessOwnerPrimaryBranch(
       id: docRef.id,
       name: company,
       address: address,

@@ -6,7 +6,7 @@ class Delivery extends Equatable {
   static get _today => DateTime.now();
 
   final String id;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String orderNumber;
   final String status;
   final String barcode;

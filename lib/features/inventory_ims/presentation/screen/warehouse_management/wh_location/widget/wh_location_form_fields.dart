@@ -1,11 +1,12 @@
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/location_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
 
 class WhLocationFormFields {
-  static Widget buildIMNumber(
+  static Widget buildLocNumber(
     BuildContext context,
     String count,
     void Function()? onPressed,
@@ -16,11 +17,11 @@ class WhLocationFormFields {
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whLocationFields(
+  static List<FieldGroupConfig> whLocFields({
     Map<String, dynamic>? initial,
-  ) => [
+  }) => [
     FieldGroupConfig(
-      key: 'name',
+      key: 'description',
       label: 'Location Name',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
@@ -42,15 +43,29 @@ class WhLocationFormFields {
     ),
     FieldGroupConfig(
       key: 'warehouseId',
-      label: 'Warehouse',
+      label: 'Parent Warehouse',
+      helperText: 'Select the warehouse this location belongs to.',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return LocationTypeDropdown(
+        return SearchWarehouses(
           initialValue: initialData,
-          onChanged: onChanged,
+          onChanged: (id, code, description) => onChanged(code),
         );
       },
+    ),
+    FieldGroupConfig(
+      key: 'maxItems',
+      label: 'Maximum Items',
+      helperText: 'Maximum number of items this warehouse location can store.',
+      type: TextInputType.number,
+    ),
+    FieldGroupConfig(
+      key: 'maxWeight',
+      label: 'Maximum Weight',
+      helperText:
+          'Maximum total weight this warehouse location can safely store.',
+      type: TextInputType.number,
     ),
     FieldGroupConfig(
       key: 'isActive',
@@ -67,7 +82,7 @@ class WhLocationFormFields {
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initialData?['isActive'] ?? true,
+              selected: initial?['isActive'] ?? true,
               tooltip: 'Enable or disable this item',
               description: 'Turn this on if the location is currently in use.',
             ),

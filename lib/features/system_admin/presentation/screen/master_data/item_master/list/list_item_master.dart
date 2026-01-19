@@ -76,7 +76,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
-      headers: ItemMaster.dataHeader,
+      headers: ItemMaster.dataTableHeader,
       toolbar: _buildToolbar(masters),
       rows: masters.map((d) => d.itemAsList).toList(),
       selectedRowKeys: _selectedIds,

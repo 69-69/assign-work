@@ -27,7 +27,7 @@ class Sale extends Equatable {
   final String paymentStatus;
   final String status;
   final String? notes;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String createdBy;
   final DateTime createdAt;
   final String updatedBy;

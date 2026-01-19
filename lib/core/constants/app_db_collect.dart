@@ -47,13 +47,13 @@ const rolesDBColPath = 'roles_db';
 // ---------------------------
 
 // Item Master
-const itemMasterDBColPath = 'item_master_inventory_db';
+const itemMasterDBColPath = 'item_master_data';
 // Warehouse Facilities (Represents a physical storage place)
-const warehouseDBColPath = 'warehouse_facilities_inventory_db';
+const warehouseDBColPath = 'warehouse_facilities';
 // Functional Area
-const whLocationDBColPath = 'warehouse_location_inventory_db';
+const whLocationStorageDBColPath = 'warehouse_location_storage';
 // Physical slot/position inside the location
-const whBinDBColPath = 'warehouse_bin_inventory_db';
+const whBinStorageDBColPath = 'warehouse_bin_storage';
 // Invoices
 const invoiceDBColPath = 'invoice_inventory_db';
 // Items
@@ -157,8 +157,8 @@ const erpCacheBoxes = [
   // Inventory / Sales / Procurement
   itemMasterDBColPath,
   warehouseDBColPath,
-  whLocationDBColPath,
-  whBinDBColPath,
+  whLocationStorageDBColPath,
+  whBinStorageDBColPath,
   itemsDBColPath,
   invoiceDBColPath,
   salesDBColPath,

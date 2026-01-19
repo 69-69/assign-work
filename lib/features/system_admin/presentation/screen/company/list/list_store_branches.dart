@@ -1,3 +1,5 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
@@ -5,7 +7,7 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/company_store_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/create/create_store_locations.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/create/create_store_branch.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/can_add_more_stores.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
   late final CompanyStoresBloc _bloc;
+
   // CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
 
   void _isDeleting(bool status) {
@@ -81,7 +84,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Add Stores',
-                    onPressed: () => context.openAddStoreLocations(),
+                    onPressed: () => context.openAddStoreBranches(),
                   )
                 : _buildCard(results),
           SetupError<CompanyStore>(error: final error) => context.buildError(
@@ -115,7 +118,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     );
   }
 
-  _buildToolbar(List<CompanyStore> stores) {
+  Widget _buildToolbar(List<CompanyStore> stores) {
     return ListToolbarButtons(
       primaryLabel: 'Add Stores',
       refreshLabel: 'Refresh Stores',
@@ -123,19 +126,13 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
       secondaryIcon: Icons.edit,
       dataLength: stores.length,
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Store',
-      onPrimary: () => context.openAddStoreLocations(),
+      onPrimary: () => context.openAddStoreBranches(),
       onRefresh: () => _bloc.add(RefreshSetups<CompanyStore>()),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(stores, _selectedIds.first)
           : null,
       onDanger: _selectedIds.isNotEmpty
-          ? () async {
-              final isConfirmed = await context.confirmUserActionDialog();
-              if (mounted && isConfirmed) {
-                _isDeleting(true);
-                _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
-              }
-            }
+          ? () async => await _onDeleteTap(stores, _selectedIds.first, true)
           : null,
     );
   }
@@ -173,17 +170,40 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     final store = _findStoresById(stores, id);
     if (store == null) return;
 
-    await context.openAddStoreLocations(serverStore: store);
+    await context.openAddStoreBranches(serverStore: store);
   }
 
-  Future<void> _onDeleteTap(List<CompanyStore> stores, String id) async {
+  Future<void> _onDeleteTap(
+    List<CompanyStore> stores,
+    String id, [
+    bool isMulti = false,
+  ]) async {
     final store = _findStoresById(stores, id);
     if (store == null) return;
+    if (!_guardPrimaryStore(store)) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      /// Delete specific Store
+      // Delete many
+      if (isMulti) {
+        _isDeleting(true);
+        _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
+        return;
+      }
+      // else single delete
       _bloc.add(DeleteSetup<String>(documentId: store.id));
     }
+  }
+
+  // Prevent deletion of the primary Store-Branch associated with the [business owner]
+  bool _guardPrimaryStore(CompanyStore store) {
+    if (!store.canBeDeleted) {
+      context.showAlertOverlay(
+        '[ ${store.name.toUpperAll} ] Store-Branch is associated with the business owner and cannot be deleted.',
+        bgColor: kDangerColor,
+      );
+      return false;
+    }
+    return true;
   }
 }

@@ -1,6 +1,6 @@
-import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
@@ -23,9 +23,6 @@ class _ListEmployeesState extends State<ListEmployees> {
   Employee? _selectedEmployee;
 
   EmployeeBloc get _bloc => context.read<EmployeeBloc>();
-
-  bool get _isMainStoreBranch =>
-      _selectedEmployee!.storeNumber.filterAny(defaultStoreNumber);
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +48,7 @@ class _ListEmployeesState extends State<ListEmployees> {
     );
   }
 
-  _buildCard(BuildContext c, List<Employee> employees) {
+  Widget _buildCard(BuildContext c, List<Employee> employees) {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
@@ -84,47 +81,72 @@ class _ListEmployeesState extends State<ListEmployees> {
     });
   }
 
-  _buildToolbar(List<Employee> employees) {
-    var isSelected = _isChecked == true;
+  // Executes the given action only if the selected employee can be reassigned.
+  // If the employee cannot be reassigned (e.g., business owner or anchored to the main store branch),
+  // an alert is shown instead.
+  Future<void> _openIfCanReassign(Future<void> Function() action) async {
+    if (_selectedEmployee?.canBeReassigned == true) {
+      await action();
+    } else {
+      context.showAlertOverlay(
+        'The Default Account cannot be reassigned.',
+        bgColor: kDangerColor,
+      );
+    }
+  }
+
+  Widget _buildToolbar(List<Employee> employees) {
+    final isSelected = _isChecked == true;
 
     return ListToolbarButtons(
       primaryLabel: 'Add Employee',
       refreshLabel: 'Refresh Employees',
       dataLength: employees.length,
+
       warningLabel: 'Assign Store',
       warningTooltip: 'Assign Employee to Store',
       warningIcon: Icons.store,
+
       secondaryIcon: Icons.edit,
       secondaryLabel: 'Edit Employee',
       secondaryTooltip: 'Edit Employee',
+
       permanentIcon: Icons.apartment,
       permanentLabel: 'Assign Department',
       permanentTooltip: 'Assign Employee to Department',
+
       tertiaryLabel: 'Assign Role',
       tertiaryTooltip: 'Assign Employee to Role',
       tertiaryIcon: Icons.security,
+
       onPrimary: () => context.openCreateEmployee(),
       onRefresh: () => _bloc.add(RefreshSetups<Employee>()),
+
       onPermanent: isSelected
-          ? () async => await context.openAssignEmployeeDepartmentDialog(
-              employeeId: _selectedEmployee!.id,
-              employeeName: _selectedEmployee?.fullName,
+          ? () => _openIfCanReassign(
+              () => context.openAssignEmployeeDepartmentDialog(
+                employeeId: _selectedEmployee!.id,
+                employeeName: _selectedEmployee?.fullName,
+              ),
             )
           : null,
       onSecondary: isSelected
           ? () async => await _onEditTap(employees, _selectedEmployee!.id)
           : null,
-      // Prevent reassignment when the employee belongs to the tenant's main store branch.
-      onWarning: isSelected && !_isMainStoreBranch
-          ? () async => await context.assignEmployeeToStoreBranchDialog(
-              employeeId: _selectedEmployee!.id,
-              employeeName: _selectedEmployee?.fullName,
+      onWarning: isSelected
+          ? () => _openIfCanReassign(
+              () => context.assignEmployeeToStoreBranchDialog(
+                employeeId: _selectedEmployee!.id,
+                employeeName: _selectedEmployee?.fullName,
+              ),
             )
           : null,
       onTertiary: isSelected
-          ? () async => await context.openAssignEmployeeRoleDialog(
-              employeeId: _selectedEmployee!.id,
-              employeeName: _selectedEmployee?.fullName,
+          ? () => _openIfCanReassign(
+              () => context.openAssignEmployeeRoleDialog(
+                employeeId: _selectedEmployee!.id,
+                employeeName: _selectedEmployee?.fullName,
+              ),
             )
           : null,
     );
@@ -145,12 +167,27 @@ class _ListEmployeesState extends State<ListEmployees> {
   Future<void> _onDeleteTap(List<Employee> employees, String id) async {
     {
       Employee employee = _findEmployee(id, employees);
+      // Prevent deletion of business owner or employees anchored to the primary branch.
+      if (!_guardPrimaryEmployeeAccount(employee)) return;
 
+      // Proceed with deletion
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         /// Delete specific Employee Account
         _bloc.add(DeleteSetup<String>(documentId: employee.id));
       }
     }
+  }
+
+  // Prevent deletion of the primary Account associated with the [business owner]
+  bool _guardPrimaryEmployeeAccount(Employee employee) {
+    if (!employee.canBeDeleted) {
+      context.showAlertOverlay(
+        'The Default Account cannot be deleted',
+        bgColor: kDangerColor,
+      );
+      return false;
+    }
+    return true;
   }
 }

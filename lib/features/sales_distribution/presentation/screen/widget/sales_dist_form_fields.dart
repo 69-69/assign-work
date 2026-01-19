@@ -283,7 +283,10 @@ class SalesDistFormFields {
   ];
 
   /// Addresses (e.g., Billing, Shipping Address)
-  static List<FieldGroupConfig> addressFields({String? initialValue}) => [
+  static List<FieldGroupConfig> addressFields({
+    String? initialValue,
+    int? maxItems,
+  }) => [
     FieldGroupConfig(
       key: 'type',
       label: 'Address Type',
@@ -293,6 +296,7 @@ class SalesDistFormFields {
         return AddressTypeDropdown(
           initialValue: initialData ?? initialValue,
           onChanged: onChanged,
+          maxItems: maxItems,
         );
       },
     ),

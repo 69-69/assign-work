@@ -18,7 +18,7 @@ class SalesQuotation extends Equatable {
   final String id;
 
   // Specific Store issuing the Sales Quote to the Customer
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String quoteNumber; // Request for Quotation number
   final WorkflowStatus status;
 

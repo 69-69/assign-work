@@ -2,8 +2,8 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
 
-/// [WarehouseMovement] Internal Movements within Warehouse (Bin-to-Bin, Location-to-Location)
-class WarehouseMovement extends Equatable {
+/// [WHMovement] Internal Movements within Warehouse (Bin-to-Bin, Location-to-Location)
+class WHMovement extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id; // (PK)
@@ -18,7 +18,7 @@ class WarehouseMovement extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  WarehouseMovement({
+  WHMovement({
     this.id = '',
     required this.fromLocationId,
     required this.toLocationId,
@@ -33,8 +33,8 @@ class WarehouseMovement extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory WarehouseMovement.fromJson(Map<String, dynamic> map, {String? id}) =>
-      WarehouseMovement(
+  factory WHMovement.fromJson(Map<String, dynamic> map, {String? id}) =>
+      WHMovement(
         id: id ?? map['id'] ?? '',
         fromLocationId: map['fromLocationId'] ?? '',
         toLocationId: map['toLocationId'] ?? '',
@@ -79,7 +79,7 @@ class WarehouseMovement extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
-  WarehouseMovement copyWith({
+  WHMovement copyWith({
     String? id,
     String? fromLocationId,
     String? toLocationId,
@@ -91,7 +91,7 @@ class WarehouseMovement extends Equatable {
     String? updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) => WarehouseMovement(
+  }) => WHMovement(
     id: id ?? this.id,
     fromLocationId: fromLocationId ?? this.fromLocationId,
     toLocationId: toLocationId ?? this.toLocationId,

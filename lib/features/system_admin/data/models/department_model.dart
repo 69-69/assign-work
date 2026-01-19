@@ -173,9 +173,9 @@ class Department extends Equatable {
   ];
 }
 
-/// [businessOwnerDefaultDepartment] This is the Business owner's default Department
-/// during first-time workspace setup(Workspace Creation)
-Map<String, dynamic> businessOwnerDefaultDepartment({required String id}) =>
+/// Creates the default department for the business owner during initial workspace setup
+/// (first-time tenant creation): System-defined department created automatically.
+Map<String, dynamic> createBusinessOwnerDepartment({required String id}) =>
     Department(
       id: id,
       name: 'executive office',

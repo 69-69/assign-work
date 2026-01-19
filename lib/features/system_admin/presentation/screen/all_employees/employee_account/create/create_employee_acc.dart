@@ -22,7 +22,7 @@ extension CreateEmployeeAcc<T> on BuildContext {
   Future<void> openCreateEmployee() => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Add New Employee',
+      title: 'New Employee Account',
       body: _CreateEmployeeForm(),
     ),
   );
@@ -204,7 +204,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
         ),
         const SizedBox(height: 20.0),
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Submitting...' : 'Add Employee',
+          label: _isSubmitting ? 'Submitting...' : 'Create Employee',
           isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),

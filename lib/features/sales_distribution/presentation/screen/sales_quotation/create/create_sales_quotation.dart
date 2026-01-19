@@ -79,7 +79,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   TaxMode? _taxModeToApply;
   late SalesQuotation _finalizedQuote;
 
-  bool get isFormValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState!.validate();
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -138,7 +138,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    if (!isFormValid || _newQuote.isEmpty) {
+    if (!_isFormValid || _newQuote.isEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -359,7 +359,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       ),
       initialData: [{}],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the ProLineItem list
         SQFormInputs.updateListFromData<LineItem>(
@@ -378,7 +378,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fullWidthKey: 'currencyPricing',
       fieldsConfig: SQFormInputs.currencyPricingFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _currencyPricing
           ..clear()
@@ -392,7 +392,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       initialData: [{}],
       fieldsConfig: SQFormInputs.validityDateFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _validityDate
           ..clear()
@@ -409,7 +409,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fieldGroupsLimit: 2,
       fieldsConfig: SQFormInputs.addressesFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the address list
         SQFormInputs.updateListFromData<AddressInfo>(
@@ -427,7 +427,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fullWidthKey: 'supplierTerms',
       fieldsConfig: SQFormInputs.supplierTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _termsConditions
           ..clear()

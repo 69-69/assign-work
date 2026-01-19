@@ -279,10 +279,10 @@ class _GridViewResults extends StatelessWidget {
           return;
         }
         if (tile.param.entries.isEmpty) {
-          cxt.goNamed(tile.action);
+          cxt.goNamed(tile.route);
         } else {
           cxt.goNamed(
-            tile.action,
+            tile.route,
             extra: tile.param,
             pathParameters: tile.param,
           );
@@ -433,10 +433,10 @@ class _ListViewResults extends StatelessWidget {
             return;
           }
           if (tile.param.entries.isEmpty) {
-            cxt.goNamed(tile.action);
+            cxt.goNamed(tile.route);
           } else {
             cxt.goNamed(
-              tile.action,
+              tile.route,
               extra: tile.param,
               pathParameters: tile.param,
             );

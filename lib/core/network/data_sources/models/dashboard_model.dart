@@ -5,7 +5,7 @@ class DashboardTile {
   DashboardTile({
     required this.icon,
     required this.label,
-    required this.action,
+    required this.route,
     this.param = const {},
     required this.access,
     this.description,
@@ -21,7 +21,7 @@ class DashboardTile {
 
   /// [access] Access level required to use this tile: Permission/License checks
   final String access;
-  final dynamic action;
+  final dynamic route;
   final String? description;
   final Map<String, String> param;
 
@@ -56,7 +56,7 @@ class DashboardTile {
       hasSplit: map['hasSplit'] ?? false,
       icon: map['icon'] as IconData,
       label: map['label'] as String,
-      action: map['action'] as String,
+      route: map['route'] as String,
       param: createNewMap(map['param']),
       access: map['access'] ?? '',
       description: map['description'] as String?,

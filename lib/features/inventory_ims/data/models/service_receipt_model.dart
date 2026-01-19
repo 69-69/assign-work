@@ -13,7 +13,7 @@ class ServiceReceipt extends Equatable {
   final String id;
   final String poNumber;
   final String supplierId;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final GRNSESStatus status;
   final List<SESServiceLine> servicesLines;
   final List<String> attachments;

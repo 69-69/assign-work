@@ -25,8 +25,8 @@ extension GenerateUID on DocType {
     DocType.pOrder: posOrdersDBColPath,
     DocType.itemMaster: itemMasterDBColPath,
     DocType.warehouse: warehouseDBColPath,
-    DocType.whLocation: whLocationDBColPath,
-    DocType.whBin: whBinDBColPath,
+    DocType.whLocation: whLocationStorageDBColPath,
+    DocType.whBin: whBinStorageDBColPath,
     DocType.pSale: posSalesDBColPath,
     DocType.employee: employeesDBColPath,
   };
@@ -151,21 +151,21 @@ extension UniqueCodeExtension on String {
     final next = numbers.isEmpty ? 1 : (numbers.reduce(max) + 1);
 
     // Return formatted code
-    return '$prefix$separator${next.toString().padLeft(2, '0')}';
+    return '$prefix$separator${next.toString().padLeft(2, '0')}'.toUpperAll;
   }
 
   /// [nextWarehouseCode] @example 'WH'.nextWarehouseCode(['WH01', 'WH02'])
   /// OUTPUT: WH03
-  String nextWarehouseCode(List<String>? existingCodes) =>
+  String nextWarehouseCode([List<String>? existingCodes]) =>
       _nextCode(existingCodes);
 
   /// [nextLocationCode] @example 'REC'.nextLocationCode(['REC01', 'REC02'])
   /// OUTPUT: REC03
-  String nextLocationCode(List<String>? existingCodes) =>
+  String nextLocationCode([List<String>? existingCodes]) =>
       _nextCode(existingCodes);
 
   /// [nextBinCode] @example 'BIN'.nextBinCode(['BIN-01', 'A-01'])
   /// OUTPUT: BIN03
-  String nextBinCode(List<String>? existingCodes) =>
+  String nextBinCode([List<String>? existingCodes]) =>
       _nextCode(existingCodes, separator: '-');
 }

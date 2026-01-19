@@ -26,7 +26,7 @@ class RequestForQuote extends Equatable {
   final String rfqNumber; // Request for Quotation number
   /// Auto-Convert RFQ to PO after RFQ Acceptance (if true)
   final bool autoConvertRfq;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final List<SupplierLink>
   supplierLinks; // List of invited suppliers for this RFQ
   final String requestedBy; // Who requested the RFQ

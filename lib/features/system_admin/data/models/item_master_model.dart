@@ -209,7 +209,7 @@ class ItemMaster extends Equatable {
   static DateTime get _today => DateTime.now();
 
   /// 1. Identification
-  final String storeNumber; // Company's Branch/Store number
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String id; // UUID
   final String sku; // Unique ItemCode
   final String name;
@@ -476,7 +476,7 @@ class ItemMaster extends Equatable {
     updatedBy.toTitle,
   ];
 
-  static List<String> get dataHeader => const [
+  static List<String> get dataTableHeader => const [
     'ID',
     'SKU',
     'Item Name',

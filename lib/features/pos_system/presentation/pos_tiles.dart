@@ -14,7 +14,7 @@ extension POSTiles on dynamic {
       {
         'label': 'orders',
         'icon': Icons.shopping_cart,
-        'action': RouteNames.posOrders,
+        'route': RouteNames.posOrders,
         'param': {},
         'access': _getName(PosPermission.managePosOrders),
         'description':
@@ -23,7 +23,7 @@ extension POSTiles on dynamic {
       {
         'label': 'sales',
         'icon': Icons.shopping_basket,
-        'action': RouteNames.posSales,
+        'route': RouteNames.posSales,
         'param': {},
         'access': _getName(PosPermission.managePosSales),
         'description': 'keep track of, and oversee the progress of sales.',
@@ -32,7 +32,7 @@ extension POSTiles on dynamic {
         'hasSplit': true,
         'label': 'report - Analytics',
         'icon': Icons.add_chart,
-        'action': RouteNames.posReports,
+        'route': RouteNames.posReports,
         'param': {},
         'access': _getName(PosPermission.viewPosReport),
         'description':
@@ -42,7 +42,7 @@ extension POSTiles on dynamic {
       {
         'label': 'payment',
         'icon': Icons.payments_outlined,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': _getName(PosPermission.managePosPayments),
         'description':
@@ -52,7 +52,7 @@ extension POSTiles on dynamic {
       {
         'label': 'receipt',
         'icon': Icons.receipt,
-        'action': RouteNames.posReceipt,
+        'route': RouteNames.posReceipt,
         'param': {},
         'access': _getName(PosPermission.reprintReceipt),
         'description':
@@ -62,7 +62,7 @@ extension POSTiles on dynamic {
       {
         'label': 'finance',
         'icon': Icons.money,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'access': _getName(PosPermission.managePosFinance),
         'description':
@@ -84,7 +84,7 @@ extension POSTiles on dynamic {
       {
         'label': 'orders',
         'icon': Icons.shopping_cart,
-        'action': RouteNames.posOrders,
+        'route': RouteNames.posOrders,
         'param': {},
         'description':
             'place an order for a customer and then update its status.',
@@ -93,14 +93,14 @@ extension POSTiles on dynamic {
       {
         'label': 'sales',
         'icon': Icons.shopping_basket,
-        'action': RouteNames.posSales,
+        'route': RouteNames.posSales,
         'param': {},
         'description': 'keep track of, and oversee the progress of sales.',
       },
       {
         'label': 'report - Analytics',
         'icon': Icons.add_chart,
-        'action': RouteNames.posReports,
+        'route': RouteNames.posReports,
         'param': {},
         'description':
             'generate sales report, turnover rates, forecasts and performance analytics',
@@ -109,7 +109,7 @@ extension POSTiles on dynamic {
       {
         'label': 'payment',
         'icon': Icons.payments_outlined,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'description':
             'records payment details for each transaction: payment method and any related information',
@@ -118,7 +118,7 @@ extension POSTiles on dynamic {
       {
         'label': 'receipt',
         'icon': Icons.receipt,
-        'action': RouteNames.posReceipt,
+        'route': RouteNames.posReceipt,
         'param': {},
         'description':
             'keep history of the creation and processing of receipts',
@@ -127,7 +127,7 @@ extension POSTiles on dynamic {
       {
         'label': 'finance',
         'icon': Icons.money,
-        'action': RouteNames.posPayments,
+        'route': RouteNames.posPayments,
         'param': {},
         'description':
             'Manages & analyzes company\'s financial resources; budgeting, forecasting, investing',

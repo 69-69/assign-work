@@ -29,7 +29,7 @@ class PurchaseRequisition extends Equatable {
 
   /// Auto-Convert PR to RFQ after PR approval (if true)
   final bool autoConvertPr;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String prNumber; // Purchase Requisition number
   /// [costCenterCode] Business Unit or Department paying for the purchase
   final String costCenterCode;

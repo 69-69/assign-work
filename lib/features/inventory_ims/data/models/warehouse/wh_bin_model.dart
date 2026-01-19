@@ -1,8 +1,8 @@
+import 'package:assign_erp/core/util/enum_util.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
-
-enum LocationType { zone, aisle, rack }
 
 /// [WHBin] Physical slot inside a location (rack, shelf, cabinet, etc.)
 /// Bin Location Storage = WH-Code -> Location-Code -> Bin-Code
@@ -10,7 +10,9 @@ class WHBin extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id;
-  final String locationId;
+  final BinType type;
+  final String locationId; // FK to WHBin.id
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String code;
   final String description;
   final bool isActive;
@@ -18,7 +20,7 @@ class WHBin extends Equatable {
   /// Capacity constraints
   final double? maxItems; // Max units bin can hold
   final double? maxWeight; // Max weight the bin can hold
-  final String? uomRestriction; // What units are allowed in the bin
+  final List<String>? uomRestriction; // What units are allowed in the bin
   final double? minQty; // Trigger replenishment alert if below this
 
   final int? sequence; // For picking order or physical arrangement
@@ -30,13 +32,15 @@ class WHBin extends Equatable {
 
   WHBin({
     required this.id,
-    required this.locationId,
+    required this.type,
     required this.code,
+    required this.locationId,
+    required this.storeNumber,
     this.description = '',
     this.isActive = true,
     this.maxItems,
     this.maxWeight,
-    this.uomRestriction,
+    this.uomRestriction = const [],
     this.minQty,
     this.sequence,
     this.createdBy,
@@ -49,17 +53,19 @@ class WHBin extends Equatable {
   factory WHBin.fromMap(Map<String, dynamic> map, {String? id}) {
     return WHBin(
       id: id ?? map['id'] ?? '',
-      locationId: map['locationId'],
-      code: map['code'],
-      description: map['description'],
-      isActive: map['isActive'],
+      type: BinTypeUtil.fromString(map['type']),
+      code: map['code'] ?? '',
+      locationId: map['locationId'] ?? '',
+      storeNumber: map['storeNumber'] ?? '',
+      description: map['description'] ?? '',
+      isActive: map['isActive'] ?? false,
       maxItems: '${map['maxItems']}'.asDouble,
       maxWeight: '${map['maxWeight']}'.asDouble,
-      uomRestriction: map['uomRestriction'],
-      minQty: map['minQty'],
-      sequence: map['sequence'],
-      createdBy: map['createdBy'],
-      updatedBy: map['updatedBy'],
+      uomRestriction: map['uomRestriction'] ?? [],
+      minQty: '${map['minQty']}'.asDouble,
+      sequence: '${map['sequence']}'.asInt,
+      createdBy: map['createdBy'] ?? '',
+      updatedBy: map['updatedBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
       updatedAt: toDateTimeFn(map['updatedAt']),
     );
@@ -68,8 +74,10 @@ class WHBin extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'locationId': locationId,
     'code': code,
+    'type': getType,
+    'locationId': locationId,
+    'storeNumber': storeNumber,
     'description': description,
     'maxItems': maxItems,
     'maxWeight': maxWeight,
@@ -99,15 +107,50 @@ class WHBin extends Equatable {
     return {'id': id, 'data': newMap};
   }
 
+  /// A singleton instance representing an empty/default WHBin.
+  /// Used as a fallback when no matching WHBin is found
+  static WHBin get empty => WHBin(
+    id: '',
+    code: '',
+    locationId: '',
+    storeNumber: '',
+    description: '',
+    type: BinType.other,
+  );
+
+  // Get Name
+  String get getType => type.getName;
+
+  // Check if the WHBin is empty.
+  bool get isEmpty => identical(this, WHBin.empty);
+  bool get isNotEmpty => !isEmpty;
+
+  // filter/search
+  bool filterByAny(String term) => itemAsList.filterAny(term);
+
+  static WHBin? findById(List<WHBin> warehouses, String id) =>
+      warehouses.firstWhereOrNull((w) => w.id == id);
+
+  /// Extract all codes from a list of Location objects
+  static List<String> getCodes(List<WHBin> warehouses) =>
+      warehouses.map((w) => w.code).toList();
+
+  /// Returns Location codes filtered by [code].
+  /// If [code] is empty, all codes are returned.
+  static List<String> getCodesByCode(List<String> codes, [String code = '']) =>
+      codes.where((c) => code.isEmpty || c.filterAny(code)).toList();
+
   WHBin copyWith({
     String? id,
-    String? locationId,
     String? code,
+    BinType? type,
+    String? locationId,
+    String? storeNumber,
     String? description,
     bool? isActive,
     double? maxItems,
     double? maxWeight,
-    String? uomRestriction,
+    List<String>? uomRestriction,
     double? minQty,
     int? sequence,
     String? createdBy,
@@ -116,8 +159,10 @@ class WHBin extends Equatable {
     DateTime? updatedAt,
   }) => WHBin(
     id: id ?? this.id,
-    locationId: locationId ?? this.locationId,
     code: code ?? this.code,
+    type: type ?? this.type,
+    locationId: locationId ?? this.locationId,
+    storeNumber: storeNumber ?? this.storeNumber,
     description: description ?? this.description,
     isActive: isActive ?? this.isActive,
     maxItems: maxItems ?? this.maxItems,
@@ -134,8 +179,10 @@ class WHBin extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    locationId,
     code,
+    type,
+    locationId,
+    storeNumber,
     description,
     isActive,
     maxItems,
@@ -150,6 +197,9 @@ class WHBin extends Equatable {
   ];
 
   List<String> get itemAsList => [
+    id,
+    storeNumber,
+    getType,
     locationId,
     code,
     description,
@@ -160,11 +210,33 @@ class WHBin extends Equatable {
     updatedBy ?? '',
   ];
 
-  List<String> get dataTableHeader => [
+  static List<String> get dataTableHeader => [
+    'ID',
+    'Store Number',
+    'Type',
     'Location ID',
     'Code',
     'description',
     'Is Active',
     'Capacity',
   ];
+}
+
+enum BinType { zone, aisle, rack, shelf, cabinet, other }
+
+extension BinTypeExtension on BinType {
+  // Get Name
+  String get getName => EnumUtil<BinType>(this).getName;
+}
+
+class BinTypeUtil {
+  /// [fromString] Converts String/Label to enum value.
+  static BinType fromString(String? value) =>
+      EnumUtil.fromString<BinType>(BinType.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'Bin type' : '';
+    return EnumUtil.toStringList<BinType>(BinType.values, label);
+  }
 }

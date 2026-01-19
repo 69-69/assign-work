@@ -10,7 +10,7 @@ class Customer extends Equatable {
   static get _today => DateTime.now();
 
   final String id; // Firestore will assign a unique ID (documentId)
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String customerId;
   final String name;
   final String phone;
@@ -250,7 +250,7 @@ class Customers extends Equatable {
 
   /// 1. Identification: These identify the customer.
   final String id;
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String customerId;
   final String name; // Company name or Individual name
   final CustomerType type;

@@ -5,7 +5,7 @@ import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inv
 import 'package:flutter/material.dart';
 
 class WarehouseFormFields {
-  static Widget buildIMNumber(
+  static Widget buildWHNumber(
     BuildContext context,
     String count,
     void Function()? onPressed,
@@ -16,15 +16,15 @@ class WarehouseFormFields {
     onPressed: onPressed,
   );
 
-  /// Warehouse physical Address
-  static List<FieldGroupConfig> wmsFields(Map<String, dynamic>? initial) => [
+  /// Warehouse Basic
+  static List<FieldGroupConfig> wmsFields({Map<String, dynamic>? initial}) => [
     FieldGroupConfig(
-      key: 'name',
+      key: 'description',
       label: 'Warehouse Name',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
       helperText:
-          'Enter a descriptive name for the warehouse (e.g., Main Warehouse, Store 01).',
+          'Descriptive name for the warehouse (e.g., Main Warehouse, Store 01).',
       validator: (_) => null,
     ),
     FieldGroupConfig(
@@ -43,25 +43,24 @@ class WarehouseFormFields {
       key: 'options',
       label: 'Configuration Options',
       isNested: true,
-      type: TextInputType.text,
+      type: TextInputType.none,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
           title: 'Warehouse Options',
-          showButton: false,
           initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
           checkboxesConfig: [
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initialData?['isActive'] ?? true,
+              selected: initial?['isActive'] ?? true,
               tooltip: 'Enable or disable this item',
               description: 'Turn this on if the warehouse is currently in use.',
             ),
             CheckboxGroupConfig(
               key: 'isDefault',
               label: 'Default Warehouse',
-              selected: initialData?['isDefault'] ?? false,
+              selected: initial?['isDefault'] ?? false,
               tooltip: 'Set as default warehouse',
               description:
                   'If selected, this will be used as the default option when creating new transactions.',
@@ -69,7 +68,7 @@ class WarehouseFormFields {
             CheckboxGroupConfig(
               key: 'isBinManaged',
               label: 'Track Bins',
-              selected: initialData?['isBinManaged'] ?? false,
+              selected: initial?['isBinManaged'] ?? false,
               tooltip: 'Enable bin tracking',
               description:
                   'Turn on to manage individual bins for this location (e.g., BIN-01, BIN-02).',
@@ -82,13 +81,27 @@ class WarehouseFormFields {
         );
       },
     ),
+  ];
+
+  /// Warehouse Capacity
+  static List<FieldGroupConfig> get whCapacityFields => [
     FieldGroupConfig(
-      key: 'type',
-      label: 'Address Type',
-      type: TextInputType.text,
+      key: 'maxItems',
+      label: 'Maximum Items',
+      helperText: 'Maximum number of items this warehouse can store.',
+      type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
-      isHidden: true,
     ),
+    FieldGroupConfig(
+      key: 'maxWeight',
+      label: 'Maximum Weight',
+      helperText: 'Maximum total weight this warehouse can safely hold.',
+      type: TextInputType.number,
+    ),
+  ];
+
+  /// Warehouse physical Address
+  static List<FieldGroupConfig> get addressFields => [
     FieldGroupConfig(
       key: 'postalCode',
       label: 'postal Code',

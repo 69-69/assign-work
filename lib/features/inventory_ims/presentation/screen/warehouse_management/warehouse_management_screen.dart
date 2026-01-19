@@ -13,7 +13,7 @@ class WarehouseManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScaffold(
       isGradientBg: true,
-      title: warehouseScreenTitle.toTitle,
+      title: wmsScreenTitle.toTitle,
       body: DashboardTileCard(tiles: warehouseSubTiles),
     );
   }

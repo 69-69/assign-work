@@ -10,6 +10,10 @@ class Role extends Equatable {
   static get _today => DateTime.now();
 
   final String id;
+
+  /// [isPrimary] Primary [Role] created during initial workspace setup.
+  /// This branch is associated with the business owner and `cannot be changed`.
+  final bool isPrimary;
   final String name;
   final Set<Permission> permissions;
   final String createdBy;
@@ -21,6 +25,7 @@ class Role extends Equatable {
   Role({
     this.id = '',
     required this.name,
+    this.isPrimary = false,
     required this.permissions,
     this.createdBy = '',
     DateTime? createdAt,
@@ -37,6 +42,7 @@ class Role extends Equatable {
     return Role(
       id: (id ?? map['id']) ?? '',
       name: map['name'] ?? '',
+      isPrimary: map['isPrimary'] ?? false,
       permissions: Permission.permissionsSet(
         map['permissions'] as List<dynamic>?,
       ),
@@ -52,6 +58,7 @@ class Role extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'name': name,
+    'isPrimary': isPrimary,
     'permissions': permissions.map((p) => p.toMap()).toList(),
     'createdBy': createdBy,
     'createdAt': createdAt,
@@ -81,6 +88,7 @@ class Role extends Equatable {
   Role copyWith({
     String? id,
     String? name,
+    bool? isPrimary,
     Set<Permission>? permissions,
     String? updatedBy,
     String? createdBy,
@@ -91,6 +99,7 @@ class Role extends Equatable {
     return Role(
       id: id ?? this.id,
       name: name ?? this.name,
+      isPrimary: isPrimary ?? this.isPrimary,
       permissions: permissions ?? this.permissions,
       createdAt: createdAt ?? this.createdAt,
       createdBy: createdBy ?? this.createdBy,
@@ -100,7 +109,11 @@ class Role extends Equatable {
     );
   }
 
-  /// A singleton instance representing an empty/default Role.
+  /// If its any other [Role], then it can be deleted.
+  /// The [primary role] created during initial workspace creation `cannot be deleted`.
+  bool get canBeDeleted => !isPrimary;
+
+  /// A singleton instance representing an empty Role.
   /// Used as a fallback when no matching Role is found.
   static get empty => Role(id: '', name: '', permissions: {});
 
@@ -127,6 +140,7 @@ class Role extends Equatable {
   List<Object?> get props => [
     id,
     name,
+    isPrimary,
     permissions,
     createdBy,
     createdAt,

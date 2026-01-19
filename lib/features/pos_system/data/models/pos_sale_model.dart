@@ -8,7 +8,7 @@ class POSSale extends Equatable {
   static get _today => DateTime.now();
 
   final String id; // Firestore will assign a unique ID (documentId)
-  final String storeNumber;
+  final String storeNumber; // FK CompanyStore.storeNumber
   final String receiptNumber;
   final String customerId;
   final String orderNumber;

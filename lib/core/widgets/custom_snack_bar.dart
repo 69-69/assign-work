@@ -33,7 +33,7 @@ import 'package:flutter/material.dart';
 
 extension ScaffoldSnackBar on BuildContext {
   /// Material Banner [showCustomMaterialBanner]
-  void showCustomMaterialBanner(String message) {
+  void showCustomMaterialBanner(String message, {Color? bgColor}) {
     /*ScaffoldMessenger.of(this)
       ..hideCurrentSnackBar()
       ..showMaterialBanner()*/
@@ -41,7 +41,7 @@ extension ScaffoldSnackBar on BuildContext {
     final banner = MaterialBanner(
       content: Text(message, style: const TextStyle(color: kWhiteColor)),
       leading: const Icon(Icons.info, color: kWhiteColor),
-      backgroundColor: kDarkSuccessColor,
+      backgroundColor: bgColor ?? kDarkSuccessColor,
       actions: [
         TextButton(
           onPressed: () =>
@@ -53,8 +53,8 @@ extension ScaffoldSnackBar on BuildContext {
 
     ScaffoldMessenger.of(this).showMaterialBanner(banner);
 
-    // Automatically hide the banner after 3 seconds
-    Timer(kRProgressDelay, () {
+    // Automatically hide the banner after 5 seconds
+    Timer(kFProgressDelay, () {
       ScaffoldMessenger.of(this).hideCurrentMaterialBanner();
     });
   }

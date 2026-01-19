@@ -254,17 +254,17 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         () async {
           final shouldStop = await checkLiveChatSupportAccess(
             context,
-            tile.action,
+            tile.route,
           );
           if (shouldStop) return;
 
           if (!context.mounted) return;
 
           if (tile.param.entries.isEmpty) {
-            context.goNamed(tile.action);
+            context.goNamed(tile.route);
           } else {
             context.goNamed(
-              tile.action,
+              tile.route,
               extra: tile.param,
               pathParameters: tile.param,
             );
