@@ -16,7 +16,7 @@
 - @Continue
     - Generate BIN, Loc code not working
     - WMS forms processing
-    - 
+    - Master Data (BIN Location Code,UOM, PriceList, Payment Method&Type,)
     - Inventory System
       - Item Master Updates
       - Stock management
@@ -35,7 +35,7 @@
 ```shell
 git init
 git add .
-git commit -m "Bloc error mapping done"
+git commit -m "Warehouse and Location Storage done"
 git branch -M main
 git push -u origin main
 ```

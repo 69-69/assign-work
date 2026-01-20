@@ -23,7 +23,7 @@ extension WHLocationExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       title: serverItem != null
-          ? serverItem.description.toTitle
+          ? '${serverItem.code.toUpperAll} - ${serverItem.description.toTitle}'
           : 'New Location Storage',
       body: _CreateWHLocationForm(
         serverItem: serverItem,
@@ -68,25 +68,27 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
+    final isUpdate = _serverItem?.isNotEmpty == true;
+    final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Warehouse
-    if (_isFormValid && (_serverItem?.isNotEmpty ?? false)) {
-      _updatedWarehouse();
+    // Case 1: Update existing Location
+    if (isValid && isUpdate) {
+      _updatedLocation();
       return;
     }
 
-    // Case 2: Form validation or empty Warehouse
-    if (!_isFormValid && _whLocationData.isNullOrEmpty) {
+    // Case 2: Form validation or empty Location
+    if (!isValid && _whLocationData.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
 
-    // Case 3: Add new Warehouse
-    _addNewWarehouse();
+    // Case 3: Add new Location
+    _addNewLocation();
   }
 
-  void _addNewWarehouse() {
+  void _addNewLocation() {
     final newData = _whLocationData.copyWith(
       code: _whLocationCode,
       storeNumber: _employeeStore,
@@ -96,7 +98,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     _bloc.add(AddInventory<WHLocation>(data: newData));
   }
 
-  void _updatedWarehouse() {
+  void _updatedLocation() {
     final updated = _whLocationData.copyWith(updatedBy: _employeeName);
 
     _bloc.add(
@@ -119,11 +121,11 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     }
   }
 
-  void _generateWHLocCode() {
+  void _generateWHLocCode([String? prefix]) {
     // Get selected Location type, else default to 'STO'
-    final prefix = _serverItem?.getType ?? LocationType.storage.locationCode;
-    var nextLocationCode = prefix.nextLocationCode(_existingCodes);
-    if (mounted) {
+    final pref = _serverItem?.getType ?? prefix ?? LocationType.storage.locCode;
+    var nextLocationCode = pref.nextLocationCode(_existingCodes);
+    if (_whLocationCode != nextLocationCode) {
       setState(() => _whLocationCode = nextLocationCode);
     }
   }
@@ -172,14 +174,16 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        WhLocationFormFields.buildLocNumber(
-          context,
-          _whLocationCode,
-          _generateWHLocCode,
-        ),
+        if (_isServerNull) ...{
+          WhLocationFormFields.buildLocNumber(
+            context,
+            _whLocationCode,
+            _generateWHLocCode,
+          ),
+        },
 
         FormGroupCard(
-          title: '1. Warehouse Location',
+          title: 'Warehouse Location',
           subTitle:
               '\nOperational details and settings for managing this location storage.',
           children: [_buildWHBasic()],
@@ -200,20 +204,24 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   DynamicTextFields _buildWHBasic() {
     return DynamicTextFields(
-      initialData: [{}],
+      showButton: true,
       fullWidthKey: 'description',
-      fieldsConfig: WhLocationFormFields.whLocFields(),
+      initialData: [_serverItem?.toMap() ?? {}],
+      fieldsConfig: WhLocationFormFields.whLocFields(_serverItem?.toMap()),
       onChanged: (List<Map<String, dynamic>> data) {
-        final loc = WHLocation.fromMap(data.first);
+        _whLocationData = WHLocation.fromMap(data.first);
+        if (_whLocationData.isNotEmpty || _whLocationData.type.isNullOrEmpty) {
+          _generateWHLocCode(_whLocationData.type.locCode);
+        }
 
-        _whLocationData = _whLocationData.copyWith(
+        /*_whLocationData = _whLocationData.copyWith(
           type: loc.type,
           description: loc.description,
           isActive: loc.isActive,
           maxItems: loc.maxItems,
           maxWeight: loc.maxWeight,
           warehouseId: loc.warehouseId,
-        );
+        );*/
       },
     );
   }

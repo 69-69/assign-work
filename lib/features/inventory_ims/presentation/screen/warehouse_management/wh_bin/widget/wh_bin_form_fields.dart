@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
+import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/bin_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
@@ -13,19 +14,18 @@ class WHBinFormFields {
   ) => InventoryFormFields.buildNumber(
     context,
     count: count,
-    what: 'Bin',
+    what: 'Bin Code',
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whBinFields({
-    Map<String, dynamic>? initial,
-  }) => [
+  static List<FieldGroupConfig> whBinFields(Map<String, dynamic>? initial) => [
     FieldGroupConfig(
       key: 'description',
       label: 'Bin Name',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
-      helperText: 'Name for this bin (e.g., Shelf A01, Slot B03).',
+      helperText:
+          'Physical slot inside a location (e.g., Shelf A01, Slot B03).',
       validator: (_) => null,
     ),
     FieldGroupConfig(
@@ -68,7 +68,6 @@ class WHBinFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
-          title: 'Bin Options',
           showButton: false,
           initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
           checkboxesConfig: [
@@ -88,9 +87,19 @@ class WHBinFormFields {
         );
       },
     ),
+    ..._whStorageFields(initial),
   ];
 
-  static List<FieldGroupConfig> get whStorageFields => [
+  static List<FieldGroupConfig> _whStorageFields(
+    Map<String, dynamic>? initial,
+  ) => [
+    FieldGroupConfig(
+      key: 'units-title',
+      label: 'Storage Units',
+      helperText:
+          '\nConfigure bins or shelves, including capacity and handling rules.',
+      widgetType: FieldWidgetType.titleOnly,
+    ),
     FieldGroupConfig(
       key: 'maxItems',
       label: 'Maximum Items',
@@ -115,13 +124,10 @@ class WHBinFormFields {
       key: 'uomRestriction',
       label: 'Unit of Measure Restriction',
       helperText: 'What units are allowed in the bin.',
-      type: TextInputType.none,
+      type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return SearchWHLocation(
-          initialValue: initialData,
-          onChanged: (id, code, description) => onChanged(code),
-        );
+        return UOMDropdown(initialValue: initialData, onChanged: onChanged);
       },
     ),
   ];

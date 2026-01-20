@@ -133,7 +133,7 @@ class ItemMasterFormFields {
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initial?['isActive'] ?? false,
+              selected: initial?['isActive'] ?? true,
               tooltip: 'Existing transactions are not affected',
               description:
                   'When disabled, this item cannot be selected in new purchase, sales, or inventory transactions.',

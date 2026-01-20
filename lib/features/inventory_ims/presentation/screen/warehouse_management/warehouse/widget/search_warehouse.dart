@@ -49,6 +49,7 @@ class _SearchWarehousesState extends State<SearchWarehouses> {
     return AsyncSearchDropdown<Warehouse>(
       selectedItem: _warehouse,
       labelText: _labelText,
+      helperText: 'The physical warehouse',
       asyncItems: (String filter, loadProps) async =>
           await _loadWarehouses(filter: filter),
       filterFn: (ware, filter) => _filterWarehouse(filter, ware),

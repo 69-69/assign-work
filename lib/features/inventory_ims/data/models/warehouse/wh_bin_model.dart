@@ -61,7 +61,7 @@ class WHBin extends Equatable {
       isActive: map['isActive'] ?? false,
       maxItems: '${map['maxItems']}'.asDouble,
       maxWeight: '${map['maxWeight']}'.asDouble,
-      uomRestriction: map['uomRestriction'] ?? [],
+      uomRestriction: List.from(map['uomRestriction'] ?? []).cast<String>(),
       minQty: '${map['minQty']}'.asDouble,
       sequence: '${map['sequence']}'.asInt,
       createdBy: map['createdBy'] ?? '',
@@ -81,7 +81,7 @@ class WHBin extends Equatable {
     'description': description,
     'maxItems': maxItems,
     'maxWeight': maxWeight,
-    'uomRestriction': uomRestriction,
+    'uomRestriction': List.from(uomRestriction ?? []).cast<String>(),
     'minQty': minQty,
     'sequence': sequence,
     'isActive': isActive,
@@ -219,6 +219,9 @@ class WHBin extends Equatable {
     'description',
     'Is Active',
     'Capacity',
+    'Sequence',
+    'Created By',
+    'Updated By',
   ];
 }
 

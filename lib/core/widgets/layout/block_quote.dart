@@ -26,10 +26,11 @@ class BlockQuote extends StatelessWidget {
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: isColored ? color.toAlpha(0.04) : null,
+        color: isColored ? color.toAlpha(0.05) : null,
         border: Border(
           left: BorderSide(color: color, width: blockWidth ?? 4.0),
         ),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
         padding: childPadding ?? const EdgeInsets.all(5),

@@ -12,7 +12,7 @@ class InventoryFormFields {
     alignment: Alignment.topLeft,
     child: FittedBox(
       child: context.actionInfoButton(
-        'Refresh $what Number',
+        'Refresh $what',
         count: count,
         isTotal: false,
         onPressed: onPressed,

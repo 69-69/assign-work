@@ -3,6 +3,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
+import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -116,15 +117,22 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     int index,
   ) {
     if (groupIndex < _fieldGroups.length - 1) {
+      final ranColor = randomBgColors[index];
+      final i = index + 1;
+
       return [
         ...widgets,
-        Tooltip(
-          message: 'Form Group ${index + 1}'.toSentence,
-          child: HorizontalDivider(
-            thickness: 10,
-            isORSeparator: true,
-            txtColor: kPrimaryAccentColor,
-            orText: 'Form Group ${index + 1}',
+        BlockQuote(
+          margin: EdgeInsets.zero,
+          blockColor: ranColor,
+          child: Tooltip(
+            message: 'Form Group $i'.toSentence,
+            child: HorizontalDivider(
+              thickness: 2,
+              isORSeparator: true,
+              txtColor: ranColor,
+              orText: 'Form Group $i',
+            ),
           ),
         ),
       ];
@@ -175,24 +183,28 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   }
 
   Widget _buildTitleOnly(FieldGroupConfig config) {
-    return RichText(
-      text: TextSpan(
-        style: context.textTheme.titleMedium?.copyWith(
-          color: widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
-        ),
-        children: [
-          TextSpan(text: config.label.toTitle),
-          if (config.helperText != null) ...{
-            TextSpan(
-              text: config.helperText.toTitle,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.normal,
-                color: widget.textColor ?? context.onSecondaryContainer,
+    return BlockQuote(
+      isColored: false,
+      margin: EdgeInsets.zero,
+      child: RichText(
+        text: TextSpan(
+          style: context.textTheme.titleMedium?.copyWith(
+            color: widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
+          ),
+          children: [
+            TextSpan(text: config.label.toTitle),
+            if (config.helperText != null) ...{
+              TextSpan(
+                text: '\n${config.helperText.toSentence}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.normal,
+                  color: widget.textColor ?? context.onSecondaryContainer,
+                ),
               ),
-            ),
-          },
-        ],
+            },
+          ],
+        ),
       ),
     );
   }

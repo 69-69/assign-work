@@ -49,6 +49,7 @@ class _SearchWHBinState extends State<SearchWHBin> {
     return AsyncSearchDropdown<WHBin>(
       selectedItem: _whBin,
       labelText: _labelText,
+      helperText: 'The smallest physical storage unit/slot inside a location',
       asyncItems: (String filter, loadProps) async =>
           await _loadWHBins(filter: filter),
       filterFn: (bin, filter) => _filterWHBin(filter, bin),

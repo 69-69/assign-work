@@ -4,7 +4,8 @@ import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_w
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search Warehouse Location [SearchWHLocation]
+/// Search Warehouse Storage Location [SearchWHLocation]
+/// Functional area within the warehouse
 class SearchWHLocation extends StatefulWidget {
   final String? label;
   final String? initialValue;
@@ -25,7 +26,7 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
   String? _initialValue;
   WHLocation? _whLocation;
 
-  String get _labelText => widget.label ?? 'Select WH Location...';
+  String get _labelText => widget.label ?? 'Storage Location...';
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
     return AsyncSearchDropdown<WHLocation>(
       selectedItem: _whLocation,
       labelText: _labelText,
+      helperText: 'Functional area/subdivision within the warehouse',
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),

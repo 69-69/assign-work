@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -24,7 +25,7 @@ extension WHExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       title: serverItem != null
-          ? serverItem.description.toTitle
+          ? '${serverItem.code.toUpperAll} - ${serverItem.description.toTitle}'
           : 'New Warehouse',
       body: _CreateWarehouseForm(
         serverItem: serverItem,
@@ -72,7 +73,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
     if (_isSubmitting) return;
     final isUpdate = _serverItem?.isNotEmpty == true;
     final isValid = _isFormValid;
-    // setState(() => _isSubmitting = true);
+    setState(() => _isSubmitting = true);
 
     // Case 1: Update existing Warehouse
     if (isValid && isUpdate) {
@@ -180,7 +181,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
           ),
         },
         FormGroupCard(
-          title: '1. Warehouse Information',
+          title: 'Warehouse Information',
           subTitle:
               '\nName, type, operational status, and default settings for this warehouse.',
           children: [_buildWHBasic()],
@@ -212,7 +213,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
         _warehouseData = Warehouse.fromMap({
           ...map,
           'address': {
-            'type': 'warehouse',
+            'type': AddressType.warehouse.getName,
             'city': map['city'],
             'street': map['street'],
             'postalCode': map['postalCode'],

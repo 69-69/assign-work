@@ -211,7 +211,7 @@ extension LocationTypeExtension on LocationType {
   String get getName => EnumUtil<LocationType>(this).getName;
 
   // Get Short Location Code
-  String get locationCode {
+  String get locCode {
     return switch (this) {
       LocationType.receiving => 'REC',
       LocationType.storage => 'STO',

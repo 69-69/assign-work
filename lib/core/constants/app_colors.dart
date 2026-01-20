@@ -88,8 +88,11 @@ final List<Color> randomBgColors = [
   Color(0xFFDCE775),
   Color(0xFFFFEE58),
   Color(0xFFFFCA28),
-  kWarningColor,
+  Color(0xFFFFA726),
   Color(0xFFFF7043),
   Color(0xFFE64A19),
   Color(0xFFC21807),
+  Color(0xFF910000),
+  Color(0xFF610451),
+  Color(0xFF30003D),
 ];

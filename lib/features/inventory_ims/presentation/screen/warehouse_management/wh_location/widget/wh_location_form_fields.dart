@@ -13,21 +13,18 @@ class WhLocationFormFields {
   ) => InventoryFormFields.buildNumber(
     context,
     count: count,
-    what: 'Location',
+    what: 'Location Code',
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whLocFields({
-    Map<String, dynamic>? initial,
-  }) => [
+  static List<FieldGroupConfig> whLocFields(Map<String, dynamic>? initial) => [
     FieldGroupConfig(
       key: 'description',
       label: 'Location Name',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
       helperText:
-          'Enter the name of the location within the warehouse (e.g., Aisle 1, Rack B, Zone C).',
-      validator: (_) => null,
+          'Storage location within the warehouse (e.g., Aisle 1, Rack B, Zone C).',
     ),
     FieldGroupConfig(
       key: 'type',
@@ -75,9 +72,10 @@ class WhLocationFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
-          title: 'Location Options',
           showButton: false,
-          initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
+          initialData: [
+            {'isActive': initialData},
+          ],
           checkboxesConfig: [
             CheckboxGroupConfig(
               key: 'isActive',
