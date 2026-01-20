@@ -91,6 +91,7 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
       // Emit the loaded state with the refreshed data
       emit(ClientsLoaded<T>(data));
     } catch (e) {
+      add(_AgentError('Error refreshing clients: $e'));
       // Emit an error state in case of failure
       emit(AgentError<T>(e.toString()));
     }
@@ -110,6 +111,7 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
 
       emit(ClientsLoaded<T>(data));
     } catch (e) {
+      add(_AgentError('Error loading clients: $e'));
       emit(AgentError<T>('Error loading data: $e'));
     }
   }

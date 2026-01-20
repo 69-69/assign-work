@@ -15,6 +15,40 @@ class RefreshTenants<T> extends TenantEvent<T> {
 
 class LoadSubscriptions<T> extends TenantEvent<T> {}
 
+class SearchSubscriptions<T> extends TenantEvent<T> {
+  /// Query_Term / Search_Term [query]
+  final String query;
+
+  /// First_Field_Name[primaryField]
+  final Object? primaryField;
+
+  /// Second_Field_Name [optionalField]
+  final Object? optionalField;
+
+  /// Third_Field_Name[secondaryField]
+  final Object? secondaryField;
+
+  /// Fourth_Field_Name[secondaryField]
+  final Object? tertiaryField;
+
+  const SearchSubscriptions({
+    this.primaryField,
+    this.optionalField,
+    this.secondaryField,
+    this.tertiaryField,
+    required this.query,
+  });
+
+  @override
+  List<Object?> get props => [
+    primaryField,
+    optionalField,
+    secondaryField,
+    tertiaryField,
+    query,
+  ];
+}
+
 class AddSubscription<T> extends TenantEvent<T> {
   final T data;
 
@@ -101,6 +135,15 @@ class _TenantError<T> extends TenantEvent<T> {
   final String error;
 
   const _TenantError(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+class _SubscriptionError<T> extends TenantEvent<T> {
+  final String error;
+
+  const _SubscriptionError(this.error);
 
   @override
   List<Object?> get props => [error];

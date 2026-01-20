@@ -306,7 +306,7 @@ class Workspace extends Equatable {
     'Role',
     'Business',
     'Workspace',
-    'Client',
+    'Tenant',
     'Mobile no.',
     'Max-Devices',
     'Hosting type',

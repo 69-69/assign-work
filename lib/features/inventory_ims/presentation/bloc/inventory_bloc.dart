@@ -83,7 +83,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Emit the loaded state with the refreshed data
       emit(InventoriesLoaded<T>(data));
     } catch (e) {
-      add(_InventoryLoadError('Error refreshing data: $e'));
+      add(_InventoryLoadError('Error refreshing inventories: $e'));
       // Emit an error state in case of failure
       emit(InventoryError<T>(e.toString()));
     }
@@ -106,7 +106,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Await for the subscription to be done (optional)
       await _getDataStreamObserver?.asFuture();
     } catch (e) {
-      add(_InventoryLoadError('Error loading data: $e'));
+      add(_InventoryLoadError('Error loading inventories: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
       // This could be in the dispose() method of a widget or BLoC
@@ -154,7 +154,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
         emit(InventoryError<T>('Document not found'));
       }
     } catch (e) {
-      add(_InventoryLoadError('Error saving data: $e'));
+      add(_InventoryLoadError('Error loading inventory by Id: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -200,8 +200,8 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       emit(InventoriesLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
-      add(_InventoryLoadError('Error searching data: $e'));
-      emit(InventoryError<T>('Error searching data: $e'));
+      add(_InventoryLoadError('Error searching inventory: $e'));
+      emit(InventoryError<T>('Error searching inventory: $e'));
     }
   }
 
@@ -220,7 +220,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data added¬
       emit(InventoryAdded<T>(message: 'Data added successfully'));
     } catch (e) {
-      add(_InventoryLoadError('Error saving single data: $e'));
+      add(_InventoryLoadError('Error saving inventory: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -241,7 +241,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data added
       emit(InventoryAdded<T>(message: 'Data added successfully'));
     } catch (e) {
-      add(_InventoryLoadError('Error saving multiple data: $e'));
+      add(_InventoryLoadError('Error saving inventories: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -269,7 +269,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data updated
       emit(InventoryUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
-      add(_InventoryLoadError('Error updating data: $e'));
+      add(_InventoryLoadError('Error updating inventory: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -288,7 +288,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data deleted
       emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
-      add(_InventoryLoadError('Error deleting single data: $e'));
+      add(_InventoryLoadError('Error deleting inventory: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -312,7 +312,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data deleted
       emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
-      add(_InventoryLoadError('Error saving multiple data: $e'));
+      add(_InventoryLoadError('Error saving inventories: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -338,6 +338,11 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     emit(InventoryLoaded<T>(event.data));
   }
 
+  /// Handles inventory failures.
+  ///
+  /// This method saves/logs the encountered error to the `centralized error cache`
+  /// for diagnostics and emits an [InventoryError] state to notify listeners
+  /// of the failure.
   void _onInventoryLoadError(
     _InventoryLoadError event,
     Emitter<InventoryState<T>> emit,

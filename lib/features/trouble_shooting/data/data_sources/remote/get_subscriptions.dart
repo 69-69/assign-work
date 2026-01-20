@@ -4,6 +4,9 @@ import 'package:assign_erp/features/trouble_shooting/presentation/bloc/tenant_bl
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetSubscriptions {
+  static final subBloc = SubscriptionBloc(
+    firestore: FirebaseFirestore.instance,
+  );
   static Future<TenantsLoaded<Subscription>> _dataLoadedState(
     SubscriptionBloc bloc,
   ) async {
@@ -14,13 +17,31 @@ class GetSubscriptions {
   }
 
   static Future<List<Subscription>> load() async {
-    final subscriptionBloc = SubscriptionBloc(
-      firestore: FirebaseFirestore.instance,
+    // Ensure to wait for the data to be loaded
+    final state = await _dataLoadedState(subBloc);
+
+    return state.data;
+  }
+
+  static Future<List<Subscription>> byAnyTerm(term) async {
+    // Load all data initially to pass to the search delegate
+    subBloc.add(
+      SearchSubscriptions<Subscription>(
+        primaryField: 'name',
+        optionalField: 'licenses',
+        secondaryField: 'fee',
+        tertiaryField: 'expiresOn',
+        query: term,
+      ),
     );
 
     // Ensure to wait for the data to be loaded
-    final state = await _dataLoadedState(subscriptionBloc);
+    final allData =
+        await subBloc.stream.firstWhere(
+              (state) => state is SubscriptionsLoaded<Subscription>,
+            )
+            as SubscriptionsLoaded<Subscription>;
 
-    return state.data;
+    return allData.data;
   }
 }

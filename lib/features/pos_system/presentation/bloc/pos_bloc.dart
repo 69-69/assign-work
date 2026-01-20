@@ -84,6 +84,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Emit the loaded state with the refreshed data
       emit(POSsLoaded<T>(data));
     } catch (e) {
+      add(_POSLoadError('Error refreshing POSs: $e'));
       // Emit an error state in case of failure
       emit(POSError<T>(e.toString()));
     }
@@ -108,6 +109,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
           // emit(DataAddedState<T>()); // For example, notify that data is added
         },
         onError: (e) {
+          add(_POSLoadError('Error loading POSs: $e'));
           add(_POSLoadError('Error loading data: $e'));
         },
       );
@@ -121,6 +123,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
 
       emit(DataLoadedState<T>(data));*/
     } catch (e) {
+      add(_POSLoadError('Error loading POSs: $e'));
       emit(POSError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -146,6 +149,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
+      add(_POSLoadError('Error loading POSs by IDs: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -168,6 +172,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
         emit(POSError<T>('Document not found'));
       }
     } catch (e) {
+      add(_POSLoadError('Error loading POS by ID: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -190,6 +195,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
         emit(POSError<T>('Data not found'));
       }
     } catch (e) {
+      add(_POSLoadError('Error loading POSs with same ID: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -212,6 +218,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       emit(POSsLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(_POSLoadError('Error searching POSs: $e'));
       emit(POSError<T>('Error searching data: $e'));
     }
   }
@@ -227,6 +234,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Update State: Notify that data added
       emit(POSAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_POSLoadError('Error saving POS: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -247,6 +255,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Update State: Notify that data added
       emit(POSAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_POSLoadError('Error saving POSs: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -271,6 +280,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Update State: Notify that data updated
       emit(POSUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_POSLoadError('Error updating POS: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -289,6 +299,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Update State: Notify that data deleted
       emit(POSDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_POSLoadError('Error deleting POS: $e'));
       emit(POSError<T>(e.toString()));
     }
   }
@@ -312,6 +323,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
       // Update State: Notify that data deleted
       emit(POSDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_POSLoadError('Error deleting POSs: $e'));
       emit(POSError<T>(e.toString()));
     }
   }

@@ -85,6 +85,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Emit the loaded state with the refreshed data
       emit(SetupsLoaded<T>(data));
     } catch (e) {
+      add(_SetupLoadError('Error refreshing data: $e'));
       // Emit an error state in case of failure
       emit(SetupError<T>(e.toString()));
     }
@@ -120,6 +121,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Await for the subscription to be done (optional)
       await _getDataStreamObserver?.asFuture();
     } catch (e) {
+      add(_SetupLoadError('Error loading setups: $e'));
       emit(SetupError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -145,6 +147,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
         // emit(SetupsLoaded<T>(data));
       }
     } catch (e) {
+      add(_SetupLoadError('Error loading setups by Ids: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -167,6 +170,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
         emit(SetupError<T>('Document not found'));
       }
     } catch (e) {
+      add(_SetupLoadError('Error loading setup by Id: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -189,6 +193,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
         emit(SetupError<T>('Data not found'));
       }
     } catch (e) {
+      add(_SetupLoadError('Error loading setups by same Id: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -211,6 +216,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       emit(SetupsLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(_SetupLoadError('Error searching setups: $e'));
       emit(SetupError<T>('Error searching data: $e'));
     }
   }
@@ -229,6 +235,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data added
       emit(SetupAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_SetupLoadError('Error saving setup: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -249,6 +256,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data added
       emit(SetupAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_SetupLoadError('Error saving setups: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -276,6 +284,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data updated
       emit(SetupUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_SetupLoadError('Error updating setup: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -296,6 +305,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data updated
       emit(SetupOverridden<T>(message: 'data successfully overridden'));
     } catch (e) {
+      add(_SetupLoadError('Error overriding setup: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -314,6 +324,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data deleted
       emit(SetupDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_SetupLoadError('Error deleting setup: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -336,6 +347,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
       // Update State: Notify that data deleted
       emit(SetupDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_SetupLoadError('Error deleting setups: $e'));
       emit(SetupError<T>(e.toString()));
     }
   }
@@ -352,6 +364,11 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     emit(SetupLoaded<T>(event.data));
   }
 
+  /// Handles Setup failures.
+  ///
+  /// This method saves/logs the encountered error to the `centralized error cache`
+  /// for diagnostics and emits an [SetupError] state to notify listeners
+  /// of the failure.
   void _onSetupLoadError(_SetupLoadError event, Emitter<SetupState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'setup_bloc');

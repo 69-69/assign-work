@@ -82,6 +82,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Emit the loaded state with the refreshed data
       emit(CustomersLoaded<T>(data));
     } catch (e) {
+      add(_CustomerError('Error refreshing customers: $e'));
       // Emit an error state in case of failure
       emit(CustomerError<T>(e.toString()));
     }
@@ -122,6 +123,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
 
       emit(DataLoadedState<T>(data));*/
     } catch (e) {
+      add(_CustomerError('Error loading customers: $e'));
       emit(CustomerError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -163,6 +165,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
+      add(_CustomerError('Error loading customers by IDs: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -185,6 +188,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
         emit(CustomerError<T>('Document not found'));
       }
     } catch (e) {
+      add(_CustomerError('Error loading customer by ID: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -207,6 +211,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
         emit(CustomerError<T>('Data not found'));
       }
     } catch (e) {
+      add(_CustomerError('Error loading customers with same ID: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -229,6 +234,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       emit(CustomersLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(_CustomerError('Error searching customers: $e'));
       emit(CustomerError<T>('Error searching data: $e'));
     }
   }
@@ -247,6 +253,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Update State: Notify that data added
       emit(CustomerAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_CustomerError('Error saving customer: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -267,6 +274,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Update State: Notify that data added
       emit(CustomerAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_CustomerError('Error saving customers: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -294,6 +302,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Update State: Notify that data updated
       emit(CustomerUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_CustomerError('Error updating customer: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -312,6 +321,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Update State: Notify that data deleted
       emit(CustomerDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_CustomerError('Error deleting customer: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }
@@ -335,6 +345,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
       // Update State: Notify that data deleted
       emit(CustomerDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_CustomerError('Error deleting customers: $e'));
       emit(CustomerError<T>(e.toString()));
     }
   }

@@ -53,12 +53,14 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     on<UpdateTenant>(_onUpdateTenant);
     on<OverrideTenant>(_onOverrideTenant);
     on<RevokeAuthorizedDeviceId>(_onRevokeAuthorizedDeviceIds);
-    on<AddSubscription<T>>(_onAddSubscription);
     on<DeleteTenant<String>>(_onDeleteTenant);
     on<DeleteTenant<List<String>>>(_onDeleteMultiTenants);
     on<_TenantsLoaded<T>>(_onTenantsLoaded);
     on<_TenantLoaded<T>>(_onTenantLoaded);
     on<_TenantError<T>>(_onTenantError);
+    on<AddSubscription<T>>(_onAddSubscription);
+    on<SearchSubscriptions<T>>(_onSearchSubscription);
+    on<_SubscriptionError<T>>(_onSubscriptionError);
   }
 
   Future<void> _onRefreshTenants(
@@ -77,7 +79,31 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       emit(TenantsLoaded<T>(data));
     } catch (e) {
       // Emit an error state in case of failure
+      add(_TenantError('Error refreshing tenants: $e'));
       emit(TenantError<T>(e.toString()));
+    }
+  }
+
+  Future<void> _onSearchSubscription(
+    SearchSubscriptions<T> event,
+    Emitter<TenantState<T>> emit,
+  ) async {
+    emit(LoadingSubcriptions<T>());
+    try {
+      List<CacheData> data = await _dataRepository.searchData(
+        event.query,
+        primaryField: event.primaryField ?? '',
+        optionalField: event.optionalField,
+        secondaryField: event.secondaryField,
+        tertiaryField: event.tertiaryField,
+      );
+
+      var localData = _toList(data);
+      emit(SubscriptionsLoaded<T>(localData));
+      // emit(DataLoadedState<T>(data.cast<T>()));
+    } catch (e) {
+      add(_SubscriptionError('Error searching subscriptions: $e'));
+      emit(SubscriptionError<T>('Error searching data: $e'));
     }
   }
 
@@ -95,6 +121,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data added
       emit(SubscriptionAdded<T>(message: 'Subscription added successfully'));
     } catch (e) {
+      add(_SubscriptionError('Error saving subscription: $e'));
       emit(SubscriptionError<T>(e.toString()));
     }
   }
@@ -113,6 +140,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
 
       emit(TenantsLoaded<T>(data));
     } catch (e) {
+      add(_TenantError('Error loading tenants: $e'));
       emit(TenantError<T>('Error loading data: $e'));
     }
   }
@@ -132,6 +160,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
         emit(TenantError<T>('Document not found'));
       }
     } catch (e) {
+      add(_TenantError('Error loading tenant by id: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -159,6 +188,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data updated
       emit(TenantUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_TenantError('Error updating tenant: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -179,6 +209,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data updated
       emit(TenantOverridden<T>(message: 'data successfully overridden'));
     } catch (e) {
+      add(_TenantError('Error overriding tenant: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -211,6 +242,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
         TenantDeleted<T>(message: 'Authorized Device Id remove successfully'),
       );
     } catch (e) {
+      add(_TenantError('Error revoking tenant devices: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -229,6 +261,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data deleted
       emit(TenantDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_TenantError('Error deleting single tenant: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -247,6 +280,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
       // Update State: Notify that data deleted
       emit(TenantDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_TenantError('Error deleting multiple tenant: $e'));
       emit(TenantError<T>(e.toString()));
     }
   }
@@ -259,10 +293,29 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     emit(TenantLoaded<T>(event.data));
   }
 
+  /// Handles Tenant Error failures.
+  ///
+  /// This method saves/logs the encountered error to the `centralized error cache`
+  /// for diagnostics and emits an [TenantError] state to notify listeners
+  /// of the failure.
   void _onTenantError(_TenantError<T> event, Emitter<TenantState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'tenant_bloc');
     emit(TenantError<T>(event.error));
+  }
+
+  /// Handles Subscription Error failures.
+  ///
+  /// This method saves/logs the encountered error to the `centralized error cache`
+  /// for diagnostics and emits an [SubscriptionError] state to notify listeners
+  /// of the failure.
+  void _onSubscriptionError(
+    _SubscriptionError<T> event,
+    Emitter<TenantState<T>> emit,
+  ) {
+    final errorLogCache = ErrorLogCache();
+    errorLogCache.setError(error: event.error, fileName: 'subscription_bloc');
+    emit(SubscriptionError<T>(event.error));
   }
 
   List<T> _toList(List<CacheData> cacheData) {

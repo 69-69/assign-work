@@ -172,11 +172,13 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        WarehouseFormFields.buildWHNumber(
-          context,
-          _warehouseCode,
-          _generateWHCode,
-        ),
+        if (_isServerNull) ...{
+          WarehouseFormFields.buildWHNumber(
+            context,
+            _warehouseCode,
+            _generateWHCode,
+          ),
+        },
         FormGroupCard(
           title: '1. Warehouse Information',
           subTitle:
@@ -202,12 +204,12 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
       initialData: [
         {...?_serverItem?.toMap(), ...?_serverItem?.address.toMap()},
       ],
-      fieldsConfig: WarehouseFormFields.wmsFields(),
+      fieldsConfig: WarehouseFormFields.wmsFields(_serverItem?.toMap()),
       onChanged: (List<Map<String, dynamic>> data) {
         if (data.isNullOrEmpty) return;
 
         final map = Map<String, dynamic>.from(data.first);
-        final wh = Warehouse.fromMap({
+        _warehouseData = Warehouse.fromMap({
           ...map,
           'address': {
             'type': 'warehouse',
@@ -218,17 +220,16 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
           },
         });
 
-        _warehouseData = _warehouseData.copyWith(
+        /*_warehouseData = _warehouseData.copyWith(
           description: wh.description,
-          type: wh.type,
+          wareType: wh.wareType,
           isActive: wh.isActive,
           isDefault: wh.isDefault,
           isBinManaged: wh.isBinManaged,
           maxItems: wh.maxItems,
           maxWeight: wh.maxWeight,
           address: wh.address,
-        );
-        prettyPrint('this-is-map', _warehouseData.toMap());
+        );*/
       },
     );
   }

@@ -10,8 +10,8 @@ import 'package:assign_erp/features/trouble_shooting/data/models/license_model.d
 import 'package:assign_erp/features/trouble_shooting/data/models/subscription_model.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/subscription/subscription_bloc.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/tenant_bloc.dart';
-import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/form_inputs.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/license_card.dart';
+import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/trouble_shoot_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -85,6 +85,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Emit the loaded state with the refreshed data
       emit(ProcurementsLoaded<T>(data));
     } catch (e) {
+      add(_ProcurementLoadError('Error refreshing Procurement: $e'));
       // Emit an error state in case of failure
       emit(ProcurementError<T>(e.toString()));
     }
@@ -125,6 +126,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
 
       emit(DataLoadedState<T>(data));*/
     } catch (e) {
+      add(_ProcurementLoadError('Error loading procurements: $e'));
       emit(ProcurementError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -150,6 +152,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
+      add(_ProcurementLoadError('Error loading procurements by IDs: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -172,6 +175,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
         emit(ProcurementError<T>('Document not found'));
       }
     } catch (e) {
+      add(_ProcurementLoadError('Error loading procurement by ID: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -194,6 +198,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
         emit(ProcurementError<T>('Data not found'));
       }
     } catch (e) {
+      add(_ProcurementLoadError('Error loading procurements by same ID: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -216,6 +221,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       emit(ProcurementsLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(_ProcurementLoadError('Error searching procurements: $e'));
       emit(ProcurementError<T>('Error searching data: $e'));
     }
   }
@@ -234,6 +240,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Update State: Notify that data added
       emit(ProcurementAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_ProcurementLoadError('Error saving procurement: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -254,6 +261,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Update State: Notify that data added
       emit(ProcurementAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_ProcurementLoadError('Error saving procurements: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -281,6 +289,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Update State: Notify that data updated
       emit(ProcurementUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_ProcurementLoadError('Error updating procurement: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -297,6 +306,11 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
         isPartial: true, // true if not a full model update
       );
     } catch (e) {
+      add(
+        _ProcurementLoadError(
+          'Error saving/updating procurement audit log: $e',
+        ),
+      );
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -315,6 +329,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Update State: Notify that data deleted
       emit(ProcurementDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_ProcurementLoadError('Error deleting procurement: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }
@@ -338,6 +353,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
       // Update State: Notify that data deleted
       emit(ProcurementDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_ProcurementLoadError('Error deleting procurements: $e'));
       emit(ProcurementError<T>(e.toString()));
     }
   }

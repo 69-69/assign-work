@@ -86,6 +86,9 @@ class SalesDistributionBloc<T>
       // Emit the loaded state with the refreshed data
       emit(SalesDistributionsLoaded<T>(data));
     } catch (e) {
+      add(
+        _SalesDistributionLoadError('Error refreshing Sales Distributions: $e'),
+      );
       // Emit an error state in case of failure
       emit(SalesDistributionError<T>(e.toString()));
     }
@@ -110,6 +113,7 @@ class SalesDistributionBloc<T>
       // Await for the subscription to be done (optional)
       await _getDataStreamObserver?.asFuture();
     } catch (e) {
+      add(_SalesDistributionLoadError('Error loading Sales Distributions: $e'));
       emit(SalesDistributionError<T>('Error loading data: $e'));
     } finally {
       // Ensure to cancel the subscription when it's no longer needed
@@ -135,6 +139,11 @@ class SalesDistributionBloc<T>
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
+      add(
+        _SalesDistributionLoadError(
+          'Error loading Sales Distributions by Ids: $e',
+        ),
+      );
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -157,6 +166,11 @@ class SalesDistributionBloc<T>
         emit(SalesDistributionError<T>('Document not found'));
       }
     } catch (e) {
+      add(
+        _SalesDistributionLoadError(
+          'Error refreshing Sale Distribution by Id: $e',
+        ),
+      );
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -179,6 +193,11 @@ class SalesDistributionBloc<T>
         emit(SalesDistributionError<T>('Data not found'));
       }
     } catch (e) {
+      add(
+        _SalesDistributionLoadError(
+          'Error loading Sales Distributions by Same Id: $e',
+        ),
+      );
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -201,6 +220,9 @@ class SalesDistributionBloc<T>
       emit(SalesDistributionsLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(
+        _SalesDistributionLoadError('Error searching Sales Distributions: $e'),
+      );
       emit(SalesDistributionError<T>('Error searching data: $e'));
     }
   }
@@ -219,6 +241,11 @@ class SalesDistributionBloc<T>
       // Update State: Notify that data added
       emit(SalesDistributionAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(
+        _SalesDistributionLoadError(
+          'Error saving single Sales Distribution: $e',
+        ),
+      );
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -239,6 +266,7 @@ class SalesDistributionBloc<T>
       // Update State: Notify that data added
       emit(SalesDistributionAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_SalesDistributionLoadError('Error saving Sales Distributions: $e'));
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -266,6 +294,7 @@ class SalesDistributionBloc<T>
       // Update State: Notify that data updated
       emit(SalesDistributionUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_SalesDistributionLoadError('Error updating Sales Distribution: $e'));
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -282,6 +311,7 @@ class SalesDistributionBloc<T>
         isPartial: true, // true if not a full model update
       );
     } catch (e) {
+      add(_SalesDistributionLoadError('Error saving/updating audit log: $e'));
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -300,6 +330,7 @@ class SalesDistributionBloc<T>
       // Update State: Notify that data deleted
       emit(SalesDistributionDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_SalesDistributionLoadError('Error deleting Sale Distribution: $e'));
       emit(SalesDistributionError<T>(e.toString()));
     }
   }
@@ -318,6 +349,9 @@ class SalesDistributionBloc<T>
       // Update State: Notify that data deleted
       emit(SalesDistributionDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(
+        _SalesDistributionLoadError('Error deleting Sales Distributions: $e'),
+      );
       emit(SalesDistributionError<T>(e.toString()));
     }
   }

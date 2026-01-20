@@ -79,6 +79,7 @@ class LiveChatBloc<T> extends Bloc<LiveChatEvent, LiveChatState<T>> {
         emit(LiveChatError<T>('Chat Message not found'));
       }
     } catch (e) {
+      add(_LiveChatError('Error loading chat messages: $e'));
       emit(LiveChatError<T>(e.toString()));
     }
   }
@@ -99,6 +100,7 @@ class LiveChatBloc<T> extends Bloc<LiveChatEvent, LiveChatState<T>> {
       // Update State: Notify that data added
       emit(ChatAdded<T>(message: 'Chat added successfully'));
     } catch (e) {
+      add(_LiveChatError('Error sending chat message: $e'));
       emit(LiveChatError<T>(e.toString()));
     }
   }

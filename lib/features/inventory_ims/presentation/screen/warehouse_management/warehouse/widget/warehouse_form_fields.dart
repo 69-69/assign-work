@@ -17,7 +17,7 @@ class WarehouseFormFields {
   );
 
   /// Warehouse Basic
-  static List<FieldGroupConfig> wmsFields({Map<String, dynamic>? initial}) => [
+  static List<FieldGroupConfig> wmsFields(Map<String, dynamic>? initial) => [
     FieldGroupConfig(
       key: 'description',
       label: 'Warehouse Name',
@@ -28,7 +28,7 @@ class WarehouseFormFields {
       validator: (_) => null,
     ),
     FieldGroupConfig(
-      key: 'type',
+      key: 'wareType',
       label: 'Warehouse type',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
@@ -40,9 +40,10 @@ class WarehouseFormFields {
       },
     ),
     FieldGroupConfig(
-      key: 'options',
+      key: 'whOptions',
       label: 'Configuration Options',
       isNested: true,
+      type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
@@ -80,6 +81,12 @@ class WarehouseFormFields {
         );
       },
     ),
+    ..._whCapacityFields,
+    ..._addressFields,
+  ];
+
+  /// Warehouse Capacity
+  static List<FieldGroupConfig> get _whCapacityFields => [
     FieldGroupConfig(
       key: 'cap-title',
       label: 'Warehouse Capacity',
@@ -87,19 +94,6 @@ class WarehouseFormFields {
           '\nMaximum items and weight this warehouse location can hold.',
       widgetType: FieldWidgetType.titleOnly,
     ),
-    ..._whCapacityFields,
-    FieldGroupConfig(
-      key: 'ad-title',
-      label: 'Warehouse Address',
-      helperText:
-          '\nStreet, city, postal code, and physical address for this warehouse location.',
-      widgetType: FieldWidgetType.titleOnly,
-    ),
-    ..._addressFields,
-  ];
-
-  /// Warehouse Capacity
-  static List<FieldGroupConfig> get _whCapacityFields => [
     FieldGroupConfig(
       key: 'maxItems',
       label: 'Maximum Items',
@@ -117,6 +111,13 @@ class WarehouseFormFields {
 
   /// Warehouse physical Address
   static List<FieldGroupConfig> get _addressFields => [
+    FieldGroupConfig(
+      key: 'ad-title',
+      label: 'Warehouse Address',
+      helperText:
+          '\nStreet, city, postal code, and physical address for this warehouse location.',
+      widgetType: FieldWidgetType.titleOnly,
+    ),
     FieldGroupConfig(
       key: 'postalCode',
       label: 'postal Code',

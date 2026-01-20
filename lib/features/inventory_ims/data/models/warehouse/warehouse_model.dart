@@ -23,7 +23,7 @@ class Warehouse extends Equatable {
   final String storeNumber; // FK CompanyStore.storeNumber
   final String code; // Unique warehouse code, e.g., "WH01"
   final String description; // Full warehouse description
-  final WarehouseType type; // (Main, Store, Transit)
+  final WarehouseType wareType; // (Main, Store, Transit)
   final AddressInfo address; // Optional: physical address
   final bool isActive; // Active/inactive warehouse
   final bool isDefault; // is the default warehouse?
@@ -43,7 +43,7 @@ class Warehouse extends Equatable {
     required this.storeNumber,
     required this.code,
     required this.description,
-    required this.type,
+    required this.wareType,
     required this.address,
     this.isActive = true,
     this.isDefault = false,
@@ -63,8 +63,8 @@ class Warehouse extends Equatable {
         storeNumber: map['storeNumber'] ?? '',
         code: map['code'] ?? '',
         description: map['description'] ?? '',
-        type: fromString(map['type']),
-        address: AddressInfo.fromMap(map['address'] as Map<String, dynamic>),
+        wareType: fromString(map['wareType']),
+        address: AddressInfo.fromMap(Map.from(map['address'])),
         isActive: map['isActive'] ?? false,
         isDefault: map['isDefault'] ?? false,
         isBinManaged: map['isBinManaged'] ?? false,
@@ -81,8 +81,8 @@ class Warehouse extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'code': code,
+    'wareType': getType,
     'description': description,
-    'type': getType,
     'address': address.toMap(),
     'isActive': isActive,
     'isDefault': isDefault,
@@ -118,7 +118,7 @@ class Warehouse extends Equatable {
     code: '',
     description: '',
     storeNumber: '',
-    type: WarehouseType.main,
+    wareType: WarehouseType.main,
     address: AddressInfo.empty,
   );
 
@@ -127,7 +127,7 @@ class Warehouse extends Equatable {
 
   bool get isNotEmpty => !isEmpty;
 
-  String get getType => type.getName;
+  String get getType => wareType.getName;
 
   // filter/search
   bool filterByAny(String term) =>
@@ -150,7 +150,7 @@ class Warehouse extends Equatable {
     String? code,
     String? description,
     String? storeNumber,
-    WarehouseType? type,
+    WarehouseType? wareType,
     AddressInfo? address,
     bool? isActive,
     bool? isDefault,
@@ -166,7 +166,7 @@ class Warehouse extends Equatable {
     storeNumber: storeNumber ?? this.storeNumber,
     code: code ?? this.code,
     description: description ?? this.description,
-    type: type ?? this.type,
+    wareType: wareType ?? this.wareType,
     address: address ?? this.address,
     isActive: isActive ?? this.isActive,
     isDefault: isDefault ?? this.isDefault,
@@ -185,7 +185,7 @@ class Warehouse extends Equatable {
     storeNumber,
     code,
     description,
-    type,
+    wareType,
     address,
     isActive,
     isDefault,

@@ -101,7 +101,7 @@ class SubscriptionAndTotalDevicesDropdown extends StatelessWidget {
       children: [
         StaticDropdown<String>(
           key: key,
-          label: 'total devices',
+          label: 'Total Devices',
           initialValue: initialTotalDevices,
           items: List.generate(20, (i) => '$i'),
           getDisplayText: (total) => total,

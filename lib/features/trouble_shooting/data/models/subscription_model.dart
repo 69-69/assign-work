@@ -147,8 +147,7 @@ class Subscription extends Equatable {
   String get itemAsString => name.toTitle;
 
   /// Filter/search
-  bool filterByAny(String filter) =>
-      itemAsList.filterAny(filter) || licenses.filterAny(filter);
+  bool filterByAny(String filter) => true;
 
   @override
   List<Object?> get props => [

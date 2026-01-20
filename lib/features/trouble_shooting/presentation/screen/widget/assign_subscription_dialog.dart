@@ -7,7 +7,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/features/auth/data/model/workspace_model.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/all_tenants/all_tenants_bloc.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/bloc/tenant_bloc.dart';
-import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/form_inputs.dart';
+import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/trouble_shoot_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,10 +15,12 @@ extension AssignSubscriptionDialog on BuildContext {
   Future<void> assignSubscriptionToWorkspaceDialog({
     required String workspaceId,
     String? workspaceName,
+    String? initialSub,
     int? initialMaxDevices,
   }) async => await AssignSubscriptionWorkspace(
     workspaceId: workspaceId,
     workspaceName: workspaceName,
+    initialSub: initialSub,
     initialMaxDevices: initialMaxDevices,
   ).openCustomDialog(this, isScrollControlled: true, constraints: null);
 }
@@ -27,12 +29,14 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
   final String workspaceId;
   final String? workspaceName;
   final int? initialMaxDevices;
+  final String? initialSub;
 
   const AssignSubscriptionWorkspace({
     super.key,
     required this.workspaceId,
     this.workspaceName,
     this.initialMaxDevices,
+    this.initialSub,
   });
 
   String get _workspaceName => (workspaceName ?? 'Workspace').toTitle;
@@ -59,6 +63,7 @@ class AssignSubscriptionWorkspace extends StatelessWidget {
           children: [
             SubscriptionAndTotalDevicesDropdown(
               initialTotalDevices: initialMaxDevices?.toString(),
+              initialSub: initialSub?.toString(),
               onTotalDevicesChanged: (v) {
                 _updateSpecificData(context, {
                   'maxAllowedDevices': int.tryParse(v ?? ''),

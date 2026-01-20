@@ -62,6 +62,18 @@ class TenantError<T> extends TenantState<T> {
   List<Object?> get props => [error];
 }
 
+class LoadingSubcriptions<T> extends TenantState<T> {}
+
+// multiple Subscriptions
+class SubscriptionsLoaded<T> extends TenantState<T> {
+  final List<T> data;
+
+  const SubscriptionsLoaded(this.data);
+
+  @override
+  List<Object?> get props => [data];
+}
+
 class SubscriptionAdded<T> extends TenantState<T> {
   final String? message;
 
