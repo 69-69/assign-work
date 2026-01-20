@@ -460,7 +460,7 @@ class _RFQInfoPage extends StatelessWidget {
       (title: 'Additional Notes', value: _rfq?.notes.toSentence ?? 'N/A'),
       (
         title: 'Shipping Address',
-        value: _rfq?.shippingAddress?.address.toSentence ?? 'N/A',
+        value: _rfq?.shippingAddress?.street.toSentence ?? 'N/A',
       ),
     ];
 

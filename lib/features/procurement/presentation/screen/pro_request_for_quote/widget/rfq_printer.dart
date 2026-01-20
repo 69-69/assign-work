@@ -65,7 +65,7 @@ class RFQPrinter {
       contactPerson: contactPerson,
       validityDate: rfq.getDeadlineDate,
       deliveryDate: rfq.getExpectedDate,
-      altDeliveryAddress: rfq.shippingAddress?.address ?? '',
+      altDeliveryAddress: rfq.shippingAddress?.street ?? '',
     );
 
     // Now you can use the `rfq` object as needed, e.g., to print or display it

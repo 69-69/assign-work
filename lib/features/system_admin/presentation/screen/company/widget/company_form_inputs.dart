@@ -53,7 +53,7 @@ class CompanyFormInputs {
       type: TextInputType.text,
     ),
     FieldGroupConfig(
-      key: 'address',
+      key: 'street',
       label: 'Street Address...',
       type: TextInputType.multiline,
       isTextArea: true,

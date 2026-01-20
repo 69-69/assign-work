@@ -43,7 +43,6 @@ class WarehouseFormFields {
       key: 'options',
       label: 'Configuration Options',
       isNested: true,
-      type: TextInputType.none,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
@@ -81,10 +80,26 @@ class WarehouseFormFields {
         );
       },
     ),
+    FieldGroupConfig(
+      key: 'cap-title',
+      label: 'Warehouse Capacity',
+      helperText:
+          '\nMaximum items and weight this warehouse location can hold.',
+      widgetType: FieldWidgetType.titleOnly,
+    ),
+    ..._whCapacityFields,
+    FieldGroupConfig(
+      key: 'ad-title',
+      label: 'Warehouse Address',
+      helperText:
+          '\nStreet, city, postal code, and physical address for this warehouse location.',
+      widgetType: FieldWidgetType.titleOnly,
+    ),
+    ..._addressFields,
   ];
 
   /// Warehouse Capacity
-  static List<FieldGroupConfig> get whCapacityFields => [
+  static List<FieldGroupConfig> get _whCapacityFields => [
     FieldGroupConfig(
       key: 'maxItems',
       label: 'Maximum Items',
@@ -101,7 +116,7 @@ class WarehouseFormFields {
   ];
 
   /// Warehouse physical Address
-  static List<FieldGroupConfig> get addressFields => [
+  static List<FieldGroupConfig> get _addressFields => [
     FieldGroupConfig(
       key: 'postalCode',
       label: 'postal Code',
@@ -114,7 +129,7 @@ class WarehouseFormFields {
       type: TextInputType.text,
     ),
     FieldGroupConfig(
-      key: 'address',
+      key: 'street',
       label: 'Street Address...',
       type: TextInputType.multiline,
       isTextArea: true,

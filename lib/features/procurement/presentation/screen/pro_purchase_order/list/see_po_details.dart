@@ -263,7 +263,7 @@ class _POInfoPage extends StatelessWidget {
               separator: '\n',
               isReadMore: true,
               title: 'Buyer\'s ${a.getType} address:'.toTitle,
-              value: a.address.toSentence,
+              value: a.street.toSentence,
             );
           }),
         },

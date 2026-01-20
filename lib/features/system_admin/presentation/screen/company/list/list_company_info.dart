@@ -109,7 +109,7 @@ class _InfoCard extends StatelessWidget {
       scrollDirection: Axis.vertical,
       contentPadding: _contentPadding,
       children: [
-        _buildRichText(context, label: 'Street', text: e.address, padding: pad),
+        _buildRichText(context, label: 'Street', text: e.street, padding: pad),
         _buildRichText(context, label: 'City', text: e.city, padding: pad),
         _buildRichText(
           context,

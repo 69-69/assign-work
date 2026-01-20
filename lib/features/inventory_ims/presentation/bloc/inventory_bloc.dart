@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:assign_erp/core/network/data_sources/local/cache_data_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/collection_type.dart';
 import 'package:assign_erp/features/inventory_ims/domain/repository/inventory_repository.dart';
 import 'package:assign_erp/features/trouble_shooting/data/data_sources/local/error_logs_cache.dart';
@@ -82,6 +83,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Emit the loaded state with the refreshed data
       emit(InventoriesLoaded<T>(data));
     } catch (e) {
+      add(_InventoryLoadError('Error refreshing data: $e'));
       // Emit an error state in case of failure
       emit(InventoryError<T>(e.toString()));
     }
@@ -129,6 +131,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
         // emit(DataLoadedState<T>(data));
       }
     } catch (e) {
+      add(_InventoryLoadError('Error fetching data by ids: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -151,6 +154,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
         emit(InventoryError<T>('Document not found'));
       }
     } catch (e) {
+      add(_InventoryLoadError('Error saving data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -173,6 +177,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
         emit(InventoryError<T>('Data not found'));
       }
     } catch (e) {
+      add(_InventoryLoadError('Error fetching data by same id: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -195,6 +200,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       emit(InventoriesLoaded<T>(localData));
       // emit(DataLoadedState<T>(data.cast<T>()));
     } catch (e) {
+      add(_InventoryLoadError('Error searching data: $e'));
       emit(InventoryError<T>('Error searching data: $e'));
     }
   }
@@ -204,15 +210,17 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     Emitter<InventoryState<T>> emit,
   ) async {
     try {
+      prettyPrint('event.data', event.data);
       // Add data to Firestore and update local storage
       await _inventoryRepository.createData(toCache(event.data));
 
       // Trigger LoadDataEvent to reload the data
       // add(LoadDataEvent<T>());
 
-      // Update State: Notify that data added
+      // Update State: Notify that data added¬
       emit(InventoryAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_InventoryLoadError('Error saving single data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -233,6 +241,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data added
       emit(InventoryAdded<T>(message: 'Data added successfully'));
     } catch (e) {
+      add(_InventoryLoadError('Error saving multiple data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -260,6 +269,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data updated
       emit(InventoryUpdated<T>(message: 'Changes successfully saved'));
     } catch (e) {
+      add(_InventoryLoadError('Error updating data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -278,6 +288,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data deleted
       emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_InventoryLoadError('Error deleting single data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }
@@ -301,6 +312,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
       // Update State: Notify that data deleted
       emit(InventoryDeleted<T>(message: 'Data deleted successfully'));
     } catch (e) {
+      add(_InventoryLoadError('Error saving multiple data: $e'));
       emit(InventoryError<T>(e.toString()));
     }
   }

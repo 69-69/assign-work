@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 enum FieldWidgetType {
   textField,
   custom, // Custom widget
+  titleOnly, // Just a title
 }
 
 class DynamicTextFields extends StatefulWidget {
@@ -60,6 +61,8 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
 
+  bool get _showSuffixCount => _showButton && _fieldGroupsLength > 1;
+
   Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
 
   bool _canAddMoreGroups = true;
@@ -94,28 +97,68 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     );
   }
 
+  /// Builds all field groups and orchestrates layout & decoration
   Iterable<Widget> _buildFieldGroups() {
     return _fieldGroups.asMap().entries.expand((entry) {
-      final index = entry.key + 1;
-      final group = entry.value;
+      final groupIndex = entry.key;
+      final index = groupIndex + 1;
 
-      // 1️⃣ Build widgets
-      // Create list of TextFields for this group
-      final fields = _fieldsConfig
-          .map(
-            (config) => config.isHidden
-                ? null
-                : _buildFieldWidget(group, config, index),
-          )
-          // 2️⃣ Remove nulls (hidden fields)
-          .where((e) => e != null)
-          .cast<Widget>()
-          .toList();
+      final widgets = _buildSingleGroup(entry.value, index);
 
-      // 3️⃣ Apply pairing logic
-      // Return a single field if there's only one, otherwise group fields into pairs
-      return fields.length <= 1 ? fields : _groupByTwo(fields);
+      return _withGroupSeparator(widgets, groupIndex, index);
     });
+  }
+
+  /// Adds a visual separator between repeated field groups
+  Iterable<Widget> _withGroupSeparator(
+    List<Widget> widgets,
+    int groupIndex,
+    int index,
+  ) {
+    if (groupIndex < _fieldGroups.length - 1) {
+      return [
+        ...widgets,
+        Tooltip(
+          message: 'Form Group ${index + 1}'.toSentence,
+          child: HorizontalDivider(
+            thickness: 10,
+            isORSeparator: true,
+            txtColor: kPrimaryAccentColor,
+            orText: 'Form Group ${index + 1}',
+          ),
+        ),
+      ];
+    }
+    return widgets;
+  }
+
+  /// Builds widgets for a single repeated fieldsConfig group
+  List<Widget> _buildSingleGroup(FieldGroup group, int index) {
+    final result = <Widget>[];
+    final buffer = <Widget>[];
+
+    for (final config in _fieldsConfig) {
+      if (config.isHidden) continue;
+
+      final widget = _buildFieldWidget(group, config, index);
+
+      if (config.widgetType == FieldWidgetType.titleOnly) {
+        _flushBuffer(buffer, result);
+        result.add(AdaptiveLayout(children: [widget]));
+      } else {
+        buffer.add(widget);
+      }
+    }
+
+    _flushBuffer(buffer, result);
+    return result;
+  }
+
+  /// Flushes buffered pairable fields into the result list
+  void _flushBuffer(List<Widget> buffer, List<Widget> target) {
+    if (buffer.isEmpty) return;
+    target.addAll(buffer.length <= 1 ? buffer : _groupByTwo(buffer));
+    buffer.clear();
   }
 
   Widget _buildFieldWidget(
@@ -126,8 +169,32 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     final type = switch (config.widgetType) {
       FieldWidgetType.textField => _buildTextField(group, config, index),
       FieldWidgetType.custom => _buildCustomWidget(config, group, index),
+      FieldWidgetType.titleOnly => _buildTitleOnly(config),
     };
     return type;
+  }
+
+  Widget _buildTitleOnly(FieldGroupConfig config) {
+    return RichText(
+      text: TextSpan(
+        style: context.textTheme.titleMedium?.copyWith(
+          color: widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
+        ),
+        children: [
+          TextSpan(text: config.label.toTitle),
+          if (config.helperText != null) ...{
+            TextSpan(
+              text: config.helperText.toTitle,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.normal,
+                color: widget.textColor ?? context.onSecondaryContainer,
+              ),
+            ),
+          },
+        ],
+      ),
+    );
   }
 
   Widget _buildCustomWidget(
@@ -147,7 +214,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
               },
             ),
           ),
-          ?_showButton
+          ?_showSuffixCount
               ? SizedBox(
                   width: 24,
                   height: 24,
@@ -177,7 +244,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         InputDecoration(
           helperText: helperText,
           labelText: labelText,
-          suffixIcon: _showButton ? _suffixCount(labelText, index) : null,
+          suffixIcon: _showSuffixCount ? _suffixCount(labelText, index) : null,
           suffixIconConstraints: const BoxConstraints(
             minHeight: 26,
             minWidth: 26,
@@ -265,7 +332,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     return rows;
   }
 
-  _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context) {
     final addColor = _canAddMoreGroups ? kPrimaryAccentColor : kGrayColor;
 
     return Row(
@@ -394,7 +461,7 @@ class FieldGroupConfig {
 
   FieldGroupConfig({
     required this.key,
-    required this.type,
+    this.type = TextInputType.none,
     required this.label,
     this.isTextArea = false,
     this.minLines,
@@ -472,3 +539,27 @@ class FieldGroup {
     }
   }
 }
+
+/*Iterable<Widget> _buildFieldGroups2() {
+    return _fieldGroups.asMap().entries.expand((entry) {
+      final index = entry.key + 1;
+      final group = entry.value;
+
+      // 1️⃣ Build widgets
+      // Create list of TextFields for this group
+      final fields = _fieldsConfig
+          .map(
+            (config) => config.isHidden
+                ? null
+                : _buildFieldWidget(group, config, index),
+          )
+          // 2️⃣ Remove nulls (hidden fields)
+          .where((e) => e != null)
+          .cast<Widget>()
+          .toList();
+
+      // 3️⃣ Apply pairing logic
+      // Return a single field if there's only one, otherwise group fields into pairs
+      return fields.length <= 1 ? fields : _groupByTwo(fields);
+    });
+  }*/

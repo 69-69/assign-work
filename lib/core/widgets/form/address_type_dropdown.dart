@@ -15,14 +15,14 @@ class AddressTypeDropdown extends StatelessWidget {
     this.maxItems,
   });
 
+  get _allItems => AddressTypeUtil.toStringList();
+
   @override
   Widget build(BuildContext context) {
-    final allItems = AddressTypeUtil.toStringList();
-
     // Get the first 'maxItems' items from the list, else return all items
     final items = maxItems != null
-        ? allItems.take(maxItems!).toList()
-        : allItems;
+        ? _allItems.take(maxItems! + 1).toList()
+        : _allItems;
 
     return StaticDropdown<String>(
       label: 'Address Type',

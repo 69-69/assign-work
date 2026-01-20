@@ -50,6 +50,8 @@ class CacheData extends HiveObject {
 
   bool get isNotEmpty => !isEmpty;
 
+  Map<String, dynamic> toMap() => {'id': id, 'scopeId': scopeId, 'data': data};
+
   /*bool get isEmpty =>
       id.isNullOrEmpty ||
       scopeId.isNullOrEmpty ||

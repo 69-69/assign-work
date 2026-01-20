@@ -6,9 +6,10 @@ class HorizontalDivider extends StatelessWidget {
   const HorizontalDivider({
     super.key,
     this.width,
-    this.color,
     this.space,
     this.orText,
+    this.divColor,
+    this.txtColor,
     this.thickness = 1,
     this.isORSeparator = false,
   });
@@ -24,7 +25,8 @@ class HorizontalDivider extends StatelessWidget {
 
   /// [width] Width of the line in double [default: 1.0]
   final double? width;
-  final Color? color;
+  final Color? divColor;
+  final Color? txtColor;
   final double? space;
 
   @override
@@ -32,13 +34,13 @@ class HorizontalDivider extends StatelessWidget {
     if (isORSeparator) {
       return _buildORSeparator(context);
     }
-    final cl = color ?? context.onPrimaryContainer.toAlpha(0.2);
+    final cl = divColor ?? context.onPrimaryContainer.toAlpha(0.2);
 
     return width != null ? _line(cl, context) : _divider(cl);
   }
 
-  Divider _divider(Color color) =>
-      Divider(color: color, thickness: thickness, height: space);
+  Divider _divider([Color? color]) =>
+      Divider(color: divColor ?? color, thickness: thickness, height: space);
 
   Container _line(Color color, BuildContext context) => Container(
     color: color,
@@ -53,15 +55,15 @@ class HorizontalDivider extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: space ?? 0),
       child: Row(
         children: <Widget>[
-          const Expanded(child: Divider(thickness: 1)),
+          Expanded(child: _divider()),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               orText ?? 'OR',
-              style: context.textTheme.bodyMedium?.copyWith(color: color),
+              style: context.textTheme.bodyMedium?.copyWith(color: txtColor),
             ),
           ),
-          const Expanded(child: Divider(thickness: 1)),
+          Expanded(child: _divider()),
         ],
       ),
     );

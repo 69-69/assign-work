@@ -12,7 +12,7 @@ enum WarehouseType {
 }
 
 extension WarehouseTypeExtension on WarehouseType {
-  String get getdescription => EnumUtil<WarehouseType>(this).getName;
+  String get getName => EnumUtil<WarehouseType>(this).getName;
 }
 
 /// [Warehouse] Purpose: Represents a physical storage place (Main, Store, Transit, etc.)
@@ -39,7 +39,7 @@ class Warehouse extends Equatable {
   final DateTime updatedAt;
 
   Warehouse({
-    required this.id,
+    this.id = '',
     required this.storeNumber,
     required this.code,
     required this.description,
@@ -64,7 +64,7 @@ class Warehouse extends Equatable {
         code: map['code'] ?? '',
         description: map['description'] ?? '',
         type: fromString(map['type']),
-        address: map['address'] ?? AddressInfo.empty,
+        address: AddressInfo.fromMap(map['address'] as Map<String, dynamic>),
         isActive: map['isActive'] ?? false,
         isDefault: map['isDefault'] ?? false,
         isBinManaged: map['isBinManaged'] ?? false,
@@ -83,7 +83,7 @@ class Warehouse extends Equatable {
     'code': code,
     'description': description,
     'type': getType,
-    'address': address,
+    'address': address.toMap(),
     'isActive': isActive,
     'isDefault': isDefault,
     'isBinManaged': isBinManaged,
@@ -127,7 +127,7 @@ class Warehouse extends Equatable {
 
   bool get isNotEmpty => !isEmpty;
 
-  String get getType => type.getdescription;
+  String get getType => type.getName;
 
   // filter/search
   bool filterByAny(String term) =>
@@ -201,22 +201,20 @@ class Warehouse extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
+    getType.toTitle,
     code,
-    description,
-    getType,
     isDefault ? 'Yes' : 'No',
     isActive ? 'Yes' : 'No',
     isBinManaged ? 'Yes' : 'No',
-    createdBy ?? '',
-    updatedBy ?? '',
+    createdBy.toTitle ?? '',
+    updatedBy.toTitle ?? '',
   ];
 
   static List<String> get dataTableHeader => [
     'ID',
-    'Store Number',
-    'WH Code',
-    'description',
+    'Store',
     'Type',
+    'Code',
     'Default',
     'Active',
     'Bin Managed',

@@ -30,7 +30,7 @@ class AddressTypeUtil {
 /// Address Class [Address]
 class AddressInfo extends Equatable {
   final String id;
-  final String address;
+  final String street;
   final String city;
   final String state;
   final String postalCode;
@@ -40,12 +40,12 @@ class AddressInfo extends Equatable {
   const AddressInfo({
     this.id = '',
     required this.type,
-    required this.address,
+    required this.street,
     required this.city,
     required this.state,
     required this.postalCode,
     this.country = '',
-  }); // Set default value
+  });
 
   /// fromFirestore / fromJson Function [AddressInfo.fromMap]
   factory AddressInfo.fromMap(Map<String, dynamic> map, {String? id}) {
@@ -56,7 +56,7 @@ class AddressInfo extends Equatable {
       state: map['state'] ?? '',
       postalCode: map['postalCode'] ?? '',
       country: map['country'] ?? '',
-      address: map['address'] ?? '',
+      street: map['street'] ?? '',
     );
   }
 
@@ -76,7 +76,7 @@ class AddressInfo extends Equatable {
       'state': state,
       'country': country,
       'postalCode': postalCode,
-      'address': address,
+      'street': street,
       'type': getType,
     };
 
@@ -89,7 +89,7 @@ class AddressInfo extends Equatable {
   /// A singleton instance representing an empty/default Address.
   /// Used as a fallback when no matching Address is found.
   static AddressInfo get empty => AddressInfo(
-    address: '',
+    street: '',
     city: '',
     state: '',
     postalCode: '',
@@ -110,7 +110,7 @@ class AddressInfo extends Equatable {
     String? state,
     String? postalCode,
     String? country,
-    String? address,
+    String? street,
     AddressType? type,
   }) {
     return AddressInfo(
@@ -119,7 +119,7 @@ class AddressInfo extends Equatable {
       state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
-      address: address ?? this.address,
+      street: street ?? this.street,
       type: type ?? this.type,
     );
   }
@@ -132,13 +132,13 @@ class AddressInfo extends Equatable {
     country,
     postalCode,
     type,
-    address,
+    street,
   ];
 
   List<String> get itemAsList => [
     id,
     getType,
-    address,
+    street,
     city,
     state,
     country,
@@ -147,12 +147,12 @@ class AddressInfo extends Equatable {
 
   static List<String> get dataHeader => const [
     'ID',
+    'Type',
     'City',
     'State',
-    'Country',
+    'Street',
     'Postal Code',
-    'Type',
-    'Address',
+    'Country',
   ];
 
   bool filterByAny(String keyword) => itemAsList.filterAny(keyword);

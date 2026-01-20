@@ -75,16 +75,18 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
+    final isUpdate = _serverItem?.isNotEmpty == true;
+    final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
     // Case 1: Update existing ItemMaster
-    if (_isFormValid && (_serverItem?.isNotEmpty ?? false)) {
+    if (isValid && isUpdate) {
       _updatedItemMaster();
       return;
     }
 
     // Case 2: Form validation or empty ItemMaster
-    if (!_isFormValid && _itemMaster.isNullOrEmpty) {
+    if (!isValid && _itemMaster.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }

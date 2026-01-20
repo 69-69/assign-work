@@ -14,8 +14,10 @@
 -------------------------
 
 - @Continue
+    - Add this to all parent Bloc: add(_InventoryLoadError('Error saving data: $e'));
     - Generate WH, BIN, Loc code not working
     - WMS forms processing
+    - 
     - Inventory System
       - ~~Item Master Updates~~
       - Stock management
@@ -34,7 +36,7 @@
 ```shell
 git init
 git add .
-git commit -m "Warehouse partially completed"
+git commit -m "2: Warehouse partially completed"
 git branch -M main
 git push -u origin main
 ```

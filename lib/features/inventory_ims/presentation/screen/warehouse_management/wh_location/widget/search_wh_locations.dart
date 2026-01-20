@@ -52,7 +52,8 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),
-      itemAsString: (loc) => '${loc.code} - ${loc.description}',
+      itemAsString: (loc) =>
+          '${loc.code.toUpperAll} - ${loc.description.toTitle}',
       onChanged: (loc) => widget.onChanged(loc!.id, loc.code, loc.description),
       validator: (loc) => loc == null ? _labelText : null,
     );

@@ -52,7 +52,8 @@ class _SearchWarehousesState extends State<SearchWarehouses> {
       asyncItems: (String filter, loadProps) async =>
           await _loadWarehouses(filter: filter),
       filterFn: (ware, filter) => _filterWarehouse(filter, ware),
-      itemAsString: (ware) => '${ware.code} - ${ware.description}',
+      itemAsString: (ware) =>
+          '${ware.code.toUpperAll} - ${ware.description.toTitle}',
       onChanged: (ware) =>
           widget.onChanged(ware!.id, ware.code, ware.description),
       validator: (ware) => ware == null ? _labelText : null,

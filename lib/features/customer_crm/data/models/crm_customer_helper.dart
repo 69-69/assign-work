@@ -133,7 +133,7 @@ class CrmCustomerUtil {
   static bool isStatus(String value) =>
       EnumUtil.isValid<CustomerStatus>(CustomerStatus.values, value, false);
 
-  /// [fromString] Converts String/Label to enum value.
+  /// Converts String/Label to enum value.
   static CustomerStatus statusFromString(String? value) =>
       EnumUtil.fromString<CustomerStatus>(CustomerStatus.values, value);
 

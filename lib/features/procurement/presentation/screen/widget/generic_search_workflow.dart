@@ -70,7 +70,11 @@ class _SearchWorkflowState<T> extends State<SearchWorkflow<T>> {
         ),
         HorizontalDivider(),
         _buildResults(),
-        HorizontalDivider(isORSeparator: true, space: 16, color: kDangerColor),
+        HorizontalDivider(
+          isORSeparator: true,
+          space: 16,
+          divColor: kDangerColor,
+        ),
         SizedBox(
           width: double.infinity,
           child: context.outlinedButton(

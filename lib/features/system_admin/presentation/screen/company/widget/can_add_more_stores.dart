@@ -4,7 +4,6 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/data/data_sources/local/auth_cache_service.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/refresh_entire_app.dart';
@@ -39,11 +38,18 @@ extension CompanyStoreBranches on BuildContext {
     return state.data.length;
   }
 
+  Future<bool> get _confirmUserSwitch async => await confirmAction<bool>(
+    const Text(
+      'Switching stores will hide data from the previous store.\n\nDo you want to continue?',
+    ),
+    title: 'Confirm Store Switch',
+    onAcceptLabel: 'Switch Store',
+    onRejectLabel: 'Cancel',
+  );
+
   Future<void> onSwitchStore(String storeNumber, {String location = ''}) async {
     // Confirm the action
-    final isConfirmed = await confirmUserActionDialog(
-      onAcceptLabel: 'Switch Store',
-    );
+    final isConfirmed = await _confirmUserSwitch;
 
     if (mounted && isConfirmed) {
       final msg =

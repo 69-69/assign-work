@@ -398,7 +398,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
       children: [
         _buildHeader(context),
         if (shouldExpand) ...[
-          const HorizontalDivider(color: kGrayBlueColor, thickness: 4),
+          const HorizontalDivider(divColor: kGrayBlueColor, thickness: 4),
           _buildListTile(
             context,
             title: 'SUB.: ${context.getSubscriptionName}',
@@ -407,7 +407,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           const HorizontalDivider(
             thickness: 0.4,
             space: 1,
-            color: kGrayBlueColor,
+            divColor: kGrayBlueColor,
           ),
           _buildListTile(
             context,
@@ -418,7 +418,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
           const HorizontalDivider(
             thickness: 0.4,
             space: 1,
-            color: kGrayBlueColor,
+            divColor: kGrayBlueColor,
           ),
           _buildListTile(
             context,

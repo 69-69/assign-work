@@ -88,7 +88,9 @@ extension ShowBottomSheet<T> on BuildContext {
         tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
         style: IconButton.styleFrom(
           padding: EdgeInsets.zero,
-          shape: LinearBorder.none,
+          shape: ContinuousRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor)
               .toAlpha(0.4),
         ),

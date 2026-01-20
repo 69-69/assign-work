@@ -211,7 +211,7 @@ class _WorkspaceInfoCard extends StatelessWidget {
               HorizontalDivider(
                 width: context.screenWidth * 0.01,
                 thickness: 4,
-                color: kLightBlueColor,
+                divColor: kLightBlueColor,
               ),
               _buildListTile(
                 context,

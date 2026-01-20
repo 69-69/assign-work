@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -70,16 +70,19 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
-    setState(() => _isSubmitting = true);
+    final isUpdate = _serverItem?.isNotEmpty == true;
+    final isValid = _isFormValid;
+    // setState(() => _isSubmitting = true);
 
     // Case 1: Update existing Warehouse
-    if (_isFormValid && (_serverItem?.isNotEmpty ?? false)) {
+    if (isValid && isUpdate) {
       _updatedWarehouse();
+      prettyPrint('updated', isUpdate);
       return;
     }
 
-    // Case 2: Form validation or empty Warehouse
-    if (!_isFormValid && _warehouseData.isNullOrEmpty) {
+    // Case 2: Invalid form
+    if (!isValid && _warehouseData.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -95,6 +98,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
       createdBy: _employeeName,
     );
 
+    prettyPrint('adding-01', _warehouseCode);
     _bloc.add(AddInventory<Warehouse>(data: newData));
   }
 
@@ -141,7 +145,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
       case InventoryUpdated<Warehouse>(message: var msg):
         _showAlert(msg ?? note);
       case InventoryError<Warehouse>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong. Kindly try again');
       case _: // no action
     }
   }
@@ -179,21 +183,6 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
               '\nName, type, operational status, and default settings for this warehouse.',
           children: [_buildWHBasic()],
         ),
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Warehouse Address',
-          subTitle:
-              '\nStreet, city, postal code, and physical address for this warehouse location.',
-          children: [_buildAddresses()],
-        ),
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. Warehouse Capacity',
-          subTitle:
-              '\nMaximum items and weight this warehouse location can hold.',
-          children: [_buildWHCapacity()],
-        ),
-
         const SizedBox(height: 20),
         context.confirmableActionButton(
           onPressed: _onSubmit,
@@ -209,55 +198,37 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
 
   DynamicTextFields _buildWHBasic() {
     return DynamicTextFields(
-      initialData: [{}],
+      showButton: _isServerNull,
+      initialData: [
+        {...?_serverItem?.toMap(), ...?_serverItem?.address.toMap()},
+      ],
       fieldsConfig: WarehouseFormFields.wmsFields(),
       onChanged: (List<Map<String, dynamic>> data) {
         if (data.isNullOrEmpty) return;
-        final address = Warehouse.fromMap(data.first);
 
-        _warehouseData = _warehouseData.copyWith(
-          description: address.description,
-          type: address.type,
-          isActive: address.isActive,
-          isDefault: address.isDefault,
-          isBinManaged: address.isBinManaged,
-          maxItems: address.maxItems,
-          maxWeight: address.maxWeight,
-          address: address.address,
-        );
-      },
-    );
-  }
-
-  DynamicTextFields _buildWHCapacity() {
-    return DynamicTextFields(
-      initialData: [{}],
-      fieldsConfig: WarehouseFormFields.whCapacityFields,
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (data.isNullOrEmpty) return;
-        final address = Warehouse.fromMap(data.first);
-
-        _warehouseData = _warehouseData.copyWith(
-          maxItems: address.maxItems,
-          maxWeight: address.maxWeight,
-        );
-      },
-    );
-  }
-
-  // Warehouse Physical Address
-  DynamicTextFields _buildAddresses() {
-    return DynamicTextFields(
-      initialData: [{}],
-      fieldsConfig: WarehouseFormFields.addressFields,
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (data.isNullOrEmpty) return;
-        final address = AddressInfo.fromMap({
-          ...data.first,
-          'type': 'warehouse',
+        final map = Map<String, dynamic>.from(data.first);
+        final wh = Warehouse.fromMap({
+          ...map,
+          'address': {
+            'type': 'warehouse',
+            'city': map['city'],
+            'street': map['street'],
+            'postalCode': map['postalCode'],
+            'state': map['state'],
+          },
         });
 
-        _warehouseData = _warehouseData.copyWith(address: address);
+        _warehouseData = _warehouseData.copyWith(
+          description: wh.description,
+          type: wh.type,
+          isActive: wh.isActive,
+          isDefault: wh.isDefault,
+          isBinManaged: wh.isBinManaged,
+          maxItems: wh.maxItems,
+          maxWeight: wh.maxWeight,
+          address: wh.address,
+        );
+        prettyPrint('this-is-map', _warehouseData.toMap());
       },
     );
   }

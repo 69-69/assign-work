@@ -52,7 +52,8 @@ class _SearchWHBinState extends State<SearchWHBin> {
       asyncItems: (String filter, loadProps) async =>
           await _loadWHBins(filter: filter),
       filterFn: (bin, filter) => _filterWHBin(filter, bin),
-      itemAsString: (bin) => '${bin.code} - ${bin.description}',
+      itemAsString: (bin) =>
+          '${bin.code.toUpperAll} - ${bin.description.toTitle}',
       onChanged: (bin) => widget.onChanged(bin!.id, bin.code, bin.description),
       validator: (bin) => bin == null ? _labelText : null,
     );

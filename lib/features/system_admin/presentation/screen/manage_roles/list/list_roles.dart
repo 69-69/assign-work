@@ -154,7 +154,7 @@ class _ListRolesState extends State<ListRoles> {
   bool _guardPrimaryRole(Role role) {
     if (!role.canBeDeleted) {
       context.showAlertOverlay(
-        '[ ${role.name.toUpperAll} ] Role is associated with the business owner and cannot be deleted.',
+        'Default Role is associated with ${role.name.toUpperAll} and cannot be deleted.',
         bgColor: kDangerColor,
       );
       return false;

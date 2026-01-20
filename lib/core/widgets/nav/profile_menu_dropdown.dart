@@ -288,7 +288,7 @@ class ProfileMenuDropdown extends StatelessWidget {
           const HorizontalDivider(
             thickness: 0.4,
             space: 1,
-            color: kGrayBlueColor,
+            divColor: kGrayBlueColor,
           ),
           _buildListTile(
             context,
@@ -299,7 +299,7 @@ class ProfileMenuDropdown extends StatelessWidget {
           const HorizontalDivider(
             thickness: 0.4,
             space: 1,
-            color: kGrayBlueColor,
+            divColor: kGrayBlueColor,
           ),
 
           _buildListTile(

@@ -198,7 +198,7 @@ class Company extends Equatable {
     altPhone,
     email,
     faxNumber,
-    addresses.first.address.toSentence,
+    addresses.first.street.toSentence,
     createdBy.toTitle,
     getCreatedAt,
     updatedBy.toTitle,

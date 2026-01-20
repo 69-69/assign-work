@@ -74,6 +74,16 @@ extension ScaffoldSnackBar on BuildContext {
     final overlay = Overlay.of(this);
     bool isDismissed = false; // Track dismissal
 
+    // If message contains error, use red color, else use green color
+    final isError = [
+      'error',
+      'required',
+      'invalid',
+      'incorrect',
+      'failed',
+      'not found',
+    ].any((k) => message.filterAny(k));
+
     void handleClose() {
       if (isDismissed) return; // Prevent double removal
       isDismissed = true;
@@ -86,6 +96,7 @@ extension ScaffoldSnackBar on BuildContext {
     void dismissOverlay() {
       if (isDismissed) return; // Prevent double dismiss
       handleClose();
+      if (isError) return; // Prevent dialog closing if snackBar is error
       if (onCallback != null && Navigator.of(this).canPop()) {
         onCallback();
       }
@@ -102,16 +113,6 @@ extension ScaffoldSnackBar on BuildContext {
         Positioned(top: 80.0, left: 20.0, right: 20.0, child: child);
     atBottom(Widget child) =>
         Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
-
-    // If message contains error, use red color, else use green color
-    final isError = [
-      'error',
-      'required',
-      'invalid',
-      'incorrect',
-      'failed',
-      'not found',
-    ].any((k) => message.filterAny(k));
 
     bgColor = bgColor ?? (isError ? kDangerColor : kDarkSuccessColor);
 

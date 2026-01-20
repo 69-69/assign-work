@@ -242,12 +242,12 @@ class FirestoreRepository extends FirestoreHelper {
   ) async {
     DocumentReference<Map<String, dynamic>> docRef;
 
-    // If 'id' field exists and it's invalid (null or empty), manually generate an ID.
+    /// If 'id' field exists and it's invalid (null or empty), manually generate an ID.
     if (data.containsKey('id') && (data['id'] == null || data['id'].isEmpty)) {
-      // Create a reference with Firestore auto-generated ID
+      /// Create a reference with Firestore auto-generated ID
       docRef = _resolvedCollectionRef.doc();
       data['id'] = docRef.id; // Assign the generated ID to the data map
-      await docRef.set(data);
+      await docRef.set(data); // Save the data with the generated ID
     } else {
       docRef = await _resolvedCollectionRef.add(data);
     }

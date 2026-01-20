@@ -346,8 +346,8 @@ class ItemMaster extends Equatable {
     'name': name,
     'description': description,
     'category': category,
-    'itemType': itemType.getName,
-    'baseUom': baseUom.getName,
+    'itemType': getType,
+    'baseUom': getUOM,
     'isActive': isActive,
     'isStockItem': isStockItem,
     'isPurchasable': isPurchasable,
@@ -361,6 +361,10 @@ class ItemMaster extends Equatable {
     'updatedBy': updatedBy,
     'history': history.map((e) => e.toMap()).toList(),
   };
+
+  String get getUOM => baseUom.getName;
+
+  String get getType => itemType.getName;
 
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
