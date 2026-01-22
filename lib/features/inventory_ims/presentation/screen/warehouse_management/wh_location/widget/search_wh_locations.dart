@@ -38,7 +38,12 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
   Future _loadWHLocations({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final whLocations = await GetWHLocations.byAnyTerm(filterBy);
+    // If filter contains wildCard/asterisk '*', load all Locations
+    // Else load Locations that match the filter
+    final whLocations = await (filterBy!.contains('*')
+        ? GetWHLocations.load()
+        : GetWHLocations.byAnyTerm(filterBy));
+
     if (mounted && initial.hasValue && whLocations.hasValue) {
       setState(() => _whLocation = whLocations.first);
     }
@@ -50,7 +55,8 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
     return AsyncSearchDropdown<WHLocation>(
       selectedItem: _whLocation,
       labelText: _labelText,
-      helperText: 'Functional area/subdivision within the warehouse',
+      // helperText: 'Functional area/subdivision within the warehouse',
+      helperText: 'Enter * for all Locations, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),

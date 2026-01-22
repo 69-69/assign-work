@@ -23,12 +23,21 @@ class SearchRFQs extends StatelessWidget {
   Widget build(BuildContext context) {
     return SearchWorkflow<RequestForQuote>(
       searchLabel: 'Search RFQ',
-      helperText: 'e.g. RFQ number, supplier or department',
+      // helperText: 'e.g. RFQ number, supplier or department',
+      helperText: 'Enter * for all RFQ, or type to search',
       searchButtonText: 'Find RFQ',
       emptyResultText: 'No RFQs available to convert to a PO',
       actionButtonText: actionButtonText,
 
-      onSearch: (term) => GetRequestForQuote.byAnyTerm(term),
+      onSearch: (term) async {
+        // If filter contains wildCard/asterisk '*', load all Request For Quotes
+        // Else load Request For Quotes that match the filter
+        final warehouses = await (term.contains('*')
+            ? GetRequestForQuote.load()
+            : GetRequestForQuote.byAnyTerm(term));
+
+        return warehouses;
+      },
 
       onValueSelected: (rfq) => onValueChanged(rfq.toMap()),
 

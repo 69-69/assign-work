@@ -42,9 +42,14 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Future _loadCustomers({String? filter}) async {
-    final initial = widget.initialValue ?? '';
-    final customers = await GetAllCustomers.byAnyTerm(filter ?? initial);
-    if (initial.hasValue && customers.hasValue) {
+    final filterBy = filter ?? widget.initialValue ?? '';
+    // If filter contains wildCard/asterisk '*', load all customers
+    // Else load customers that match the filter
+    final customers = await (filterBy.contains('*')
+        ? GetAllCustomers.load()
+        : GetAllCustomers.byAnyTerm(filterBy));
+
+    if (filterBy.hasValue && customers.hasValue) {
       setState(() => _customer = customers.first);
     }
     return customers;
@@ -64,6 +69,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
     return AsyncSearchDropdown<Customer>(
       selectedItem: _customer,
       labelText: 'Select Customer...',
+      helperText: 'Enter * for all customers, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadCustomers(filter: filter),
       filterFn: (customer, filter) => _filterCustomer(filter, customer),

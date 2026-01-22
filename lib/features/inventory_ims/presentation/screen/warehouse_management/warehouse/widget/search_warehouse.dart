@@ -37,7 +37,12 @@ class _SearchWarehousesState extends State<SearchWarehouses> {
   Future _loadWarehouses({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final warehouses = await GetWarehouses.byAnyTerm(filterBy);
+    // If filter contains wildCard/asterisk '*', load all warehouses
+    // Else load warehouses that match the filter
+    final warehouses = await (filterBy!.contains('*')
+        ? GetWarehouses.load()
+        : GetWarehouses.byAnyTerm(filterBy));
+
     if (mounted && initial.hasValue && warehouses.hasValue) {
       setState(() => _warehouse = warehouses.first);
     }
@@ -49,7 +54,7 @@ class _SearchWarehousesState extends State<SearchWarehouses> {
     return AsyncSearchDropdown<Warehouse>(
       selectedItem: _warehouse,
       labelText: _labelText,
-      helperText: 'The physical warehouse',
+      helperText: 'Enter * for all warehouses, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadWarehouses(filter: filter),
       filterFn: (ware, filter) => _filterWarehouse(filter, ware),

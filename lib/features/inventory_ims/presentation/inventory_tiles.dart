@@ -121,22 +121,24 @@ extension InventoryTiles on dynamic {
             'Define physical storage facilities such as Main, Store, or Transit warehouses.',
       },
       {
-        'label': 'Location',
+        'hasSplit': true,
+        'label': 'Storage . Location',
         'icon': Icons.view_kanban,
         'route': RouteNames.warehouseLocation,
         'param': {},
         'access': _getName(InventoryPermission.manageWHLocation),
         'description':
-            'Define sub-areas within a warehouse, such as racks, aisles, or shelves.',
+            'Define sub-levels within a warehouse, such as racks, aisles, or shelves.',
       },
       {
-        'label': 'Bin',
+        'hasSplit': true,
+        'label': 'Storage . Bin',
         'icon': Icons.inbox,
         'route': RouteNames.warehouseBin,
         'param': {},
         'access': _getName(InventoryPermission.manageWHBin),
         'description':
-            'Define precise storage bins inside a location for accurate stock placement.',
+            'Define precise storage slots inside a location for accurate stock placement.',
       },
 
       // ───────────── Inbound Execution ─────────────

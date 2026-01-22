@@ -1,17 +1,24 @@
+import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
+import 'package:assign_erp/core/util/extensions/main_modules.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/check_for_app_update.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/nav/bread_crumbs.dart';
 import 'package:assign_erp/core/widgets/nav/breadcrumb_service.dart';
 import 'package:assign_erp/core/widgets/nav/notification_dropdown.dart';
 import 'package:assign_erp/core/widgets/nav/profile_menu_dropdown.dart';
 import 'package:assign_erp/core/widgets/search/spotlight_search_bar.dart';
+import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
 import 'package:assign_erp/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class CustomScaffold extends StatefulWidget {
   final PreferredSizeWidget? appBar;
@@ -72,8 +79,12 @@ class _CustomScaffoldState extends State<CustomScaffold> {
       appBar: _buildAppBar(),
       body: _isSearchActive ? _buildBodyWithSearchOverlay() : _buildBody(),
       bottomNavigationBar: _buildBottomNavigationBar(),
-      floatingActionButtonLocation: widget.floatingActionBtnLocation,
-      floatingActionButton: widget.floatingActionButton,
+      floatingActionButtonLocation:
+          widget.floatingActionBtnLocation ??
+          FloatingActionButtonLocation.miniEndFloat,
+      floatingActionButton:
+          widget.floatingActionButton ??
+          _ShowChatSupport.chatSupportBtn(context),
       drawer: widget.drawer,
     );
   }
@@ -348,6 +359,49 @@ class _Title extends StatelessWidget {
         // textScaler: TextScaler.linear(context.textScaleFactor),
       ),
     );
+  }
+}
+
+class _ShowChatSupport {
+  /// Floating action button that opens Live Chat Support.
+  /// This feature is available to Tenants only.
+  static Widget chatSupportBtn(BuildContext context) {
+    return FittedBox(
+      child: context.toolbarButton(
+        label: MainModuleId.support.getLabel,
+        bgColor: context.onSurfaceColor,
+        icon: MainModuleId.support.getIcon,
+        onPressed: () async => await checkLiveChatSupportAccess(context),
+        tooltip: 'Chat live with our support agents and experts, 24/7',
+      ),
+    );
+    /*return context.buildFloatingBtn(
+      MainModuleId.support.getLabel,
+      icon: MainModuleId.support.getIcon,
+      bgColor: context.onSurfaceColor,
+      onPressed: () async => await checkLiveChatSupportAccess(context),
+      tooltip: 'Chat live with our support agents and experts, 24/7',
+    );*/
+  }
+
+  /// Verifies whether the current user has access to Live Chat Support.
+  /// Non-tenant users are redirected to the Agent tab for assistance.
+  static Future<void> checkLiveChatSupportAccess(BuildContext context) async {
+    final role = context.workspace?.role;
+
+    if (role != WorkspaceRole.tenant) {
+      await context.confirmAction<bool>(
+        const Text(
+          'This feature is available to tenants only. Please use the AGENT tab for assistance.',
+        ),
+        title: 'Live Chat Support',
+        onAcceptLabel: 'Got it',
+        onRejectLabel: 'Cancel',
+      );
+      return;
+    }
+
+    context.goNamed(RouteNames.liveChatSupport);
   }
 }
 

@@ -283,6 +283,8 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
       isMultiSelect: true,
       selectedMultiItems: _taxes,
       labelText: '$_labelText...',
+      helperText:
+          'If Tax category is not listed, please contact your system admin.',
       asyncItems: (String filter, loadProps) async =>
           await _loadTaxes(filter: filter),
       filterFn: _filterTax,
@@ -298,8 +300,6 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
           (_) => _handleNoDataFound(context),
         );
       },
-      helperText:
-          'If Tax category is not listed, please contact your system admin.',
     );
   }
 

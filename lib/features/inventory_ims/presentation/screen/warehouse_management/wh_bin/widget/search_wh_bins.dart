@@ -37,11 +37,16 @@ class _SearchWHBinState extends State<SearchWHBin> {
   Future _loadWHBins({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final whLocations = await GetWHBins.byAnyTerm(filterBy);
-    if (mounted && initial.hasValue && whLocations.hasValue) {
-      setState(() => _whBin = whLocations.first);
+    // If filter contains wildCard/asterisk '*', load all Bins
+    // Else load Bins that match the filter
+    final whBins = await (filterBy!.contains('*')
+        ? GetWHBins.load()
+        : GetWHBins.byAnyTerm(filterBy));
+
+    if (mounted && initial.hasValue && whBins.hasValue) {
+      setState(() => _whBin = whBins.first);
     }
-    return whLocations;
+    return whBins;
   }
 
   @override
@@ -49,7 +54,8 @@ class _SearchWHBinState extends State<SearchWHBin> {
     return AsyncSearchDropdown<WHBin>(
       selectedItem: _whBin,
       labelText: _labelText,
-      helperText: 'The smallest physical storage unit/slot inside a location',
+      helperText: 'Enter * for all Bins, or type to search',
+      // helperText: 'The smallest physical storage unit/slot inside a location',
       asyncItems: (String filter, loadProps) async =>
           await _loadWHBins(filter: filter),
       filterFn: (bin, filter) => _filterWHBin(filter, bin),

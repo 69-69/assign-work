@@ -27,9 +27,14 @@ class _SearchCategoryState extends State<SearchCategory> {
   }
 
   Future _loadCategories() async {
-    final initial = widget.initialValue ?? '';
-    final categories = await GetProductCategory.load();
-    if (initial.hasValue && categories.hasValue) {
+    final filterBy = widget.initialValue ?? '';
+    // If filter contains wildCard/asterisk '*', load all warehouses
+    // Else load warehouses that match the filter
+    final categories = await (filterBy.contains('*')
+        ? GetProductCategory.load()
+        : GetProductCategory.byAnyTerm(filterBy));
+
+    if (filterBy.hasValue && categories.hasValue) {
       setState(() => _category = categories.first);
     }
     return categories;
@@ -40,6 +45,7 @@ class _SearchCategoryState extends State<SearchCategory> {
     return AsyncSearchDropdown<Category>(
       selectedItem: _category,
       labelText: 'Select Category...',
+      helperText: 'Enter * for all Categories, or type to search',
       asyncItems: (String filter, loadProps) async => await _loadCategories(),
       filterFn: (category, filter) =>
           _filterCategory(filter, category, context),

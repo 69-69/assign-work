@@ -1,9 +1,10 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/screen/workspace/update/update_workspace_password.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:flutter/material.dart';
@@ -29,13 +30,22 @@ class SetupScreen extends StatelessWidget {
     return CustomScaffold(
       title: systemAdminAppTitle.toUpperAll,
       body: _buildBody(context),
-      floatingActionBtnLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: context.buildFloatingBtn(
+      floatingActionButton: FittedBox(
+        child: context.toolbarButton(
+          label: 'Change Workspace Password',
+          icon: Icons.workspaces,
+          bgColor: kDangerColor,
+          onPressed: () async => await context.openUpdateWorkspacePopUp(),
+        ),
+      ),
+    );
+    /* floatingActionBtnLocation: FloatingActionButtonLocation.startFloat,
+      context.buildFloatingBtn(
         'Change Workspace Password',
         icon: Icons.workspaces,
         onPressed: () async => await context.openUpdateWorkspacePopUp(),
       ),
-    );
+    );*/
   }
 
   CustomTab _buildBody(BuildContext context) {

@@ -37,7 +37,12 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
   Future _loadDepartments({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final departments = await GetDepartments.byAnyTerm(filterBy);
+    // If filter contains wildCard/asterisk '*', load all Departments
+    // Else load Departments that match the filter
+    final departments = await (filterBy!.contains('*')
+        ? GetDepartments.load()
+        : GetDepartments.byAnyTerm(filterBy));
+
     if (mounted && initial.hasValue && departments.hasValue) {
       setState(() => _department = departments.first);
     }
@@ -49,6 +54,7 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
     return AsyncSearchDropdown<Department>(
       selectedItem: _department,
       labelText: _labelText,
+      helperText: 'Enter * for all Departments, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadDepartments(filter: filter),
       filterFn: (depart, filter) => _filterDepartment(filter, depart),

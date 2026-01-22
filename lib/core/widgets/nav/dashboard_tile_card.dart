@@ -1,4 +1,3 @@
-import 'package:assign_erp/config/routes/route_names.dart';
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/dashboard_model.dart';
@@ -6,12 +5,9 @@ import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/delayed_tooltip.dart';
-import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/nav/dashboard_metrics.dart';
 import 'package:assign_erp/core/widgets/nav/side_nav.dart';
 import 'package:assign_erp/features/access_control/presentation/cubit/access_control_cubit.dart';
-import 'package:assign_erp/features/auth/data/role/workspace_role.dart';
-import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/home/data/permission/main_permission.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -210,7 +206,7 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         ? widget.canAccess!(tile.access)
         : _canAccess(tile.access, context);
 
-    final viewCard = tile.label.contains('logo')
+    final viewCard = tile.label.filterAny('logo')
         ? _buildLogoCard(context, tile)
         : _buildIconCard(tile, context);
 
@@ -252,12 +248,6 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
 
     return widget.onTap ??
         () async {
-          final shouldStop = await checkLiveChatSupportAccess(
-            context,
-            tile.route,
-          );
-          if (shouldStop) return;
-
           if (!context.mounted) return;
 
           if (tile.param.entries.isEmpty) {
@@ -358,25 +348,6 @@ class _DashboardTileCardState extends State<DashboardTileCard> {
         ),
       ],
     );
-  }
-
-  Future<bool> checkLiveChatSupportAccess(
-    BuildContext context,
-    String route,
-  ) async {
-    final role = context.workspace?.role;
-
-    if (route == RouteNames.liveChatSupport && role != WorkspaceRole.tenant) {
-      await context.confirmAction<bool>(
-        Text('Please use Agent Support/Chat for assistance.'),
-        title: "Live Chat Support",
-        onAcceptLabel: "Ok",
-        onRejectLabel: "Cancel",
-      );
-      return true; // prompt was shown; further action should stop
-    }
-
-    return false; // no prompt; proceed normally
   }
 
   ListTile _buildListTile(String title, BuildContext context, String subTitle) {

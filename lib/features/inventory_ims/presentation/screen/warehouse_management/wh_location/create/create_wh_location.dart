@@ -1,9 +1,11 @@
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -24,7 +26,7 @@ extension WHLocationExtensions on BuildContext {
     child: BottomSheetScaffold(
       title: serverItem != null
           ? '${serverItem.code.toUpperAll} - ${serverItem.description.toTitle}'
-          : 'New Location Storage',
+          : 'New Location Zone',
       body: _CreateWHLocationForm(
         serverItem: serverItem,
         existingCodes: existingCodes,
@@ -188,6 +190,12 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
               '\nOperational details and settings for managing this location storage.',
           children: [_buildWHBasic()],
         ),
+        FormGroupCard(
+          title: 'Configuration Options',
+          subTitle:
+              '\nOperational details and settings for managing this location storage.',
+          children: [_buildChecks()],
+        ),
 
         const SizedBox(height: 20),
         context.confirmableActionButton(
@@ -222,6 +230,45 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
           maxWeight: loc.maxWeight,
           warehouseId: loc.warehouseId,
         );*/
+      },
+    );
+  }
+
+  Widget _buildChecks() {
+    return DynamicCheckboxList(
+      showButton: true,
+      initialData: [
+        {'zone': 'Zone 1', 'aisle': 'A1', 'shelf': 'S1', 'level': 'L1'},
+      ],
+      checkboxesConfig: [
+        CheckboxGroupConfig(
+          key: 'zone',
+          label: 'Zone',
+          tooltip: '',
+          description: '',
+        ),
+        CheckboxGroupConfig(
+          key: 'aisle',
+          label: 'Aisle',
+          tooltip: '',
+          description: '',
+        ),
+        CheckboxGroupConfig(
+          key: 'shelf',
+          label: 'Shelf',
+          tooltip: '',
+          description: '',
+        ),
+        CheckboxGroupConfig(
+          key: 'level',
+          label: 'Level',
+          tooltip: '',
+          description: '',
+        ),
+      ],
+      onCheckChanged: (List<CheckboxGroupConfig> selected) {
+        final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
+        prettyPrint('steve', mapList);
       },
     );
   }

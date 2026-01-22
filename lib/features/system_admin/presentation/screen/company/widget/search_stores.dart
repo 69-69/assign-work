@@ -19,8 +19,15 @@ class SearchStoreBranches extends StatelessWidget {
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<CompanyStore>(
       labelText: (initialValue ?? 'Assign Store branch...').toTitle,
-      asyncItems: (String filter, loadProps) async =>
-          await GetStores.byAnyTerm(filter),
+      helperText: 'Enter * for all Stores, or type to search',
+      asyncItems: (String filterBy, loadProps) async {
+        // If filter contains wildCard/asterisk '*', load all stores
+        // Else load stores that match the filter
+        final stores = await (filterBy.contains('*')
+            ? GetStores.load()
+            : GetStores.byAnyTerm(filterBy));
+        return stores;
+      },
       filterFn: (store, filter) {
         var term = filter.isEmpty ? (initialValue ?? '') : filter;
         return store.filterByAny(term);

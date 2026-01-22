@@ -15,8 +15,16 @@ class SearchRole extends StatelessWidget {
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<Role>(
       labelText: (initialValue ?? 'Assign Role...').toTitle,
-      asyncItems: (String filter, loadProps) async =>
-          await GetRoles.byAnyTerm(filter),
+      helperText: 'Enter * for all Roles, or type to search',
+      asyncItems: (String filterBy, loadProps) async {
+        // If filter contains wildCard/asterisk '*', load all roles
+        // Else load roles that match the filter
+        final roles = await (filterBy.contains('*')
+            ? GetRoles.load()
+            : GetRoles.byAnyTerm(filterBy));
+
+        return roles;
+      },
       filterFn: (role, filter) {
         final term = filter.isEmpty ? (initialValue ?? '') : filter;
         return role.filterByAny(term);

@@ -37,7 +37,13 @@ class _SearchEmployeesState extends State<SearchEmployees> {
   Future _loadEmployees({String? filter}) async {
     final initial = widget.initialValue ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final employees = await GetEmployees.byAnyTerm(filterBy);
+
+    // If filter contains wildCard/asterisk '*', load all employees
+    // Else load employees that match the filter
+    final employees = await (filterBy!.contains('*')
+        ? GetEmployees.load()
+        : GetEmployees.byAnyTerm(filterBy));
+
     if (initial.hasValue && employees.hasValue) {
       setState(() => _employee = employees.first);
     }
@@ -49,6 +55,7 @@ class _SearchEmployeesState extends State<SearchEmployees> {
     return AsyncSearchDropdown<Employee>(
       selectedItem: _employee,
       labelText: _labelText,
+      helperText: 'Enter * for all Employees, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadEmployees(filter: filter),
       filterFn: (emp, filter) => _filterEmployee(filter, emp),

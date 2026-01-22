@@ -46,7 +46,13 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
   Future _loadSuppliers({String? filter}) async {
     final initial = widget.initialSupplier ?? '';
     final filterBy = filter.isNullOrEmpty ? initial : filter;
-    final suppliers = await GetSuppliers.byAnyTerm(filterBy);
+
+    // If filter contains wildCard/asterisk '*', load all suppliers
+    // Else load suppliers that match the filter
+    final suppliers = await (filterBy!.contains('*')
+        ? GetSuppliers.load()
+        : GetSuppliers.byAnyTerm(filterBy));
+
     if (initial.hasValue && suppliers.hasValue) {
       setState(() => _supplier = suppliers.first);
     }
@@ -71,6 +77,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
     return AsyncSearchDropdown<Supplier>(
       selectedItem: _supplier,
       labelText: 'Select Supplier...',
+      helperText: 'Enter * for all Suppliers, or type to search',
       asyncItems: (String filter, _) async =>
           await _loadSuppliers(filter: filter),
       filterFn: (supplier, filter) =>

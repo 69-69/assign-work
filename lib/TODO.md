@@ -35,7 +35,7 @@
 ```shell
 git init
 git add .
-git commit -m "Warehouse and Location Storage done"
+git commit -m "WMS Location & Bin Storage"
 git branch -M main
 git push -u origin main
 ```

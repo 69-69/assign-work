@@ -13,6 +13,23 @@ class GetRequestForQuote {
         as ProcurementsLoaded<RequestForQuote>;
   }
 
+  static Future<List<RequestForQuote>> load() async {
+    final rfqBloc = ProRequestForQuoteBloc(
+      firestore: FirebaseFirestore.instance,
+    );
+    // Load all data initially to pass to the search delegate
+    rfqBloc.add(GetProcurements<RequestForQuote>());
+
+    // Ensure to wait for the data to be loaded
+    final allData =
+        await rfqBloc.stream.firstWhere(
+              (state) => state is ProcurementsLoaded<RequestForQuote>,
+            )
+            as ProcurementsLoaded<RequestForQuote>;
+
+    return allData.data;
+  }
+
   /// Get by either rfqNumber or supplierId or departmentCode [byAnyTerm]
   /// @Return: `List<RequestForQuote>`
   static Future<List<RequestForQuote>> byAnyTerm(String term) async {

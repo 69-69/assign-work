@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
@@ -34,7 +33,30 @@ class GetProductCategory {
     return state.data;
   }
 
-  /// Get item category by categoryId [byCategoryId]
+  /// Get by either name, storeNumber [byAnyTerm]
+  /// @Return: `List<Category>`
+  static Future<List<Category>> byAnyTerm(term) async {
+    final catBloc = _createCategoryBloc();
+    // Load all data initially to pass to the search delegate
+    catBloc.add(
+      SearchSetup<Category>(
+        primaryField: 'name',
+        secondaryField: 'storeNumber',
+        query: term,
+      ),
+    );
+
+    // Ensure to wait for the data to be loaded
+    final allData =
+        await catBloc.stream.firstWhere(
+              (state) => state is SetupsLoaded<Category>,
+            )
+            as SetupsLoaded<Category>;
+
+    return allData.data;
+  }
+
+  /*/// Get item category by categoryId [byCategoryId]
   static Future<Category?> byCategoryId(String categoryId) async {
     final categoryBloc = _createCategoryBloc();
 
@@ -51,5 +73,5 @@ class GetProductCategory {
       prettyPrint('Error fetching category by ID', '$e');
       return null;
     }
-  }
+  }*/
 }

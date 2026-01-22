@@ -13,6 +13,23 @@ class GetPurchaseRequisitions {
         as ProcurementsLoaded<PurchaseRequisition>;
   }
 
+  static Future<List<PurchaseRequisition>> load() async {
+    final prBloc = ProPurchaseRequisiteBloc(
+      firestore: FirebaseFirestore.instance,
+    );
+    // Load all data initially to pass to the search delegate
+    prBloc.add(GetProcurements<PurchaseRequisition>());
+
+    // Ensure to wait for the data to be loaded
+    final allData =
+        await prBloc.stream.firstWhere(
+              (state) => state is ProcurementsLoaded<PurchaseRequisition>,
+            )
+            as ProcurementsLoaded<PurchaseRequisition>;
+
+    return allData.data;
+  }
+
   /// Get by either prNumber or priority or departmentCode [byAnyTerm]
   /// @Return: `List<PurchaseRequisition>`
   static Future<List<PurchaseRequisition>> byAnyTerm(String term) async {

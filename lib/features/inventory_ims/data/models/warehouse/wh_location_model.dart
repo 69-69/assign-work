@@ -4,6 +4,51 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
+/*Zone
+- id
+- warehouseId
+- code
+- type (RECEIVING, PICKING, BULK, QA)
+
+Aisle
+- id
+- zoneId
+- code
+
+Rack
+- id
+- aisleId
+- code
+
+Level
+- id
+- rackId
+- code
+
+Each of these is a location level (or location attributes), not necessarily a bin:
+Zone → high-level location (e.g., Picking, Bulk, Cold Storage)
+Aisle → physical passage within a zone
+Rack → storage structure within an aisle
+Shelf / Level → vertical position on a rack
+
+ZONE-A01-R03-L02
+Full Bin Location = ZONE-AISLE-RACK-LEVEL-BIN
+
+2️⃣ Who creates them?
+During WMS setup (master data phase)
+Admin / Warehouse setup screens create:
+  Zone
+  “Picking”, “Bulk”, “Receiving”
+  Aisles
+  Created inside a Zone
+  Racks
+  Created inside an Aisle
+  Levels
+  Created inside a Rack
+  Bins
+  Created inside a Level
+  📌 This is done once, not during transactions.
+*/
 /// [WHLocation] Functional/Logical Area
 class WHLocation extends Equatable {
   static final DateTime _today = DateTime.now();

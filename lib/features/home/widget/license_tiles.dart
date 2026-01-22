@@ -97,15 +97,6 @@ extension LicenseTiles on BuildContext {
         'description':
             'Video guides: setting up & managing key parts of the software',
       },
-      // Live Chat Support Package
-      {
-        'label': MainModuleId.support.getLabel,
-        'icon': MainModuleId.support.getIcon,
-        'route': RouteNames.liveChatSupport,
-        'param': {},
-        'access': _getName(SubscriptionLicenses.paidTraining),
-        'description': 'Get 24/7 live chat support from our agents and experts',
-      },
       // Agent Package
       {
         'label': MainModuleId.agent.getLabel,
@@ -125,6 +116,16 @@ extension LicenseTiles on BuildContext {
         'description':
             'Provides access to troubleshooting tools and diagnostics.',
       },
+      /*
+      // Live Chat Support Package
+      {
+        'label': MainModuleId.support.getLabel,
+        'icon': MainModuleId.support.getIcon,
+        'route': RouteNames.liveChatSupport,
+        'param': {},
+        'access': _getName(SubscriptionLicenses.paidTraining),
+        'description': 'Get 24/7 live chat support from our agents and experts',
+      },*/
     ];
 
     /*final visiblePackages = appPackages.where((tile) {

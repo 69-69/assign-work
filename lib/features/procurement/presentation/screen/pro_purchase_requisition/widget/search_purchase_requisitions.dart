@@ -23,12 +23,21 @@ class SearchPRs extends StatelessWidget {
   Widget build(BuildContext context) {
     return SearchWorkflow<PurchaseRequisition>(
       searchLabel: 'Search Approved PR',
-      helperText: 'e.g. PR number, status or department',
+      // helperText: 'e.g. PR number, status or department',
+      helperText: 'Enter * for all Requisitions, or type to search',
       searchButtonText: 'Find PR',
       emptyResultText: 'No PRs available to convert to a RFQ',
       actionButtonText: actionButtonText,
 
-      onSearch: (term) => GetPurchaseRequisitions.byAnyTerm(term),
+      onSearch: (term) async {
+        // If filter contains wildCard/asterisk '*', load all Requisitions
+        // Else load Requisitions that match the filter
+        final requisitions = await (term.contains('*')
+            ? GetPurchaseRequisitions.load()
+            : GetPurchaseRequisitions.byAnyTerm(term));
+
+        return requisitions;
+      },
 
       onValueSelected: (pr) => onValueChanged(pr.toMap()),
 

@@ -1,7 +1,8 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/user_guide/data/models/user_guide_model.dart';
 import 'package:assign_erp/features/user_guide/presentation/bloc/how_to/how_to_bloc.dart';
@@ -32,17 +33,20 @@ class HowToConfigAppScreen extends StatelessWidget {
       child: CustomScaffold(
         title: guideToScreenTitle,
         body: _buildBody(context, canAccessDev),
-        floatingActionButton: _buildBuildFloatingBtn(context, canAccessDev),
+        floatingActionButton: _buildFloatingBtn(context, canAccessDev),
       ),
     );
   }
 
-  Widget? _buildBuildFloatingBtn(BuildContext context, bool canAccessDev) {
+  Widget? _buildFloatingBtn(BuildContext context, bool canAccessDev) {
     return canAccessDev
-        ? context.buildFloatingBtn(
-            'New Manual',
-            icon: Icons.note_add_outlined,
-            onPressed: () async => await context.openCreateGuide(),
+        ? FittedBox(
+            child: context.toolbarButton(
+              label: 'New Manual',
+              icon: Icons.note_add_outlined,
+              bgColor: kDangerColor,
+              onPressed: () async => await context.openCreateGuide(),
+            ),
           )
         : null;
   }

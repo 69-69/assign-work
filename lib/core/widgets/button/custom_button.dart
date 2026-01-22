@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:flutter/material.dart';
 
@@ -327,6 +328,28 @@ extension Custombutton on BuildContext {
           ),
         ),
       ),
+    );
+  }
+
+  FloatingActionButton buildFloatingBtn(
+    String label, {
+    IconData? icon,
+    Color? bgColor,
+    String? tooltip,
+    ShapeBorder? shape,
+    void Function()? onPressed,
+  }) {
+    return FloatingActionButton.extended(
+      heroTag: Key(tooltip ?? label),
+      isExtended: label.isNotEmpty,
+      backgroundColor: bgColor ?? errorColor,
+      tooltip: (tooltip ?? label).toTitle,
+      shape: shape,
+      label: label.isEmpty
+          ? const SizedBox.shrink()
+          : Text(label.toTitle, style: const TextStyle(color: kWhiteColor)),
+      icon: Icon(icon ?? Icons.add, color: kWhiteColor),
+      onPressed: onPressed,
     );
   }
 
