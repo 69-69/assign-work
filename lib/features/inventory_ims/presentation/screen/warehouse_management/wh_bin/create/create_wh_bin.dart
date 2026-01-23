@@ -120,7 +120,8 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
   void _generateWHBinCode([String? prefix]) {
     // Get selected Bin type, else default to 'Zone'
-    final pref = _serverItem?.getType ?? prefix ?? BinType.zone.getName;
+    final pref =
+        _serverItem?.getType ?? prefix ?? LocationHierarchy.zone.getName;
     var nextBinCode = pref.nextBinCode(_existingCodes);
     if (_whBinCode != nextBinCode) {
       setState(() => _whBinCode = nextBinCode);

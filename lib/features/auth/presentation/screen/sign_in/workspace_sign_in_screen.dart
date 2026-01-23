@@ -40,6 +40,7 @@ class WorkspaceSignInScreen extends StatelessWidget {
       ),
       actions: [],
       bottomNavigationBar: const SizedBox.shrink(),
+      floatingActionButton: const SizedBox.shrink(),
     );
   }
 

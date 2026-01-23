@@ -369,7 +369,7 @@ class _ShowChatSupport {
     return FittedBox(
       child: context.toolbarButton(
         label: MainModuleId.support.getLabel,
-        bgColor: context.onSurfaceColor,
+        bgColor: kPrimaryAccentColor,
         icon: MainModuleId.support.getIcon,
         onPressed: () async => await checkLiveChatSupportAccess(context),
         tooltip: 'Chat live with our support agents and experts, 24/7',
@@ -378,7 +378,7 @@ class _ShowChatSupport {
     /*return context.buildFloatingBtn(
       MainModuleId.support.getLabel,
       icon: MainModuleId.support.getIcon,
-      bgColor: context.onSurfaceColor,
+      bgColor: kPrimaryAccentColor,
       onPressed: () async => await checkLiveChatSupportAccess(context),
       tooltip: 'Chat live with our support agents and experts, 24/7',
     );*/

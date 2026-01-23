@@ -47,6 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
       actions: [],
       bottomNavigationBar: const SizedBox.shrink(),
+      floatingActionButton: const SizedBox.shrink(),
     );
   }
 
@@ -75,35 +76,16 @@ class _SplashScreenState extends State<SplashScreen> {
             : _buildCard(context, randomBgColor);
       },
     );
-    /*itemBuilder: (context, index) {
-      if (index < 3) {
-        final position = index % 3;
-        if (position == 0 || position == 2) {
-          return _buildStack(context);
-        } else {
-          return _buildCard(context, index: index);
-        }
-      } else {
-        return _buildCard(context, index: index);
-      }
-    }*/
   }
 
   _buildCard(BuildContext context, Color randomBgColor) {
     // final borderSide = BorderSide(width: 4, color: randomBgColor);
 
     return AnimatedContainer(
-      color: randomBgColor,
-
-      /*decoration: BoxDecoration(
-        border: Border(
-          top: borderSide,
-          left: borderSide,
-          right: borderSide,
-          bottom: borderSide,
-        ),
-        color: randomBgColor, //Color(0xD7BFBFBF),
-      ),*/
+      decoration: BoxDecoration(
+        color: randomBgColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
       padding: const EdgeInsets.all(20.0),
       duration: kAnimateDuration,
       child: GridTile(

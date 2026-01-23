@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/bin_type_dropdown.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/location_hierarchy_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +35,10 @@ class WHBinFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return BinTypeDropdown(initialValue: initialData, onChanged: onChanged);
+        return LocationHierarchyDropdown(
+          initialValue: initialData,
+          onChanged: onChanged,
+        );
       },
     ),
     FieldGroupConfig(

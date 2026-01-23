@@ -168,4 +168,78 @@ extension UniqueCodeExtension on String {
   /// OUTPUT: BIN03
   String nextBinCode([List<String>? existingCodes]) =>
       _nextCode(existingCodes, separator: '-');
+
+  /// Example: generateRange(1, 5)
+  /// OUTPUT: ['01', '02', '03', '04', '05']
+  List<String> generateRange(int start, int end, {int pad = 2}) {
+    return List.generate(
+      end - start + 1,
+      (i) => (start + i).toString().padLeft(pad, '0'),
+    );
+  }
 }
+
+/// Warehouse Location Code Generator
+List<String> generateLocationCodes({
+  required int zoneFrom,
+  required int zoneTo,
+  required int aisleFrom,
+  required int aisleTo,
+  required int rackFrom,
+  required int rackTo,
+  required int levelFrom,
+  required int levelTo,
+  required int shelfFrom,
+  required int shelfTo,
+}) {
+  final zones = ''.generateRange(zoneFrom, zoneTo);
+  final aisles = ''.generateRange(aisleFrom, aisleTo);
+  final racks = ''.generateRange(rackFrom, rackTo);
+  final levels = ''.generateRange(levelFrom, levelTo);
+  final shelves = ''.generateRange(shelfFrom, shelfTo);
+
+  List<String> locations = [];
+
+  for (var z in zones) {
+    for (var a in aisles) {
+      for (var r in racks) {
+        for (var l in levels) {
+          for (var s in shelves) {
+            locations.add('Z$z-A$a-R$r-L$l-S$s');
+          }
+        }
+      }
+    }
+  }
+
+  return locations;
+}
+
+/// Example Usage
+/*void main() {
+  final locations = generateLocationCodes(
+    zoneFrom: 1,
+    zoneTo: 2,
+    aisleFrom: 1,
+    aisleTo: 2,
+    rackFrom: 1,
+    rackTo: 3,
+    levelFrom: 1,
+    levelTo: 2,
+    shelfFrom: 1,
+    shelfTo: 2,
+  );
+
+  for (var loc in locations) {
+    print(loc);
+  }
+}
+/// Sample Output
+Z01-A01-R01-L01-S01
+Z01-A01-R01-L01-S02
+Z01-A01-R01-L02-S01
+Z01-A01-R01-L02-S02
+Z01-A01-R02-L01-S01
+...
+Z02-A02-R03-L02-S02
+*/

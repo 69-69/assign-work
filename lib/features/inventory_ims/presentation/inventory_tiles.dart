@@ -112,7 +112,7 @@ extension InventoryTiles on dynamic {
     final tileData = [
       // ───────────── Master Data ─────────────
       {
-        'label': 'Warehouse',
+        'label': 'Warehouses',
         'icon': Icons.store,
         'route': RouteNames.warehouse,
         'param': {},

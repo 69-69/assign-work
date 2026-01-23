@@ -2,12 +2,12 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_bin_model.dart';
 import 'package:flutter/material.dart';
 
-/// Warehouse Bin Type [BinTypeDropdown]
-class BinTypeDropdown extends StatelessWidget {
+/// Location Hierarchies (Sub-areas) [LocationHierarchyDropdown]
+class LocationHierarchyDropdown extends StatelessWidget {
   final String? initialValue;
   final void Function(String?) onChanged;
 
-  const BinTypeDropdown({
+  const LocationHierarchyDropdown({
     super.key,
     required this.onChanged,
     this.initialValue,
@@ -17,9 +17,10 @@ class BinTypeDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return StaticDropdown<String>(
       key: key,
-      label: 'Bin Type',
+      label: 'Location Hierarchy',
+      // helperText: 'Physical location hierarchy used to track where inventory is stored',
       initialValue: initialValue,
-      items: BinTypeUtil.toStringList(),
+      items: LocationHierarchyUtil.toStringList(),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );

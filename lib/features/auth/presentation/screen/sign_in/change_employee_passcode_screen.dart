@@ -114,6 +114,7 @@ class _ChangeEmployeePasscodeScreenState
           ),
         ],
         bottomNavigationBar: const SizedBox.shrink(),
+        floatingActionButton: const SizedBox.shrink(),
       ),
     );
   }

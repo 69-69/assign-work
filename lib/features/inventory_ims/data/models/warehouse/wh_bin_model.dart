@@ -10,7 +10,7 @@ class WHBin extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id;
-  final BinType type;
+  final LocationHierarchy type;
   final String locationId; // FK to WHBin.id
   final String storeNumber; // FK CompanyStore.storeNumber
   final String code;
@@ -53,7 +53,7 @@ class WHBin extends Equatable {
   factory WHBin.fromMap(Map<String, dynamic> map, {String? id}) {
     return WHBin(
       id: id ?? map['id'] ?? '',
-      type: BinTypeUtil.fromString(map['type']),
+      type: LocationHierarchyUtil.fromString(map['type']),
       code: map['code'] ?? '',
       locationId: map['locationId'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
@@ -115,7 +115,7 @@ class WHBin extends Equatable {
     locationId: '',
     storeNumber: '',
     description: '',
-    type: BinType.other,
+    type: LocationHierarchy.zone,
   );
 
   // Get Name
@@ -143,7 +143,7 @@ class WHBin extends Equatable {
   WHBin copyWith({
     String? id,
     String? code,
-    BinType? type,
+    LocationHierarchy? type,
     String? locationId,
     String? storeNumber,
     String? description,
@@ -225,21 +225,30 @@ class WHBin extends Equatable {
   ];
 }
 
-enum BinType { zone, aisle, rack, shelf, cabinet, other }
+/*Zone (Receiving / Cold Storage / Hazardous)
+ └── Aisle
+      └── Rack
+           └── Level
+                └── Shelf / Bin*/
+enum LocationHierarchy { zone, aisle, rack, shelf, cabinet, level, defineNew }
 
-extension BinTypeExtension on BinType {
+extension LocationHierarchyExt on LocationHierarchy {
   // Get Name
-  String get getName => EnumUtil<BinType>(this).getName;
+  String get getName => EnumUtil<LocationHierarchy>(this).getName;
 }
 
-class BinTypeUtil {
+// Location Hierarchy
+class LocationHierarchyUtil {
   /// [fromString] Converts String/Label to enum value.
-  static BinType fromString(String? value) =>
-      EnumUtil.fromString<BinType>(BinType.values, value);
+  static LocationHierarchy fromString(String? value) =>
+      EnumUtil.fromString<LocationHierarchy>(LocationHierarchy.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Bin type' : '';
-    return EnumUtil.toStringList<BinType>(BinType.values, label);
+    final label = includeHeader ? 'Location Hierarchy' : '';
+    return EnumUtil.toStringList<LocationHierarchy>(
+      LocationHierarchy.values,
+      label,
+    );
   }
 }

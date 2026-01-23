@@ -26,7 +26,7 @@ extension WHLocationExtensions on BuildContext {
     child: BottomSheetScaffold(
       title: serverItem != null
           ? '${serverItem.code.toUpperAll} - ${serverItem.description.toTitle}'
-          : 'New Location Zone',
+          : 'Storage Location Hierarchy',
       body: _CreateWHLocationForm(
         serverItem: serverItem,
         existingCodes: existingCodes,
@@ -53,7 +53,9 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   // Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
 
   WHLocationBloc get _bloc => context.read<WHLocationBloc>();
@@ -61,6 +63,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   WHLocation? get _serverItem => widget.serverItem;
 
   bool get _isServerNull => _serverItem == null;
+
   List<String>? get _existingCodes => widget.existingCodes;
 
   // Basic fields
@@ -125,7 +128,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   void _generateWHLocCode([String? prefix]) {
     // Get selected Location type, else default to 'STO'
-    final pref = _serverItem?.getType ?? prefix ?? LocationType.storage.locCode;
+    final pref = _serverItem?.getType ?? prefix ?? ZoneType.storage.locCode;
     var nextLocationCode = pref.nextLocationCode(_existingCodes);
     if (_whLocationCode != nextLocationCode) {
       setState(() => _whLocationCode = nextLocationCode);
@@ -172,31 +175,17 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        if (_isServerNull) ...{
-          WhLocationFormFields.buildLocNumber(
-            context,
-            _whLocationCode,
-            _generateWHLocCode,
-          ),
-        },
-
-        FormGroupCard(
-          title: 'Warehouse Location',
-          subTitle:
-              '\nOperational details and settings for managing this location storage.',
-          children: [_buildWHBasic()],
-        ),
-        FormGroupCard(
-          title: 'Configuration Options',
-          subTitle:
-              '\nOperational details and settings for managing this location storage.',
-          children: [_buildChecks()],
-        ),
-
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: _isServerNull
+          ? WhLocationFormFields.buildLocNumber(
+              context,
+              _whLocationCode,
+              _generateWHLocCode,
+            )
+          : null,
+      footers: [
         const SizedBox(height: 20),
         context.confirmableActionButton(
           onPressed: _onSubmit,
@@ -209,6 +198,59 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
       ],
     );
   }
+
+  List<Map<String, dynamic>> get formGroupCards => [
+    {
+      'title': 'Warehouse Storage Location',
+      'subTitle':
+          '\nDefine physical location hierarchy(sub-areas/levels) used to track where inventory is stored.'
+          '\nWAREHOUSE: Zone → Aisle → Rack → Level → Shelf → Bin',
+      'children': [_buildWHBasic()],
+    },
+
+    {
+      'title': 'Generate Location Codes',
+      'subTitle': 'Generate new full bin location codes within the warehouse.',
+      'children': [
+        DynamicCheckboxList(
+          initialData: [
+            {'zone': 'Zone 1', 'aisle': 'A1', 'shelf': 'S1', 'level': 'L1'},
+          ],
+          checkboxesConfig: [
+            CheckboxGroupConfig(
+              key: 'zone',
+              label: 'Zone',
+              tooltip: '',
+              description: '',
+            ),
+            CheckboxGroupConfig(
+              key: 'aisle',
+              label: 'Aisle',
+              tooltip: '',
+              description: '',
+            ),
+            CheckboxGroupConfig(
+              key: 'shelf',
+              label: 'Shelf',
+              tooltip: '',
+              description: '',
+            ),
+            CheckboxGroupConfig(
+              key: 'level',
+              label: 'Level',
+              tooltip: '',
+              description: '',
+            ),
+          ],
+          onCheckChanged: (List<CheckboxGroupConfig> selected) {
+            final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
+            prettyPrint('steve', mapList);
+          },
+        ),
+        _buildGenerateCodes(),
+      ],
+    },
+  ];
 
   DynamicTextFields _buildWHBasic() {
     return DynamicTextFields(
@@ -234,8 +276,18 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     );
   }
 
-  Widget _buildChecks() {
-    return DynamicCheckboxList(
+  Widget _buildGenerateCodes() {
+    return DynamicTextFields(
+      showButton: true,
+      initialData: [_serverItem?.toMap() ?? {}],
+      fieldsConfig: WhLocationFormFields.whGenerateCodesFields(
+        _serverItem?.toMap(),
+      ),
+      onChanged: (List<Map<String, dynamic>> data) {
+        prettyPrint('GenerateCodes', data);
+      },
+    );
+    /*return DynamicCheckboxList(
       showButton: true,
       initialData: [
         {'zone': 'Zone 1', 'aisle': 'A1', 'shelf': 'S1', 'level': 'L1'},
@@ -270,6 +322,6 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
         final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
         prettyPrint('steve', mapList);
       },
-    );
+    );*/
   }
 }

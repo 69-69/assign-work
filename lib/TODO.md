@@ -27,15 +27,15 @@
         - Returns from Customer
         - Reserve Stock
       - Warehouse
-          - ~~Storage~~
-          - ~~Location/Bin~~
+          - ~~Storage Location~~
+          - ~~Storage Bin~~
 
 
 
 ```shell
 git init
 git add .
-git commit -m "WMS Location & Bin Storage"
+git commit -m "working on WMS Storage Location & Bin"
 git branch -M main
 git push -u origin main
 ```

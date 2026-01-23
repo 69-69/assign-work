@@ -83,6 +83,7 @@ class _EmployeeSignInScreenState extends State<EmployeeSignInScreen> {
         ),
       ],
       bottomNavigationBar: const SizedBox.shrink(),
+      floatingActionButton: const SizedBox.shrink(),
     );
   }
 

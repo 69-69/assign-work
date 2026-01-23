@@ -59,7 +59,7 @@ class WHLocation extends Equatable {
   final String storeNumber; // FK CompanyStore.storeNumber
   final String description; // Optional descriptive name
   final bool isActive; // Active/inactive
-  final LocationType type;
+  final ZoneType type;
 
   /// Capacity constraints
   final double? maxItems; // Max number of items warehouse can hold
@@ -90,7 +90,7 @@ class WHLocation extends Equatable {
   factory WHLocation.fromMap(Map<String, dynamic> map, {String? id}) =>
       WHLocation(
         id: id ?? map['id'] ?? '',
-        type: LocTypeUtil.fromString(map['type']),
+        type: ZoneTypeUtil.fromString(map['type']),
         warehouseId: map['warehouseId'] ?? '',
         storeNumber: map['storeNumber'] ?? '',
         code: map['code'] ?? '',
@@ -145,7 +145,7 @@ class WHLocation extends Equatable {
     String? storeNumber,
     String? code,
     String? description,
-    LocationType? type,
+    ZoneType? type,
     bool? isActive,
     double? maxItems,
     double? maxWeight,
@@ -174,7 +174,7 @@ class WHLocation extends Equatable {
   static WHLocation get empty => WHLocation(
     id: '',
     code: '',
-    type: LocationType.other,
+    type: ZoneType.other,
     warehouseId: '',
     storeNumber: '',
     description: '',
@@ -241,41 +241,42 @@ class WHLocation extends Equatable {
   ];
 }
 
-/// Functional type of a warehouse location
-enum LocationType {
+enum ZoneType {
   receiving, // REC: Locations where goods are received (Inbound)
   storage, // STO: Standard storage locations
   picking, // PICK: Picking areas for outbound orders
   shipping, // SHIP: Shipping / staging areas
+  hazardous,
+  coldStorage,
   qc, // Quality Control
   other, // Other
 }
 
-extension LocationTypeExtension on LocationType {
+extension ZoneTypeExtension on ZoneType {
   // Get Name
-  String get getName => EnumUtil<LocationType>(this).getName;
+  String get getName => EnumUtil<ZoneType>(this).getName;
 
   // Get Short Location Code
   String get locCode {
     return switch (this) {
-      LocationType.receiving => 'REC',
-      LocationType.storage => 'STO',
-      LocationType.picking => 'PICK',
-      LocationType.shipping => 'SHIP',
-      LocationType.qc => 'QC',
+      ZoneType.receiving => 'REC',
+      ZoneType.storage => 'STO',
+      ZoneType.picking => 'PICK',
+      ZoneType.shipping => 'SHIP',
+      ZoneType.qc => 'QC',
       _ => 'OTHER',
     };
   }
 }
 
-class LocTypeUtil {
+class ZoneTypeUtil {
   /// [fromString] Converts String/Label to enum value.
-  static LocationType fromString(String? value) =>
-      EnumUtil.fromString<LocationType>(LocationType.values, value);
+  static ZoneType fromString(String? value) =>
+      EnumUtil.fromString<ZoneType>(ZoneType.values, value);
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Location type' : '';
-    return EnumUtil.toStringList<LocationType>(LocationType.values, label);
+    final label = includeHeader ? 'Zone type' : '';
+    return EnumUtil.toStringList<ZoneType>(ZoneType.values, label);
   }
 }
