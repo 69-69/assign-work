@@ -131,7 +131,7 @@ class Warehouse extends Equatable {
 
   // filter/search
   bool filterByAny(String term) =>
-      itemAsList.filterAny(term) || address.filterByAny(term);
+      props.filterAny(term) || address.filterByAny(term);
 
   static Warehouse? findById(List<Warehouse> warehouses, String id) =>
       warehouses.firstWhereOrNull((w) => w.id == id);

@@ -1,5 +1,5 @@
+import 'package:assign_erp/core/util/extensions/wh_zone_type.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
 import 'package:flutter/material.dart';
 
 /// Zone-Type [ZoneTypeDropdown]

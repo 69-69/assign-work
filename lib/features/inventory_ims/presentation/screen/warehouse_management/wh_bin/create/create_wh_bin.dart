@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -120,8 +121,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
   void _generateWHBinCode([String? prefix]) {
     // Get selected Bin type, else default to 'Zone'
-    final pref =
-        _serverItem?.getType ?? prefix ?? LocationHierarchy.zone.getName;
+    final pref = _serverItem?.getType ?? prefix ?? LocationType.zone.getName;
     var nextBinCode = pref.nextBinCode(_existingCodes);
     if (_whBinCode != nextBinCode) {
       setState(() => _whBinCode = nextBinCode);

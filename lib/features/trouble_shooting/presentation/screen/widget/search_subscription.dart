@@ -63,6 +63,9 @@ class _SearchSubscriptionState extends State<SearchSubscription> {
   }
 
   bool _filterSub(String filter, Subscription item) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = item.filterByAny(term);
     return matches;

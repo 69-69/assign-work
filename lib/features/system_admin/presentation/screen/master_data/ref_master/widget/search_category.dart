@@ -56,6 +56,9 @@ class _SearchCategoryState extends State<SearchCategory> {
   }
 
   bool _filterCategory(String filter, Category category, BuildContext context) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = category.filterByAny(term);
     return matches;

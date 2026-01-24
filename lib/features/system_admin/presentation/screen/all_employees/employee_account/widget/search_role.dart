@@ -26,6 +26,9 @@ class SearchRole extends StatelessWidget {
         return roles;
       },
       filterFn: (role, filter) {
+        // If filter contains wildCard/asterisk '*', load all, else load filtered
+        if (filter == '*') return true;
+
         final term = filter.isEmpty ? (initialValue ?? '') : filter;
         return role.filterByAny(term);
       },

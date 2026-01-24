@@ -26,7 +26,7 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
   String? _initialValue;
   WHLocation? _whLocation;
 
-  String get _labelText => widget.label ?? 'Storage Location...';
+  String get _labelText => widget.label ?? 'Sub-Location...';
 
   @override
   void initState() {
@@ -56,18 +56,21 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
       selectedItem: _whLocation,
       labelText: _labelText,
       // helperText: 'Functional area/subdivision within the warehouse',
-      helperText: 'Enter * for all Locations, or type to search',
+      helperText: 'Enter * for all sub-locations, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),
-      itemAsString: (loc) =>
-          '${loc.code.toUpperAll} - ${loc.description.toTitle}',
-      onChanged: (loc) => widget.onChanged(loc!.id, loc.code, loc.description),
+      itemAsString: (loc) => loc.getLocType.toTitle,
+      onChanged: (loc) =>
+          widget.onChanged(loc!.id, loc.warehouseId, loc.getLocType),
       validator: (loc) => loc == null ? _labelText : null,
     );
   }
 
   bool _filterWHLocation(String filter, WHLocation item) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = item.filterByAny(term);
     return matches;

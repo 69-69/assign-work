@@ -124,6 +124,9 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
   }
 
   bool _filterSupplier(String filter, Supplier supplier, BuildContext context) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialSupplier ?? '') : filter;
     final matches = supplier.filterByAny(term);
     if (!matches && filter.isNotEmpty) _handleNoDataFound(context);

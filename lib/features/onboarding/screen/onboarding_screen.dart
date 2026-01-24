@@ -121,6 +121,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen>
       ),
       actions: [],
       bottomNavigationBar: _buildBottomNav(),
+      floatingActionButton: const SizedBox.shrink(),
     );
   }
 

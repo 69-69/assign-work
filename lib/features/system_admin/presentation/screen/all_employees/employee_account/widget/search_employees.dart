@@ -67,6 +67,9 @@ class _SearchEmployeesState extends State<SearchEmployees> {
   }
 
   bool _filterEmployee(String filter, Employee emp) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = emp.filterByAny(term);
     return matches;

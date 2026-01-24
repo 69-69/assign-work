@@ -29,6 +29,9 @@ class SearchStoreBranches extends StatelessWidget {
         return stores;
       },
       filterFn: (store, filter) {
+        // If filter contains wildCard/asterisk '*', load all, else load filtered
+        if (filter == '*') return true;
+
         var term = filter.isEmpty ? (initialValue ?? '') : filter;
         return store.filterByAny(term);
       },

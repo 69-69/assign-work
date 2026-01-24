@@ -61,6 +61,7 @@ enum UnitOfMeasure {
   task,
   service,
   percent,
+  defineNew, // For User to create new UOMs
 }
 
 /* USAGE:
@@ -79,6 +80,10 @@ class UOMUtil {
   /// Converts String/Label to enum value [fromString].
   static UnitOfMeasure fromString(String? value) =>
       EnumUtil.fromString<UnitOfMeasure>(UnitOfMeasure.values, value);
+
+  /// Converts List of String/Label to enum values [fromStringList].
+  static List<UnitOfMeasure> fromStringList(List<String>? values) =>
+      values?.map(fromString).toList() ?? [];
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList([bool includeHeader = true]) {

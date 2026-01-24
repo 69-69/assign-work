@@ -169,12 +169,34 @@ extension UniqueCodeExtension on String {
   String nextBinCode([List<String>? existingCodes]) =>
       _nextCode(existingCodes, separator: '-');
 
-  /// Example: generateRange(1, 5)
-  /// OUTPUT: ['01', '02', '03', '04', '05']
+  /// Example: generateRange(1, 5, prefix: 'A')
+  /// OUTPUT: ['A01', 'A02', 'A03', 'A04', 'A05']
   List<String> generateRange(int start, int end, {int pad = 2}) {
+    String prefix = this;
     return List.generate(
       end - start + 1,
-      (i) => (start + i).toString().padLeft(pad, '0'),
+      (i) => '$prefix${(start + i).toString().padLeft(pad, '0')}',
+    );
+  }
+
+  List<String> nextRangeAfterExisting(
+    int count, {
+    int pad = 2,
+    List<String>? existingCodes,
+  }) {
+    final prefix = this;
+    existingCodes ??= [];
+
+    // Extract numeric parts
+    final numbers = existingCodes
+        .where((c) => c.startsWith(prefix))
+        .map((c) => int.tryParse(c.replaceFirst(prefix, '')) ?? 0);
+
+    final start = numbers.isEmpty ? 1 : numbers.reduce(max) + 1;
+
+    return List.generate(
+      count,
+      (i) => '$prefix${(start + i).toString().padLeft(pad, '0')}',
     );
   }
 }

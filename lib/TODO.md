@@ -35,7 +35,7 @@
 ```shell
 git init
 git add .
-git commit -m "working on WMS Storage Location & Bin"
+git commit -m "working on Sub Location Codes"
 git branch -M main
 git push -u origin main
 ```

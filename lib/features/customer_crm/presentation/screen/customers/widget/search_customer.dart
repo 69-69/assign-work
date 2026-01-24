@@ -88,6 +88,9 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   bool _filterCustomer(String filter, Customer customer) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = customer.filterByAny(term);
     if ((!matches && filter.isNotEmpty) && _allowManualEntry) {

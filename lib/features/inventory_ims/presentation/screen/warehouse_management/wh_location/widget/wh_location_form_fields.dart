@@ -1,7 +1,6 @@
-import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
+import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/location_hierarchy_dropdown.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/location_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/zone_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
@@ -97,38 +96,89 @@ class WhLocationFormFields {
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whLocFields(Map<String, dynamic>? initial) => [
+  static List<FieldGroupConfig> whLocFields(
+    Map<String, dynamic>? initial,
+    bool isZoneType,
+  ) => [
     FieldGroupConfig(
-      key: 'subAreas',
-      label: 'WH Sub Levels',
+      key: 'type',
+      label: 'Sub-Location Type',
       helperText:
-          'Physical location hierarchy used to track where inventory is stored.',
+          'Physical location hierarchy(sub-locations) used to track where inventory is stored.',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return LocationHierarchyDropdown(
+        return LocationTypeDropdown(
           initialValue: initialData,
           onChanged: onChanged,
         );
       },
     ),
+    if (isZoneType) ...[
+      FieldGroupConfig(
+        key: 'zoneType',
+        label: 'Zone type',
+        type: TextInputType.text,
+        widgetType: FieldWidgetType.custom,
+        customBuilder: ({required initialData, required onChanged}) {
+          return ZoneTypeDropdown(
+            initialValue: initialData,
+            onChanged: onChanged,
+          );
+        },
+      ),
+    ],
     FieldGroupConfig(
-      key: 'description',
-      label: 'Location Name',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.textField,
-      helperText:
-          'Storage location within the warehouse (e.g., Aisle 1, Rack B, Zone C).',
+      key: 'maxQuantity',
+      label: 'Maximum Quantity',
+      helperText: 'Maximum number of units allowed in this sub-location.',
+      type: TextInputType.number,
     ),
     FieldGroupConfig(
-      key: 'type',
-      label: 'Location type',
+      key: 'maxVolume',
+      label: 'Maximum Volume',
+      helperText: 'Maximum total volume this sub-location can store.',
+      type: TextInputType.number,
+    ),
+    FieldGroupConfig(
+      key: 'uomRestriction',
+      label: 'UoM Restriction',
+      helperText: 'Units of measure allowed in this sub-location.',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return ZoneTypeDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
+        return UOMMultiDropdown(
+          initialValues: List.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
+    ),
+  ];
+  /* FieldGroupConfig(
+      key: 'isActive',
+      label: 'Configuration Options',
+      isNested: true,
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return DynamicCheckboxList(
+          initialData: [
+            {'isActive': initialData},
+          ],
+          checkboxesConfig: [
+            CheckboxGroupConfig(
+              key: 'isActive',
+              label: 'Active',
+              selected: initial?['isActive'] ?? true,
+              tooltip: 'Enable or disable this item',
+              description:
+                  'Turn this on if the sub-location is currently in use.',
+            ),
+          ],
+          onCheckChanged: (List<CheckboxGroupConfig> selected) {
+            final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
+            onChanged(mapList);
+          },
         );
       },
     ),
@@ -146,75 +196,28 @@ class WhLocationFormFields {
       },
     ),
     FieldGroupConfig(
-      key: 'maxItems',
-      label: 'Maximum Items',
-      helperText: 'Maximum number of items this warehouse location can store.',
-      type: TextInputType.number,
-    ),
-    FieldGroupConfig(
-      key: 'maxWeight',
-      label: 'Maximum Weight',
-      helperText:
-          'Maximum total weight this warehouse location can safely store.',
-      type: TextInputType.number,
-    ),
-    FieldGroupConfig(
-      key: 'isActive',
-      label: 'Configuration Options',
-      isNested: true,
+      key: 'description',
+      label: 'Description',
       type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return DynamicCheckboxList(
-          showButton: false,
-          initialData: [
-            {'isActive': initialData},
-          ],
-          checkboxesConfig: [
-            CheckboxGroupConfig(
-              key: 'isActive',
-              label: 'Active',
-              selected: initial?['isActive'] ?? true,
-              tooltip: 'Enable or disable this item',
-              description: 'Turn this on if the location is currently in use.',
-            ),
-          ],
-          onCheckChanged: (List<CheckboxGroupConfig> selected) {
-            final mapList = CheckboxGroupConfig.mapCheckboxes(selected);
-            onChanged(mapList);
-          },
-        );
-      },
-    ),
-  ];
+      widgetType: FieldWidgetType.textField,
+      helperText:
+          'Storage location within the warehouse (e.g., Aisle 1, Rack B, Zone C).',
+    ),*/
 
-  static List<FieldGroupConfig> whGenerateCodesFields(
-    Map<String, dynamic>? initial,
-  ) => [
+  static List<FieldGroupConfig> whGenerateCodesFields() => [
     FieldGroupConfig(
-      key: 'From',
-      label: 'Start Number',
+      key: 'from',
+      label: 'From (Start)',
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
-      helperText: 'Starting value for code generation (e.g., 01).',
+      helperText: 'Starting number for code generation (e.g., 1).',
     ),
     FieldGroupConfig(
-      key: 'To',
-      label: 'End Number',
+      key: 'to',
+      label: 'To (End)',
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
-      helperText: 'Ending value for code generation (e.g., 20).',
-    ),
-    FieldGroupConfig(
-      key: 'generator',
-      label: 'Generate Location Codes',
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return ElevatedButton(
-          onPressed: () => onChanged(initialData),
-          child: const Text('Generate'),
-        );
-      },
+      helperText: 'Ending number for code generation (e.g., 20).',
     ),
   ];
 

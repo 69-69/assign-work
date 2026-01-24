@@ -182,6 +182,5 @@ class _AutoApplyTaxOnDropdownState extends State<AutoApplyTaxOnDropdown> {
     return _find(autoOn, filter);
   }
 
-  bool _find(TaxContext t, String filter) =>
-      t.getName.toLowerAll.contains(filter.toLowerAll);
+  bool _find(TaxContext t, String filter) => t.getName.filterAny(filter);
 }

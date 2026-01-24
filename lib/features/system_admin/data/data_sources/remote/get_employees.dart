@@ -5,11 +5,14 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetEmployees {
+  static List<Employee>? _allEmployeesCache;
   static final employeeBloc = EmployeeBloc(
     firestore: FirebaseFirestore.instance,
   );
 
   static Future<List<Employee>> load() async {
+    if (_allEmployeesCache != null) return _allEmployeesCache!;
+
     // Load all data initially to pass to the search delegate
     employeeBloc.add(GetSetups<Employee>());
 
@@ -20,6 +23,7 @@ class GetEmployees {
             )
             as SetupsLoaded<Employee>;
 
+    _allEmployeesCache = allData.data;
     return allData.data;
   }
 

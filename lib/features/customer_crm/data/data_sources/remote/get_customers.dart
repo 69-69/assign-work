@@ -4,6 +4,7 @@ import 'package:assign_erp/features/customer_crm/presentation/bloc/customer_bloc
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetAllCustomers {
+  static List<Customer>? _allCustomersCache;
   // Dispatch an event to load the data
   // static final customerBloc = CustomerAccountBloc(firestore: FirebaseFirestore.instance);
 
@@ -17,6 +18,8 @@ class GetAllCustomers {
   }
 
   static Future<List<Customer>> load() async {
+    if (_allCustomersCache != null) return _allCustomersCache!;
+
     final customerBloc = CustomerAccountBloc(
       firestore: FirebaseFirestore.instance,
     );
@@ -27,6 +30,7 @@ class GetAllCustomers {
     // Ensure to wait for the data to be loaded
     final state = await _dataLoadedState(customerBloc);
 
+    _allCustomersCache = state.data;
     return state.data;
   }
 

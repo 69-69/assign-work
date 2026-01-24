@@ -1,16 +1,21 @@
-import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
+/*Zone (Receiving / Cold Storage / Hazardous)
+ └── Aisle
+      └── Rack
+           └── Level
+                └── Shelf / Bin*/
 /// [WHBin] Physical slot inside a location (rack, shelf, cabinet, etc.)
 /// Bin Location Storage = WH-Code -> Location-Code -> Bin-Code
 class WHBin extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id;
-  final LocationHierarchy type;
+  final LocationType type;
   final String locationId; // FK to WHBin.id
   final String storeNumber; // FK CompanyStore.storeNumber
   final String code;
@@ -53,7 +58,7 @@ class WHBin extends Equatable {
   factory WHBin.fromMap(Map<String, dynamic> map, {String? id}) {
     return WHBin(
       id: id ?? map['id'] ?? '',
-      type: LocationHierarchyUtil.fromString(map['type']),
+      type: LocationTypeUtil.fromString(map['type']),
       code: map['code'] ?? '',
       locationId: map['locationId'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
@@ -115,7 +120,7 @@ class WHBin extends Equatable {
     locationId: '',
     storeNumber: '',
     description: '',
-    type: LocationHierarchy.zone,
+    type: LocationType.zone,
   );
 
   // Get Name
@@ -143,7 +148,7 @@ class WHBin extends Equatable {
   WHBin copyWith({
     String? id,
     String? code,
-    LocationHierarchy? type,
+    LocationType? type,
     String? locationId,
     String? storeNumber,
     String? description,
@@ -223,32 +228,4 @@ class WHBin extends Equatable {
     'Created By',
     'Updated By',
   ];
-}
-
-/*Zone (Receiving / Cold Storage / Hazardous)
- └── Aisle
-      └── Rack
-           └── Level
-                └── Shelf / Bin*/
-enum LocationHierarchy { zone, aisle, rack, shelf, cabinet, level, defineNew }
-
-extension LocationHierarchyExt on LocationHierarchy {
-  // Get Name
-  String get getName => EnumUtil<LocationHierarchy>(this).getName;
-}
-
-// Location Hierarchy
-class LocationHierarchyUtil {
-  /// [fromString] Converts String/Label to enum value.
-  static LocationHierarchy fromString(String? value) =>
-      EnumUtil.fromString<LocationHierarchy>(LocationHierarchy.values, value);
-
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Location Hierarchy' : '';
-    return EnumUtil.toStringList<LocationHierarchy>(
-      LocationHierarchy.values,
-      label,
-    );
-  }
 }

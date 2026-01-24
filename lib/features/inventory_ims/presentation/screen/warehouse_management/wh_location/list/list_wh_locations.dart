@@ -6,6 +6,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_locat
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_location_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/create/create_wh_location.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/generate_codes/generate_wh_location_codes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -90,10 +91,20 @@ class _ListWHLocationsState extends State<ListWHLocations> {
     return ListToolbarButtons(
       dataLength: locations.length,
       primaryLabel: 'Create Location',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Location.',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Location',
       refreshLabel: 'Refresh WH Locations',
-      onPrimary: () => _openWarehouseForm(locations: locations),
+      secondaryIcon: Icons.generating_tokens,
+      secondaryLabel: 'Generate Location Codes',
+      onPrimary: () => _openWarehouseForm(),
       onRefresh: () => _bloc.add(RefreshInventories<WHLocation>()),
+      onSecondary: _selectedIds.isNotEmpty
+          ? () async {
+              final loc = WHLocation.findById(locations, _selectedIds.first);
+              if (loc == null) return;
+
+              await context.openGenerateWHLocCodesForm(serverItem: loc);
+            }
+          : null,
       onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
@@ -112,7 +123,7 @@ class _ListWHLocationsState extends State<ListWHLocations> {
     final loc = WHLocation.findById(locations, id);
     if (loc == null) return;
 
-    await _openWarehouseForm(locations: locations, serverLoc: loc);
+    await _openWarehouseForm(serverLoc: loc);
   }
 
   Future<void> _onDeleteTap(List<WHLocation> locations, String id) async {
@@ -125,15 +136,8 @@ class _ListWHLocationsState extends State<ListWHLocations> {
     }
   }
 
-  Future<void> _openWarehouseForm({
-    WHLocation? serverLoc,
-    List<WHLocation>? locations,
-  }) async {
-    List<String>? existingCodes = WHLocation.getCodes(locations ?? []);
-    await context.openWHLocationForm(
-      serverItem: serverLoc,
-      existingCodes: existingCodes,
-    );
+  Future<void> _openWarehouseForm({WHLocation? serverLoc}) async {
+    await context.openWHLocationForm(serverItem: serverLoc);
   }
 
   _onChecked(bool? isChecked, checkedRow) {

@@ -67,6 +67,9 @@ class _SearchWHBinState extends State<SearchWHBin> {
   }
 
   bool _filterWHBin(String filter, WHBin item) {
+    // If filter contains wildCard/asterisk '*', load all, else load filtered
+    if (filter == '*') return true;
+
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = item.filterByAny(term);
     return matches;

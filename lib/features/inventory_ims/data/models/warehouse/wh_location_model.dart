@@ -1,4 +1,6 @@
-import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
+import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
+import 'package:assign_erp/core/util/extensions/wh_zone_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -55,15 +57,20 @@ class WHLocation extends Equatable {
 
   final String id; // PK
   final String warehouseId; // FK to Warehouse.id
-  final String code; // Unique Location code, e.g., "A1", "B2"
+  final String codeRange; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
   final String storeNumber; // FK CompanyStore.storeNumber
-  final String description; // Optional descriptive name
-  final bool isActive; // Active/inactive
-  final ZoneType type;
+  // final String description; // Optional descriptive name
+  final bool isActive;
+  final LocationType type;
+
+  /// Only applicable if LocationType is 'Zone'
+  final ZoneType? zoneType;
 
   /// Capacity constraints
-  final double? maxItems; // Max number of items warehouse can hold
-  final double? maxWeight; // Max total weight warehouse can hold
+  final double? maxQuantity; // Max number of items this sub-location can hold
+  final double? maxVolume; // Max total volume this sub-location can hold
+  final List<UnitOfMeasure>?
+  uomRestriction; // What units are allowed in this sub-area
 
   final String? createdBy;
   final String? updatedBy;
@@ -75,11 +82,13 @@ class WHLocation extends Equatable {
     required this.storeNumber,
     required this.warehouseId,
     required this.type,
-    required this.code,
-    this.description = '',
+    this.zoneType,
+    this.uomRestriction = const [],
+    this.codeRange = '',
+    // this.description = '',
     this.isActive = true,
-    this.maxItems,
-    this.maxWeight,
+    this.maxQuantity,
+    this.maxVolume,
     this.createdBy,
     this.updatedBy,
     DateTime? createdAt,
@@ -90,14 +99,17 @@ class WHLocation extends Equatable {
   factory WHLocation.fromMap(Map<String, dynamic> map, {String? id}) =>
       WHLocation(
         id: id ?? map['id'] ?? '',
-        type: ZoneTypeUtil.fromString(map['type']),
+        type: LocationTypeUtil.fromString(map['type']),
+        zoneType: ZoneTypeUtil.fromString(map['zoneType']),
+        uomRestriction: UOMUtil.fromStringList(
+          List<String>.from(map['uomRestriction'] ?? []),
+        ),
         warehouseId: map['warehouseId'] ?? '',
         storeNumber: map['storeNumber'] ?? '',
-        code: map['code'] ?? '',
-        description: map['description'] ?? '',
+        codeRange: map['codeBatch'] ?? '',
         isActive: map['isActive'] ?? false,
-        maxItems: '${map['maxItems']}'.asDouble,
-        maxWeight: '${map['maxWeight']}'.asDouble,
+        maxQuantity: '${map['maxQuantity']}'.asDouble,
+        maxVolume: '${map['maxVolume']}'.asDouble,
         createdBy: map['createdBy'] ?? '',
         updatedBy: map['updatedBy'] ?? '',
         createdAt: toDateTimeFn(map['createdAt']),
@@ -107,19 +119,21 @@ class WHLocation extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'code': code,
-    'type': getType,
+    'codeBatch': codeRange,
+    'type': getLocType,
+    'zoneType': getZoneType,
+    'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
     'storeNumber': storeNumber,
     'warehouseId': warehouseId,
-    'description': description,
     'isActive': isActive,
-    'maxItems': maxItems,
-    'maxWeight': maxWeight,
+    'maxQuantity': maxQuantity,
+    'maxVolume': maxVolume,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
   };
 
-  String get getType => type.getName;
+  String get getLocType => type.getName;
+  String get getZoneType => zoneType?.getName ?? 'N/A';
 
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
@@ -143,12 +157,13 @@ class WHLocation extends Equatable {
     String? id,
     String? warehouseId,
     String? storeNumber,
-    String? code,
-    String? description,
-    ZoneType? type,
+    String? codeRange,
+    LocationType? type,
+    ZoneType? zoneType,
+    List<UnitOfMeasure>? uomRestriction,
     bool? isActive,
-    double? maxItems,
-    double? maxWeight,
+    double? maxQuantity,
+    double? maxVolume,
     String? createdBy,
     String? updatedBy,
     DateTime? createdAt,
@@ -156,13 +171,14 @@ class WHLocation extends Equatable {
   }) => WHLocation(
     id: id ?? this.id,
     type: type ?? this.type,
-    code: code ?? this.code,
+    zoneType: zoneType ?? this.zoneType,
+    uomRestriction: uomRestriction ?? this.uomRestriction,
+    codeRange: codeRange ?? this.codeRange,
     warehouseId: warehouseId ?? this.warehouseId,
     storeNumber: storeNumber ?? this.storeNumber,
-    description: description ?? this.description,
     isActive: isActive ?? this.isActive,
-    maxItems: maxItems ?? this.maxItems,
-    maxWeight: maxWeight ?? this.maxWeight,
+    maxQuantity: maxQuantity ?? this.maxQuantity,
+    maxVolume: maxVolume ?? this.maxVolume,
     createdBy: createdBy ?? this.createdBy,
     updatedBy: updatedBy ?? this.updatedBy,
     createdAt: createdAt ?? this.createdAt,
@@ -173,11 +189,10 @@ class WHLocation extends Equatable {
   /// Used as a fallback when no matching WHLocation is found
   static WHLocation get empty => WHLocation(
     id: '',
-    code: '',
-    type: ZoneType.other,
     warehouseId: '',
     storeNumber: '',
-    description: '',
+    type: LocationType.zone,
+    zoneType: ZoneType.storage,
   );
 
   // Check if the WHLocation is empty.
@@ -190,9 +205,12 @@ class WHLocation extends Equatable {
   static WHLocation? findById(List<WHLocation> warehouses, String id) =>
       warehouses.firstWhereOrNull((w) => w.id == id);
 
+  /// Convert comma separated string to `List<String>`
+  List<String> get codeRanges => codeRange.split(',').toList();
+
   /// Extract all codes from a list of Location objects
   static List<String> getCodes(List<WHLocation> warehouses) =>
-      warehouses.map((w) => w.code).toList();
+      warehouses.map((w) => w.codeRange).toList();
 
   /// Returns Location codes filtered by [code].
   /// If [code] is empty, all codes are returned.
@@ -203,13 +221,14 @@ class WHLocation extends Equatable {
   List<Object?> get props => [
     id,
     type,
+    zoneType,
+    uomRestriction,
     warehouseId,
     storeNumber,
-    code,
-    description,
+    codeRange,
     isActive,
-    maxItems,
-    maxWeight,
+    maxQuantity,
+    maxVolume,
     createdBy,
     updatedBy,
     createdAt,
@@ -218,65 +237,25 @@ class WHLocation extends Equatable {
 
   List<String> get itemAsList => [
     id,
+    codeRange,
     storeNumber,
-    getType,
-    warehouseId,
-    code,
-    description,
     isActive ? 'Yes' : 'No',
+    warehouseId,
+    getLocType,
+    getZoneType,
     createdBy ?? '',
     updatedBy ?? '',
   ];
 
   static List<String> get dataTableHeader => [
     'ID',
+    'codeRange',
     'Store Number',
-    'Type',
-    'Warehouse ID',
-    'Code',
-    'description',
     'Active',
+    'Warehouse ID',
+    'Sub-Levels',
+    'Zone Type',
     'Created By',
     'Updated By',
   ];
-}
-
-enum ZoneType {
-  receiving, // REC: Locations where goods are received (Inbound)
-  storage, // STO: Standard storage locations
-  picking, // PICK: Picking areas for outbound orders
-  shipping, // SHIP: Shipping / staging areas
-  hazardous,
-  coldStorage,
-  qc, // Quality Control
-  other, // Other
-}
-
-extension ZoneTypeExtension on ZoneType {
-  // Get Name
-  String get getName => EnumUtil<ZoneType>(this).getName;
-
-  // Get Short Location Code
-  String get locCode {
-    return switch (this) {
-      ZoneType.receiving => 'REC',
-      ZoneType.storage => 'STO',
-      ZoneType.picking => 'PICK',
-      ZoneType.shipping => 'SHIP',
-      ZoneType.qc => 'QC',
-      _ => 'OTHER',
-    };
-  }
-}
-
-class ZoneTypeUtil {
-  /// [fromString] Converts String/Label to enum value.
-  static ZoneType fromString(String? value) =>
-      EnumUtil.fromString<ZoneType>(ZoneType.values, value);
-
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Zone type' : '';
-    return EnumUtil.toStringList<ZoneType>(ZoneType.values, label);
-  }
 }

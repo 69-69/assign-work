@@ -1,48 +1,52 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
-import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
-import 'package:assign_erp/core/util/size_config.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/layout/history_view.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_location_bloc.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/wh_location_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension WHLocationExtensions on BuildContext {
-  Future<void> openWHLocationForm({WHLocation? serverItem}) => openBottomSheet(
-    isExpand: false,
-    child: BottomSheetScaffold(
-      title: serverItem != null
-          ? '${serverItem.getLocType.toTitle} - ${serverItem.isActive ? 'Active' : 'Inactive'}'
-          : 'New Sub Location',
-      body: _CreateWHLocationForm(serverItem: serverItem),
-    ),
-  );
+extension GenerateWhLocationCodesExt on BuildContext {
+  Future<void> openGenerateWHLocCodesForm({WHLocation? serverItem}) =>
+      openBottomSheet(
+        isExpand: false,
+        showZoomIcon: false,
+        child: BottomSheetScaffold(
+          title: 'Generate Sub-Location Codes',
+          body: _GenerateWHLocCodesForm(serverItem: serverItem),
+        ),
+      );
 }
 
-class _CreateWHLocationForm extends StatefulWidget {
+class _GenerateWHLocCodesForm extends StatefulWidget {
   final WHLocation? serverItem;
 
-  const _CreateWHLocationForm({this.serverItem});
+  const _GenerateWHLocCodesForm({this.serverItem});
 
   @override
-  State<_CreateWHLocationForm> createState() => _CreateWHLocationFormState();
+  State<_GenerateWHLocCodesForm> createState() =>
+      _GenerateWHLocCodesFormState();
 }
 
-class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
-  bool _isZoneType = false;
+class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _prefixController;
   bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
@@ -50,18 +54,18 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   String get _employeeName => _employee!.fullName;
 
-  String get _employeeStore => _employee!.storeNumber;
-
   WHLocationBloc get _bloc => context.read<WHLocationBloc>();
 
   WHLocation? get _serverItem => widget.serverItem;
 
   bool get _isServerNull => _serverItem == null;
+
   List<String> get _existingCodes => _serverItem?.codeRanges ?? [];
 
   // Basic fields
   String _whLocationCode = '';
   bool _isSubmitting = false;
+  bool _enableEdit = false;
   late WHLocation _whLocationData = widget.serverItem ?? WHLocation.empty;
 
   void _onSubmit() async {
@@ -82,18 +86,6 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
       _showAlert('Please enter all required fields');
       return;
     }
-
-    // Case 3: Add new Location
-    _addNewLocation();
-  }
-
-  void _addNewLocation() {
-    final newData = _whLocationData.copyWith(
-      storeNumber: _employeeStore,
-      createdBy: _employeeName,
-    );
-
-    _bloc.add(AddInventory<WHLocation>(data: newData));
   }
 
   void _updatedLocation() {
@@ -115,10 +107,18 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
         _isSubmitting = false;
         _whLocationData = WHLocation.empty;
       });
+      _generateWHLocCode(); // fresh Warehouse location code
     }
   }
 
-  /*void _generateWHLocCode([String? prefix]) {
+  void _generateWHLocCode([String? prefix]) {
+    /*// Get existing codes, if any and add new prefix
+    Set<String> newCodesList = {};
+    if (prefix.hasValue) {
+      newCodesList.add(prefix!);
+    }
+
+    List<String>? eCodes = [...newCodesList, ...?_existingCodes];*/
     // Get selected Location type
     final pref = _serverItem?.getLocType ?? prefix;
 
@@ -126,13 +126,10 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     if (_whLocationCode != nextLocationCode) {
       setState(() => _whLocationCode = nextLocationCode);
     }
-  }*/
+  }
 
   void _showAlert(String msg) {
-    context.showAlertOverlay(
-      msg,
-      onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
-    );
+    context.showAlertOverlay(msg, onCallback: () => _resetForm());
     setState(() => _isSubmitting = false);
   }
 
@@ -151,6 +148,15 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _prefixController = TextEditingController(
+      text: _serverItem?.getLocType.substring(0, 1).toUpperAll ?? '',
+    );
+    // _generateWHLocCode();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<WHLocationBloc, InventoryState<WHLocation>>(
       listener: _handleBlocState,
@@ -163,63 +169,96 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   }
 
   Widget _buildBody() {
-    return FormGroupTabView(
-      contents: formGroupCards,
-      footers: [
+    return FormGroupCard(
+      title: 'Generate Code Segments',
+      subTitle:
+          '\nGenerate rack, level, shelf, & other code ranges used to create full bin locations.',
+      children: [
+        _buildHeader(),
+        _buildGenerateCodes(),
         const SizedBox(height: 20),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Location')
-              : (_isSubmitting ? 'Updating...' : null),
+          label: _isSubmitting ? 'Generating...' : 'Generate',
         ),
         const SizedBox(height: 20),
+        _listSubLocationCodes(),
       ],
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Warehouse Storage Location',
-      'subTitle':
-          '\nDefine physical location hierarchy(sub-areas/levels) used to track where inventory is stored.'
-          '\nZone → Aisle → Rack → Level → Shelf → Bin',
-      'children': [
-        SizedBox(
-          width: context.dynamicWidth(0.25),
-          child: SearchWarehouses(
-            initialValue: _whLocationData.warehouseId,
-            onChanged: (id, code, description) {
-              // _whLocationData = _whLocationData.copyWith(warehouseId: code);
-            },
-          ),
+  SortableHistoryTable<String> _listSubLocationCodes() {
+    return SortableHistoryTable<String>(
+      items: _serverItem?.codeRanges ?? [],
+      columnLabels: ['Sub-Location', 'Codes'],
+      rowBuilder: (entry) {
+        return DataRow(
+          cells: [
+            DataCell(Text(_serverItem?.getLocType.toSentence ?? '')),
+            DataCell(Text(entry.toUpperAll)),
+          ],
+        );
+      },
+    );
+  }
+
+  AdaptiveLayout _buildHeader() {
+    return AdaptiveLayout(
+      children: [
+        SearchWHLocation(
+          initialValue: _serverItem?.getLocType,
+          onChanged: (id, whCode, locType) => setState(() {
+            _prefixController.text = locType.isNotEmpty
+                ? locType[0].toUpperAll
+                : '';
+          }),
         ),
-        _buildWHSubLocation(),
+
+        Stack(
+          alignment: Alignment.topRight,
+          children: <Widget>[
+            CustomTextField(
+              enable: _enableEdit,
+              label: 'Alphabetic Prefix',
+              controller: _prefixController,
+              keyboardType: TextInputType.text,
+              inputDecoration: const InputDecoration(
+                helperText: 'Prefix for code generation (e.g., A).',
+              ),
+            ),
+
+            Padding(
+              padding: EdgeInsets.all(3),
+              child: context.toolbarButton(
+                label: 'Edit',
+                icon: Icons.edit,
+                bgColor: kPrimaryColor,
+                onPressed: () {
+                  setState(() => _enableEdit = !_enableEdit);
+                },
+              ),
+            ),
+          ],
+        ),
       ],
-    },
-  ];
+    );
+  }
 
-  DynamicTextFields _buildWHSubLocation() {
-    prettyPrint('_whLocationCode', _whLocationCode);
+  Widget _buildGenerateCodes() {
     return DynamicTextFields(
-      showButton: true,
-      // key: ValueKey(_whLocationData.type),
-      initialData: [
-        _serverItem?.toMap() ?? {},
-      ].map((e) => Map<String, dynamic>.from(e)).toList(),
-      fieldsConfig: WhLocationFormFields.whLocFields(
-        _serverItem?.toMap(),
-        _isZoneType,
-      ),
+      fieldsConfig: WhLocationFormFields.whGenerateCodesFields(),
       onChanged: (List<Map<String, dynamic>> data) {
-        var map = data.first;
-        _whLocationData = WHLocation.fromMap(map);
+        final map = data.first;
+        int from = '${map['from']}'.asInt;
+        int to = '${map['to']}'.asInt;
 
-        setState(() {
-          _isZoneType = map['type'] == LocationType.zone.getName;
-          // _generateWHLocCode(map['type']);
-        });
+        final locCodeRange = _prefixController.text.generateRange(from, to);
+        setState(
+          () => _whLocationData = _whLocationData.copyWith(
+            codeRange: locCodeRange.map((e) => e).join(','),
+          ),
+        );
       },
     );
   }

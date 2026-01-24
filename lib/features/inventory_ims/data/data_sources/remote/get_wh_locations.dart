@@ -4,9 +4,12 @@ import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetWHLocations {
+  static List<WHLocation>? _allWHLocationsCache;
   static final locBloc = WHLocationBloc(firestore: FirebaseFirestore.instance);
 
   static Future<List<WHLocation>> load() async {
+    if (_allWHLocationsCache != null) return _allWHLocationsCache!;
+
     // Load all data initially to pass to the search delegate
     locBloc.add(GetInventories<WHLocation>());
 
@@ -17,6 +20,7 @@ class GetWHLocations {
             )
             as InventoriesLoaded<WHLocation>;
 
+    _allWHLocationsCache = allData.data;
     return allData.data;
   }
 

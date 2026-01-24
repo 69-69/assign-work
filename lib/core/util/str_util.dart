@@ -108,15 +108,28 @@ extension UniversalIsNullOrEmpty on Object? {
 // Filter or search a Iterable or String
 extension FilterExtension on dynamic {
   bool filterAny(String keyword) {
-    final regex = RegExp(
-      keyword, // Pass the filter as the pattern
-      caseSensitive: false, // Makes it case-insensitive
-    );
+    final escaped = RegExp.escape(keyword); // safe for special chars
+    final regex = RegExp(escaped, caseSensitive: false);
 
-    // Use regex to check if Iterable (List or Set), or String and if matches
-    return this is Iterable
-        ? any((i) => regex.hasMatch(i))
-        : regex.hasMatch(this);
+    // Handle Iterable
+    if (this is Iterable) {
+      return (this as Iterable).any((i) {
+        final str = _toSearchableString(i);
+        return regex.hasMatch(str);
+      });
+    }
+
+    // Handle single object / string
+    final str = _toSearchableString(this);
+    return regex.hasMatch(str);
+  }
+
+  // Converts objects, enums, etc. into a searchable string
+  String _toSearchableString(dynamic value) {
+    if (value == null) return '';
+    if (value is String) return value;
+    if (value is Enum) return value.name; // for enums
+    return value.toString();
   }
 
   // to double

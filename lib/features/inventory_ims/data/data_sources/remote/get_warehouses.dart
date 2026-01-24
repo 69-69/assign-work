@@ -5,8 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetWarehouses {
   static final wareBloc = WarehouseBloc(firestore: FirebaseFirestore.instance);
+  static List<Warehouse>? _allWarehousesCache;
 
   static Future<List<Warehouse>> load() async {
+    if (_allWarehousesCache != null) return _allWarehousesCache!;
     // Load all data initially to pass to the search delegate
     wareBloc.add(GetInventories<Warehouse>());
 
@@ -17,6 +19,7 @@ class GetWarehouses {
             )
             as InventoriesLoaded<Warehouse>;
 
+    _allWarehousesCache = allData.data;
     return allData.data;
   }
 
