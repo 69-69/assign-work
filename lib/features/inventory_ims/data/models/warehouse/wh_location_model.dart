@@ -56,8 +56,9 @@ class WHLocation extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id; // PK
-  final String warehouseId; // FK to Warehouse.id
-  final String codeRange; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
+  final String warehouseCode; // FK to Warehouse.code
+  final String
+  codeRanges; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
   final String storeNumber; // FK CompanyStore.storeNumber
   // final String description; // Optional descriptive name
   final bool isActive;
@@ -80,11 +81,11 @@ class WHLocation extends Equatable {
   WHLocation({
     required this.id,
     required this.storeNumber,
-    required this.warehouseId,
+    required this.warehouseCode,
     required this.type,
     this.zoneType,
     this.uomRestriction = const [],
-    this.codeRange = '',
+    this.codeRanges = '',
     // this.description = '',
     this.isActive = true,
     this.maxQuantity,
@@ -104,9 +105,9 @@ class WHLocation extends Equatable {
         uomRestriction: UOMUtil.fromStringList(
           List<String>.from(map['uomRestriction'] ?? []),
         ),
-        warehouseId: map['warehouseId'] ?? '',
+        warehouseCode: map['warehouseCode'] ?? '',
         storeNumber: map['storeNumber'] ?? '',
-        codeRange: map['codeBatch'] ?? '',
+        codeRanges: map['codeRanges'] ?? '',
         isActive: map['isActive'] ?? false,
         maxQuantity: '${map['maxQuantity']}'.asDouble,
         maxVolume: '${map['maxVolume']}'.asDouble,
@@ -119,12 +120,12 @@ class WHLocation extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'codeBatch': codeRange,
+    'codeRanges': codeRanges,
     'type': getLocType,
     'zoneType': getZoneType,
     'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
     'storeNumber': storeNumber,
-    'warehouseId': warehouseId,
+    'warehouseId': warehouseCode,
     'isActive': isActive,
     'maxQuantity': maxQuantity,
     'maxVolume': maxVolume,
@@ -155,9 +156,9 @@ class WHLocation extends Equatable {
 
   WHLocation copyWith({
     String? id,
-    String? warehouseId,
+    String? warehouseCode,
     String? storeNumber,
-    String? codeRange,
+    String? codeRanges,
     LocationType? type,
     ZoneType? zoneType,
     List<UnitOfMeasure>? uomRestriction,
@@ -173,8 +174,8 @@ class WHLocation extends Equatable {
     type: type ?? this.type,
     zoneType: zoneType ?? this.zoneType,
     uomRestriction: uomRestriction ?? this.uomRestriction,
-    codeRange: codeRange ?? this.codeRange,
-    warehouseId: warehouseId ?? this.warehouseId,
+    codeRanges: codeRanges ?? this.codeRanges,
+    warehouseCode: warehouseCode ?? this.warehouseCode,
     storeNumber: storeNumber ?? this.storeNumber,
     isActive: isActive ?? this.isActive,
     maxQuantity: maxQuantity ?? this.maxQuantity,
@@ -189,7 +190,7 @@ class WHLocation extends Equatable {
   /// Used as a fallback when no matching WHLocation is found
   static WHLocation get empty => WHLocation(
     id: '',
-    warehouseId: '',
+    warehouseCode: '',
     storeNumber: '',
     type: LocationType.zone,
     zoneType: ZoneType.storage,
@@ -206,11 +207,14 @@ class WHLocation extends Equatable {
       warehouses.firstWhereOrNull((w) => w.id == id);
 
   /// Convert comma separated string to `List<String>`
-  List<String> get codeRanges => codeRange.split(',').toList();
+  List<String> get getCodeRanges => codeRanges.split(',').toList();
+
+  /// Convert `List<String>` to comma separated string
+  String get codeToString => getCodeRanges.join(',');
 
   /// Extract all codes from a list of Location objects
   static List<String> getCodes(List<WHLocation> warehouses) =>
-      warehouses.map((w) => w.codeRange).toList();
+      warehouses.map((w) => w.codeRanges).toList();
 
   /// Returns Location codes filtered by [code].
   /// If [code] is empty, all codes are returned.
@@ -223,9 +227,9 @@ class WHLocation extends Equatable {
     type,
     zoneType,
     uomRestriction,
-    warehouseId,
+    warehouseCode,
     storeNumber,
-    codeRange,
+    codeRanges,
     isActive,
     maxQuantity,
     maxVolume,
@@ -237,10 +241,9 @@ class WHLocation extends Equatable {
 
   List<String> get itemAsList => [
     id,
-    codeRange,
     storeNumber,
     isActive ? 'Yes' : 'No',
-    warehouseId,
+    warehouseCode,
     getLocType,
     getZoneType,
     createdBy ?? '',
@@ -249,10 +252,9 @@ class WHLocation extends Equatable {
 
   static List<String> get dataTableHeader => [
     'ID',
-    'codeRange',
-    'Store Number',
+    'Store No.',
     'Active',
-    'Warehouse ID',
+    'WH Code',
     'Sub-Levels',
     'Zone Type',
     'Created By',

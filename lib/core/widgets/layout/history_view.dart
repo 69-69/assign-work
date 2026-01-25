@@ -11,7 +11,7 @@ extension HistoryViewExtensions on BuildContext {
     required String title,
     required List<T> items,
     required List<String> columnLabels,
-    required DataRow Function(T) rowBuilder,
+    required DataRow Function(T, int) rowBuilder,
   }) async => await confirmDone(
     items.isEmpty
         ? const Text('No data available yet!')
@@ -30,7 +30,7 @@ extension HistoryViewExtensions on BuildContext {
     required List<T> items,
     Widget? secondaryWidget,
     required List<String> columnLabels,
-    required DataRow Function(T) rowBuilder,
+    required DataRow Function(T, int) rowBuilder,
   }) async => await openBottomSheet(
     isExpand: false,
     showZoomIcon: false,
@@ -52,7 +52,7 @@ extension HistoryViewExtensions on BuildContext {
 class StaticHistoryTable<T> extends StatelessWidget {
   final List<String> columnLabels;
   final List<T> items;
-  final DataRow Function(T) rowBuilder;
+  final DataRow Function(T, int) rowBuilder;
 
   const StaticHistoryTable({
     super.key,
@@ -81,7 +81,11 @@ class StaticHistoryTable<T> extends StatelessWidget {
               ),
             )
             .toList(),
-        rows: items.map(rowBuilder).toList(),
+        rows: items
+            .asMap()
+            .entries
+            .map((entry) => rowBuilder(entry.value, entry.key))
+            .toList(),
       ),
     );
   }
@@ -135,7 +139,8 @@ class SortableHistoryTable<T> extends StatefulWidget {
   final List<String> columnLabels;
 
   /// [rowBuilder] Builds a DataRow from a single item
-  final DataRow Function(T) rowBuilder;
+  // final DataRow Function(T) rowBuilder;
+  final DataRow Function(T, int) rowBuilder;
 
   /// [rowStyle] Optional function to provide row-level styles or overrides
   final DataRow? Function(T)? rowStyle;
@@ -270,7 +275,7 @@ class _SortableHistoryTableState<T> extends State<SortableHistoryTable<T>> {
         : Text(
             widget.title ?? '',
             textAlign: TextAlign.center,
-            style: context.textTheme.titleLarge,
+            style: context.textTheme.titleMedium,
           );
   }
 
@@ -312,7 +317,8 @@ class _HistorySource<T> extends DataTableSource {
   final List<T> items;
 
   /// [rowBuilder] Function to build a DataRow from an item
-  final DataRow Function(T) rowBuilder;
+  // final DataRow Function(T) rowBuilder;
+  final DataRow Function(T, int) rowBuilder;
 
   /// [rowStyle] Optional function to override the row style
   final DataRow? Function(T)? rowStyle;
@@ -331,7 +337,7 @@ class _HistorySource<T> extends DataTableSource {
 
     // Allow row-level style overrides
     final styled = rowStyle?.call(item);
-    return styled ?? rowBuilder(item);
+    return styled ?? rowBuilder(item, index);
   }
 
   @override

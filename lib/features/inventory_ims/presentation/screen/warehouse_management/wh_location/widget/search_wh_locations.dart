@@ -62,7 +62,7 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),
       itemAsString: (loc) => loc.getLocType.toTitle,
       onChanged: (loc) =>
-          widget.onChanged(loc!.id, loc.warehouseId, loc.getLocType),
+          widget.onChanged(loc!.id, loc.warehouseCode, loc.getLocType),
       validator: (loc) => loc == null ? _labelText : null,
     );
   }

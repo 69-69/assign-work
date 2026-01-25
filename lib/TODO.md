@@ -35,7 +35,7 @@
 ```shell
 git init
 git add .
-git commit -m "working on Sub Location Codes"
+git commit -m "working on Bin"
 git branch -M main
 git push -u origin main
 ```

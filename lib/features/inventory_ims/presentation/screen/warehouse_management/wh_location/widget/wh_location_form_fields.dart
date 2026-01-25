@@ -1,4 +1,9 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/location_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/zone_type_dropdown.dart';
@@ -96,6 +101,46 @@ class WhLocationFormFields {
     onPressed: onPressed,
   );
 
+  static Widget stackTextField(
+    BuildContext context, {
+    Key? key,
+    String? label,
+    String? helperText,
+    bool enable = false,
+    void Function()? onPressed,
+    InputDecoration? decoration,
+    void Function(String)? onChanged,
+    TextEditingController? controller,
+  }) => Stack(
+    alignment: Alignment.topRight,
+    children: <Widget>[
+      CustomTextField(
+        key: key,
+        label: label,
+        enable: enable,
+        autofocus: enable,
+        controller: controller,
+        onChanged: onChanged,
+        keyboardType: TextInputType.text,
+        inputDecoration:
+            decoration ??
+            InputDecoration(helperText: helperText, labelText: label),
+      ),
+
+      Padding(
+        padding: EdgeInsets.all(3),
+        child: FittedBox(
+          child: context.toolbarButton(
+            label: enable ? 'Done' : 'Edit',
+            icon: enable ? Icons.done : Icons.edit,
+            bgColor: kPrimaryColor.toAlpha(enable ? 1 : 0.3),
+            onPressed: onPressed,
+          ),
+        ),
+      ),
+    ],
+  );
+
   static List<FieldGroupConfig> whLocFields(
     Map<String, dynamic>? initial,
     bool isZoneType,
@@ -153,8 +198,7 @@ class WhLocationFormFields {
         );
       },
     ),
-  ];
-  /* FieldGroupConfig(
+    FieldGroupConfig(
       key: 'isActive',
       label: 'Configuration Options',
       isNested: true,
@@ -182,6 +226,9 @@ class WhLocationFormFields {
         );
       },
     ),
+  ];
+
+  /*
     FieldGroupConfig(
       key: 'warehouseId',
       label: 'Parent Warehouse',
@@ -230,4 +277,17 @@ class WhLocationFormFields {
     required T Function(Map<String, dynamic>, String) fromMap,
   }) =>
       InventoryFormFields.updateListFromData(list, map: map, fromMap: fromMap);
+}
+
+class CodeRange {
+  final int from;
+  final int to;
+
+  CodeRange({required this.from, required this.to});
+
+  factory CodeRange.fromMap(Map<String, dynamic> map) =>
+      CodeRange(from: '${map["from"]}'.asInt, to: '${map["to"]}'.asInt);
+
+  // Is empty
+  bool get isEmpty => from == 0 || to == 0;
 }

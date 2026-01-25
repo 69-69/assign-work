@@ -90,7 +90,7 @@ extension RFQDetails on BuildContext {
       title: 'Workflow History',
       columnLabels: AuditLog.dataTableHeader,
       items: rfq.history, // list of RFQ history
-      rowBuilder: (entry) {
+      rowBuilder: (entry, index) {
         return DataRow(
           cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
         );
@@ -392,7 +392,7 @@ class _RFQInfoPage extends StatelessWidget {
           // headingRowColor: context.primaryContainer,
           columnLabels: _items.first.dataTableHeader(false),
           items: _items, // list of Quotes
-          rowBuilder: (entry) {
+          rowBuilder: (entry, index) {
             return DataRow(
               cells: entry
                   .itemAsList(false)

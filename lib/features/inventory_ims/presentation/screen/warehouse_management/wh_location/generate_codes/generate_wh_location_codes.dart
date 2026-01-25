@@ -1,5 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -9,7 +7,6 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
-import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
@@ -27,7 +24,8 @@ extension GenerateWhLocationCodesExt on BuildContext {
         isExpand: false,
         showZoomIcon: false,
         child: BottomSheetScaffold(
-          title: 'Generate Sub-Location Codes',
+          isDetailMode: true,
+          title: 'Setup Sub-Location Codes',
           body: _GenerateWHLocCodesForm(serverItem: serverItem),
         ),
       );
@@ -47,7 +45,6 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _prefixController;
-  bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -58,34 +55,25 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
 
   WHLocation? get _serverItem => widget.serverItem;
 
-  bool get _isServerNull => _serverItem == null;
-
-  List<String> get _existingCodes => _serverItem?.codeRanges ?? [];
-
-  // Basic fields
-  String _whLocationCode = '';
-  bool _isSubmitting = false;
+  int? _editingIndex;
   bool _enableEdit = false;
-  late WHLocation _whLocationData = widget.serverItem ?? WHLocation.empty;
+  bool _canGenerate = false;
+  bool _isSubmitting = false;
+  late WHLocation _whLocationData;
+  final Map<int, TextEditingController> _controllers = {};
 
-  void _onSubmit() async {
+  void _onGenerate() {
     if (_isSubmitting) return;
-    final isUpdate = _serverItem?.isNotEmpty == true;
-    final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Location
-    if (isValid && isUpdate) {
-      _updatedLocation();
+    // Case 1: Form validation or empty Location
+    if (!_canGenerate || _serverItem?.isEmpty == true) {
+      _showAlert('Failed: Enter range values to generate codes.');
       return;
     }
 
-    // Case 2: Form validation or empty Location
-    if (!isValid && _whLocationData.isNullOrEmpty) {
-      prettyPrint('_whLocationData', _whLocationData.toMap());
-      _showAlert('Please enter all required fields');
-      return;
-    }
+    // Case 2: Generate & Update Location code ranges
+    _updatedLocation();
   }
 
   void _updatedLocation() {
@@ -105,44 +93,34 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
+        _canGenerate = false;
+        _enableEdit = false;
         _whLocationData = WHLocation.empty;
       });
-      _generateWHLocCode(); // fresh Warehouse location code
     }
   }
 
-  void _generateWHLocCode([String? prefix]) {
-    /*// Get existing codes, if any and add new prefix
-    Set<String> newCodesList = {};
-    if (prefix.hasValue) {
-      newCodesList.add(prefix!);
-    }
-
-    List<String>? eCodes = [...newCodesList, ...?_existingCodes];*/
-    // Get selected Location type
-    final pref = _serverItem?.getLocType ?? prefix;
-
-    var nextLocationCode = pref?.nextLocationCode(_existingCodes) ?? '';
-    if (_whLocationCode != nextLocationCode) {
-      setState(() => _whLocationCode = nextLocationCode);
-    }
+  TextEditingController _getController(int index, String value) {
+    return _controllers.putIfAbsent(
+      index,
+      () => TextEditingController(text: value),
+    );
   }
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
-    setState(() => _isSubmitting = false);
   }
 
   void _handleBlocState(BuildContext cxt, InventoryState<WHLocation> state) {
-    final note = _isServerNull
+    final note = _serverItem == null
         ? 'Warehouse Location Storage created'
         : 'Changes saved';
     switch (state) {
       case InventoryAdded<WHLocation>(message: var msg):
       case InventoryUpdated<WHLocation>(message: var msg):
         _showAlert(msg ?? note);
-      case InventoryError<WHLocation>(error: var err):
-        _showAlert('Error saving changes $err');
+      case InventoryError<WHLocation>():
+        _showAlert('Error saving changes');
       case _: // no action
     }
   }
@@ -150,10 +128,18 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   @override
   void initState() {
     super.initState();
+    _whLocationData = widget.serverItem ?? WHLocation.empty;
     _prefixController = TextEditingController(
       text: _serverItem?.getLocType.substring(0, 1).toUpperAll ?? '',
     );
-    // _generateWHLocCode();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -163,45 +149,38 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
       child: Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: KeyedSubtree(key: _formResetKey, child: _buildBody()),
+        child: KeyedSubtree(
+          key: _formResetKey,
+          child: FormGroupTabView(contents: formGroupCards),
+        ),
       ),
     );
   }
 
-  Widget _buildBody() {
-    return FormGroupCard(
-      title: 'Generate Code Segments',
-      subTitle:
+  List<Map<String, dynamic>> get formGroupCards => [
+    {
+      'title': 'Generate Code Segments',
+      'subTitle':
           '\nGenerate rack, level, shelf, & other code ranges used to create full bin locations.',
-      children: [
+      'children': [
         _buildHeader(),
         _buildGenerateCodes(),
         const SizedBox(height: 20),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
+          onPressed: _onGenerate,
           isDisabled: _isSubmitting,
           label: _isSubmitting ? 'Generating...' : 'Generate',
         ),
-        const SizedBox(height: 20),
-        _listSubLocationCodes(),
       ],
-    );
-  }
+    },
 
-  SortableHistoryTable<String> _listSubLocationCodes() {
-    return SortableHistoryTable<String>(
-      items: _serverItem?.codeRanges ?? [],
-      columnLabels: ['Sub-Location', 'Codes'],
-      rowBuilder: (entry) {
-        return DataRow(
-          cells: [
-            DataCell(Text(_serverItem?.getLocType.toSentence ?? '')),
-            DataCell(Text(entry.toUpperAll)),
-          ],
-        );
+    if (_serverItem?.codeRanges.isNotEmpty == true)
+      {
+        'title': 'Edit Sub-Location Codes',
+        'subTitle': '\nManage sub-location codes.',
+        'children': [_listSubLocationCodes()],
       },
-    );
-  }
+  ];
 
   AdaptiveLayout _buildHeader() {
     return AdaptiveLayout(
@@ -212,34 +191,23 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
             _prefixController.text = locType.isNotEmpty
                 ? locType[0].toUpperAll
                 : '';
+
+            if (_serverItem?.getLocType != locType) {
+              // Update id if changed
+              _whLocationData = _whLocationData.copyWith(id: id);
+            }
           }),
         ),
 
-        Stack(
-          alignment: Alignment.topRight,
-          children: <Widget>[
-            CustomTextField(
-              enable: _enableEdit,
-              label: 'Alphabetic Prefix',
-              controller: _prefixController,
-              keyboardType: TextInputType.text,
-              inputDecoration: const InputDecoration(
-                helperText: 'Prefix for code generation (e.g., A).',
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.all(3),
-              child: context.toolbarButton(
-                label: 'Edit',
-                icon: Icons.edit,
-                bgColor: kPrimaryColor,
-                onPressed: () {
-                  setState(() => _enableEdit = !_enableEdit);
-                },
-              ),
-            ),
-          ],
+        WhLocationFormFields.stackTextField(
+          context,
+          controller: _prefixController,
+          enable: _enableEdit,
+          label: 'Alphabetic Prefix',
+          helperText: 'Prefix for code generation (e.g., A).',
+          onPressed: () {
+            setState(() => _enableEdit = !_enableEdit);
+          },
         ),
       ],
     );
@@ -249,17 +217,84 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     return DynamicTextFields(
       fieldsConfig: WhLocationFormFields.whGenerateCodesFields(),
       onChanged: (List<Map<String, dynamic>> data) {
-        final map = data.first;
-        int from = '${map['from']}'.asInt;
-        int to = '${map['to']}'.asInt;
+        final codeRange = CodeRange.fromMap(data.first);
+        if (codeRange.isEmpty) _canGenerate = false;
 
-        final locCodeRange = _prefixController.text.generateRange(from, to);
+        final codes = _prefixController.text.generateRange(
+          codeRange.from,
+          codeRange.to,
+        );
         setState(
           () => _whLocationData = _whLocationData.copyWith(
-            codeRange: locCodeRange.map((e) => e).join(','),
+            codeRanges: codes.map((e) => e).join(','),
           ),
         );
       },
     );
+  }
+
+  SortableHistoryTable<String> _listSubLocationCodes() {
+    final codes = _serverItem?.getCodeRanges ?? [];
+
+    return SortableHistoryTable<String>(
+      title: 'Generation Preview',
+      items: codes,
+      columnLabels: ['#', 'Description', 'Codes'],
+      rowBuilder: (entry, index) {
+        final i = index + 1;
+        final isEditing = _editingIndex == index;
+        final controller = _getController(index, entry);
+        final desc = _whLocationData.getLocType.toSentence;
+
+        return DataRow(
+          cells: [
+            DataCell(Text('$i')),
+            DataCell(Text('$desc $i')),
+            DataCell(
+              WhLocationFormFields.stackTextField(
+                context,
+                key: ValueKey('code-$index'),
+                controller: controller,
+                enable: isEditing,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  labelText: 'Code',
+                ),
+                onPressed: () =>
+                    _onManageCode(isEditing, codes, index, controller),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onManageCode(
+    bool isEditing,
+    List<String> codes,
+    int index,
+    TextEditingController controller,
+  ) {
+    setState(() {
+      if (isEditing) {
+        // DONE pressed → save
+        codes[index] = controller.text.toUpperAll;
+
+        _whLocationData = _whLocationData.copyWith(codeRanges: codes.join(','));
+
+        _editingIndex = null;
+      } else {
+        // EDIT pressed
+        _editingIndex = index;
+      }
+    });
+
+    // trigger submission after state updates
+    if (isEditing) {
+      _updatedLocation(); // Update specific Location code ranges
+    }
   }
 }

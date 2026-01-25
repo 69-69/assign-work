@@ -80,7 +80,7 @@ extension PRDetails on BuildContext {
       title: 'Workflow History',
       columnLabels: AuditLog.dataTableHeader,
       items: po.history, // list of SQ history
-      rowBuilder: (entry) {
+      rowBuilder: (entry, index) {
         return DataRow(
           cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
         );
@@ -208,7 +208,7 @@ class _POInfoPage extends StatelessWidget {
           columnLabels: _items.first.dataTableHeader(_isPerLineTax),
           items: _items,
           // list of POs
-          rowBuilder: (entry) {
+          rowBuilder: (entry, index) {
             return DataRow(
               cells: entry
                   .itemAsList(_isPerLineTax)

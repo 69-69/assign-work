@@ -57,7 +57,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   WHLocation? get _serverItem => widget.serverItem;
 
   bool get _isServerNull => _serverItem == null;
-  List<String> get _existingCodes => _serverItem?.codeRanges ?? [];
+  List<String> get _existingCodes => _serverItem?.getCodeRanges ?? [];
 
   // Basic fields
   String _whLocationCode = '';
@@ -189,9 +189,9 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
         SizedBox(
           width: context.dynamicWidth(0.25),
           child: SearchWarehouses(
-            initialValue: _whLocationData.warehouseId,
+            initialValue: _whLocationData.warehouseCode,
             onChanged: (id, code, description) {
-              // _whLocationData = _whLocationData.copyWith(warehouseId: code);
+              _whLocationData = _whLocationData.copyWith(warehouseCode: code);
             },
           ),
         ),
@@ -216,9 +216,10 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
         var map = data.first;
         _whLocationData = WHLocation.fromMap(map);
 
-        setState(() {
-          _isZoneType = map['type'] == LocationType.zone.getName;
-          // _generateWHLocCode(map['type']);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            _isZoneType = map['type'] == LocationType.zone.getName;
+          });
         });
       },
     );

@@ -76,7 +76,7 @@ extension PRDetails on BuildContext {
       title: 'Workflow History',
       columnLabels: AuditLog.dataTableHeader,
       items: pr.history, // list of PR history
-      rowBuilder: (entry) {
+      rowBuilder: (entry, index) {
         return DataRow(
           cells: entry.itemAsList.map((cell) => DataCell(Text(cell))).toList(),
         );
@@ -158,7 +158,7 @@ class _PRInfoPage extends StatelessWidget {
           columnLabels: _items.first.dataTableHeader(false),
           items: _items,
           // list of requisitions
-          rowBuilder: (entry) {
+          rowBuilder: (entry, index) {
             return DataRow(
               cells: entry
                   .itemAsList(false)

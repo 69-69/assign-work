@@ -255,7 +255,7 @@ class _FormGroupTabViewState extends State<FormGroupTabView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _header ?? const SizedBox.shrink(),
+        Expanded(child: _header ?? const SizedBox.shrink()),
         IconButton(
           icon: Icon(
             _isGridView ? Icons.view_list : Icons.grid_view,

@@ -94,10 +94,10 @@ class _ListWHLocationsState extends State<ListWHLocations> {
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Location',
       refreshLabel: 'Refresh WH Locations',
       secondaryIcon: Icons.generating_tokens,
-      secondaryLabel: 'Generate Location Codes',
+      secondaryLabel: 'Setup Sub-Location Codes',
       onPrimary: () => _openWarehouseForm(),
       onRefresh: () => _bloc.add(RefreshInventories<WHLocation>()),
-      onSecondary: _selectedIds.isNotEmpty
+      onSecondary: _selectedIds.length == 1
           ? () async {
               final loc = WHLocation.findById(locations, _selectedIds.first);
               if (loc == null) return;

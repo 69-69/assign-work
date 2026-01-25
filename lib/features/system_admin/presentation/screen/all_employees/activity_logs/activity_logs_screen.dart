@@ -134,7 +134,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
       title: 'Areas Viewed by ${log.name.toTitle}',
       columnLabels: const ['Area', 'Time'],
       items: log.areasViewed,
-      rowBuilder: (entry) {
+      rowBuilder: (entry, index) {
         final parts = entry.split('@');
         final area = parts.first.trim();
         final time = parts.length > 1 ? parts.last : 'N/A';
