@@ -166,6 +166,7 @@ class StaticDropdown<T> extends StatelessWidget {
 ///
 /// Provides search, custom filter logic, validation, and no-data callbacks.
 class AsyncSearchDropdown<T> extends StatelessWidget {
+  final bool enabled;
   final bool isAutoApply;
   final bool isMultiSelect;
   final String labelText;
@@ -184,6 +185,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
 
   const AsyncSearchDropdown({
     super.key,
+    this.enabled = true,
     this.isAutoApply = true,
     this.isMultiSelect = false,
     required this.labelText,
@@ -209,6 +211,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   // Single-select dropdown
   _buildSingleDropdown() {
     return DropdownSearch<T>(
+      enabled: enabled,
       selectedItem: selectedItem,
       autoValidateMode: AutovalidateMode.onUserInteraction,
       popupProps: const PopupProps.menu(showSearchBox: true),
@@ -230,6 +233,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   // Multi-select dropdown
   _buildMultiSelectDropdown() {
     return DropdownSearch<T>.multiSelection(
+      enabled: enabled,
       selectedItems: selectedMultiItems ?? [],
       autoValidateMode: AutovalidateMode.onUserInteraction,
       popupProps: _popupPropsMulti(),

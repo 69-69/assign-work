@@ -128,9 +128,14 @@ class Supplier extends Equatable {
     createdBy: '',
   );
 
-  /// Returns true if this instance is the singleton [empty] Supplier.
-  /// Use this to check if the Supplier is the default/fallback (e.g., not found).
-  bool get isEmpty => identical(this, Supplier.empty);
+  bool get isEmpty =>
+      name.isEmpty ||
+      code.isEmpty ||
+      phone.isEmpty ||
+      address.isEmpty ||
+      businessType.isEmpty ||
+      contactPersons.isEmpty ||
+      items.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 

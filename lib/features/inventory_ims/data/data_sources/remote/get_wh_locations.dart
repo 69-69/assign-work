@@ -24,16 +24,33 @@ class GetWHLocations {
     return allData.data;
   }
 
-  /// Get by either description, warehouseId, code [byAnyTerm]
+  /// Get only types(sub-locations) and related codeRanges
+  static Future<List<Map<String, dynamic>>> subLocations(
+    String warehouseCode,
+  ) async {
+    final allWHLocations = await byAnyTerm(warehouseCode);
+    final codes = allWHLocations
+        .map(
+          (WHLocation e) => {
+            'type': e.getLocationType,
+            'codeRanges': e.getCodeRanges,
+          },
+        )
+        .toList();
+
+    return codes;
+  }
+
+  /// Get by either type, zoneType, warehouseCode, codeRanges [byAnyTerm]
   /// @Return: `List<WHLocation>`
   static Future<List<WHLocation>> byAnyTerm(term) async {
     // Load all data initially to pass to the search delegate
     locBloc.add(
       SearchInventory<WHLocation>(
         primaryField: 'description',
-        optionalField: 'warehouseId',
-        secondaryField: 'code',
-        tertiaryField: 'type',
+        secondaryField: 'type',
+        tertiaryField: 'codeRanges',
+        optionalField: 'warehouseCode',
         query: term,
       ),
     );

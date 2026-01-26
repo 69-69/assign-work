@@ -36,7 +36,7 @@ class _ListTaxesState extends State<ListTaxes> {
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case SetupError<Tax>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

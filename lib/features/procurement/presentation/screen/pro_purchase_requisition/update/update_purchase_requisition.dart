@@ -147,7 +147,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         _showAlert(msg ?? 'Changes saved successfully');
         await _confirmPrintoutDialog();
       case ProcurementError<PurchaseRequisition>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

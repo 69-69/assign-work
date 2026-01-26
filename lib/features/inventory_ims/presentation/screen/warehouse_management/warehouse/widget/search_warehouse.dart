@@ -25,7 +25,7 @@ class _SearchWarehousesState extends State<SearchWarehouses> {
   String? _initialValue;
   Warehouse? _warehouse;
 
-  String get _labelText => widget.label ?? 'Select Warehouse...';
+  String get _labelText => widget.label ?? 'Warehouse...';
 
   @override
   void initState() {

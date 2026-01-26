@@ -218,7 +218,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         _showAlert(msg ?? 'Quote created successfully');
         await _confirmPrintoutDialog();
       case SalesDistributionError<SalesQuotation>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

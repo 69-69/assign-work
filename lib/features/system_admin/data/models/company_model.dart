@@ -125,8 +125,8 @@ class Company extends Equatable {
     createdBy: '',
   );
 
-  /// [isEmpty] Checks if the Company is empty.
-  bool get isEmpty => identical(this, Company.empty);
+  bool get isEmpty =>
+      name.isEmpty || email.isEmpty || phone.isEmpty || addresses.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 

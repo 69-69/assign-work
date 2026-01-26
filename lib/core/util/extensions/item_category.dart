@@ -78,6 +78,10 @@ class ItemCategoryUtil {
     ];
   }
 
+  /// Converts List of String/Label to enum values [fromStringList].
+  static List<ItemCategory> fromStringList(List<String>? values) =>
+      values?.map(fromString).toList() ?? [];
+
   static List<ItemCategory> _filterByType(bool isService) {
     final categories = <ItemCategory>[];
 

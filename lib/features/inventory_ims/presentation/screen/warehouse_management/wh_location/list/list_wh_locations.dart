@@ -38,7 +38,7 @@ class _ListWHLocationsState extends State<ListWHLocations> {
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case InventoryError<WHLocation>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

@@ -96,7 +96,7 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
       case SetupUpdated<Employee>(message: var msg):
         _showAlert(msg ?? 'Changes saved successfully');
       case SetupError<Employee>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

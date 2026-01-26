@@ -38,7 +38,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
         cxt.showAlertOverlay(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case SetupError<CompanyStore>():
-        cxt.showAlertOverlay('Error saving changes');
+        cxt.showAlertOverlay('Something went wrong! Please, try again');
       case _: // no action
     }
   }

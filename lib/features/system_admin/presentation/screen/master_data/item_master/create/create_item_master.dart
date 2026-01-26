@@ -157,7 +157,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       case SetupUpdated<ItemMaster>(message: var msg):
         _showAlert(msg ?? note);
       case SetupError<ItemMaster>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

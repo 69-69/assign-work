@@ -34,7 +34,7 @@ class _ListRolesState extends State<ListRoles> {
       case SetupDeleted<Role>(message: var msg):
         _showAlert(msg ?? 'Deleted successfully');
       case SetupError<Role>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

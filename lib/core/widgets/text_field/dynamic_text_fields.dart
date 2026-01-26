@@ -185,7 +185,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   Widget _buildTitleOnly(FieldGroupConfig config) {
     return BlockQuote(
       isColored: false,
-      margin: EdgeInsets.zero,
+      margin: EdgeInsets.only(top: 5.0),
       child: RichText(
         text: TextSpan(
           style: context.textTheme.titleMedium?.copyWith(

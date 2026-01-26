@@ -122,8 +122,7 @@ class Warehouse extends Equatable {
     address: AddressInfo.empty,
   );
 
-  /// Check if the Warehouse is empty.
-  bool get isEmpty => identical(this, Warehouse.empty);
+  bool get isEmpty => code.isEmpty || description.isEmpty || address.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -206,8 +205,8 @@ class Warehouse extends Equatable {
     isDefault ? 'Yes' : 'No',
     isActive ? 'Yes' : 'No',
     isBinManaged ? 'Yes' : 'No',
-    createdBy.toTitle ?? '',
-    updatedBy.toTitle ?? '',
+    createdBy?.toTitle ?? '',
+    updatedBy?.toTitle ?? '',
   ];
 
   static List<String> get dataTableHeader => [

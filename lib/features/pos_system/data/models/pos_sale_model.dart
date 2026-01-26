@@ -290,10 +290,10 @@ class POSSale extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store Number',
+    'Store No.',
     'Product ID',
-    'Order Number',
-    'Receipt Number',
+    'Order No.',
+    'Receipt No.',
     'Customer ID',
     'Status',
     'Unit Price',

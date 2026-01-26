@@ -88,9 +88,7 @@ class Department extends Equatable {
   /// Used as a fallback when no matching Department is found.
   static get empty => Department(id: '', name: '', code: '', createdBy: '');
 
-  /// Returns true if this instance is the singleton [empty] Department.
-  /// Use this to check if the Department is the default/fallback (e.g., not found).
-  bool get isEmpty => identical(this, Department.empty);
+  bool get isEmpty => name.isEmpty || code.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 

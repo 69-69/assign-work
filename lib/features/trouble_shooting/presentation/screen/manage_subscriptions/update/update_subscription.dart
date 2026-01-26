@@ -113,7 +113,7 @@ class _UpdateSubscriptionFormState extends State<_UpdateSubscriptionForm> {
       case TenantUpdated<Subscription>(message: var msg):
         _showAlert(msg ?? 'Changes saved');
       case TenantError<Subscription>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

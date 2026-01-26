@@ -58,7 +58,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case ProcurementError<PurchaseRequisition>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

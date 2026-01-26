@@ -58,9 +58,15 @@ class AsyncProgressBarDialog extends StatefulWidget {
   /// Calculate time left to complete in circularProgressBar [loadProgress].
   final double? loadProgress;
 
+  /// The width of the line used to draw the circle [strokeWidth].
+  final double? strokeWidth;
+
+  /// The color of the line used to draw the circle [strokeColor].
+  final Color? strokeColor;
+
   const AsyncProgressBarDialog({
     super.key,
-    required this.future,
+    this.future,
     this.decoration,
     this.opacity = 1.0,
     this.progress,
@@ -70,6 +76,8 @@ class AsyncProgressBarDialog extends StatefulWidget {
     this.isDialog = true,
     this.size,
     this.loadProgress,
+    this.strokeWidth,
+    this.strokeColor,
   });
 
   @override
@@ -202,7 +210,9 @@ class _AsyncProgressBarDialogState extends State<AsyncProgressBarDialog> {
     return CircularProgressIndicator(
       value: value,
       semanticsLabel: 'loading',
-      backgroundColor: const Color(0xFFC5D3F8),
+      strokeWidth: widget.strokeWidth,
+      backgroundColor: widget.strokeColor ?? kDangerColor,
+      // const Color(0xFFC5D3F8)
       // valueColor: const AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
     );
   }

@@ -117,8 +117,9 @@ class Role extends Equatable {
   /// Used as a fallback when no matching Role is found.
   static get empty => Role(id: '', name: '', permissions: {});
 
-  /// [isEmpty] Checks if the Role is empty.
-  bool get isEmpty => identical(this, Role.empty);
+  bool get isEmpty => name.isEmpty || permissions.isEmpty;
+
+  bool get isNotEmpty => !isEmpty;
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;

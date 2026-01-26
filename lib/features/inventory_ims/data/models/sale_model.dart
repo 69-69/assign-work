@@ -349,10 +349,10 @@ class Sale extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store Number',
+    'Store No.',
     'Product ID',
-    'Order Number',
-    'Invoice Number',
+    'Order No.',
+    'Invoice No.',
     'Customer ID',
     'Status',
     'Quantity',

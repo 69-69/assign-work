@@ -109,8 +109,7 @@ class Customer extends Equatable {
     createdBy: '',
   );
 
-  /// Use this to check if the Customer is the empty (e.g., not found).
-  bool get isEmpty => identical(this, Customer.empty);
+  bool get isEmpty => customerId.isEmpty || name.isEmpty || phone.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -231,7 +230,7 @@ class Customer extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Customer ID',
-    'Store Number',
+    'Store No.',
     'Name',
     'Phone',
     'Alt-Phone',
@@ -491,7 +490,7 @@ class Customers extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Customer ID',
-    'Store Number',
+    'Store No.',
     'Name',
     'Phone',
     'Mobile',

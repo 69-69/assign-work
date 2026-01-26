@@ -16,7 +16,7 @@ extension ZoneTypeExtension on ZoneType {
   String get getName => EnumUtil<ZoneType>(this).getName;
   String get getLabel => EnumUtil<ZoneType>(this).getLabel;
 
-  // Get Short Location Code
+  /*// Get Short Location Code
   String get locCode {
     return switch (this) {
       ZoneType.receiving => 'REC',
@@ -26,7 +26,7 @@ extension ZoneTypeExtension on ZoneType {
       ZoneType.qc => 'QC',
       _ => 'OTHER',
     };
-  }
+  }*/
 }
 
 class ZoneTypeUtil {

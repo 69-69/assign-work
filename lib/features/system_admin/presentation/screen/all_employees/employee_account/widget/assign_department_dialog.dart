@@ -37,7 +37,7 @@ class AssignEmployeeDepartment extends StatelessWidget {
       case SetupUpdated<Employee>(message: _):
         _showAlert(cxt);
       case SetupError<Employee>():
-        _showAlert(cxt, 'Error saving changes');
+        _showAlert(cxt, 'Something went wrong! Please, try again');
       case _: // no action
     }
   }

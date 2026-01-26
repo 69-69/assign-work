@@ -127,7 +127,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
       case SetupUpdated<CompanyStore>(message: var msg):
         _showAlert(msg ?? note);
       case SetupError<CompanyStore>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

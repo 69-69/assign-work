@@ -4,29 +4,32 @@ import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_w
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search Warehouse Storage Location [SearchWHLocation]
+/// Search Warehouse Storage Location [SearchWHSubLocations]
 /// Functional area within the warehouse
-class SearchWHLocation extends StatefulWidget {
+class SearchWHSubLocations extends StatefulWidget {
+  final bool enabled;
   final String? label;
   final String? initialValue;
-  final Function(String, String, String) onChanged;
+  final Function(String, String, String, String) onChanged;
 
-  const SearchWHLocation({
+  const SearchWHSubLocations({
     super.key,
     this.label,
     this.initialValue,
+    this.enabled = true,
     required this.onChanged,
   });
 
   @override
-  State<SearchWHLocation> createState() => _SearchWHLocationState();
+  State<SearchWHSubLocations> createState() => _SearchWHSubLocationsState();
 }
 
-class _SearchWHLocationState extends State<SearchWHLocation> {
+class _SearchWHSubLocationsState extends State<SearchWHSubLocations> {
   String? _initialValue;
   WHLocation? _whLocation;
 
   String get _labelText => widget.label ?? 'Sub-Location...';
+  bool get _isEnabled => widget.enabled;
 
   @override
   void initState() {
@@ -53,6 +56,7 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<WHLocation>(
+      enabled: _isEnabled,
       selectedItem: _whLocation,
       labelText: _labelText,
       // helperText: 'Functional area/subdivision within the warehouse',
@@ -60,9 +64,13 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),
-      itemAsString: (loc) => loc.getLocType.toTitle,
-      onChanged: (loc) =>
-          widget.onChanged(loc!.id, loc.warehouseCode, loc.getLocType),
+      itemAsString: (loc) => loc.description.toTitle,
+      onChanged: (loc) => widget.onChanged(
+        loc!.id,
+        loc.warehouseCode,
+        loc.getLocationType,
+        loc.description ?? '',
+      ),
       validator: (loc) => loc == null ? _labelText : null,
     );
   }
@@ -74,5 +82,45 @@ class _SearchWHLocationState extends State<SearchWHLocation> {
     final term = filter.isEmpty ? (_initialValue ?? '') : filter;
     final matches = item.filterByAny(term);
     return matches;
+  }
+}
+
+/// Sub-Location Codes (e.g., A1, A2, ...., A20, ...) [SearchSubLocationCodes]
+class SearchSubLocationCodes extends StatelessWidget {
+  final String? label;
+  final bool isDisabled;
+  final String? initialValue;
+  final List<String> subLocCodes;
+  final void Function(String?) onChanged;
+
+  const SearchSubLocationCodes({
+    super.key,
+    required this.onChanged,
+    this.isDisabled = false,
+    required this.subLocCodes,
+    this.initialValue,
+    this.label,
+  });
+
+  String get _labelText => label ?? 'Sub-Location Codes...';
+
+  @override
+  Widget build(BuildContext context) {
+    // If label is provided, replace it with the first in the list
+    final List<String> locCodes = label != null
+        ? [_labelText, ...subLocCodes]
+        : [...subLocCodes];
+
+    return IgnorePointer(
+      ignoring: isDisabled,
+      child: StaticDropdown<String>(
+        key: key,
+        label: _labelText,
+        initialValue: initialValue,
+        items: locCodes,
+        getDisplayText: (str) => str.toUpperAll,
+        onChanged: onChanged,
+      ),
+    );
   }
 }

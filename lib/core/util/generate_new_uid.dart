@@ -201,6 +201,27 @@ extension UniqueCodeExtension on String {
   }
 }
 
+List<String> generateBinLocationsCode(String start, String end) {
+  if (start.length != end.length) return [start, end]; // fallback
+
+  final List<String> result = [];
+
+  // Split into letter prefix + numeric suffix
+  final startLetter = start.replaceAll(RegExp(r'\d'), '');
+  final endLetter = end.replaceAll(RegExp(r'\d'), '');
+  final startNum = int.tryParse(start.replaceAll(RegExp(r'\D'), '')) ?? 0;
+  final endNum = int.tryParse(end.replaceAll(RegExp(r'\D'), '')) ?? 0;
+
+  // Letters must match (optional: can handle multi-letter later)
+  if (startLetter != endLetter) return [start, end];
+
+  for (var i = startNum; i <= endNum; i++) {
+    result.add('$startLetter$i');
+  }
+
+  return result;
+}
+
 /// Warehouse Location Code Generator
 List<String> generateLocationCodes({
   required int zoneFrom,

@@ -46,7 +46,7 @@ class CacheData extends HiveObject {
   /// [empty] Empty CacheData object.
   static CacheData get empty => CacheData(id: '', scopeId: '', data: {});
 
-  bool get isEmpty => identical(this, CacheData.empty);
+  bool get isEmpty => (id.isEmpty && scopeId.isEmpty) || data.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 

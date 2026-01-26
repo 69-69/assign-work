@@ -48,10 +48,18 @@ class EnumUtil<T extends Enum> {
   }
 
   /// [fromString] Convert a string value to the enum type.
-  static T fromString<T extends Enum>(List<T> enumValues, String? value) {
+  /// Fallback to the first/last enum value if not found.
+  /// [useLast] If true, Fallback to the last enum value if not found.
+  static T fromString<T extends Enum>(
+    List<T> enumValues,
+    String? value, {
+    bool useLast = false,
+  }) {
     return enumValues.firstWhere(
       (e) => isEqual(e, value),
-      orElse: () => enumValues.first, // Default to the first value if not found
+      orElse: () => useLast
+          ? enumValues.last
+          : enumValues.first, // Default to the first value if not found
     );
   }
 

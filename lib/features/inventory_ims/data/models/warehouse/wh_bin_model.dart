@@ -1,4 +1,5 @@
-import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -15,18 +16,21 @@ class WHBin extends Equatable {
   static final DateTime _today = DateTime.now();
 
   final String id;
-  final LocationType type;
-  final String locationId; // FK to WHBin.id
+  final String warehouseCode; // FK to Warehouse.id
   final String storeNumber; // FK CompanyStore.storeNumber
-  final String code;
+  final String binLocationCode; // Single bin location code
+  final String fullBinLocations; // List of all bin locations
   final String description;
   final bool isActive;
 
   /// Capacity constraints
-  final double? maxItems; // Max units bin can hold
-  final double? maxWeight; // Max weight the bin can hold
-  final List<String>? uomRestriction; // What units are allowed in the bin
-  final double? minQty; // Trigger replenishment alert if below this
+  final double? maxQuantity; // Max units bin can hold
+  final double? maxVolume; // Max weight/volume the bin can hold
+  final List<UnitOfMeasure>?
+  uomRestriction; // What units are allowed in the bin
+  final List<ItemCategory>?
+  itemRestriction; // What item categories are allowed in the bin
+  final double? minQuantity; // Trigger replenishment alert if below this
 
   final int? sequence; // For picking order or physical arrangement
 
@@ -37,16 +41,17 @@ class WHBin extends Equatable {
 
   WHBin({
     required this.id,
-    required this.type,
-    required this.code,
-    required this.locationId,
+    required this.binLocationCode,
+    this.fullBinLocations = '',
+    required this.warehouseCode,
     required this.storeNumber,
     this.description = '',
     this.isActive = true,
-    this.maxItems,
-    this.maxWeight,
+    this.maxQuantity,
+    this.maxVolume,
     this.uomRestriction = const [],
-    this.minQty,
+    this.itemRestriction = const [],
+    this.minQuantity,
     this.sequence,
     this.createdBy,
     this.updatedBy,
@@ -58,16 +63,21 @@ class WHBin extends Equatable {
   factory WHBin.fromMap(Map<String, dynamic> map, {String? id}) {
     return WHBin(
       id: id ?? map['id'] ?? '',
-      type: LocationTypeUtil.fromString(map['type']),
-      code: map['code'] ?? '',
-      locationId: map['locationId'] ?? '',
+      binLocationCode: map['binLocationCode'] ?? '',
+      fullBinLocations: map['fullBinLocations'] ?? '',
+      warehouseCode: map['warehouseCode'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       description: map['description'] ?? '',
       isActive: map['isActive'] ?? false,
-      maxItems: '${map['maxItems']}'.asDouble,
-      maxWeight: '${map['maxWeight']}'.asDouble,
-      uomRestriction: List.from(map['uomRestriction'] ?? []).cast<String>(),
-      minQty: '${map['minQty']}'.asDouble,
+      maxQuantity: '${map['maxQuantity']}'.asDouble,
+      maxVolume: '${map['maxVolume']}'.asDouble,
+      uomRestriction: UOMUtil.fromStringList(
+        List<String>.from(map['uomRestriction'] ?? []),
+      ),
+      itemRestriction: ItemCategoryUtil.fromStringList(
+        List<String>.from(map['itemRestriction'] ?? []),
+      ),
+      minQuantity: '${map['minQuantity']}'.asDouble,
       sequence: '${map['sequence']}'.asInt,
       createdBy: map['createdBy'] ?? '',
       updatedBy: map['updatedBy'] ?? '',
@@ -79,15 +89,16 @@ class WHBin extends Equatable {
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'code': code,
-    'type': getType,
-    'locationId': locationId,
+    'warehouseCode': warehouseCode,
     'storeNumber': storeNumber,
+    'binLocationCode': binLocationCode,
+    'fullBinLocations': fullBinLocations,
     'description': description,
-    'maxItems': maxItems,
-    'maxWeight': maxWeight,
-    'uomRestriction': List.from(uomRestriction ?? []).cast<String>(),
-    'minQty': minQty,
+    'maxQuantity': maxQuantity,
+    'maxVolume': maxVolume,
+    'minQuantity': minQuantity,
+    'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
+    'itemRestriction': itemRestriction?.map((e) => e.getName).toList() ?? [],
     'sequence': sequence,
     'isActive': isActive,
     'createdBy': createdBy,
@@ -116,19 +127,18 @@ class WHBin extends Equatable {
   /// Used as a fallback when no matching WHBin is found
   static WHBin get empty => WHBin(
     id: '',
-    code: '',
-    locationId: '',
+    binLocationCode: '',
+    warehouseCode: '',
     storeNumber: '',
     description: '',
-    type: LocationType.zone,
   );
 
-  // Get Name
-  String get getType => type.getName;
+  bool get isEmpty => warehouseCode.isEmpty || binLocationCode.isEmpty;
 
-  // Check if the WHBin is empty.
-  bool get isEmpty => identical(this, WHBin.empty);
   bool get isNotEmpty => !isEmpty;
+
+  /// Convert comma separated string to `List<String>`
+  List<String> get getFullBinLocations => fullBinLocations.split(',').toList();
 
   // filter/search
   bool filterByAny(String term) => itemAsList.filterAny(term);
@@ -138,7 +148,7 @@ class WHBin extends Equatable {
 
   /// Extract all codes from a list of Location objects
   static List<String> getCodes(List<WHBin> warehouses) =>
-      warehouses.map((w) => w.code).toList();
+      warehouses.map((w) => w.binLocationCode).toList();
 
   /// Returns Location codes filtered by [code].
   /// If [code] is empty, all codes are returned.
@@ -147,16 +157,17 @@ class WHBin extends Equatable {
 
   WHBin copyWith({
     String? id,
-    String? code,
-    LocationType? type,
-    String? locationId,
+    String? warehouseCode,
     String? storeNumber,
+    String? binLocationCode,
+    String? fullBinLocations,
     String? description,
     bool? isActive,
-    double? maxItems,
-    double? maxWeight,
-    List<String>? uomRestriction,
-    double? minQty,
+    double? maxQuantity,
+    double? maxVolume,
+    List<UnitOfMeasure>? uomRestriction,
+    List<ItemCategory>? itemRestriction,
+    double? minQuantity,
     int? sequence,
     String? createdBy,
     String? updatedBy,
@@ -164,16 +175,17 @@ class WHBin extends Equatable {
     DateTime? updatedAt,
   }) => WHBin(
     id: id ?? this.id,
-    code: code ?? this.code,
-    type: type ?? this.type,
-    locationId: locationId ?? this.locationId,
+    warehouseCode: warehouseCode ?? this.warehouseCode,
     storeNumber: storeNumber ?? this.storeNumber,
+    binLocationCode: binLocationCode ?? this.binLocationCode,
+    fullBinLocations: fullBinLocations ?? this.fullBinLocations,
     description: description ?? this.description,
     isActive: isActive ?? this.isActive,
-    maxItems: maxItems ?? this.maxItems,
-    maxWeight: maxWeight ?? this.maxWeight,
+    maxQuantity: maxQuantity ?? this.maxQuantity,
+    maxVolume: maxVolume ?? this.maxVolume,
     uomRestriction: uomRestriction ?? this.uomRestriction,
-    minQty: minQty ?? this.minQty,
+    itemRestriction: itemRestriction ?? this.itemRestriction,
+    minQuantity: minQuantity ?? this.minQuantity,
     sequence: sequence ?? this.sequence,
     createdBy: createdBy ?? this.createdBy,
     updatedBy: updatedBy ?? this.updatedBy,
@@ -184,16 +196,17 @@ class WHBin extends Equatable {
   @override
   List<Object?> get props => [
     id,
-    code,
-    type,
-    locationId,
+    warehouseCode,
     storeNumber,
+    binLocationCode,
+    fullBinLocations,
     description,
     isActive,
-    maxItems,
-    maxWeight,
+    maxQuantity,
+    maxVolume,
     uomRestriction,
-    minQty,
+    itemRestriction,
+    minQuantity,
     sequence,
     createdBy,
     updatedBy,
@@ -204,25 +217,21 @@ class WHBin extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getType,
-    locationId,
-    code,
+    warehouseCode,
     description,
     isActive ? 'Yes' : 'No',
-    maxItems.toString(),
+    maxQuantity.toString(),
     sequence.toString(),
-    createdBy ?? '',
-    updatedBy ?? '',
+    createdBy?.toTitle ?? '',
+    updatedBy?.toTitle ?? '',
   ];
 
   static List<String> get dataTableHeader => [
     'ID',
-    'Store Number',
-    'Type',
-    'Location ID',
-    'Code',
-    'description',
-    'Is Active',
+    'Store No.',
+    'WH Code',
+    'Description',
+    'Active',
     'Capacity',
     'Sequence',
     'Created By',

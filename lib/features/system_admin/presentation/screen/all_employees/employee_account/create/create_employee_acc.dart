@@ -107,7 +107,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
       case SetupAdded<Employee>(message: var msg):
         _showAlert(msg ?? 'Employee created successfully');
       case SetupError<Employee>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

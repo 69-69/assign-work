@@ -181,7 +181,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         _showAlert(msg ?? 'PR created successfully');
         await _confirmPrintoutDialog();
       case ProcurementError<PurchaseRequisition>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

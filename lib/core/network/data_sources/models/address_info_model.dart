@@ -96,8 +96,8 @@ class AddressInfo extends Equatable {
     type: AddressType.office,
   );
 
-  /// [isEmpty] Checks if the Address is empty.
-  bool get isEmpty => identical(this, AddressInfo.empty);
+  bool get isEmpty =>
+      street.isEmpty || city.isEmpty || state.isEmpty || postalCode.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 

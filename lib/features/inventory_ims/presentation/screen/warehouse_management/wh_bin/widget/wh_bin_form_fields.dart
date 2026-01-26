@@ -1,7 +1,11 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
+import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
+import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/location_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
 import 'package:flutter/material.dart';
@@ -18,28 +22,64 @@ class WHBinFormFields {
     onPressed: onPressed,
   );
 
-  static List<FieldGroupConfig> whBinFields(Map<String, dynamic>? initial) => [
+  static Widget stackTextField(
+    BuildContext context, {
+    Key? key,
+    String? label,
+    String? helperText,
+    bool enable = false,
+    bool showProgress = false,
+    void Function()? onPressed,
+    InputDecoration? decoration,
+    void Function(String)? onChanged,
+    TextEditingController? controller,
+  }) => Stack(
+    alignment: Alignment.topRight,
+    children: <Widget>[
+      CustomTextField(
+        key: key,
+        label: label,
+        enable: enable,
+        autofocus: enable,
+        controller: controller,
+        onChanged: onChanged,
+        keyboardType: TextInputType.text,
+        inputDecoration:
+            decoration ??
+            InputDecoration(helperText: helperText, labelText: label),
+      ),
+
+      Padding(
+        padding: EdgeInsets.all(3),
+        child: FittedBox(
+          child: context.toolbarButton(
+            label: showProgress ? 'Saving' : (enable ? 'Done' : 'Edit'),
+            icon: showProgress
+                ? _progressIcon
+                : (enable ? Icons.done : Icons.edit),
+            bgColor: kPrimaryColor.toAlpha(enable ? 1 : 0.3),
+            onPressed: onPressed,
+          ),
+        ),
+      ),
+    ],
+  );
+
+  static Widget get _progressIcon => SizedBox(
+    width: 10,
+    height: 10,
+    child: AsyncProgressBarDialog(size: 10, isDialog: false, strokeWidth: 2),
+  );
+
+  static List<FieldGroupConfig> whBinFields() => [
     FieldGroupConfig(
       key: 'description',
-      label: 'Bin Name',
+      label: 'Description',
       type: TextInputType.text,
       widgetType: FieldWidgetType.textField,
       helperText:
           'Physical slot inside a location (e.g., Shelf A01, Slot B03).',
       validator: (_) => null,
-    ),
-    FieldGroupConfig(
-      key: 'type',
-      label: 'Bin type',
-      helperText: 'Select the type of bin this is.',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return LocationTypeDropdown(
-          initialValue: initialData,
-          onChanged: onChanged,
-        );
-      },
     ),
     FieldGroupConfig(
       key: 'sequence',
@@ -51,19 +91,6 @@ class WHBinFormFields {
       validator: (_) => null,
     ),
     FieldGroupConfig(
-      key: 'locationId',
-      label: 'Parent Location',
-      helperText: 'Select the location this bin belongs to.',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return SearchWHLocation(
-          initialValue: initialData,
-          onChanged: (id, whCode, locType) => onChanged(id),
-        );
-      },
-    ),
-    FieldGroupConfig(
       key: 'isActive',
       label: 'Configuration Options',
       isNested: true,
@@ -71,13 +98,14 @@ class WHBinFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return DynamicCheckboxList(
-          showButton: false,
-          initialData: CheckboxGroupConfig.mapCheckboxes(initialData),
+          initialData: [
+            {'isActive': initialData},
+          ],
           checkboxesConfig: [
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initial?['isActive'] ?? true,
+              // selected: initial?['isActive'] ?? true,
               tooltip: 'Enable or disable this bin',
               description:
                   'Turn this on if the bin is currently in use for storing items.',
@@ -90,12 +118,13 @@ class WHBinFormFields {
         );
       },
     ),
-    ..._whStorageFields(initial),
-  ];
-
-  static List<FieldGroupConfig> _whStorageFields(
-    Map<String, dynamic>? initial,
-  ) => [
+    FieldGroupConfig(
+      key: 'minQuantity',
+      label: 'Minimum Quantity',
+      helperText:
+          'Min. quantity that trigger replenishment alert if below this.',
+      type: TextInputType.number,
+    ),
     FieldGroupConfig(
       key: 'units-title',
       label: 'Storage Units',
@@ -104,36 +133,96 @@ class WHBinFormFields {
       widgetType: FieldWidgetType.titleOnly,
     ),
     FieldGroupConfig(
-      key: 'maxItems',
+      key: 'maxQuantity',
       label: 'Maximum Items',
       helperText: 'Maximum number of items this bin or shelf can store.',
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
     ),
     FieldGroupConfig(
-      key: 'maxWeight',
+      key: 'maxVolume',
       label: 'Maximum Weight',
       helperText: 'Maximum total weight this bin or shelf can safely hold.',
       type: TextInputType.number,
     ),
     FieldGroupConfig(
-      key: 'minQty',
-      label: 'Minimum Quantity',
-      helperText:
-          'Min. quantity that trigger replenishment alert if below this.',
-      type: TextInputType.number,
-    ),
-    FieldGroupConfig(
       key: 'uomRestriction',
-      label: 'Unit of Measure Restriction',
-      helperText: 'What units are allowed in the bin.',
+      label: 'UoM Restriction',
+      helperText: 'Units of measure allowed in this sub-location.',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return UOMDropdown(initialValue: initialData, onChanged: onChanged);
+        return UOMMultiDropdown(
+          label: 'UoM Restriction',
+          initialValues: List.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'itemRestriction',
+      label: 'Item Restriction',
+      helperText: 'Items allowed in this sub-location.',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return ItemCatMultiDropdown(
+          label: 'Item Restriction',
+          initialValues: List.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
       },
     ),
   ];
+
+  static List<FieldGroupConfig> whBinLocationCodesFields({
+    List<Map<String, dynamic>>? subLocations,
+  }) {
+    if (subLocations == null || subLocations.isEmpty) return [];
+
+    return subLocations.expand((e) {
+      final type = e['type'];
+      final codeRanges = e['codeRanges'];
+
+      return [
+        _codeRangeField(
+          key: '${type}_from',
+          label: 'From (Start)',
+          helperText: 'Starting sub-location code (e.g., A1).',
+          codeRanges: codeRanges,
+        ),
+        _codeRangeField(
+          key: '${type}_to',
+          label: 'To (End)',
+          helperText: 'Ending sub-location code (e.g., A20).',
+          codeRanges: codeRanges,
+        ),
+      ];
+    }).toList();
+  }
+
+  static FieldGroupConfig _codeRangeField({
+    required String key,
+    required String label,
+    required String helperText,
+    required List<String> codeRanges,
+  }) {
+    return FieldGroupConfig(
+      key: key,
+      label: label,
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      helperText: helperText,
+      customBuilder: ({required initialData, required onChanged}) {
+        return SearchSubLocationCodes(
+          label: label,
+          initialValue: initialData,
+          subLocCodes: codeRanges,
+          onChanged: (code) => onChanged(code),
+        );
+      },
+    );
+  }
 
   /// Updates the [list] with objects of type [T] from a list of maps.
   /// Clears the list first to prevent duplication, then adds new objects.

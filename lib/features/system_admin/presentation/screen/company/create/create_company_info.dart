@@ -112,7 +112,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       case SetupAdded<Company>(message: var msg):
         _showAlert(msg ?? 'Info saved successfully');
       case SetupError<Company>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

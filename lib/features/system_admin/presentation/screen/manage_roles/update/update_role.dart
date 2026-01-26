@@ -100,7 +100,7 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
       case SetupUpdated<Role>(message: var msg):
         _showAlert(msg ?? 'Changes saved');
       case SetupError<Role>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

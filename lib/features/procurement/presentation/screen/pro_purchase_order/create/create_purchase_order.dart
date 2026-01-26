@@ -255,7 +255,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         _showAlert(msg ?? 'PO created successfully');
         await _confirmPrintoutDialog();
       case ProcurementError<ProPurchaseOrder>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

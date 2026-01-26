@@ -60,7 +60,8 @@ class WHLocation extends Equatable {
   final String
   codeRanges; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
   final String storeNumber; // FK CompanyStore.storeNumber
-  // final String description; // Optional descriptive name
+  /// [description] To create a custom sub-location, else fallback to type.getName
+  final String? description;
   final bool isActive;
   final LocationType type;
 
@@ -86,7 +87,7 @@ class WHLocation extends Equatable {
     this.zoneType,
     this.uomRestriction = const [],
     this.codeRanges = '',
-    // this.description = '',
+    this.description,
     this.isActive = true,
     this.maxQuantity,
     this.maxVolume,
@@ -97,44 +98,53 @@ class WHLocation extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory WHLocation.fromMap(Map<String, dynamic> map, {String? id}) =>
-      WHLocation(
-        id: id ?? map['id'] ?? '',
-        type: LocationTypeUtil.fromString(map['type']),
-        zoneType: ZoneTypeUtil.fromString(map['zoneType']),
-        uomRestriction: UOMUtil.fromStringList(
-          List<String>.from(map['uomRestriction'] ?? []),
-        ),
-        warehouseCode: map['warehouseCode'] ?? '',
-        storeNumber: map['storeNumber'] ?? '',
-        codeRanges: map['codeRanges'] ?? '',
-        isActive: map['isActive'] ?? false,
-        maxQuantity: '${map['maxQuantity']}'.asDouble,
-        maxVolume: '${map['maxVolume']}'.asDouble,
-        createdBy: map['createdBy'] ?? '',
-        updatedBy: map['updatedBy'] ?? '',
-        createdAt: toDateTimeFn(map['createdAt']),
-        updatedAt: toDateTimeFn(map['updatedAt']),
-      );
+  factory WHLocation.fromMap(Map<String, dynamic> map, {String? id}) {
+    final locType = LocationTypeUtil.fromString(map['type']);
+
+    return WHLocation(
+      id: id ?? map['id'] ?? '',
+      storeNumber: map['storeNumber'] ?? '',
+      type: locType,
+      zoneType: locType.isZoneType
+          ? ZoneTypeUtil.fromString(map['zoneType'])
+          : null,
+      description: locType.isDefineNew ? map['description'] : locType.getName,
+      uomRestriction: UOMUtil.fromStringList(
+        List<String>.from(map['uomRestriction'] ?? []),
+      ),
+      warehouseCode: map['warehouseCode'] ?? '',
+      codeRanges: map['codeRanges'] ?? '',
+      isActive: map['isActive'] ?? false,
+      maxQuantity: '${map['maxQuantity']}'.asDouble,
+      maxVolume: '${map['maxVolume']}'.asDouble,
+      createdBy: map['createdBy'] ?? '',
+      updatedBy: map['updatedBy'] ?? '',
+      createdAt: toDateTimeFn(map['createdAt']),
+      updatedAt: toDateTimeFn(map['updatedAt']),
+    );
+  }
 
   // map template
   Map<String, dynamic> _mapTemp() => {
     'id': id,
-    'codeRanges': codeRanges,
-    'type': getLocType,
-    'zoneType': getZoneType,
-    'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
     'storeNumber': storeNumber,
-    'warehouseId': warehouseCode,
+    'warehouseCode': warehouseCode,
+    'type': getLocationType,
     'isActive': isActive,
+    'zoneType': getZoneType,
+    'codeRanges': codeRanges,
+    'description': description,
+    'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
     'maxQuantity': maxQuantity,
     'maxVolume': maxVolume,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
   };
 
-  String get getLocType => type.getName;
+  String get getLocationType => type.getName;
   String get getZoneType => zoneType?.getName ?? 'N/A';
+  String get customType => type.isDefineNew ? 'Custom' : getLocationType;
+  String get status => isActive ? 'Active' : 'Inactive';
 
   /// Convert Model to toFirestore / toJson Function [toMap]
   Map<String, dynamic> toMap() {
@@ -162,6 +172,7 @@ class WHLocation extends Equatable {
     LocationType? type,
     ZoneType? zoneType,
     List<UnitOfMeasure>? uomRestriction,
+    String? description,
     bool? isActive,
     double? maxQuantity,
     double? maxVolume,
@@ -174,6 +185,7 @@ class WHLocation extends Equatable {
     type: type ?? this.type,
     zoneType: zoneType ?? this.zoneType,
     uomRestriction: uomRestriction ?? this.uomRestriction,
+    description: description ?? this.description,
     codeRanges: codeRanges ?? this.codeRanges,
     warehouseCode: warehouseCode ?? this.warehouseCode,
     storeNumber: storeNumber ?? this.storeNumber,
@@ -193,11 +205,9 @@ class WHLocation extends Equatable {
     warehouseCode: '',
     storeNumber: '',
     type: LocationType.zone,
-    zoneType: ZoneType.storage,
   );
+  bool get isEmpty => warehouseCode.isEmpty;
 
-  // Check if the WHLocation is empty.
-  bool get isEmpty => identical(this, WHLocation.empty);
   bool get isNotEmpty => !isEmpty;
 
   // filter/search
@@ -241,22 +251,26 @@ class WHLocation extends Equatable {
 
   List<String> get itemAsList => [
     id,
-    storeNumber,
-    isActive ? 'Yes' : 'No',
-    warehouseCode,
-    getLocType,
-    getZoneType,
-    createdBy ?? '',
-    updatedBy ?? '',
+    storeNumber.toUpperAll,
+    status,
+    warehouseCode.toUpperAll,
+    customType.toTitle,
+    description?.toTitle ?? 'N/A',
+    getZoneType.toTitle,
+    codeRanges.isEmpty ? 'No' : 'Yes',
+    createdBy?.toTitle ?? '',
+    updatedBy?.toTitle ?? '',
   ];
 
   static List<String> get dataTableHeader => [
     'ID',
     'Store No.',
-    'Active',
+    'Status',
     'WH Code',
-    'Sub-Levels',
-    'Zone Type',
+    'Type',
+    'Name',
+    'Zone',
+    'Has Codes',
     'Created By',
     'Updated By',
   ];

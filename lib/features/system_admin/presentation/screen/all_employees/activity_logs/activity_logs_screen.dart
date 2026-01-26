@@ -36,7 +36,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
         cxt.showAlertOverlay(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case SetupError<ActivityLog>():
-        cxt.showAlertOverlay('Error saving changes');
+        cxt.showAlertOverlay('Something went wrong! Please, try again');
       case _: // no action
     }
   }

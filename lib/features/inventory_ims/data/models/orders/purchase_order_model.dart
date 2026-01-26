@@ -336,8 +336,8 @@ class PurchaseOrder extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store Number',
-    'PO Number',
+    'Store No.',
+    'PO No.',
     'Supplier ID',
     'Order Type',
     'Status',

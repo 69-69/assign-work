@@ -105,8 +105,7 @@ class CompanyStore extends Equatable {
   /// The [primary store] created during initial workspace creation `cannot be deleted`.
   bool get canBeDeleted => !isPrimary;
 
-  /// Use this to check if the CompanyStores is the default/fallback (e.g., not found).
-  bool get isEmpty => identical(this, CompanyStore.empty);
+  bool get isEmpty => name.isEmpty || phone.isEmpty || address.isEmpty;
 
   bool get isNotEmpty => !isEmpty;
 
@@ -197,7 +196,7 @@ class CompanyStore extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store Number',
+    'Store No.',
     'Default',
     'Name',
     'Phone',

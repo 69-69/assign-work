@@ -196,7 +196,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
         _showAlert(msg ?? 'Changes saved');
         await _confirmPrintoutDialog();
       case SalesDistributionError<SalesQuotation>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

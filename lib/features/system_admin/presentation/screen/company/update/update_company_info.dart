@@ -125,7 +125,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
       case SetupUpdated<Company>(message: var msg):
         _showAlert(msg ?? 'Changes saved');
       case SetupError<Company>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

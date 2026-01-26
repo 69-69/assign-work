@@ -217,7 +217,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         _showAlert(msg ?? 'RFQ created successfully');
         await _confirmPrintoutDialog();
       case ProcurementError<RequestForQuote>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

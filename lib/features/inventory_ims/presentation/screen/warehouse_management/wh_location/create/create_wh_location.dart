@@ -1,5 +1,6 @@
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
+import 'package:assign_erp/core/util/extensions/wh_zone_type.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -22,9 +23,7 @@ extension WHLocationExtensions on BuildContext {
   Future<void> openWHLocationForm({WHLocation? serverItem}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: serverItem != null
-          ? '${serverItem.getLocType.toTitle} - ${serverItem.isActive ? 'Active' : 'Inactive'}'
-          : 'New Sub Location',
+      title: serverItem?.customType.toTitle ?? 'New Sub Location',
       body: _CreateWHLocationForm(serverItem: serverItem),
     ),
   );
@@ -41,8 +40,12 @@ class _CreateWHLocationForm extends StatefulWidget {
 
 class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   bool _isZoneType = false;
+
+  // This allow user to create a custom type of Location
+  bool _isCustomType = false;
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+
   bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
@@ -57,28 +60,24 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   WHLocation? get _serverItem => widget.serverItem;
 
   bool get _isServerNull => _serverItem == null;
-  List<String> get _existingCodes => _serverItem?.getCodeRanges ?? [];
 
   // Basic fields
-  String _whLocationCode = '';
   bool _isSubmitting = false;
-  late WHLocation _whLocationData = widget.serverItem ?? WHLocation.empty;
+  late WHLocation _whLocationData;
 
   void _onSubmit() async {
     if (_isSubmitting) return;
     final isUpdate = _serverItem?.isNotEmpty == true;
-    final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
     // Case 1: Update existing Location
-    if (isValid && isUpdate) {
+    if (_isFormValid && isUpdate) {
       _updatedLocation();
       return;
     }
 
     // Case 2: Form validation or empty Location
-    if (!isValid && _whLocationData.isNullOrEmpty) {
-      prettyPrint('_whLocationData', _whLocationData.toMap());
+    if (!_isFormValid || _whLocationData.isEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -118,7 +117,10 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     }
   }
 
-  /*void _generateWHLocCode([String? prefix]) {
+  /*
+  String _whLocationCode = '';
+  List<String> get _existingCodes => _serverItem?.getCodeRanges ?? [];
+  void _generateWHLocCode([String? prefix]) {
     // Get selected Location type
     final pref = _serverItem?.getLocType ?? prefix;
 
@@ -151,6 +153,25 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _isZoneType = _serverItem?.type.isZoneType ?? false;
+    _isCustomType = _serverItem?.type.isDefineNew ?? false;
+    _whLocationData = widget.serverItem ?? WHLocation.empty;
+  }
+
+  @override
+  void didUpdateWidget(covariant _CreateWHLocationForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.serverItem != widget.serverItem) {
+      setState(() {
+        _whLocationData = widget.serverItem ?? WHLocation.empty;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<WHLocationBloc, InventoryState<WHLocation>>(
       listener: _handleBlocState,
@@ -163,10 +184,25 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   }
 
   Widget _buildBody() {
-    return FormGroupTabView(
-      contents: formGroupCards,
-      footers: [
-        const SizedBox(height: 20),
+    return FormGroupCard(
+      showCollapseButton: false,
+      title: 'Warehouse Storage Location',
+      subTitle:
+          '\nDefine physical location hierarchy(sub-areas/levels) used to track where inventory is stored.'
+          '\nZone → Aisle → Rack → Level → Shelf → Bin',
+      children: [
+        SizedBox(
+          width: context.dynamicWidth(0.25),
+          child: SearchWarehouses(
+            initialValue: _whLocationData.warehouseCode,
+            onChanged: (id, code, description) {
+              setState(() {
+                _whLocationData = _whLocationData.copyWith(warehouseCode: code);
+              });
+            },
+          ),
+        ),
+        _buildWHSubLocation(),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,
@@ -179,46 +215,37 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Warehouse Storage Location',
-      'subTitle':
-          '\nDefine physical location hierarchy(sub-areas/levels) used to track where inventory is stored.'
-          '\nZone → Aisle → Rack → Level → Shelf → Bin',
-      'children': [
-        SizedBox(
-          width: context.dynamicWidth(0.25),
-          child: SearchWarehouses(
-            initialValue: _whLocationData.warehouseCode,
-            onChanged: (id, code, description) {
-              _whLocationData = _whLocationData.copyWith(warehouseCode: code);
-            },
-          ),
-        ),
-        _buildWHSubLocation(),
-      ],
-    },
-  ];
-
   DynamicTextFields _buildWHSubLocation() {
-    prettyPrint('_whLocationCode', _whLocationCode);
     return DynamicTextFields(
-      showButton: true,
-      // key: ValueKey(_whLocationData.type),
-      initialData: [
-        _serverItem?.toMap() ?? {},
-      ].map((e) => Map<String, dynamic>.from(e)).toList(),
+      initialData: [_serverItem?.toMap() ?? {}],
       fieldsConfig: WhLocationFormFields.whLocFields(
-        _serverItem?.toMap(),
-        _isZoneType,
+        isZone: _isZoneType,
+        isCustom: _isCustomType,
       ),
       onChanged: (List<Map<String, dynamic>> data) {
         var map = data.first;
-        _whLocationData = WHLocation.fromMap(map);
+        if (map.isEmpty) return;
+        var old = _serverItem;
+
+        var locType = LocationTypeUtil.fromString(map['type'] ?? old?.type);
+
+        _whLocationData = _whLocationData.copyWith(
+          type: locType,
+          zoneType: ZoneTypeUtil.fromString(map['zoneType'] ?? old?.zoneType),
+          uomRestriction: UOMUtil.fromStringList(
+            map['uomRestriction'] ?? old?.uomRestriction,
+          ),
+          description: map['description'] ?? old?.description,
+          isActive: map['isActive'] ?? old?.isActive,
+          maxQuantity: '${map['maxQuantity'] ?? old?.maxQuantity}'.asDouble,
+          maxVolume: '${map['maxVolume'] ?? old?.maxVolume}'.asDouble,
+        );
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           setState(() {
-            _isZoneType = map['type'] == LocationType.zone.getName;
+            _isZoneType = locType.isZoneType;
+            // Check if User chose to create a new/custom subLocation
+            _isCustomType = locType.isDefineNew;
           });
         });
       },

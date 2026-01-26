@@ -238,8 +238,10 @@ class _FormGroupTabViewState extends State<FormGroupTabView> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeaderRow(),
-        const SizedBox(height: 2),
+        if (_tabsData.length > 1) ...[
+          _buildHeaderRow(),
+          const SizedBox(height: 2),
+        ],
 
         if (_isGridView)
           Flexible(fit: FlexFit.loose, child: _buildTabs())

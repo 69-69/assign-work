@@ -37,7 +37,7 @@ class _ListWHBinsState extends State<ListWHBins> {
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
       case InventoryError<WHBin>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

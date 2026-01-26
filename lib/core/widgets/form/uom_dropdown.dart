@@ -42,11 +42,13 @@ class UOMDropdown extends StatelessWidget {
 class UOMMultiDropdown extends StatefulWidget {
   final Function(List<String>) onMultiChanged;
   final List<String>? initialValues;
+  final String? label;
 
   const UOMMultiDropdown({
     super.key,
     required this.onMultiChanged,
     this.initialValues,
+    this.label,
   });
 
   @override
@@ -63,12 +65,14 @@ class _UOMMultiDropdownState extends State<UOMMultiDropdown> {
     _selectedUOMs = widget.initialValues;
   }
 
+  String get _labelText => widget.label ?? 'Units of Measure';
+
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<String>(
       isMultiSelect: true,
       selectedMultiItems: _selectedUOMs,
-      labelText: 'Select Units of Measure',
+      labelText: _labelText,
       asyncItems: (String filter, loadProps) async => _loadUOMs(filter),
       filterFn: _filterUOMs,
       itemAsString: (String uom) => uom.toTitle,

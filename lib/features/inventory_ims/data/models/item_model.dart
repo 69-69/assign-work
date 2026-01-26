@@ -430,7 +430,7 @@ class Item extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Supplier ID',
-    'Store Number',
+    'Store No.',
     'SKU',
     'Batch ID',
     'Product',

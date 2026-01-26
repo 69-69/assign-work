@@ -35,7 +35,7 @@
 ```shell
 git init
 git add .
-git commit -m "working on Bin"
+git commit -m "Warehouse, SubLocations & Full Bin Locations Codes 90% completed"
 git branch -M main
 git push -u origin main
 ```

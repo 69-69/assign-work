@@ -1,19 +1,25 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/extensions/wh_location_type.dart';
-import 'package:assign_erp/core/util/generate_new_uid.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
+import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_bin_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_bin_bloc.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/generate_bin_code/generate_bin_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/wh_bin_form_fields.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,9 +31,7 @@ extension WHBinExtensions on BuildContext {
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: serverItem != null
-          ? '${serverItem.code.toUpperAll} - ${serverItem.description.toTitle}'
-          : 'New Bin/Shelf Storage',
+      title: serverItem?.description.toTitle ?? 'Bin Location Master',
       body: _CreateWHBinForm(
         serverItem: serverItem,
         existingCodes: existingCodes,
@@ -47,14 +51,19 @@ class _CreateWHBinForm extends StatefulWidget {
 }
 
 class _CreateWHBinFormState extends State<_CreateWHBinForm> {
+  String _warehouseCode = '';
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+  final Set<String> _binLocationCode = {};
+  List<Map<String, dynamic>>? _subLocations = [];
 
   bool get _isFormValid => _formKey.currentState!.validate();
 
   // Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
 
   WHBinBloc get _bloc => context.read<WHBinBloc>();
@@ -62,12 +71,13 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   WHBin? get _serverItem => widget.serverItem;
 
   bool get _isServerNull => _serverItem == null;
-  List<String>? get _existingCodes => widget.existingCodes;
 
   // Basic fields
-  String _whBinCode = '';
   bool _isSubmitting = false;
   late WHBin _whBinData = widget.serverItem ?? WHBin.empty;
+
+  get _finalBinLoc =>
+      [_warehouseCode, ..._binLocationCode].join('-').toUpperAll;
 
   void _onSubmit() async {
     if (_isSubmitting) return;
@@ -75,25 +85,26 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
     final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Location
+    // Case 1: Form validation or empty WHBin
+    if (!isValid && _whBinData.isEmpty) {
+      _showAlert('Please enter all required fields');
+      return;
+    }
+
+    // Case 2: Update existing Location
     if (isValid && isUpdate) {
       _updatedBin();
       return;
     }
 
-    // Case 2: Form validation or empty WHBin
-    if (!isValid && _whBinData.isNullOrEmpty) {
-      _showAlert('Please enter all required fields');
-      return;
-    }
-
     // Case 3: Add new WHBIn
-    _addNewBin();
+    _addNewLocationCodeBin();
   }
 
-  void _addNewBin() {
+  void _addNewLocationCodeBin() {
     final newData = _whBinData.copyWith(
-      code: _whBinCode,
+      binLocationCode: _finalBinLoc,
+      warehouseCode: _warehouseCode,
       storeNumber: _employeeStore,
       createdBy: _employeeName,
     );
@@ -102,7 +113,10 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   }
 
   void _updatedBin() {
-    final updated = _whBinData.copyWith(updatedBy: _employeeName);
+    final updated = _whBinData.copyWith(
+      binLocationCode: _finalBinLoc,
+      updatedBy: _employeeName,
+    );
 
     _bloc.add(UpdateInventory<WHBin>(documentId: _whBinData.id, data: updated));
   }
@@ -114,11 +128,14 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
         _formResetKey = UniqueKey();
         _isSubmitting = false;
         _whBinData = WHBin.empty;
+        _warehouseCode = '';
+        _subLocations = [];
+        _binLocationCode.clear();
       });
-      _generateWHBinCode(); // fresh Warehouse Bin code
     }
   }
 
+  /* List<String>? get _existingCodes => widget.existingCodes;
   void _generateWHBinCode([String? prefix]) {
     // Get selected Bin type, else default to 'Zone'
     final pref = _serverItem?.getType ?? prefix ?? LocationType.zone.getName;
@@ -126,7 +143,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
     if (_whBinCode != nextBinCode) {
       setState(() => _whBinCode = nextBinCode);
     }
-  }
+  }*/
 
   void _showAlert(String msg) {
     context.showAlertOverlay(
@@ -145,15 +162,16 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
       case InventoryUpdated<WHBin>(message: var msg):
         _showAlert(msg ?? note);
       case InventoryError<WHBin>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }
 
   @override
-  void initState() {
-    super.initState();
-    _generateWHBinCode();
+  void dispose() {
+    // _bloc.close();
+    _subLocations = null;
+    super.dispose();
   }
 
   @override
@@ -173,70 +191,36 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        if (_isServerNull) ...{
+        /*if (_isServerNull) ...{
           WHBinFormFields.buildBinNumber(
             context,
             _whBinCode,
             _generateWHBinCode,
           ),
         },
-        const SizedBox(height: 20),
-        /*Warehouse Master
+        Warehouse Master
            ↓
         Location Master (Zone / Area / Storage Type)
            ↓
-        Bin Master (Aisle + Shelf + Level)
-        */
-        FittedBox(
-          alignment: Alignment.topLeft,
-          child: BlockQuote(
-            blockColor: kBgLightColor,
-            blockWidth: 20,
-            child: Tooltip(
-              message: 'Storage Bin Location Address',
-              child: Wrap(
-                // mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'BIN LOCATION CODE:',
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  BlockQuote(
-                    blockColor: kPrimaryAccentColor,
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text('Warehouse: $_whBinCode -'),
-                  ),
-                  BlockQuote(
-                    blockColor: kWarningColor,
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text('Aisle: ${_whBinData.locationId} -'),
-                  ),
-                  BlockQuote(
-                    blockColor: kSuccessColor,
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text('Shelf: $_whBinCode -'),
-                  ),
-                  BlockQuote(
-                    blockColor: kDangerColor,
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text('Level: L1'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-
+        Bin Master (Aisle + Shelf + Level)*/
+        ..._buildLocator(),
         FormGroupCard(
           title: 'Warehouse Bin',
           subTitle:
-              '\nOperational details and settings for managing this bin/shelf storage.',
+              '\nOperational details and settings for managing this bin storage.',
           children: [_buildBinBasic()],
         ),
 
         const SizedBox(height: 20),
+        _buildButtons(),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  AdaptiveLayout _buildButtons() {
+    return AdaptiveLayout(
+      children: [
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,
@@ -244,35 +228,105 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
               ? (_isSubmitting ? 'Creating...' : 'Create Bin')
               : (_isSubmitting ? 'Updating...' : null),
         ),
-        const SizedBox(height: 20),
+        context.outlinedButton(
+          'Manage Bin Locations',
+          onPressed: () async => await context.openWHBinLocationsForm(
+            serverItem: _serverItem,
+            onCreateFullBinLocation: (fullCodes) {
+              _whBinData = _whBinData.copyWith(
+                fullBinLocations: fullCodes.join(','),
+              );
+            },
+          ),
+          style: ButtonStyle(
+            padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
+          ),
+        ),
       ],
     );
   }
 
+  List<Widget> _buildLocator() {
+    return [
+      AdaptiveLayout(
+        firstFlex: 2,
+        children: [
+          SearchWarehouses(
+            initialValue: _serverItem?.warehouseCode,
+            onChanged: (id, whCode, locType) async {
+              final subLevels = await GetWHLocations.subLocations(whCode);
+              setState(() {
+                _warehouseCode = whCode;
+                _subLocations = subLevels;
+              });
+            },
+          ),
+          if (_subLocations?.isNotEmpty == true) ...{
+            ..._subLocations?.map((e) {
+                  final type = e['type'];
+                  final codeRanges = e['codeRanges'];
+
+                  return SizedBox(
+                    height: 60,
+                    child: SearchSubLocationCodes(
+                      label: '$type'.toTitle,
+                      subLocCodes: codeRanges,
+                      onChanged: (code) =>
+                          setState(() => _binLocationCode.add(code ?? '')),
+                    ),
+                  );
+                }) ??
+                [],
+          },
+        ],
+      ),
+
+      const SizedBox(height: 10),
+      Text(
+        'BIN LOCATION CODE:',
+        style: context.textTheme.bodySmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: kDarkSuccessColor,
+        ),
+      ),
+      BlockQuote(
+        blockColor: kDarkSuccessColor,
+        margin: EdgeInsets.only(top: 5),
+        childPadding: EdgeInsets.symmetric(horizontal: 10),
+        child: _binLocationCode.isNotEmpty
+            ? Text(_finalBinLoc)
+            : Text(_whBinData.binLocationCode),
+      ),
+      HorizontalDivider(),
+    ];
+  }
+
   DynamicTextFields _buildBinBasic() {
     return DynamicTextFields(
-      showButton: true,
       initialData: [_serverItem?.toMap() ?? {}],
-      fieldsConfig: WHBinFormFields.whBinFields(_serverItem?.toMap()),
+      fieldsConfig: WHBinFormFields.whBinFields(),
       onChanged: (List<Map<String, dynamic>> data) {
-        _whBinData = WHBin.fromMap(data.first);
-        /*_whBinData = _whBinData.copyWith(
-          uomRestriction: [_whBinData.uomRestriction?.first ?? ''],
-        );*/
-        if (_whBinData.isNotEmpty || _whBinData.type.isNullOrEmpty) {
-          _generateWHBinCode(_whBinData.getType);
-        }
+        var map = data.first;
+        if (map.isEmpty) return;
+        var old = _serverItem;
 
-        /*_whBinData = _whBinData.copyWith(
-          description: bin.description,
-          isActive: bin.isActive,
-          locationId: bin.locationId,
-          maxItems: bin.maxItems,
-          maxWeight: bin.maxWeight,
-          minQty: bin.minQty,
-          sequence: bin.sequence,
-          uomRestriction: bin.uomRestriction,
-        );*/
+        _whBinData = _whBinData.copyWith(
+          isActive: map['isActive'] ?? old?.isActive,
+          description: map['description'] ?? old?.description,
+          maxQuantity: '${map['maxQuantity'] ?? old?.maxQuantity}'.asDouble,
+          maxVolume: '${map['maxVolume'] ?? old?.maxVolume}'.asDouble,
+          minQuantity: '${map['minQuantity'] ?? old?.minQuantity}'.asDouble,
+          sequence: '${map['sequence'] ?? old?.sequence}'.asInt,
+          uomRestriction: UOMUtil.fromStringList(
+            map['uomRestriction'] ?? old?.uomRestriction,
+          ),
+          itemRestriction: ItemCategoryUtil.fromStringList(
+            map['itemRestriction'] ?? old?.itemRestriction,
+          ),
+        );
+        /*if (_whBinData.isNotEmpty || _whBinData.type.isNullOrEmpty) {
+          _generateWHBinCode(_whBinData.getType);
+        }*/
       },
     );
   }

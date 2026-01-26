@@ -103,7 +103,7 @@ class _CreateNewSubscriptionFormState
       case SubscriptionAdded<Subscription>(message: var msg):
         _showAlert(msg ?? 'Subscription added successfully');
       case SubscriptionError<Subscription>():
-        _showAlert('Error saving changes');
+        _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }

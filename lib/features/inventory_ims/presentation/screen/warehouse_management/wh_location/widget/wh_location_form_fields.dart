@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -89,6 +90,7 @@ Zone → Aisle → Rack → Level → Shelf → Bin
 
 If you want, I can map this to a **specific ERP** (SAP, Oracle, Odoo, Dynamics, etc.) or help you design a clean location-coding scheme.
 */
+
 class WhLocationFormFields {
   static Widget buildLocNumber(
     BuildContext context,
@@ -107,6 +109,7 @@ class WhLocationFormFields {
     String? label,
     String? helperText,
     bool enable = false,
+    bool showProgress = false,
     void Function()? onPressed,
     InputDecoration? decoration,
     void Function(String)? onChanged,
@@ -131,8 +134,10 @@ class WhLocationFormFields {
         padding: EdgeInsets.all(3),
         child: FittedBox(
           child: context.toolbarButton(
-            label: enable ? 'Done' : 'Edit',
-            icon: enable ? Icons.done : Icons.edit,
+            label: showProgress ? 'Saving' : (enable ? 'Done' : 'Edit'),
+            icon: showProgress
+                ? _progressIcon
+                : (enable ? Icons.done : Icons.edit),
             bgColor: kPrimaryColor.toAlpha(enable ? 1 : 0.3),
             onPressed: onPressed,
           ),
@@ -141,10 +146,17 @@ class WhLocationFormFields {
     ],
   );
 
-  static List<FieldGroupConfig> whLocFields(
+  static Widget get _progressIcon => SizedBox(
+    width: 10,
+    height: 10,
+    child: AsyncProgressBarDialog(size: 10, isDialog: false, strokeWidth: 2),
+  );
+
+  static List<FieldGroupConfig> whLocFields({
     Map<String, dynamic>? initial,
-    bool isZoneType,
-  ) => [
+    bool isCustom = false,
+    bool isZone = false,
+  }) => [
     FieldGroupConfig(
       key: 'type',
       label: 'Sub-Location Type',
@@ -154,12 +166,12 @@ class WhLocationFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return LocationTypeDropdown(
-          initialValue: initialData,
+          initialValue: '$initialData'.separateWord,
           onChanged: onChanged,
         );
       },
     ),
-    if (isZoneType) ...[
+    if (isZone) ...{
       FieldGroupConfig(
         key: 'zoneType',
         label: 'Zone type',
@@ -172,18 +184,14 @@ class WhLocationFormFields {
           );
         },
       ),
-    ],
+    },
     FieldGroupConfig(
-      key: 'maxQuantity',
-      label: 'Maximum Quantity',
-      helperText: 'Maximum number of units allowed in this sub-location.',
-      type: TextInputType.number,
-    ),
-    FieldGroupConfig(
-      key: 'maxVolume',
-      label: 'Maximum Volume',
-      helperText: 'Maximum total volume this sub-location can store.',
-      type: TextInputType.number,
+      key: 'description',
+      isHidden: !isCustom,
+      label: 'New description',
+      type: TextInputType.text,
+      validator: (_) => null,
+      helperText: 'Storage location within the warehouse (e.g., Shelf).',
     ),
     FieldGroupConfig(
       key: 'uomRestriction',
@@ -197,6 +205,12 @@ class WhLocationFormFields {
           onMultiChanged: onChanged,
         );
       },
+    ),
+    FieldGroupConfig(
+      key: 'maxQuantity',
+      label: 'Maximum Quantity',
+      helperText: 'Maximum number of units allowed in this sub-location.',
+      type: TextInputType.number,
     ),
     FieldGroupConfig(
       key: 'isActive',
@@ -213,7 +227,7 @@ class WhLocationFormFields {
             CheckboxGroupConfig(
               key: 'isActive',
               label: 'Active',
-              selected: initial?['isActive'] ?? true,
+              // selected: initial?['isActive'] ?? true,
               tooltip: 'Enable or disable this item',
               description:
                   'Turn this on if the sub-location is currently in use.',
@@ -226,30 +240,13 @@ class WhLocationFormFields {
         );
       },
     ),
-  ];
-
-  /*
     FieldGroupConfig(
-      key: 'warehouseId',
-      label: 'Parent Warehouse',
-      helperText: 'Select the warehouse this location belongs to.',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return SearchWarehouses(
-          initialValue: initialData,
-          onChanged: (id, code, description) => onChanged(code),
-        );
-      },
+      key: 'maxVolume',
+      label: 'Maximum Volume',
+      helperText: 'Maximum total volume this sub-location can store.',
+      type: TextInputType.number,
     ),
-    FieldGroupConfig(
-      key: 'description',
-      label: 'Description',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.textField,
-      helperText:
-          'Storage location within the warehouse (e.g., Aisle 1, Rack B, Zone C).',
-    ),*/
+  ];
 
   static List<FieldGroupConfig> whGenerateCodesFields() => [
     FieldGroupConfig(
@@ -289,5 +286,5 @@ class CodeRange {
       CodeRange(from: '${map["from"]}'.asInt, to: '${map["to"]}'.asInt);
 
   // Is empty
-  bool get isEmpty => from == 0 || to == 0;
+  bool get isEmpty => from == 0 || to <= 1;
 }
