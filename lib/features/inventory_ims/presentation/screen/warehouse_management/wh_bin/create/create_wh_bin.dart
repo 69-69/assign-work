@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/item_category.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -228,9 +227,15 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   }
 
   AdaptiveLayout _buildButtons() {
-    prettyPrint('full-Bin-Locations-2', _cacheFullBinLocations);
     return AdaptiveLayout(
       children: [
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Bin')
+              : (_isSubmitting ? 'Updating...' : null),
+        ),
         context.outlinedButton(
           'Manage Bin Locations',
           onPressed: () async => await context.openWHBinLocationsForm(
@@ -245,13 +250,6 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
           ),
-        ),
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Bin')
-              : (_isSubmitting ? 'Updating...' : null),
         ),
       ],
     );

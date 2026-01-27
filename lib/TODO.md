@@ -57,7 +57,7 @@
 ```shell
 git init
 git add .
-git commit -m "Continue: Generate Full BIN Locations (Saving issue)"
+git commit -m "Continue: Generate Full BIN Locations (Saving issue)."
 git branch -M main
 git push -u origin main
 ```

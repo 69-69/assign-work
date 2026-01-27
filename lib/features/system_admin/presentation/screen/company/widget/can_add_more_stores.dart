@@ -113,7 +113,7 @@ extension CompanyStoreBranches on BuildContext {
       Text(
         'You can\'t add more stores (branches). Please extend your subscription license for additional stores.\nFor further assistance, kindly contact support.',
       ),
-      onAcceptLabel: 'Done',
+      onAcceptLabel: 'Got it',
       onRejectLabel: 'Cancel',
       title: 'Can\'t Add More',
     );

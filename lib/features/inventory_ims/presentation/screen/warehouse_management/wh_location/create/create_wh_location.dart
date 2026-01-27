@@ -261,6 +261,13 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   AdaptiveLayout _buildButtons() {
     return AdaptiveLayout(
       children: [
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Location')
+              : (_isSubmitting ? 'Updating...' : null),
+        ),
         context.outlinedButton(
           'Manage Sub-Location Codes',
           onPressed: () async => await context.openGenerateWHLocCodesForm(
@@ -275,14 +282,6 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
           ),
-        ),
-
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Location')
-              : (_isSubmitting ? 'Updating...' : null),
         ),
       ],
     );
