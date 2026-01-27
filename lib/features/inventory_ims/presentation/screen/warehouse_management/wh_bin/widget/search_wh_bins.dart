@@ -4,7 +4,7 @@ import 'package:assign_erp/features/inventory_ims/data/data_sources/remote/get_w
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_bin_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search Warehouse Bin/Shelf [SearchWHBin]
+/// Search Warehouse Bin [SearchWHBin]
 class SearchWHBin extends StatefulWidget {
   final String? label;
   final String? initialValue;
@@ -25,7 +25,7 @@ class _SearchWHBinState extends State<SearchWHBin> {
   String? _initialValue;
   WHBin? _whBin;
 
-  String get _labelText => widget.label ?? 'Select Bin/Shelf...';
+  String get _labelText => widget.label ?? 'Full Bin Locations...';
 
   @override
   void initState() {

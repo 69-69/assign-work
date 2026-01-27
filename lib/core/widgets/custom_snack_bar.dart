@@ -81,6 +81,7 @@ extension ScaffoldSnackBar on BuildContext {
       'invalid',
       'incorrect',
       'failed',
+      'wrong',
       'not found',
     ].any((k) => message.filterAny(k));
 

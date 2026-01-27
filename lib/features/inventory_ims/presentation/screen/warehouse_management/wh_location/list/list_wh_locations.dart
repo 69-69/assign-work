@@ -94,7 +94,7 @@ class _ListWHLocationsState extends State<ListWHLocations> {
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Location',
       refreshLabel: 'Refresh WH Locations',
       secondaryIcon: Icons.generating_tokens,
-      secondaryLabel: 'Setup Sub-Location Codes',
+      secondaryLabel: 'Manage Sub-Locations',
       onPrimary: () => _openWarehouseForm(),
       onRefresh: () => _bloc.add(RefreshInventories<WHLocation>()),
       onSecondary: _selectedIds.length == 1

@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/item_category.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -23,6 +24,9 @@ import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// For cache purposes only
+String? _cacheFullBinLocations;
 
 extension WHBinExtensions on BuildContext {
   Future<void> openWHBinForm({
@@ -76,7 +80,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   bool _isSubmitting = false;
   late WHBin _whBinData = widget.serverItem ?? WHBin.empty;
 
-  get _finalBinLoc =>
+  get _finalBinLocCode =>
       [_warehouseCode, ..._binLocationCode].join('-').toUpperAll;
 
   void _onSubmit() async {
@@ -91,19 +95,25 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
       return;
     }
 
+    // Comma separated full bin locations
+    final fullBinLocations = _whBinData.fullBinLocations.isEmpty
+        ? _cacheFullBinLocations
+        : _whBinData.fullBinLocations;
+
     // Case 2: Update existing Location
     if (isValid && isUpdate) {
-      _updatedBin();
+      _updatedBin(fullBinLocations);
       return;
     }
 
     // Case 3: Add new WHBIn
-    _addNewLocationCodeBin();
+    _addNewLocationCodeBin(fullBinLocations);
   }
 
-  void _addNewLocationCodeBin() {
+  void _addNewLocationCodeBin(String? fullBLocations) {
     final newData = _whBinData.copyWith(
-      binLocationCode: _finalBinLoc,
+      binLocationCode: _finalBinLocCode,
+      fullBinLocations: fullBLocations,
       warehouseCode: _warehouseCode,
       storeNumber: _employeeStore,
       createdBy: _employeeName,
@@ -112,9 +122,10 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
     _bloc.add(AddInventory<WHBin>(data: newData));
   }
 
-  void _updatedBin() {
+  void _updatedBin(String? fullBLocations) {
     final updated = _whBinData.copyWith(
-      binLocationCode: _finalBinLoc,
+      binLocationCode: _finalBinLocCode,
+      fullBinLocations: fullBLocations,
       updatedBy: _employeeName,
     );
 
@@ -154,9 +165,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   }
 
   void _handleBlocState(BuildContext cxt, InventoryState<WHBin> state) {
-    final note = _isServerNull
-        ? 'Warehouse Bin/Shelf Storage created'
-        : 'Changes saved';
+    final note = _isServerNull ? 'Bin Storage created' : 'Changes saved';
     switch (state) {
       case InventoryAdded<WHBin>(message: var msg):
       case InventoryUpdated<WHBin>(message: var msg):
@@ -219,15 +228,9 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   }
 
   AdaptiveLayout _buildButtons() {
+    prettyPrint('full-Bin-Locations-2', _cacheFullBinLocations);
     return AdaptiveLayout(
       children: [
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Bin')
-              : (_isSubmitting ? 'Updating...' : null),
-        ),
         context.outlinedButton(
           'Manage Bin Locations',
           onPressed: () async => await context.openWHBinLocationsForm(
@@ -236,11 +239,19 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
               _whBinData = _whBinData.copyWith(
                 fullBinLocations: fullCodes.join(','),
               );
+              _cacheFullBinLocations = fullCodes.join(',');
             },
           ),
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
           ),
+        ),
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Bin')
+              : (_isSubmitting ? 'Updating...' : null),
         ),
       ],
     );
@@ -253,7 +264,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
         children: [
           SearchWarehouses(
             initialValue: _serverItem?.warehouseCode,
-            onChanged: (id, whCode, locType) async {
+            onChanged: (id, whCode, desc) async {
               final subLevels = await GetWHLocations.subLocations(whCode);
               setState(() {
                 _warehouseCode = whCode;
@@ -262,6 +273,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
             },
           ),
           if (_subLocations?.isNotEmpty == true) ...{
+            // Sub location/levels codes
             ..._subLocations?.map((e) {
                   final type = e['type'];
                   final codeRanges = e['codeRanges'];
@@ -294,7 +306,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
         margin: EdgeInsets.only(top: 5),
         childPadding: EdgeInsets.symmetric(horizontal: 10),
         child: _binLocationCode.isNotEmpty
-            ? Text(_finalBinLoc)
+            ? Text(_finalBinLocCode)
             : Text(_whBinData.binLocationCode),
       ),
       HorizontalDivider(),

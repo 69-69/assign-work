@@ -7,6 +7,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -14,10 +15,14 @@ import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_locat
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_location_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/generate_codes/generate_wh_location_codes.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/wh_location_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Cache CodeRanges
+String? _cacheCodeRanges;
 
 extension WHLocationExtensions on BuildContext {
   Future<void> openWHLocationForm({WHLocation? serverItem}) => openBottomSheet(
@@ -70,9 +75,14 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     final isUpdate = _serverItem?.isNotEmpty == true;
     setState(() => _isSubmitting = true);
 
+    // Comma separated full sub-location codeRanges
+    final codeRanges = _whLocationData.codeRanges.isEmpty
+        ? _cacheCodeRanges
+        : _whLocationData.codeRanges;
+
     // Case 1: Update existing Location
     if (_isFormValid && isUpdate) {
-      _updatedLocation();
+      _updatedLocation(codeRanges);
       return;
     }
 
@@ -83,25 +93,27 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
     }
 
     // Case 3: Add new Location
-    _addNewLocation();
+    _addNewLocation(codeRanges);
   }
 
-  void _addNewLocation() {
+  void _addNewLocation(String? codeRanges) {
     final newData = _whLocationData.copyWith(
       storeNumber: _employeeStore,
+      codeRanges: codeRanges,
       createdBy: _employeeName,
     );
 
     _bloc.add(AddInventory<WHLocation>(data: newData));
   }
 
-  void _updatedLocation() {
-    final updated = _whLocationData.copyWith(updatedBy: _employeeName);
-
+  void _updatedLocation(String? codeRanges) {
     _bloc.add(
       UpdateInventory<WHLocation>(
         documentId: _whLocationData.id,
-        data: updated,
+        data: _whLocationData.copyWith(
+          codeRanges: codeRanges,
+          updatedBy: _employeeName,
+        ),
       ),
     );
   }
@@ -203,13 +215,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
           ),
         ),
         _buildWHSubLocation(),
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Location')
-              : (_isSubmitting ? 'Updating...' : null),
-        ),
+        _buildButtons(),
         const SizedBox(height: 20),
       ],
     );
@@ -249,6 +255,36 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
           });
         });
       },
+    );
+  }
+
+  AdaptiveLayout _buildButtons() {
+    return AdaptiveLayout(
+      children: [
+        context.outlinedButton(
+          'Manage Sub-Location Codes',
+          onPressed: () async => await context.openGenerateWHLocCodesForm(
+            serverItem: _serverItem,
+            onCreateCodeRanges: (codeRanges) {
+              _whLocationData = _whLocationData.copyWith(
+                codeRanges: codeRanges.join(','),
+              );
+              _cacheCodeRanges = codeRanges.join(',');
+            },
+          ),
+          style: ButtonStyle(
+            padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
+          ),
+        ),
+
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create Location')
+              : (_isSubmitting ? 'Updating...' : null),
+        ),
+      ],
     );
   }
 }

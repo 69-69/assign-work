@@ -200,7 +200,7 @@ class Delivery extends Equatable {
 
   static List<String> get dataHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'Order No.',
     'Status',
     'Delivery Type',

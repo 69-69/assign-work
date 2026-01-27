@@ -230,7 +230,7 @@ class Customer extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Customer ID',
-    'Store No.',
+    'Store #',
     'Name',
     'Phone',
     'Alt-Phone',
@@ -490,7 +490,7 @@ class Customers extends Equatable {
   static List<String> get dataTableHeader => const [
     'ID',
     'Customer ID',
-    'Store No.',
+    'Store #',
     'Name',
     'Phone',
     'Mobile',

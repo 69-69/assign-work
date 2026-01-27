@@ -342,7 +342,7 @@ class SalesOrder extends Equatable {
   /// For UI Header display only
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'SQ -> SO Number',
     'Status',
     'Sales Channel',

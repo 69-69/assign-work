@@ -276,7 +276,7 @@ class Employee extends Equatable {
     'Status',
     'Dept. Code',
     'Role',
-    'Store no.',
+    'Store #',
     'Name',
     'Mobile',
     'Created At',

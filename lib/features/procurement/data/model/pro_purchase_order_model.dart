@@ -418,7 +418,7 @@ class ProPurchaseOrder extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'RFQ -> PO No.',
     // 'Supplier ID',
     'Status',

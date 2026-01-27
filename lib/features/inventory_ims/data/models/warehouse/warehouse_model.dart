@@ -1,5 +1,7 @@
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/util/enum_util.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -15,6 +17,18 @@ extension WarehouseTypeExtension on WarehouseType {
   String get getName => EnumUtil<WarehouseType>(this).getName;
 }
 
+class WarehouseTypeUtil {
+  /// [fromString] Converts String/Label to enum value.
+  static WarehouseType fromString(String? value) =>
+      EnumUtil.fromString<WarehouseType>(WarehouseType.values, value);
+
+  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
+  static List<String> toStringList([bool includeHeader = true]) {
+    final label = includeHeader ? 'Warehouse type' : '';
+    return EnumUtil.toStringList<WarehouseType>(WarehouseType.values, label);
+  }
+}
+
 /// [Warehouse] Purpose: Represents a physical storage place (Main, Store, Transit, etc.)
 class Warehouse extends Equatable {
   static final DateTime _today = DateTime.now();
@@ -28,10 +42,14 @@ class Warehouse extends Equatable {
   final bool isActive; // Active/inactive warehouse
   final bool isDefault; // is the default warehouse?
   final bool isBinManaged; // is the warehouse bin managed?
+  final List<UnitOfMeasure>?
+  uomRestriction; // What units are allowed in the bin
+  final List<ItemCategory>?
+  itemRestriction; // What items are allowed in the bin
 
   /// Capacity constraints
   final double? maxItems; // Max number of items warehouse can hold
-  final double? maxWeight; // Max total weight warehouse can hold
+  final double? maxVolume; // Max total weight warehouse can hold
 
   final String? createdBy;
   final String? updatedBy;
@@ -48,8 +66,10 @@ class Warehouse extends Equatable {
     this.isActive = true,
     this.isDefault = false,
     this.isBinManaged = false,
+    this.uomRestriction = const [],
+    this.itemRestriction = const [],
     this.maxItems,
-    this.maxWeight,
+    this.maxVolume,
     this.createdBy,
     this.updatedBy,
     DateTime? createdAt,
@@ -63,13 +83,19 @@ class Warehouse extends Equatable {
         storeNumber: map['storeNumber'] ?? '',
         code: map['code'] ?? '',
         description: map['description'] ?? '',
-        wareType: fromString(map['wareType']),
+        wareType: WarehouseTypeUtil.fromString(map['wareType']),
+        uomRestriction: UOMUtil.fromStringList(
+          List<String>.from(map['uomRestriction'] ?? []),
+        ),
+        itemRestriction: ItemCategoryUtil.fromStringList(
+          List<String>.from(map['itemRestriction'] ?? []),
+        ),
         address: AddressInfo.fromMap(Map.from(map['address'])),
         isActive: map['isActive'] ?? false,
         isDefault: map['isDefault'] ?? false,
         isBinManaged: map['isBinManaged'] ?? false,
         maxItems: '${map['maxItems']}'.asDouble,
-        maxWeight: '${map['maxWeight']}'.asDouble,
+        maxVolume: '${map['maxVolume']}'.asDouble,
         createdBy: map['createdBy'] ?? '',
         updatedBy: map['updatedBy'] ?? '',
         createdAt: toDateTimeFn(map['createdAt']),
@@ -83,12 +109,14 @@ class Warehouse extends Equatable {
     'code': code,
     'wareType': getType,
     'description': description,
-    'address': address.toMap(),
     'isActive': isActive,
     'isDefault': isDefault,
     'isBinManaged': isBinManaged,
     'maxItems': maxItems,
-    'maxWeight': maxWeight,
+    'maxVolume': maxVolume,
+    'uomRestriction': uomRestriction?.map((e) => e.getName).toList() ?? [],
+    'itemRestriction': itemRestriction?.map((e) => e.getName).toList() ?? [],
+    'address': address.toMap(),
     'createdBy': createdBy,
     'updatedBy': updatedBy,
   };
@@ -155,7 +183,9 @@ class Warehouse extends Equatable {
     bool? isDefault,
     bool? isBinManaged,
     double? maxItems,
-    double? maxWeight,
+    double? maxVolume,
+    List<UnitOfMeasure>? uomRestriction,
+    List<ItemCategory>? itemRestriction,
     String? createdBy,
     String? updatedBy,
     DateTime? createdAt,
@@ -171,7 +201,9 @@ class Warehouse extends Equatable {
     isDefault: isDefault ?? this.isDefault,
     isBinManaged: isBinManaged ?? this.isBinManaged,
     maxItems: maxItems ?? this.maxItems,
-    maxWeight: maxWeight ?? this.maxWeight,
+    maxVolume: maxVolume ?? this.maxVolume,
+    uomRestriction: uomRestriction ?? this.uomRestriction,
+    itemRestriction: itemRestriction ?? this.itemRestriction,
     createdBy: createdBy ?? this.createdBy,
     updatedBy: updatedBy ?? this.updatedBy,
     createdAt: createdAt ?? this.createdAt,
@@ -189,8 +221,10 @@ class Warehouse extends Equatable {
     isActive,
     isDefault,
     isBinManaged,
+    uomRestriction,
+    itemRestriction,
     maxItems,
-    maxWeight,
+    maxVolume,
     createdBy,
     updatedBy,
     createdAt,
@@ -200,8 +234,11 @@ class Warehouse extends Equatable {
   List<String> get itemAsList => [
     id,
     storeNumber,
-    getType.toTitle,
     code,
+    getType.toTitle,
+    description.toTitle,
+    '$maxItems',
+    '$maxVolume',
     isDefault ? 'Yes' : 'No',
     isActive ? 'Yes' : 'No',
     isBinManaged ? 'Yes' : 'No',
@@ -211,23 +248,16 @@ class Warehouse extends Equatable {
 
   static List<String> get dataTableHeader => [
     'ID',
-    'Store',
-    'Type',
+    'Store #',
     'Code',
+    'Type',
+    'name',
+    'max qty',
+    'max Vol.',
     'Default',
     'Active',
     'Bin Managed',
     'Created By',
     'Updated By',
   ];
-
-  /// [fromString] Converts String/Label to enum value.
-  static WarehouseType fromString(String? value) =>
-      EnumUtil.fromString<WarehouseType>(WarehouseType.values, value);
-
-  /// [toStringList] Convert enum list to a list of strings (for dropdowns)
-  static List<String> toStringList([bool includeHeader = true]) {
-    final label = includeHeader ? 'Warehouse type' : '';
-    return EnumUtil.toStringList<WarehouseType>(WarehouseType.values, label);
-  }
 }

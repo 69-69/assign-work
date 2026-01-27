@@ -15,11 +15,12 @@ class WarehouseTypeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var label = 'Warehouse Type';
     return StaticDropdown<String>(
       key: key,
-      label: 'Warehouse Type',
+      label: label,
       initialValue: initialValue,
-      items: Warehouse.toStringList(),
+      items: WarehouseTypeUtil.toStringList(),
       getDisplayText: (status) => status,
       onChanged: onChanged,
     );

@@ -196,7 +196,7 @@ class CompanyStore extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'Default',
     'Name',
     'Phone',

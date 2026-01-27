@@ -1,5 +1,7 @@
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/item_category.dart';
+import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -145,8 +147,8 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
       case InventoryAdded<Warehouse>(message: var msg):
       case InventoryUpdated<Warehouse>(message: var msg):
         _showAlert(msg ?? note);
-      case InventoryError<Warehouse>():
-        _showAlert('Something went wrong. Kindly try again');
+      case InventoryError<Warehouse>(error: var err):
+        _showAlert('Something went wrong. Kindly try again $err');
       case _: // no action
     }
   }
@@ -200,37 +202,48 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
   }
 
   DynamicTextFields _buildWHBasic() {
+    var item = _serverItem?.toMap();
     return DynamicTextFields(
       showButton: _isServerNull,
       initialData: [
-        {...?_serverItem?.toMap(), ...?_serverItem?.address.toMap()},
+        {...?item, ...?_serverItem?.address.toMap()},
       ],
-      fieldsConfig: WarehouseFormFields.wmsFields(_serverItem?.toMap()),
+      fieldsConfig: WarehouseFormFields.wmsFields({
+        "isActive": item?["isActive"] ?? true,
+        "isDefault": item?["isDefault"] ?? false,
+        "isBinManaged": item?["isBinManaged"] ?? false,
+      }),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (data.isNullOrEmpty) return;
+        var map = Map<String, dynamic>.from(data.first);
+        if (map.isNullOrEmpty) return;
+        var old = _serverItem;
 
-        final map = Map<String, dynamic>.from(data.first);
-        _warehouseData = Warehouse.fromMap({
-          ...map,
-          'address': {
-            'type': AddressType.warehouse.getName,
-            'city': map['city'],
-            'street': map['street'],
-            'postalCode': map['postalCode'],
-            'state': map['state'],
-          },
-        });
+        final address = {
+          'type': AddressType.warehouse.getName,
+          'city': map['city'],
+          'state': map['state'],
+          'street': map['street'],
+          'postalCode': map['postalCode'],
+        };
 
-        /*_warehouseData = _warehouseData.copyWith(
-          description: wh.description,
-          wareType: wh.wareType,
-          isActive: wh.isActive,
-          isDefault: wh.isDefault,
-          isBinManaged: wh.isBinManaged,
-          maxItems: wh.maxItems,
-          maxWeight: wh.maxWeight,
-          address: wh.address,
-        );*/
+        _warehouseData = _warehouseData.copyWith(
+          description: map['description'] ?? old?.description,
+          wareType: WarehouseTypeUtil.fromString(
+            map['wareType'] ?? old?.wareType,
+          ),
+          isActive: map['isActive'] ?? old?.isActive,
+          isDefault: map['isDefault'] ?? old?.isDefault,
+          isBinManaged: map['isBinManaged'] ?? old?.isBinManaged,
+          maxItems: '${map['maxItems'] ?? old?.maxItems}'.asDouble,
+          maxVolume: '${map['maxVolume'] ?? old?.maxVolume}'.asDouble,
+          address: AddressInfo.fromMap(address),
+          uomRestriction: UOMUtil.fromStringList(
+            map['uomRestriction'] ?? old?.uomRestriction,
+          ),
+          itemRestriction: ItemCategoryUtil.fromStringList(
+            map['itemRestriction'] ?? old?.itemRestriction,
+          ),
+        );
       },
     );
   }

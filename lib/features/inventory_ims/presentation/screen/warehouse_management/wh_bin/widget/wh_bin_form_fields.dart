@@ -4,6 +4,7 @@ import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
 import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
+import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
@@ -57,7 +58,7 @@ class WHBinFormFields {
             icon: showProgress
                 ? _progressIcon
                 : (enable ? Icons.done : Icons.edit),
-            bgColor: kPrimaryColor.toAlpha(enable ? 1 : 0.3),
+            bgColor: kPrimaryColor.toAlpha(enable ? 0.8 : 0.3),
             onPressed: onPressed,
           ),
         ),
@@ -222,6 +223,58 @@ class WHBinFormFields {
         );
       },
     );
+  }
+
+  static SortableHistoryTable<String> listBinLocations({
+    String? title,
+    String desc = '',
+    int? editingIndex,
+    bool savingPerEdit = false,
+    List<String> codes = const [],
+    required BuildContext context,
+    required Map<int, TextEditingController> controllers,
+    required void Function(bool, int, TextEditingController) onEdit,
+  }) {
+    return SortableHistoryTable<String>(
+      items: codes,
+      columnLabels: ['#', 'Description', title ?? 'Codes'],
+      rowBuilder: (entry, index) {
+        final i = index + 1;
+        final isEditing = editingIndex == index;
+        final controller = _getController(index, entry, controllers);
+
+        return DataRow(
+          cells: [
+            DataCell(Text('$i')),
+            DataCell(Text('$desc $i')),
+            DataCell(
+              WHBinFormFields.stackTextField(
+                context,
+                key: ValueKey('code-$index'),
+                controller: controller,
+                enable: isEditing,
+                showProgress: isEditing && savingPerEdit,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  labelText: 'Code',
+                ),
+                onPressed: () => onEdit(isEditing, index, controller),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static TextEditingController _getController(
+    int index,
+    String value,
+    Map<int, TextEditingController> cons,
+  ) {
+    return cons.putIfAbsent(index, () => TextEditingController(text: value));
   }
 
   /// Updates the [list] with objects of type [T] from a list of maps.

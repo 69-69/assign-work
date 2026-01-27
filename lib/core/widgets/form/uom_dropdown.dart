@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 /// Unit of measure [UOMDropdown] - Single select
 class UOMDropdown extends StatelessWidget {
   // final String? label;
-  final bool isDisabled;
+  final bool enabled;
   final String? initialValue;
   final void Function(String? s) onChanged;
 
   const UOMDropdown({
     super.key,
     required this.onChanged,
-    this.isDisabled = false,
+    this.enabled = true,
     this.initialValue,
     // this.label,
   });
@@ -24,16 +24,14 @@ class UOMDropdown extends StatelessWidget {
     // If label is provided, replace it with the first in the list
     // if (label != null) strList[0] = label!;
 
-    return IgnorePointer(
-      ignoring: isDisabled,
-      child: StaticDropdown<String>(
-        key: key,
-        label: strList.first,
-        initialValue: initialValue,
-        items: strList,
-        getDisplayText: (uom) => uom.toTitle,
-        onChanged: onChanged,
-      ),
+    return StaticDropdown<String>(
+      key: key,
+      enabled: enabled,
+      label: strList.first,
+      initialValue: initialValue,
+      items: strList,
+      getDisplayText: (uom) => uom.toTitle,
+      onChanged: onChanged,
     );
   }
 }

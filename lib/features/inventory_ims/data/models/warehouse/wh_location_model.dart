@@ -248,7 +248,6 @@ class WHLocation extends Equatable {
     createdAt,
     updatedAt,
   ];
-
   List<String> get itemAsList => [
     id,
     storeNumber.toUpperAll,
@@ -264,13 +263,13 @@ class WHLocation extends Equatable {
 
   static List<String> get dataTableHeader => [
     'ID',
-    'Store No.',
+    'Store #',
     'Status',
-    'WH Code',
+    'Warehouse',
     'Type',
     'Name',
     'Zone',
-    'Has Codes',
+    'Sub-Locations',
     'Created By',
     'Updated By',
   ];

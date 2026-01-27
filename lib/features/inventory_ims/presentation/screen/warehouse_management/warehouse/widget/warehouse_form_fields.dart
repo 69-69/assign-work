@@ -1,4 +1,6 @@
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
+import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/warehouse_type_dropdown.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
@@ -12,7 +14,7 @@ class WarehouseFormFields {
   ) => InventoryFormFields.buildNumber(
     context,
     count: count,
-    what: 'Warehouse',
+    what: 'Warehouse Code',
     onPressed: onPressed,
   );
 
@@ -25,13 +27,13 @@ class WarehouseFormFields {
       widgetType: FieldWidgetType.textField,
       helperText:
           'Descriptive name for the warehouse (e.g., Main Warehouse, Store 01).',
-      validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'wareType',
-      label: 'Warehouse type',
+      label: 'Warehouse s type',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
+      validator: (value) => value == null || value.isEmpty ? 'Required' : null,
       customBuilder: ({required initialData, required onChanged}) {
         return WarehouseTypeDropdown(
           initialValue: initialData,
@@ -102,10 +104,38 @@ class WarehouseFormFields {
       widgetType: FieldWidgetType.textField,
     ),
     FieldGroupConfig(
-      key: 'maxWeight',
-      label: 'Maximum Weight',
+      key: 'maxVolume',
+      label: 'Maximum Volume',
       helperText: 'Maximum total weight this warehouse can safely hold.',
       type: TextInputType.number,
+    ),
+    FieldGroupConfig(
+      key: 'uomRestriction',
+      label: 'UoM Restriction',
+      helperText: 'Units of measure allowed in this warehouse',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return UOMMultiDropdown(
+          label: 'UoM Restriction',
+          initialValues: List.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
+    ),
+    FieldGroupConfig(
+      key: 'itemRestriction',
+      label: 'Item Restriction',
+      helperText: 'Items allowed in this warehouse.',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return ItemCatMultiDropdown(
+          label: 'Item Restriction',
+          initialValues: List.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
     ),
   ];
 

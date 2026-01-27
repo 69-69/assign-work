@@ -30,9 +30,9 @@ class GetWHBins {
     binBloc.add(
       SearchInventory<WHBin>(
         primaryField: 'description',
-        optionalField: 'locationId',
-        secondaryField: 'code',
-        tertiaryField: 'type',
+        optionalField: 'warehouseCode',
+        secondaryField: 'fullBinLocations',
+        tertiaryField: 'binLocationCode',
         query: term,
       ),
     );

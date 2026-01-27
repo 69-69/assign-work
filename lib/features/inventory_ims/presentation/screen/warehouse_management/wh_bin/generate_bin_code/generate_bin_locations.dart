@@ -1,4 +1,4 @@
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -52,8 +52,8 @@ class _CreateWHBinLocationsForm extends StatefulWidget {
 class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+  List<String> _fullBinLocationCodes = [];
   List<Map<String, dynamic>>? _subLocations = [];
-  List<String> _fullBinLocationCodes = <String>[];
 
   bool get _isFormValid => _formKey.currentState!.validate();
 
@@ -61,9 +61,6 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
   Employee? get _employee => context.employee;
 
   String get _employeeName => _employee!.fullName;
-
-  // String get _employeeStore => _employee!.storeNumber;
-
   WHBinBloc get _bloc => context.read<WHBinBloc>();
 
   WHBin? get _serverItem => widget.serverItem;
@@ -84,26 +81,27 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
 
   void _onGenerate() async {
     if (_isGenerating) return;
-
-    // Case 0: New Bin creation — return full bin location codes
-    if (_isServerNull && _onCreateFullBinLocation != null) {
-      _onCreateFullBinLocation?.call(_fullBinLocationCodes);
-      return;
-    }
-
-    final isUpdate = _serverItem != null && _whBinData.isNullOrEmpty;
     setState(() => _isGenerating = true);
 
-    // Case 1: Form validation or empty WHBin
-    if (!_canGenerate || !_isFormValid || !isUpdate) {
+    // Case 0: Form validation or empty WHBin
+    if (!_canGenerate || !_isFormValid || _whBinData.isEmpty) {
       _showAlert(
         'Failed: Select warehouse and its corresponding sub-location ranges',
       );
       return;
     }
 
+    // Case 1: New Bin creation — return full bin location codes
+    if (_isServerNull && _onCreateFullBinLocation != null) {
+      _onCreateFullBinLocation?.call(_fullBinLocationCodes);
+      _showAlert('Full Bin Locations created');
+      return;
+    }
+
+    final isUpdate = _whBinData.isNullOrEmpty;
+
     // Case 2: Valid form and existing WHBin — update full bin locations
-    if (_isFormValid && isUpdate) {
+    if (isUpdate) {
       _onUpdateFullBinLocations();
       return;
     }
@@ -127,16 +125,9 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         _canGenerate = false;
         _whBinData = WHBin.empty;
         _subLocations = [];
-        _fullBinLocationCodes = [];
+        _fullBinLocationCodes.clear();
       });
     }
-  }
-
-  TextEditingController _getController(int index, String value) {
-    return _controllers.putIfAbsent(
-      index,
-      () => TextEditingController(text: value),
-    );
   }
 
   void _showAlert(String msg) {
@@ -216,7 +207,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
       {
         'title': 'Edit Full Bin Locations',
         'subTitle': '\nManage bin locations.',
-        'children': [_listSubLocationCodes()],
+        'children': [_listBinLocations()],
       },
   ];
 
@@ -233,15 +224,8 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         final map = data.first;
 
         try {
-          _fullBinLocationCodes = generateFullBinLocationCodes(
-            map,
-            _subLocations,
-          );
+          _fullBinLocationCodes = generateFullBinLocations(map, _subLocations);
           setState(() => _canGenerate = true);
-          prettyPrint(
-            'full-Bin-Locations-Codes',
-            _fullBinLocationCodes,
-          ); // debug output
         } catch (e) {
           // context.showAlertOverlay(e.toString()); // show validation error
         }
@@ -249,7 +233,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
     );
   }
 
-  List<String> generateFullBinLocationCodes(
+  List<String> generateFullBinLocations(
     Map<String, dynamic> map,
     List<Map<String, dynamic>>? subLocations,
   ) {
@@ -278,71 +262,25 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
     return combineLevels(levels);
   }
 
-  /// Generates a list of codes between [from] and [to] (inclusive).
-  List<String> generateBinLocationsCode(String from, String to) {
-    // Example: from = "A01", to = "A03"
-    final prefix = from.replaceAll(RegExp(r'\d+$'), '');
-    final startNum = int.tryParse(from.replaceAll(RegExp(r'\D'), '')) ?? 0;
-    final endNum = int.tryParse(to.replaceAll(RegExp(r'\D'), '')) ?? 0;
-
-    if (startNum > endNum) return [];
-
-    return List.generate(
-      endNum - startNum + 1,
-      (i) => '$prefix${(startNum + i).toString().padLeft(2, '0')}',
-    );
-  }
-
-  /// Combines multiple levels of codes into a cartesian product with "-" separator
-  List<String> combineLevels(List<List<String>> lists, [String prefix = '']) {
-    if (lists.isEmpty) return [prefix.substring(1)]; // remove leading '-'
-    List<String> result = [];
-    for (final item in lists.first) {
-      result.addAll(combineLevels(lists.sublist(1), '$prefix-$item'));
-    }
-    return result;
-  }
-
-  SortableHistoryTable<String> _listSubLocationCodes() {
+  /// Showing the List of full bin locations
+  SortableHistoryTable<String> _listBinLocations() {
     final codes = _serverItem?.getFullBinLocations ?? [];
-
-    return SortableHistoryTable<String>(
-      items: codes,
-      columnLabels: ['#', 'Description', 'Codes'],
-      rowBuilder: (entry, index) {
-        final i = index + 1;
-        final isEditing = _editingIndex == index;
-        final controller = _getController(index, entry);
-        final desc = _whBinData.description.toSentence;
-
-        return DataRow(
-          cells: [
-            DataCell(Text('$i')),
-            DataCell(Text('$desc $i')),
-            DataCell(
-              WHBinFormFields.stackTextField(
-                context,
-                key: ValueKey('code-$index'),
-                controller: controller,
-                enable: isEditing,
-                showProgress: _savingPerEdit,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  labelText: 'Code',
-                ),
-                onPressed: () =>
-                    _onEditCode(isEditing, codes, index, controller),
-              ),
-            ),
-          ],
-        );
+    final desc = _whBinData.description.toSentence;
+    return WHBinFormFields.listBinLocations(
+      context: context,
+      codes: codes,
+      desc: desc,
+      title: 'Bin Locations',
+      onEdit: (isEdit, index, controller) {
+        _onEditPerBinLocation(isEdit, codes, index, controller);
       },
+      controllers: _controllers,
+      editingIndex: _editingIndex,
+      savingPerEdit: _savingPerEdit,
     );
   }
 
-  void _onEditCode(
+  void _onEditPerBinLocation(
     bool isEditing,
     List<String> codes,
     int index,
@@ -370,7 +308,41 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
   }
 }
 
-/* Column _buildBody() {
+/* return SortableHistoryTable<String>(
+      items: codes,
+      columnLabels: ['#', 'Description', 'Codes'],
+      rowBuilder: (entry, index) {
+        final i = index + 1;
+        final isEditing = _editingIndex == index;
+        final controller = _getController(index, entry);
+
+        return DataRow(
+          cells: [
+            DataCell(Text('$i')),
+            DataCell(Text('$desc $i')),
+            DataCell(
+              WHBinFormFields.stackTextField(
+                context,
+                key: ValueKey('code-$index'),
+                controller: controller,
+                enable: isEditing,
+                showProgress: _savingPerEdit,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  labelText: 'Code',
+                ),
+                onPressed: () =>
+                    _onEditPerBinLocation(isEditing, codes, index, controller),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+Column _buildBody() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -121,7 +121,7 @@ class ProcurementFormFields {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         return UOMDropdown(
-          isDisabled: isDisabled,
+          enabled: isDisabled,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
         );
@@ -247,7 +247,7 @@ class ProcurementFormFields {
       customBuilder: ({required initialData, required onChanged}) {
         return UOMDropdown(
           initialValue: initialData,
-          isDisabled: isDisabled,
+          enabled: isDisabled,
           onChanged: (String? selected) => onChanged(selected),
         );
       },

@@ -283,7 +283,7 @@ extension InventoryTiles on dynamic {
         // Visual insights into stock levels, movement trends, aging analysis, and overall inventory performance.
       },
 
-      /// OLD Modules (These will be remove)
+      /// @TODO OLD Modules (These below modules will be remove entirely)
       // stocking tab
       {
         'label': 'stocks',

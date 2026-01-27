@@ -385,7 +385,7 @@ class Orders extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'Order No.',
     'Customer ID',
     'Status',

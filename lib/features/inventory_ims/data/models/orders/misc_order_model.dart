@@ -273,7 +273,7 @@ class MiscOrder extends Equatable {
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Store No.',
+    'Store #',
     'MO No.',
     'Supplier ID',
     'Status',

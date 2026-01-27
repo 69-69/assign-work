@@ -88,10 +88,10 @@ abstract class RouteNames {
   static const createCustomer = 'create_customer_screen';
 
   /// ─────────────────────── 🏢 Warehouse Module ───────────────────────
-  static const wmsModule = 'warehouse_module_screen';
-  static const warehouse = 'wms_storage_screen';
-  static const warehouseLocation = 'wms_location_screen';
-  static const warehouseBin = 'wms_bin_screen';
+  static const wmsModule = 'warehouse_management_screen';
+  static const warehouse = 'warehouses_screen';
+  static const warehouseLocation = 'storage_location_screen';
+  static const warehouseBin = 'storage_bin_screen';
   static const inboundReceiving = 'wms_inbound_receiving_screen';
   static const internalMovements = 'wms_internal_movements_screen';
   static const outboundPickShipping = 'wms_outbound_pick_shipping_screen';

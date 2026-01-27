@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 /// Set [isMenu] to true to use DropdownMenu instead of DropdownButtonFormField.
 /// Set [inLabel] to false to hide the helper text in the TextField label.
 class StaticDropdown<T> extends StatelessWidget {
+  final bool enabled;
   final bool isMenu;
   final bool inLabel;
 
@@ -28,6 +29,9 @@ class StaticDropdown<T> extends StatelessWidget {
   final T? initialValue;
   final InputDecoration? buttonDecoration;
   final ValueChanged<T?> onChanged;
+
+  /// Characters that are not allowed in the selected value.
+  final List<String>? invalidPrefixes;
 
   /// Converts a T value to its displayed text in the UI.
   final String Function(T item) getDisplayText;
@@ -53,6 +57,8 @@ class StaticDropdown<T> extends StatelessWidget {
     this.icon,
     this.isMenu = false,
     this.inLabel = true,
+    this.enabled = true,
+    this.invalidPrefixes,
   });
 
   @override
@@ -87,6 +93,7 @@ class StaticDropdown<T> extends StatelessWidget {
           buttonDecoration ??
           InputDecoration(
             isDense: true,
+            enabled: enabled,
             labelText: _labelWithHelper,
             helperText: inLabel ? null : helperText,
             labelStyle: TextStyle(
@@ -109,10 +116,8 @@ class StaticDropdown<T> extends StatelessWidget {
       }).toList(),
       validator:
           validator ??
-          (value) {
-            if (value == null) return 'Select $label';
-            return null;
-          },
+          (v) =>
+              _selectionValidator(v, label, invalidPrefixes: invalidPrefixes),
     );
   }
 
@@ -130,6 +135,7 @@ class StaticDropdown<T> extends StatelessWidget {
 
     return DropdownMenu<T>(
       trailingIcon: icon,
+      enabled: enabled,
       requestFocusOnTap: true,
       hintText: _labelWithHelper,
       initialSelection: _defaultValue,
@@ -183,6 +189,9 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   final void Function()? onNoDataFound;
   final Future<List<T>> Function(String, LoadProps?)? asyncItems;
 
+  /// Characters that are not allowed in the selected value.
+  final List<String>? invalidPrefixes;
+
   const AsyncSearchDropdown({
     super.key,
     this.enabled = true,
@@ -201,6 +210,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
     this.onNoDataFound,
     this.selectedItem,
     this.selectedMultiItems,
+    this.invalidPrefixes,
   });
 
   @override
@@ -226,7 +236,13 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       onChanged: (T? obj) => onChanged!(obj),
       suffixProps: _dropdownSuffixProps,
       decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
-      validator: validator ?? (T? obj) => obj == null ? labelText : null,
+      validator:
+          validator ??
+          (T? obj) => _selectionValidator(
+            obj,
+            labelText,
+            invalidPrefixes: invalidPrefixes,
+          ),
     );
   }
 
@@ -249,7 +265,12 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       suffixProps: _dropdownSuffixProps,
       decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
       validator:
-          validatorMulti ?? (List<T>? obj) => obj == null ? labelText : null,
+          validatorMulti ??
+          (List<T>? obj) => _selectionValidator(
+            obj,
+            labelText,
+            invalidPrefixes: invalidPrefixes,
+          ),
     );
   }
 
@@ -311,6 +332,30 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       ),
     );
   }
+}
+
+String? _selectionValidator(
+  dynamic value,
+  String label, {
+  String? errorMsg,
+  List<String>? invalidPrefixes,
+}) {
+  final text = value?.toString().trim();
+  final errMsg = errorMsg ?? 'Select $label';
+
+  if (text == null || text.isEmpty) {
+    return errMsg;
+  }
+
+  final lowerText = text.toLowerCase();
+
+  if ((invalidPrefixes ?? ['select', 'type']).any(
+    (p) => lowerText.filterAny(p.toLowerAll),
+  )) {
+    return errMsg;
+  }
+
+  return null;
 }
 
 /*

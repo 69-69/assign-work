@@ -13,29 +13,51 @@
 
 -------------------------
 
-- @Continue
-    - Generate BIN, Loc code not working
-    - WMS forms processing
-    - Master Data (BIN Location Code,UOM, PriceList, Payment Method&Type,)
-    - Inventory System
-      - Item Master Updates
-      - Stock management
-        - Goods Receipt
-        - Goods Issue
-        - Goods Transfer
-        - Stock Adjustment
-        - Returns from Customer
-        - Reserve Stock
-      - Warehouse
-          - ~~Storage Location~~
-          - ~~Storage Bin~~
+# @Continue
+    - Generate Full BIN Locations (Saving issue)
+    - 
+# Master Data (BIN Location Code,UOM, PriceList, Payment Method&Type,)
+- Connect Item Master to:
+  - Stock Management
+  - 
+  - Procurement (PR,RFQ,PO)
+  - POS
+  - 
+  - Sales & Distributin
+    - Sales Quote
+    - Sales Order
+    - 
+  - Inventory System
+    - Stock management
+      - Goods Receipt
+      - Goods Issue
+      - Goods Transfer
+      - Stock Adjustment
+      - Returns from Customer
+      - Reserve Stock
+      - 
+# @TODO OLD Modules (These below modules will be remove entirely)
+  - Inventory Module
+    - stocking tab
+    - orders tab
+    - misc tab
+    - deliveries tab
+    - sales tab
+    - payments tab
+    - reports tab
+    - finance tab
+    - tracking tab
+    - 
+  - Warehouse Module
+
+
 
 
 
 ```shell
 git init
 git add .
-git commit -m "Warehouse, SubLocations & Full Bin Locations Codes 90% completed"
+git commit -m "Continue: Generate Full BIN Locations (Saving issue)"
 git branch -M main
 git push -u origin main
 ```

@@ -12,6 +12,7 @@ import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_location_model.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_location_bloc.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/wh_bin_form_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/wh_location_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
@@ -19,22 +20,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension GenerateWhLocationCodesExt on BuildContext {
-  Future<void> openGenerateWHLocCodesForm({WHLocation? serverItem}) =>
-      openBottomSheet(
-        isExpand: false,
-        showZoomIcon: false,
-        child: BottomSheetScaffold(
-          isDetailMode: true,
-          title: 'Setup Sub-Location Codes',
-          body: _GenerateWHLocCodesForm(serverItem: serverItem),
-        ),
-      );
+  Future<void> openGenerateWHLocCodesForm({
+    WHLocation? serverItem,
+    Function(List<String>)? onCreateCodeRanges,
+  }) => openBottomSheet(
+    isExpand: false,
+    showZoomIcon: false,
+    child: BottomSheetScaffold(
+      isDetailMode: true,
+      title: 'Manage Sub-Location Codes',
+      body: _GenerateWHLocCodesForm(
+        serverItem: serverItem,
+        onCreateCodeRanges: onCreateCodeRanges,
+      ),
+    ),
+  );
 }
 
 class _GenerateWHLocCodesForm extends StatefulWidget {
   final WHLocation? serverItem;
+  final Function(List<String>)? onCreateCodeRanges;
 
-  const _GenerateWHLocCodesForm({this.serverItem});
+  const _GenerateWHLocCodesForm({this.serverItem, this.onCreateCodeRanges});
 
   @override
   State<_GenerateWHLocCodesForm> createState() =>
@@ -45,6 +52,7 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _prefixController;
+  Function? get _onCreateFullBinLocation => widget.onCreateCodeRanges;
 
   WHLocationBloc get _bloc => context.read<WHLocationBloc>();
 
@@ -54,6 +62,7 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   String get _employeeName => _employee!.fullName;
 
   WHLocation? get _serverItem => widget.serverItem;
+  bool get _isServerNull => _serverItem == null;
 
   bool get _hasCodeRanges => _serverItem?.codeRanges.isNotEmpty == true;
 
@@ -69,9 +78,16 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     if (_isGenerating) return;
     setState(() => _isGenerating = true);
 
-    // Case 1: Form validation or empty Location
+    // Case 0: Form validation or empty Location
     if (!_canGenerate || _whLocationData.isEmpty) {
       _showAlert('Failed: Enter range values to generate codes.');
+      return;
+    }
+
+    // Case 1: New Bin creation — return full bin location codes
+    if (_isServerNull && _onCreateFullBinLocation != null) {
+      _onCreateFullBinLocation?.call(_whLocationData.getCodeRanges);
+      _showAlert('Sub-Location codes created');
       return;
     }
 
@@ -106,20 +122,13 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     }
   }
 
-  TextEditingController _getController(int index, String value) {
-    return _controllers.putIfAbsent(
-      index,
-      () => TextEditingController(text: value),
-    );
-  }
-
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
   }
 
   void _handleBlocState(BuildContext cxt, InventoryState<WHLocation> state) {
-    final note = _serverItem == null
-        ? 'Warehouse Location Storage created'
+    final note = _isServerNull
+        ? 'Sub-Location Storage created'
         : 'Changes saved';
     switch (state) {
       case InventoryAdded<WHLocation>(message: var msg):
@@ -247,17 +256,66 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     );
   }
 
+  /// Showing the List of sub-location codes
   SortableHistoryTable<String> _listSubLocationCodes() {
     final codes = _serverItem?.getCodeRanges ?? [];
+    final desc = _whLocationData.description.toSentence;
+    return WHBinFormFields.listBinLocations(
+      context: context,
+      codes: codes,
+      desc: desc,
+      onEdit: (isEdit, index, controller) {
+        _onEditPerSubLocation(isEdit, codes, index, controller);
+      },
+      controllers: _controllers,
+      editingIndex: _editingIndex,
+      savingPerEdit: _savingPerEdit,
+    );
+  }
 
-    return SortableHistoryTable<String>(
+  void _onEditPerSubLocation(
+    bool isEditing,
+    List<String> codes,
+    int index,
+    TextEditingController controller,
+  ) {
+    setState(() {
+      if (isEditing) {
+        // DONE pressed → save
+        _savingPerEdit = true;
+        codes[index] = controller.text.toUpperAll;
+
+        _whLocationData = _whLocationData.copyWith(codeRanges: codes.join(','));
+
+        _editingIndex = null;
+      } else {
+        // EDIT pressed
+        _editingIndex = index;
+      }
+    });
+
+    // trigger submission after state updates
+    if (isEditing) {
+      _updatedLocation(); // Update specific Location code ranges
+    }
+  }
+}
+
+/*
+  TextEditingController _getController(int index, String value) {
+    return _controllers.putIfAbsent(
+      index,
+      () => TextEditingController(text: value),
+    );
+  }
+
+return SortableHistoryTable<String>(
       items: codes,
       columnLabels: ['#', 'Description', 'Codes'],
       rowBuilder: (entry, index) {
         final i = index + 1;
         final isEditing = _editingIndex == index;
         final controller = _getController(index, entry);
-        final desc = _whLocationData.description.toSentence;
 
         return DataRow(
           cells: [
@@ -277,39 +335,10 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
                   labelText: 'Code',
                 ),
                 onPressed: () =>
-                    _onEditCode(isEditing, codes, index, controller),
+                    _onEditPerSubLocation(isEditing, codes, index, controller),
               ),
             ),
           ],
         );
       },
-    );
-  }
-
-  void _onEditCode(
-    bool isEditing,
-    List<String> codes,
-    int index,
-    TextEditingController controller,
-  ) {
-    setState(() {
-      if (isEditing) {
-        // DONE pressed → save
-        codes[index] = controller.text.toUpperAll;
-
-        _whLocationData = _whLocationData.copyWith(codeRanges: codes.join(','));
-
-        _editingIndex = null;
-      } else {
-        // EDIT pressed
-        _editingIndex = index;
-      }
-    });
-
-    // trigger submission after state updates
-    if (isEditing) {
-      _savingPerEdit = true;
-      _updatedLocation(); // Update specific Location code ranges
-    }
-  }
-}
+    );*/

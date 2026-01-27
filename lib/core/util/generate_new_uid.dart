@@ -201,88 +201,27 @@ extension UniqueCodeExtension on String {
   }
 }
 
-List<String> generateBinLocationsCode(String start, String end) {
-  if (start.length != end.length) return [start, end]; // fallback
+/// Generates a list of codes between [from] and [to] (inclusive).
+List<String> generateBinLocationsCode(String from, String to) {
+  // Example: from = "A01", to = "A03"
+  final prefix = from.replaceAll(RegExp(r'\d+$'), '');
+  final startNum = from.replaceAll(RegExp(r'\D'), '').asInt;
+  final endNum = to.replaceAll(RegExp(r'\D'), '').asInt;
 
-  final List<String> result = [];
+  if (startNum > endNum) return [];
 
-  // Split into letter prefix + numeric suffix
-  final startLetter = start.replaceAll(RegExp(r'\d'), '');
-  final endLetter = end.replaceAll(RegExp(r'\d'), '');
-  final startNum = int.tryParse(start.replaceAll(RegExp(r'\D'), '')) ?? 0;
-  final endNum = int.tryParse(end.replaceAll(RegExp(r'\D'), '')) ?? 0;
+  return List.generate(
+    endNum - startNum + 1,
+    (i) => '$prefix${(startNum + i).toString().padLeft(2, '0')}',
+  );
+}
 
-  // Letters must match (optional: can handle multi-letter later)
-  if (startLetter != endLetter) return [start, end];
-
-  for (var i = startNum; i <= endNum; i++) {
-    result.add('$startLetter$i');
+/// Combines multiple levels of codes into a cartesian product with "-" separator
+List<String> combineLevels(List<List<String>> lists, [String prefix = '']) {
+  if (lists.isEmpty) return [prefix.substring(1)]; // remove leading '-'
+  List<String> result = [];
+  for (final item in lists.first) {
+    result.addAll(combineLevels(lists.sublist(1), '$prefix-$item'));
   }
-
   return result;
 }
-
-/// Warehouse Location Code Generator
-List<String> generateLocationCodes({
-  required int zoneFrom,
-  required int zoneTo,
-  required int aisleFrom,
-  required int aisleTo,
-  required int rackFrom,
-  required int rackTo,
-  required int levelFrom,
-  required int levelTo,
-  required int shelfFrom,
-  required int shelfTo,
-}) {
-  final zones = ''.generateRange(zoneFrom, zoneTo);
-  final aisles = ''.generateRange(aisleFrom, aisleTo);
-  final racks = ''.generateRange(rackFrom, rackTo);
-  final levels = ''.generateRange(levelFrom, levelTo);
-  final shelves = ''.generateRange(shelfFrom, shelfTo);
-
-  List<String> locations = [];
-
-  for (var z in zones) {
-    for (var a in aisles) {
-      for (var r in racks) {
-        for (var l in levels) {
-          for (var s in shelves) {
-            locations.add('Z$z-A$a-R$r-L$l-S$s');
-          }
-        }
-      }
-    }
-  }
-
-  return locations;
-}
-
-/// Example Usage
-/*void main() {
-  final locations = generateLocationCodes(
-    zoneFrom: 1,
-    zoneTo: 2,
-    aisleFrom: 1,
-    aisleTo: 2,
-    rackFrom: 1,
-    rackTo: 3,
-    levelFrom: 1,
-    levelTo: 2,
-    shelfFrom: 1,
-    shelfTo: 2,
-  );
-
-  for (var loc in locations) {
-    print(loc);
-  }
-}
-/// Sample Output
-Z01-A01-R01-L01-S01
-Z01-A01-R01-L01-S02
-Z01-A01-R01-L02-S01
-Z01-A01-R01-L02-S02
-Z01-A01-R02-L01-S01
-...
-Z02-A02-R03-L02-S02
-*/
