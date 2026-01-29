@@ -79,12 +79,12 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
 
   Function? get _onCreateFullBinLocation => widget.onCreateFullBinLocation;
 
-  void _onGenerate() async {
+  void _onSavePressed() async {
     if (_isGenerating) return;
     setState(() => _isGenerating = true);
 
     // Case 0: Form validation or empty WHBin
-    if (!_canGenerate || !_isFormValid || _whBinData.isEmpty) {
+    if (!_canGenerate || !_isFormValid || _fullBinLocationCodes.isNullOrEmpty) {
       _showAlert(
         'Failed: Select warehouse and its corresponding sub-location ranges',
       );
@@ -92,19 +92,14 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
     }
 
     // Case 1: New Bin creation — return full bin location codes
-    if (_isServerNull && _onCreateFullBinLocation != null) {
+    if (_isServerNull) {
       _onCreateFullBinLocation?.call(_fullBinLocationCodes);
       _showAlert('Full Bin Locations created');
       return;
     }
 
-    final isUpdate = _whBinData.isNullOrEmpty;
-
     // Case 2: Valid form and existing WHBin — update full bin locations
-    if (isUpdate) {
-      _onUpdateFullBinLocations();
-      return;
-    }
+    _onUpdateFullBinLocations();
   }
 
   void _onUpdateFullBinLocations() {
@@ -195,7 +190,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
           _buildBinInfo(),
           const SizedBox(height: 20),
           context.confirmableActionButton(
-            onPressed: _onGenerate,
+            onPressed: _onSavePressed,
             isDisabled: _isGenerating,
             label: _isGenerating ? 'Generating...' : 'Generate Bin Locations',
           ),
@@ -291,7 +286,8 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         // DONE pressed → save
         codes[index] = controller.text.toUpperAll;
 
-        _whBinData = _whBinData.copyWith(fullBinLocations: codes.join(','));
+        // Set the modified codes
+        _fullBinLocationCodes = codes;
 
         _editingIndex = null;
       } else {

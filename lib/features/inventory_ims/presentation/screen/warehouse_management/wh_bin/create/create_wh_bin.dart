@@ -17,7 +17,7 @@ import 'package:assign_erp/features/inventory_ims/data/models/warehouse/wh_bin_m
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/inventory_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/bloc/warehouse/wh_bin_bloc.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/warehouse/widget/search_warehouse.dart';
-import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/generate_bin_code/generate_bin_locations.dart';
+import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/generate_bin_code/generate_full_bin_locations.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_bin/widget/wh_bin_form_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/warehouse_management/wh_location/widget/search_wh_locations.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';

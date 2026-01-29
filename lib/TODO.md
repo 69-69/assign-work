@@ -14,7 +14,13 @@
 -------------------------
 
 # @Continue
-    - Generate Full BIN Locations (Saving issue)
+    - Inform user when Generating Full BIN Locations
+- ChatGPT QA:
+"im generating Full Bin Locations based on select ranges of 
+zone, aisle, racks, shelf. However after user selection of the 
+ranges from the sub-levels or sub-locations. 
+since the for loop is still permutating or creating the list of ranges. 
+user needs to be prompted to so that user can wait before cling save button? how to do that?"
     - 
 # Master Data (BIN Location Code,UOM, PriceList, Payment Method&Type,)
 - Connect Item Master to:
@@ -57,7 +63,7 @@
 ```shell
 git init
 git add .
-git commit -m "Continue: Generate Full BIN Locations (Saving issue)."
+git commit -m "resolved: Generate Full BIN Locations (Saving issue)."
 git branch -M main
 git push -u origin main
 ```
