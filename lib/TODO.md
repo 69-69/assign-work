@@ -63,7 +63,7 @@ user needs to be prompted to so that user can wait before cling save button? how
 ```shell
 git init
 git add .
-git commit -m "resolved: Generate Full BIN Locations (Saving issue)."
+git commit -m "resolved Creating and Saving Bin."
 git branch -M main
 git push -u origin main
 ```

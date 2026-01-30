@@ -84,12 +84,10 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
   void _onSubmit() async {
     if (_isSubmitting) return;
-    final isUpdate = _serverItem?.isNotEmpty == true;
-    final isValid = _isFormValid;
     setState(() => _isSubmitting = true);
 
     // Case 1: Form validation or empty WHBin
-    if (!isValid && _whBinData.isEmpty) {
+    if (!_isFormValid && _whBinData.isEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -100,7 +98,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
         : _whBinData.fullBinLocations;
 
     // Case 2: Update existing Location
-    if (isValid && isUpdate) {
+    if (_isFormValid && _serverItem != null) {
       _updatedBin(fullBinLocations);
       return;
     }

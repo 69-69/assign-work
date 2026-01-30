@@ -32,7 +32,7 @@ class GetWHLocations {
     final codes = allWHLocations
         .map(
           (WHLocation e) => {
-            'type': e.getLocationType,
+            'type': e.customType,
             'codeRanges': e.getCodeRanges,
           },
         )

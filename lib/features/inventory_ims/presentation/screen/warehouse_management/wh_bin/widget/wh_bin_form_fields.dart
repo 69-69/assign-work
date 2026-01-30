@@ -211,9 +211,9 @@ class WHBinFormFields {
     return FieldGroupConfig(
       key: key,
       label: label,
+      helperText: helperText,
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
-      helperText: helperText,
       customBuilder: ({required initialData, required onChanged}) {
         return SearchSubLocationCodes(
           label: label,
