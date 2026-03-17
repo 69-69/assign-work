@@ -133,6 +133,10 @@ class CompanyStore extends Equatable {
   static CompanyStore? findById(List<CompanyStore> departs, String id) =>
       departs.firstWhereOrNull((d) => d.id == id);
 
+  /// Extract all storeNumber from the list
+  static List<String> getStoreNumbers(List<CompanyStore> stores) =>
+      stores.map((s) => s.storeNumber).toList();
+
   /// copyWith method
   CompanyStore copyWith({
     String? id,
@@ -182,8 +186,8 @@ class CompanyStore extends Equatable {
 
   List<String> get itemAsList => [
     id,
-    isPrimary ? 'Yes' : 'No',
     storeNumber,
+    isPrimary ? 'Yes' : 'No',
     name.toTitle,
     phone,
     address.toTitle,
@@ -224,7 +228,7 @@ Map<String, dynamic> createBusinessOwnerPrimaryBranch({
     isPrimary: true,
     name: name,
     address: address,
-    storeNumber: address.generateUniqueCode(),
+    storeNumber: name.nextCode(),
     notes: 'Business headquarters',
     createdBy: 'system',
   ).toMap();

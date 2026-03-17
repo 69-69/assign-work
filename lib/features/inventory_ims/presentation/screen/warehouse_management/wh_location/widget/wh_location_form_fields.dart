@@ -255,6 +255,12 @@ class WhLocationFormFields {
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
       helperText: 'Starting number for code generation (e.g., 1).',
+      validator: (v) {
+        if (v == null || v.isEmpty || int.tryParse(v) == null) {
+          return 'Enter a valid start number';
+        }
+        return null;
+      },
     ),
     FieldGroupConfig(
       key: 'to',
@@ -262,6 +268,12 @@ class WhLocationFormFields {
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
       helperText: 'Ending number for code generation (e.g., 20).',
+      validator: (v) {
+        if (v == null || v.isEmpty || int.tryParse(v) == null) {
+          return 'Enter a valid end number';
+        }
+        return null;
+      },
     ),
   ];
 

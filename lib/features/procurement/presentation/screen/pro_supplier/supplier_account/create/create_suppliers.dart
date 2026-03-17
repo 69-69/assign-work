@@ -16,17 +16,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension AddSuppliers on BuildContext {
-  Future openAddSuppliers({Widget? header}) => openBottomSheet(
-    isExpand: false,
-    child: BottomSheetScaffold(
-      title: 'Add Supplier',
-      body: _AddSuppliersForm(),
-    ),
-  );
+  Future openSuppliersForm({Widget? header, List<String>? existingCodes}) =>
+      openBottomSheet(
+        isExpand: false,
+        child: BottomSheetScaffold(
+          title: 'Add Supplier',
+          body: _AddSuppliersForm(existingCodes: existingCodes),
+        ),
+      );
 }
 
 class _AddSuppliersForm extends StatefulWidget {
-  const _AddSuppliersForm();
+  final List<String>? existingCodes;
+
+  const _AddSuppliersForm({this.existingCodes});
 
   @override
   State<_AddSuppliersForm> createState() => _AddSuppliersFormState();
@@ -38,6 +41,9 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
   final List<ContactPerson> _contactPersons = [];
 
   String get _employeeName => context.employee!.fullName;
+
+  List<String>? get _existingCodes => widget.existingCodes;
+
   bool get isFormValid => _formKey.currentState!.validate();
 
   @override
@@ -68,7 +74,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
 
     // Append supplier-code & contact person names
     return supplier.copyWith(
-      code: supplier.name.generateUniqueCode(),
+      code: supplier.name.nextCode(existingCodes: _existingCodes),
       contactPersons: List.from(_contactPersons),
       createdBy: _employeeName,
     );

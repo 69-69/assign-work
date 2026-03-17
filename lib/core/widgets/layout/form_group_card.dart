@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class FormGroupCard extends StatefulWidget {
   final String title;
   final String subTitle;
+  final String helperText;
   final bool isExpanded;
   final Color? bgColor;
   final Color? textColor;
@@ -24,6 +25,7 @@ class FormGroupCard extends StatefulWidget {
     this.textColor,
     this.title = '',
     this.subTitle = '',
+    this.helperText = '',
     this.contentMargin,
     this.crossAlignment,
     this.contentPadding,
@@ -46,6 +48,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
   String get _title => widget.title;
 
   String get _subTitle => widget.subTitle;
+  String get _helperText => widget.helperText;
 
   // Generate a unique key for each card based on the title
   String get _collapseKey => _title.isEmpty ? '' : _title.replaceAll(' ', '_');
@@ -174,6 +177,16 @@ class _FormGroupCardState extends State<FormGroupCard> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.normal,
+                color: _textColor ?? context.onSecondaryContainer,
+              ),
+            ),
+          },
+          if (_helperText.isNotEmpty) ...{
+            TextSpan(
+              text: _helperText,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: _textColor ?? context.onSecondaryContainer,
               ),
             ),

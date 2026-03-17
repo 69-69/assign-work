@@ -34,7 +34,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Add Supplier',
-                    onPressed: () => context.openAddSuppliers(),
+                    onPressed: () => _openSupplierForm(),
                   )
                 : _buildBody(context, results),
           ProcurementError<Supplier>(error: final error) => context.buildError(
@@ -98,7 +98,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
       secondaryLabel: 'Edit Supplier',
       secondaryIcon: Icons.edit,
       dataLength: suppliers.length,
-      onPrimary: () => context.openAddSuppliers(),
+      onPrimary: () => _openSupplierForm(suppliers: suppliers),
       onRefresh: () => _bloc.add(RefreshProcurements<Supplier>()),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(suppliers, _selectedIds.first)
@@ -115,6 +115,12 @@ class _ListSuppliersState extends State<ListSuppliers> {
             }
           : null,
     );
+  }
+
+  Future<void> _openSupplierForm({List<Supplier>? suppliers}) async {
+    List<String>? existingCodes = Supplier.getSupplierCodes(suppliers ?? []);
+
+    await context.openSuppliersForm(existingCodes: existingCodes);
   }
 
   Future<void> _onEditTap(List<Supplier> suppliers, String id) async {

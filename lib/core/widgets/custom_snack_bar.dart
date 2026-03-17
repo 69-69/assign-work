@@ -83,6 +83,7 @@ extension ScaffoldSnackBar on BuildContext {
       'failed',
       'wrong',
       'not found',
+      'enter',
     ].any((k) => message.filterAny(k));
 
     void handleClose() {
@@ -115,7 +116,7 @@ extension ScaffoldSnackBar on BuildContext {
     atBottom(Widget child) =>
         Positioned(bottom: 80.0, left: 20.0, right: 20.0, child: child);
 
-    bgColor = bgColor ?? (isError ? kDangerColor : kDarkSuccessColor);
+    bgColor = bgColor ?? (isError ? kDangerColor : kDarkSuccessColor).toAlpha(0.6);
 
     buildBody(BuildContext context) => Material(
       color: kTransparentColor,
@@ -134,7 +135,7 @@ extension ScaffoldSnackBar on BuildContext {
                   child: context.copyPasteText(
                     child: Text(
                       message,
-                      style: const TextStyle(color: kWhiteColor),
+                      style: TextStyle(color: kWhiteColor, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
                     ),
                   ),

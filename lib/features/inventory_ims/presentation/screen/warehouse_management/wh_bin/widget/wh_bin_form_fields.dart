@@ -88,7 +88,7 @@ class WHBinFormFields {
       type: TextInputType.number,
       widgetType: FieldWidgetType.textField,
       helperText:
-          'The order this bin appears in lists or pick routes (optional)',
+          'The sequence in which this bin appears in lists or pick routes (optional)',
       validator: (_) => null,
     ),
     FieldGroupConfig(

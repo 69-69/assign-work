@@ -74,6 +74,38 @@ extension GenerateUID on DocType {
 }
 
 extension UniqueCodeExtension on String {
+  /// Generates a simple, unique numeric department/store/supplier code,
+  /// optionally prefixed with an abbreviation.
+  /// The numeric part checks against all existing codes, ignoring prefixes.
+  /// @example 'Sales'.nextCode(existingCodes: ['SAL-6300', 'HR-6301'])
+  String nextCode({List<String>? existingCodes, int startPoint = 1200}) {
+    final prefix = this;
+
+    existingCodes ??= [];
+
+    if (existingCodes.isNotEmpty) {
+      // Extract numeric part from all existing codes, ignore prefixes
+      final existingNumbers = existingCodes
+          .map((c) {
+        // Split by '-' and take the last segment
+        final parts = c.split('-');
+        return int.tryParse(parts.last);
+      })
+          .where((n) => n != null)
+          .cast<int>()
+          .toList();
+
+      if (existingNumbers.isNotEmpty) {
+        startPoint = existingNumbers.reduce((a, b) => a > b ? a : b) + 1;
+      }
+    }
+
+    String abbreviation = _abbrev(prefix);
+
+    final code = startPoint.toString();
+    return abbreviation.isNotEmpty ? '$abbreviation-$code' : code;
+  }
+
   /// Generates a unique department code based on the provided name and existing codes [generateUniqueCode].
   /// @param name The name of the department.
   /// @param existingCodes (Optional) A list of existing department codes.
@@ -82,12 +114,27 @@ extension UniqueCodeExtension on String {
   /// @example 'Sales'.generateUniqueCode()
   ///
   String generateUniqueCode([List<String>? existingCodes]) {
-    final name = this;
-    if (name.trim().isEmpty) return '';
+    final prefix = this;
+    if (prefix.trim().isEmpty) return '';
 
     existingCodes ??= []; // Default to empty list if null
 
-    final words = name
+    String abbreviation = _abbrev(prefix);
+
+    // Step 2: Generate a unique code
+    final d = DateTime.now();
+    String shortPad = '-${d.second}${d.minute}-${d.year}${d.hour}${d.day}';
+
+    String candidate;
+    do {
+      candidate = abbreviation + shortPad;
+    } while (existingCodes.contains(candidate));
+
+    return candidate;
+  }
+
+  String _abbrev(String prefix) {
+    final words = prefix
         .trim()
         .toUpperCase()
         .split(RegExp(r'\s+'))
@@ -103,17 +150,7 @@ extension UniqueCodeExtension on String {
       // Take first letter of each word
       abbreviation = words.map((word) => word[0]).join();
     }
-
-    // Step 2: Generate a unique code
-    final d = DateTime.now();
-    String shortPad = '-${d.second}${d.minute}-${d.year}${d.hour}${d.day}';
-
-    String candidate;
-    do {
-      candidate = abbreviation + shortPad;
-    } while (existingCodes.contains(candidate));
-
-    return candidate;
+    return abbreviation;
   }
 
   /// [generateTaxCode] Generates a unique tax code based on the provided name and rate.
@@ -125,13 +162,13 @@ extension UniqueCodeExtension on String {
     return '${name}_$newRate';
   }
 
-  /// [_nextCode] Find & generate the next code based on existing codes & optional separator
+  /// [_nextTerm] Find & generate the next code based on existing codes & optional separator
   /// @param existingCodes (Optional) A list of existing codes.
   /// @param prefix The prefix for the code.
   /// @return The generated code.
   /// @example _nextCode(['WH01', 'WH02'], 'WH')
   //// OUTPUT: WH03
-  String _nextCode(List<String>? existingCodes, {String separator = ''}) {
+  String _nextTerm(List<String>? existingCodes, {String separator = ''}) {
     final prefix = this;
     existingCodes ??= [];
 
@@ -157,17 +194,17 @@ extension UniqueCodeExtension on String {
   /// [nextWarehouseCode] @example 'WH'.nextWarehouseCode(['WH01', 'WH02'])
   /// OUTPUT: WH03
   String nextWarehouseCode([List<String>? existingCodes]) =>
-      _nextCode(existingCodes);
+      _nextTerm(existingCodes);
 
   /// [nextLocationCode] @example 'REC'.nextLocationCode(['REC01', 'REC02'])
   /// OUTPUT: REC03
   String nextLocationCode([List<String>? existingCodes]) =>
-      _nextCode(existingCodes);
+      _nextTerm(existingCodes);
 
   /// [nextBinCode] @example 'BIN'.nextBinCode(['BIN-01', 'A-01'])
   /// OUTPUT: BIN03
   String nextBinCode([List<String>? existingCodes]) =>
-      _nextCode(existingCodes, separator: '-');
+      _nextTerm(existingCodes, separator: '-');
 
   /// Example: generateRange(1, 5, prefix: 'A')
   /// OUTPUT: ['A01', 'A02', 'A03', 'A04', 'A05']

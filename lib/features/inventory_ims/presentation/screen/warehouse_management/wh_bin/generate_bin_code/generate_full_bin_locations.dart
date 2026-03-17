@@ -55,7 +55,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
   List<String> _fullBinLocationCodes = [];
   List<Map<String, dynamic>>? _subLocations = [];
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -88,6 +88,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
       _showAlert(
         'Failed: Select warehouse and its corresponding sub-location ranges',
       );
+      setState(() => _isGenerating = false);
       return;
     }
 
@@ -161,7 +162,20 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: KeyedSubtree(
           key: _formResetKey,
-          child: FormGroupTabView(contents: formGroupCards),
+          child: Column(
+            children: [
+              FormGroupTabView(contents: formGroupCards),
+
+              if (_subLocations.hasValue) ...[
+                const SizedBox(height: 20),
+                context.confirmableActionButton(
+                  onPressed: _onSavePressed,
+                  isDisabled: _isGenerating,
+                  label: _isGenerating ? 'Generating...' : 'Generate Bin Locations',
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -169,7 +183,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
 
   List<Map<String, dynamic>> get formGroupCards => [
     {
-      'title': 'Generate Bin Locations',
+      'title': 'Create Full Bin Locations',
       'subTitle':
           '\nGenerate fully qualified bin location codes for the selected warehouse.'
           '\ne.g., Z01-A01-R01-L01-S01',
@@ -186,15 +200,9 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
             },
           ),
         ),
-        if (_subLocations.hasValue) ...[
-          _buildBinInfo(),
-          const SizedBox(height: 20),
-          context.confirmableActionButton(
-            onPressed: _onSavePressed,
-            isDisabled: _isGenerating,
-            label: _isGenerating ? 'Generating...' : 'Generate Bin Locations',
-          ),
-        ],
+        if (_subLocations.hasValue) ...{
+          _fullBinLocFormFields(),
+        },
       ],
     },
 
@@ -206,7 +214,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
       },
   ];
 
-  DynamicTextFields _buildBinInfo() {
+  DynamicTextFields _fullBinLocFormFields() {
     return DynamicTextFields(
       fieldsConfig: WHBinFormFields.whBinLocationCodesFields(
         subLocations: _subLocations,

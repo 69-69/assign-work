@@ -108,6 +108,10 @@ class Department extends Equatable {
   static Department? findById(List<Department> departs, String id) =>
       departs.firstWhereOrNull((d) => d.id == id);
 
+  /// Extract all Department Codes from the list
+  static List<String> getDepartmentCodes(List<Department> codes) =>
+      codes.map((s) => s.code).toList();
+
   /// copyWith method
   Department copyWith({
     String? id,
@@ -178,7 +182,7 @@ Map<String, dynamic> createBusinessOwnerDepartment({required String id}) =>
       id: id,
       name: 'executive office',
       leadId: 'ceo',
-      code: 'ceo'.generateUniqueCode(),
+      code: 'ceo'.nextCode(),
       description: 'this is the ceo\'s executive office department',
       createdBy: 'system',
     ).toMap();

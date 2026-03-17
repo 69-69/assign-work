@@ -21,6 +21,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
   late final DepartmentBloc _bloc;
+
   // DepartmentBloc get _bloc => context.read<DepartmentBloc>();
 
   void _isDeleting(bool status) {
@@ -66,7 +67,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Create Departments',
-                    onPressed: () => context.openAddDepartment(),
+                    onPressed: () => _openDepartmentForm(),
                   )
                 : _buildCard(context, results),
           SetupError<Department>(error: final error) => context.buildError(
@@ -101,7 +102,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Department',
       secondaryIcon: Icons.edit,
       dataLength: departments.length,
-      onPrimary: () => context.openAddDepartment(),
+      onPrimary: () => _openDepartmentForm(departments: departments),
       onRefresh: () => _bloc.add(RefreshSetups<Department>()),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(departments, _selectedIds.first)
@@ -118,11 +119,25 @@ class _ListDepartmentsState extends State<ListDepartments> {
     );
   }
 
+  Future<void> _openDepartmentForm({
+    Department? serverDepart,
+    List<Department>? departments,
+  }) async {
+    List<String>? existingCodes = Department.getDepartmentCodes(
+      departments ?? [],
+    );
+
+    await context.openDepartmentForm(
+      serverDepart: serverDepart,
+      existingCodes: existingCodes,
+    );
+  }
+
   Future<void> _onEditTap(List<Department> departments, String id) async {
     final depart = Department.findById(departments, id);
     if (depart == null) return;
 
-    await context.openAddDepartment(serverDepart: depart);
+    await _openDepartmentForm(serverDepart: depart);
   }
 
   Future<void> _onDeleteTap(List<Department> departments, String id) async {

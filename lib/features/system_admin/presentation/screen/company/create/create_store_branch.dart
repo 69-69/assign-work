@@ -19,22 +19,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Add Company Store Branches
 extension CreateStoreBranches<T> on BuildContext {
-  Future<void> openAddStoreBranches({
+  Future<void> openStoresForm({
     CompanyStore? serverStore,
+    List<String>? existingStoreNumbers,
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
       title:
           '${serverStore == null ? 'New Store Branches' : 'Edit ${serverStore.name.toTitle}'} ',
-      body: _AddStoreBranchForm(serverStore: serverStore),
+      body: _AddStoreBranchForm(
+        serverStore: serverStore,
+        existingStoreNumbers: existingStoreNumbers,
+      ),
     ),
   );
 }
 
 class _AddStoreBranchForm extends StatefulWidget {
   final CompanyStore? serverStore;
+  final List<String>? existingStoreNumbers;
 
-  const _AddStoreBranchForm({this.serverStore});
+  const _AddStoreBranchForm({this.serverStore, this.existingStoreNumbers});
 
   @override
   State<_AddStoreBranchForm> createState() => _AddStoreBranchFormState();
@@ -44,13 +49,19 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   bool _isSubmitting = false;
   final _formKey = GlobalKey<FormState>();
   final List<CompanyStore> _storeList = [];
+
   CompanyStore? get _serverStore => widget.serverStore;
-  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
   bool get _isServerNull => _serverStore == null;
+  List<String>? get _existingStoreNumbers => widget.existingStoreNumbers;
+
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   Employee? get _employee => context.employee;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeId => _employee!.employeeId;
+
   CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
 
   void _onSubmit() {
@@ -78,7 +89,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
     final newStores = _storeList
         .map(
           (e) => e.copyWith(
-            storeNumber: '${e.name}${e.address}'.generateUniqueCode(),
+            storeNumber: e.name.nextCode(existingCodes: _existingStoreNumbers),
             createdBy: _employeeName,
             history: history(),
           ),

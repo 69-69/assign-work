@@ -116,7 +116,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
         color: canAddStores ? kPrimaryLightColor : kGrayBlueColor,
         icon: canAddStores ? Icons.add : Icons.lock,
         onPressed: () async => canAddStores
-            ? await context.openAddStoreBranches()
+            ? await context.openStoresForm()
             : await context.showUpgradeDialog(),
       ),
       subtitle: _buildSubtitle(subtitle: 'Add stores\nMulti-Location', context),

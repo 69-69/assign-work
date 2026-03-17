@@ -16,21 +16,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension CreateDepartment<T> on BuildContext {
-  Future<void> openAddDepartment({Department? serverDepart}) => openBottomSheet(
+  Future<void> openDepartmentForm({
+    Department? serverDepart,
+    List<String>? existingCodes,
+  }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
       title: serverDepart != null
           ? 'Edit ${serverDepart.name}'
           : 'Create Department',
-      body: _AddDepartmentForm(serverDepart: serverDepart),
+      body: _AddDepartmentForm(
+        serverDepart: serverDepart,
+        existingCodes: existingCodes,
+      ),
     ),
   );
 }
 
 class _AddDepartmentForm extends StatefulWidget {
   final Department? serverDepart;
+  final List<String>? existingCodes;
 
-  const _AddDepartmentForm({this.serverDepart});
+  const _AddDepartmentForm({this.serverDepart, this.existingCodes});
 
   @override
   State<_AddDepartmentForm> createState() => _AddDepartmentFormState();
@@ -43,19 +50,23 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
 
   Department? get _serverDepart => widget.serverDepart;
 
+  bool get _isServerNull => _serverDepart == null;
+
+  List<String>? get _existingCodes => widget.existingCodes;
+
   bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   Employee? get _employee => context.employee;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeId => _employee!.employeeId;
 
   DepartmentBloc get _bloc => context.read<DepartmentBloc>();
 
-  bool get _isServerNull => _serverDepart == null;
-
   void _onSubmit() {
     // Case 1: Update existing department
-    if (_isServerNull) {
+    if (!_isServerNull) {
       _updateDepartment();
       return;
     }
@@ -75,7 +86,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     final newDeparts = _departments
         .map(
           (e) => e.copyWith(
-            code: e.name.generateUniqueCode(),
+            code: e.name.nextCode(existingCodes: _existingCodes),
             createdBy: _employeeName,
             history: history(),
           ),
@@ -89,6 +100,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
     final updated = _departments.first.copyWith(
       id: _serverDepart!.id,
       code: _serverDepart!.code,
+      createdBy: _serverDepart?.createdBy,
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );

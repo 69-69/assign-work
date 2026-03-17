@@ -52,6 +52,7 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _prefixController;
+
   Function? get _onCreateFullBinLocation => widget.onCreateCodeRanges;
 
   WHLocationBloc get _bloc => context.read<WHLocationBloc>();
@@ -62,7 +63,10 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   String get _employeeName => _employee!.fullName;
 
   WHLocation? get _serverItem => widget.serverItem;
+
   bool get _isServerNull => _serverItem == null;
+
+  String? get _desc => _serverItem?.description;
 
   bool get _hasCodeRanges => _serverItem?.codeRanges.isNotEmpty == true;
 
@@ -76,11 +80,17 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
 
   void _onGenerate() {
     if (_isGenerating) return;
+
+    if (!_canGenerate) {
+      _showAlert('Please enter a valid code range.');
+      return;
+    }
+
     setState(() => _isGenerating = true);
 
     // Case 0: Form validation or empty Location
-    if (!_canGenerate || _whLocationData.isEmpty) {
-      _showAlert('Failed: Enter range values to generate codes.');
+    if (_whLocationData.isEmpty) {
+      _showAlert('Invalid range. Start and end values must be different');
       return;
     }
 
@@ -147,12 +157,13 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     super.initState();
     _whLocationData = widget.serverItem ?? WHLocation.empty;
     _prefixController = TextEditingController(
-      text: _serverItem?.description?.substring(0, 1).toUpperAll ?? '',
+      text: _desc?.substring(0, 1).toUpperAll ?? '',
     );
   }
 
   @override
   void dispose() {
+    _prefixController.dispose();
     for (final c in _controllers.values) {
       c.dispose();
     }
@@ -168,7 +179,17 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: KeyedSubtree(
           key: _formResetKey,
-          child: FormGroupTabView(contents: formGroupCards),
+          child: Column(
+            children: [
+              FormGroupTabView(contents: formGroupCards),
+              const SizedBox(height: 20),
+              context.confirmableActionButton(
+                onPressed: _canGenerate ? _onGenerate : null,
+                isDisabled: _isGenerating || !_canGenerate,
+                label: _isGenerating ? 'Generating...' : 'Generate Sub Location',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -182,12 +203,6 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
       'children': [
         _buildHeader(),
         _buildGenerateCodes(),
-        const SizedBox(height: 20),
-        context.confirmableActionButton(
-          onPressed: _onGenerate,
-          isDisabled: _isGenerating,
-          label: _isGenerating ? 'Generating...' : 'Generate Sub Location',
-        ),
       ],
     },
 
@@ -204,11 +219,11 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
       children: [
         SearchWHSubLocations(
           enabled: !_hasCodeRanges,
-          initialValue: _serverItem?.description,
+          initialValue: _desc,
           onChanged: (id, whCode, locType, desc) => setState(() {
             _prefixController.text = desc.isNotEmpty ? desc[0].toUpperAll : '';
 
-            if (_serverItem?.description != desc) {
+            if (_desc != desc) {
               // Update id if changed
               _whLocationData = _whLocationData.copyWith(id: id);
             }
@@ -232,28 +247,34 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
   Widget _buildGenerateCodes() {
     return DynamicTextFields(
       fieldsConfig: WhLocationFormFields.whGenerateCodesFields(),
-      onChanged: (List<Map<String, dynamic>> data) {
-        if (data.isEmpty ||
-            data.first.isEmpty ||
-            _prefixController.text.isEmpty) {
-          return;
-        }
-
-        final codeRange = CodeRange.fromMap(data.first);
-        if (codeRange.isEmpty) return;
-
-        final codes = _prefixController.text.generateRange(
-          codeRange.from,
-          codeRange.to,
-        );
-        setState(() {
-          _whLocationData = _whLocationData.copyWith(
-            codeRanges: codes.map((e) => e).join(','),
-          );
-          _canGenerate = true;
-        });
-      },
+      onChanged: _validateCodeRange,
     );
+  }
+
+  void _validateCodeRange(List<Map<String, dynamic>> data) {
+    if (data.isEmpty || data.first.isEmpty) return;
+
+    final map = data.first;
+
+    final codeRange = CodeRange.fromMap(map);
+    final start = codeRange.from;
+    final end = codeRange.to;
+
+    if (start == end || start > end) {
+      setState(() => _canGenerate = false);
+      return;
+    }
+
+    final prefix = _prefixController.text.trim();
+    if (prefix.isEmpty) return;
+
+    final codes = prefix.generateRange(start, end);
+
+    setState(() {
+      _whLocationData =
+          _whLocationData.copyWith(codeRanges: codes.join(','));
+      _canGenerate = true;
+    });
   }
 
   /// Showing the List of sub-location codes

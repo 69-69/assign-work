@@ -57,10 +57,12 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   String _warehouseCode = '';
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
-  final Set<String> _binLocationCode = {};
+
+  // final Set<String> _binLocationCode = {};
+  final Map<String, String> _binLocationCode = {};
   List<Map<String, dynamic>>? _subLocations = [];
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -79,8 +81,9 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   bool _isSubmitting = false;
   late WHBin _whBinData = widget.serverItem ?? WHBin.empty;
 
+  // get _finalBinLocCode => [_warehouseCode, ..._binLocationCode].join('-').toUpperAll;
   get _finalBinLocCode =>
-      [_warehouseCode, ..._binLocationCode].join('-').toUpperAll;
+      [_warehouseCode, ..._binLocationCode.values].join('-').toUpperAll;
 
   void _onSubmit() async {
     if (_isSubmitting) return;
@@ -219,37 +222,34 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
         const SizedBox(height: 20),
         _buildButtons(),
-        const SizedBox(height: 20),
       ],
     );
   }
 
-  AdaptiveLayout _buildButtons() {
-    return AdaptiveLayout(
-      children: [
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Bin')
-              : (_isSubmitting ? 'Updating...' : null),
+  Widget _buildButtons() {
+    return context.confirmableActionButton(
+      onPressed: _onSubmit,
+      isDisabled: _isSubmitting || !_isFormValid,
+      label: _isServerNull
+          ? (_isSubmitting ? 'Creating...' : 'Create Bin')
+          : (_isSubmitting ? 'Updating...' : null),
+      anyButton: context.outlinedButton(
+        'Manage Bin Locations',
+        onPressed: () async => await context.openWHBinLocationsForm(
+          serverItem: _serverItem,
+          onCreateFullBinLocation: (fullCodes) {
+            _whBinData = _whBinData.copyWith(
+              fullBinLocations: fullCodes.join(','),
+            );
+            _cacheFullBinLocations = fullCodes.join(',');
+          },
         ),
-        context.outlinedButton(
-          'Manage Bin Locations',
-          onPressed: () async => await context.openWHBinLocationsForm(
-            serverItem: _serverItem,
-            onCreateFullBinLocation: (fullCodes) {
-              _whBinData = _whBinData.copyWith(
-                fullBinLocations: fullCodes.join(','),
-              );
-              _cacheFullBinLocations = fullCodes.join(',');
-            },
-          ),
-          style: ButtonStyle(
-            padding: const WidgetStatePropertyAll(EdgeInsets.all(18)),
-          ),
+        style: ElevatedButton.styleFrom(
+          elevation: 0.4,
+          backgroundColor: kOffWhiteColor,
+          padding: const EdgeInsets.all(18),
         ),
-      ],
+      ),
     );
   }
 
@@ -264,7 +264,12 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
               final subLevels = await GetWHLocations.subLocations(whCode);
               setState(() {
                 _warehouseCode = whCode;
+                // reset previous selections
+                _binLocationCode.clear();
+
+                // load new structure
                 _subLocations = subLevels;
+                // _formResetKey = UniqueKey(); // rebuild fields
               });
             },
           ),
@@ -279,8 +284,10 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
                     child: SearchSubLocationCodes(
                       label: '$type'.toTitle,
                       subLocCodes: codeRanges,
-                      onChanged: (code) =>
-                          setState(() => _binLocationCode.add(code ?? '')),
+                      // onChanged: (code) => setState(() => _binLocationCode.add(code ?? '')),
+                      onChanged: (code) {
+                        setState(() =>_binLocationCode[type] = code ?? '');
+                      },
                     ),
                   );
                 }) ??
@@ -291,7 +298,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
       const SizedBox(height: 10),
       Text(
-        'BIN LOCATION CODE:',
+        'FULL BIN LOCATION CODE:',
         style: context.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.bold,
           color: kDarkSuccessColor,
@@ -301,7 +308,10 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
         blockColor: kDarkSuccessColor,
         margin: EdgeInsets.only(top: 5),
         childPadding: EdgeInsets.symmetric(horizontal: 10),
-        child: _binLocationCode.isNotEmpty
+        // child: _binLocationCode.isNotEmpty
+        child:
+            _binLocationCode.isNotEmpty &&
+                _binLocationCode.values.every((e) => e.isNotEmpty)
             ? Text(_finalBinLocCode)
             : Text(_whBinData.binLocationCode),
       ),

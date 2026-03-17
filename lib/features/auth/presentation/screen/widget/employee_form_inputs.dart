@@ -272,6 +272,7 @@ class EmployeeSignInButton extends StatelessWidget {
     bool isDisabled = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
+    isPaired: false,
     label: inProgress ? "Please wait..." : "Sign In",
     onPressed: onPress,
     isDisabled: isDisabled,

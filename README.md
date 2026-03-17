@@ -1,5 +1,35 @@
 # Assign.Work
 
+# ✅ Change Window Background (Recommended)
+
+Open:
+
+```text
+macos/Runner/MainFlutterWindow.swift
+```
+
+Modify it like this:
+
+```swift
+import Cocoa
+import FlutterMacOS
+
+class MainFlutterWindow: NSWindow {
+  override func awakeFromNib() {
+    let flutterViewController = FlutterViewController()
+    let windowFrame = self.frame
+    self.contentViewController = flutterViewController
+    self.setFrame(windowFrame, display: true)
+
+    // Change macOS window background
+    self.backgroundColor = NSColor.black
+
+    RegisterGeneratedPlugins(registry: flutterViewController)
+
+    super.awakeFromNib()
+  }
+}
+```
 
 git init
 git add .
@@ -8,20 +38,25 @@ git branch -M main
 git push -u origin main
 
 ---
-### InCompactible: 
+
+### InCompactible:
+
     > file_picker, printing, flutter_tts, path_provider, 
     > device_info_plus, url_launcher, FirebaseAuth
 
 # 🔐 ERP Authentication Flow (Two-Tier)
 
 ### 🧩 1. Workspace Sign-In (Tenant-Level Access)
-Authenticate using your organization's **Workspace Email** and **Password** to access the organization's workspace.
+
+Authenticate using your organization's **Workspace Email** and **Password** to access the
+organization's workspace.
 
 ### 👨‍💼 2. Employee Sign-In (User-Level Access)
-After workspace authentication, sign in as a specific **Employee** using your **Employee Email** and **Passcode**.
+
+After workspace authentication, sign in as a specific **Employee** using your **Employee Email** and
+**Passcode**.
 
 ---
-
 
 # ⚙️ Onboarding Flow Structure (Three-Tier)
 
@@ -29,9 +64,12 @@ After workspace authentication, sign in as a specific **Employee** using your **
    New Agents begin by signing in using the provided `Onboarding` Workspace Email and Password.
 
 2. **Create a New Workspace (Agent)**  
-   After signing in, Agents can create their new Workspace by clicking the **`Setup New Workspace`** button.
-   While the Workspace is being created, an Agent has the option to auto-generate **`Temporary Employee Passcode`**.
-   This is used after the **`Workspace Successful SignIn`** to sign in to the **`Employee portal`** using the **`Employee Email + Temporary Passcode`**.
+   After signing in, Agents can create their new Workspace by clicking the **`Setup New Workspace`**
+   button.
+   While the Workspace is being created, an Agent has the option to auto-generate *
+   *`Temporary Employee Passcode`**.
+   This is used after the **`Workspace Successful SignIn`** to sign in to the **`Employee portal`**
+   using the **`Employee Email + Temporary Passcode`**.
 
 ---
 
@@ -40,12 +78,16 @@ After workspace authentication, sign in as a specific **Employee** using your **
 1. The Agent signs in to their **own Workspace**.
 2. Navigate to the **`Agent`** section and click **`Setup New Workspace`**.
 3. Fill in the required details and click **"Create Workspace"**.
-4. An Agent has the option to auto-generate **Temporary Employee Passcode** for the **Subscriber/Client**.  
-5. The Subscriber uses this, along with their **Employee Email and Passcode**, to sign in after completing the Workspace Sign-In process.
-6. Upon their **first login** through the Employee Sign-In Portal, they will be **prompted to create** a **new personal passcode**.
+4. An Agent has the option to auto-generate **Temporary Employee Passcode** for the *
+   *Subscriber/Client**.
+5. The Subscriber uses this, along with their **Employee Email and Passcode**, to sign in after
+   completing the Workspace Sign-In process.
+6. Upon their **first login** through the Employee Sign-In Portal, they will be **prompted to create
+   ** a **new personal passcode**.
 
 > **Note:**  
-> Clients can reset their Workspace Password anytime using the **"Forgot Password"** option on the Workspace Sign-In screen.
+> Clients can reset their Workspace Password anytime using the **"Forgot Password"** option on the
+> Workspace Sign-In screen.
 > OR - use the **"Change Workspace Password"** at the ADMIN level
 
 ---
@@ -61,7 +103,8 @@ After workspace authentication, sign in as a specific **Employee** using your **
 
 ## 🔐 Resetting Workspace Password
 
-1. On the Workspace Sign-In screen, click **"Forgot Password"**. - OR - click **"Change Workspace Password"** at the ADMIN level.
+1. On the Workspace Sign-In screen, click **"Forgot Password"**. - OR - click **"Change Workspace
+   Password"** at the ADMIN level.
 2. Follow the instructions sent to the registered **Workspace email** to reset the password.
 
 ## 🔐 Resetting Employee Passcode
@@ -73,68 +116,78 @@ In addition to the **First login Prompt**, Employees can reset their Passcode ma
 3. Click **"Reset Passcode"** next to the desired user.
 4. Auto-Generate a **Temporary Passcode** (Valid for 7 days)
 5. The user will be logged out and must sign in again using the **new Temporary Passcode**.
-6. Upon successful sign-in, users are Prompted to create a **preferred Passcode** upon first sign-in.
+6. Upon successful sign-in, users are Prompted to create a **preferred Passcode** upon first
+   sign-in.
 
 # FEATURED COMPONENTS
 
 - Summary Grouping:
+
 > POS Related Tiles:
-   - Sales
-   - Orders
-   - Payment
-   - Receipt
-   - Finance (POS)
-   - Report - Analytics (POS)
+
+- Sales
+- Orders
+- Payment
+- Receipt
+- Finance (POS)
+- Report - Analytics (POS)
+
 > Inventory System Related Tiles:
-   * Stocks
-   * Orders (Inventory)
-   * Deliveries
-   * Report - Analytics (Inventory)
-   * Tracking
+
+* Stocks
+* Orders (Inventory)
+* Deliveries
+* Report - Analytics (Inventory)
+* Tracking
+
 > Order & Procurement Related Tiles:
-   - Orders (Customer Orders)
-   - Purchase - Order
-   - Misc - Order
-   - Request - Quotation
+
+- Orders (Customer Orders)
+- Purchase - Order
+- Misc - Order
+- Request - Quotation
+
 > Finance and Analytics Related Tiles:
-   - Finance (General)
-   - Invoice
+
+- Finance (General)
+- Invoice
+
 > This grouping clarifies which tiles are geared towards sales
- and transactions (POS), inventory management (Inventory System),
- and order management or procurement (Order Management/Procurement).
+> and transactions (POS), inventory management (Inventory System),
+> and order management or procurement (Order Management/Procurement).
 
 > 🔹 Sales:
-    A sale represents a transaction where goods or services are sold to a customer.
-    It records what was sold, how much was sold, and at what price.
-    A sale includes details like:
-    Items purchased
-    Quantity
-    Discounts
-    Tax
-    Total amount owed by the customer
+> A sale represents a transaction where goods or services are sold to a customer.
+> It records what was sold, how much was sold, and at what price.
+> A sale includes details like:
+> Items purchased
+> Quantity
+> Discounts
+> Tax
+> Total amount owed by the customer
 > 🔹 Payment
-    A payment is the money received from the customer to settle the sale.
-    It can be:
-    In full or partial
-    In various forms: cash, credit card, debit, gift card, mobile payment, etc.
-    A payment is what clears the customer’s debt from the sale.
+> A payment is the money received from the customer to settle the sale.
+> It can be:
+> In full or partial
+> In various forms: cash, credit card, debit, gift card, mobile payment, etc.
+> A payment is what clears the customer’s debt from the sale.
 > 🔹 3. Finance (in POS context)
-    Definition: This refers to the financial management features within or connected to the POS system.
-    Covers:
-    Sales summaries
-    Cash flow tracking
-    Accounts receivable (credit sales)
-    Loans, credit terms, or installment plans
-    Profit & loss reporting
-    Integration with accounting software (e.g., QuickBooks, Xero)
-    Example: A POS may show total revenue this month, outstanding payments (credit sales), expenses, and net profit.
-    ✅ Key Role in POS: Enables businesses to understand financial health and plan accordingly.
-
-
+> Definition: This refers to the financial management features within or connected to the POS system.
+> Covers:
+> Sales summaries
+> Cash flow tracking
+> Accounts receivable (credit sales)
+> Loans, credit terms, or installment plans
+> Profit & loss reporting
+> Integration with accounting software (e.g., QuickBooks, Xero)
+> Example: A POS may show total revenue this month, outstanding payments (credit sales), expenses, and
+> net profit.
+> ✅ Key Role in POS: Enables businesses to understand financial health and plan accordingly.
 
 ## POS vs. Inventory System
+
 | **Aspect**               | **Orders in Inventory System**                                                                                   | **Orders in POS System**                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+|--------------------------|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | **Purpose**              | Manages the **order lifecycle** for both sales and purchases.                                                    | Focuses on **real-time transactions** with customers.                                      |
 | **Types of Orders**      | **Sales Orders**, **Purchase Orders**, **Miscellaneous Orders**                                                  | **Sales Orders** only (customer-facing, typically one-time)                                |
 | **Scope**                | Manages **inventory** levels, procurement, and order fulfillment.                                                | Manages **sales transactions** at the point of sale.                                       |
@@ -145,13 +198,14 @@ In addition to the **First login Prompt**, Employees can reset their Passcode ma
 | **Customer Interaction** | Focuses more on the **internal management** of orders (back-end).                                                | Focuses on the **customer experience** and immediate transaction.                          |
 
 ## Procurement vs. Inventory System
-- While POs in both processes serve to acquire goods, 
-- Procurement is about external sourcing and supplier management, 
-- while Inventory Management is about maintaining internal stock 
+
+- While POs in both processes serve to acquire goods,
+- Procurement is about external sourcing and supplier management,
+- while Inventory Management is about maintaining internal stock
 - levels and ensuring inventory availability.
 
 | **Feature**                        | **Inventory System**                                                                                       | **Procurement System**                                                                                                      |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+|------------------------------------|------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | **Focus**                          | **Tracks inventory levels** (stock quantities), **inventory adjustments**, and **order fulfillment**.      | **Handles the purchasing process**, including **supplier management**, **purchase orders**, and **replenishing stock**.     |
 | **Key Tasks**                      | **Monitor stock levels**, **adjust inventory** as sales happen, manage **sales orders** and stock updates. | **Create Purchase Orders (POs)**, manage supplier relationships, **negotiate contracts**, track **deliveries**.             |
 | **Automation**                     | Triggers **stock reservations** for sales and updates inventory.                                           | Triggers **reorders** based on inventory levels or manual purchase orders.                                                  |
@@ -159,10 +213,11 @@ In addition to the **First login Prompt**, Employees can reset their Passcode ma
 | **Receives Goods**                 | Tracks and updates **stock levels** after receiving deliveries.                                            | Manages **suppliers** and **order placements** but doesn't physically receive the goods.                                    |
 | **Focus on Procurement Process**   | Limited focus, may handle stock ordering from suppliers if integrated.                                     | Central role in the **procurement** lifecycle – creation of POs, management of supplier invoices, and negotiation of terms. |
 
-
 > # The Role of the Inventory System in Orders:
-The Inventory System is mainly responsible for creating internal orders (SOs, POs, and MOs) that manage the flow of goods in and out of the business.
-These orders ensure that inventory levels are accurately maintained and reflect the real-time needs of both customers (for sales) and suppliers (for purchases).
+The Inventory System is mainly responsible for creating internal orders (SOs, POs, and MOs) that
+manage the flow of goods in and out of the business.
+These orders ensure that inventory levels are accurately maintained and reflect the real-time needs
+of both customers (for sales) and suppliers (for purchases).
 
 > # Procurement Workflow Example:
 Purchase Requisition (PR) is created internally for needed goods or services.
@@ -171,17 +226,17 @@ POs are issued to suppliers based on the accepted RFQ.
 Supplier delivers goods, and Supplier Invoice is received.
 The invoice is verified against the PO and goods receipt, and payment is processed.
 
-> # 
+> #  
 
         
 ==========================================================================================
 
-Building an ERP (Enterprise Resource Planning) system requires 
-a comprehensive and modular approach. Since an ERP system integrates 
-all departments and functions of a business into one unified system, 
-you’ll need to group the system’s features into logical modules. 
+Building an ERP (Enterprise Resource Planning) system requires
+a comprehensive and modular approach. Since an ERP system integrates
+all departments and functions of a business into one unified system,
+you’ll need to group the system’s features into logical modules.
 
-> Below is a detailed breakdown of **major features** and their 
+> Below is a detailed breakdown of **major features** and their
 > associated **sub-features** for different modules in your ERP system.
 
 ### **1. User Management and Security**
@@ -435,6 +490,11 @@ Helps companies maintain compliance with local and international laws.
 
 ### Conclusion
 
-When developing an ERP system using **Flutter-Dart**, you’ll need to consider all of the above features. It’s essential to group related functions under modules to ensure scalability and easy maintenance. You can then build out each module iteratively, starting with the most critical ones such as **Finance**, **Inventory Management**, and **Sales**, and later expanding to more advanced features like **Supply Chain Management**, **Project Management**, and **Compliance**.
+When developing an ERP system using **Flutter-Dart**, you’ll need to consider all of the above
+features. It’s essential to group related functions under modules to ensure scalability and easy
+maintenance. You can then build out each module iteratively, starting with the most critical ones
+such as **Finance**, **Inventory Management**, and **Sales**, and later expanding to more advanced
+features like **Supply Chain Management**, **Project Management**, and **Compliance**.
 
-This modular approach will ensure that you create a robust ERP system with clear separation of concerns, and ensure a smooth user experience across all departments and functions.
+This modular approach will ensure that you create a robust ERP system with clear separation of
+concerns, and ensure a smooth user experience across all departments and functions.

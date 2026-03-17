@@ -179,6 +179,10 @@ class Supplier extends Equatable {
   static Supplier findById(List<Supplier> suppliers, String id) =>
       suppliers.firstWhere((s) => s.id == id, orElse: () => Supplier.empty);
 
+  /// Extract all Supplier Codes from the list
+  static List<String> getSupplierCodes(List<Supplier> codes) =>
+      codes.map((s) => s.code).toList();
+
   /// copyWith method
   Supplier copyWith({
     String? id,

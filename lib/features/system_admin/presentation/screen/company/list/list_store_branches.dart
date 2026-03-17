@@ -84,7 +84,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Add Stores',
-                    onPressed: () => context.openAddStoreBranches(),
+                    onPressed: () => _openStoreForm(),
                   )
                 : _buildCard(results),
           SetupError<CompanyStore>(error: final error) => context.buildError(
@@ -126,7 +126,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
       secondaryIcon: Icons.edit,
       dataLength: stores.length,
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Store',
-      onPrimary: () => context.openAddStoreBranches(),
+      onPrimary: () => _openStoreForm(stores: stores),
       onRefresh: () => _bloc.add(RefreshSetups<CompanyStore>()),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(stores, _selectedIds.first)
@@ -163,6 +163,18 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     });
   }
 
+  Future<void> _openStoreForm({
+    CompanyStore? serverStore,
+    List<CompanyStore>? stores,
+  }) async {
+    List<String>? existingNumbers = CompanyStore.getStoreNumbers(stores ?? []);
+
+    await context.openStoresForm(
+      serverStore: serverStore,
+      existingStoreNumbers: existingNumbers,
+    );
+  }
+
   CompanyStore? _findStoresById(List<CompanyStore> stores, String id) =>
       CompanyStore.findById(stores, id);
 
@@ -170,7 +182,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     final store = _findStoresById(stores, id);
     if (store == null) return;
 
-    await context.openAddStoreBranches(serverStore: store);
+    await _openStoreForm(serverStore: store);
   }
 
   Future<void> _onDeleteTap(
