@@ -253,7 +253,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
         _generateSQNumber,
       ),
       footers: [
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: _isSubmitting ? 'Creating...' : 'Create Quote',
           isDisabled: _isSubmitting,

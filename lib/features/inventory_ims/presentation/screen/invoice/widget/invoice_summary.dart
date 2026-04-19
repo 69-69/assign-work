@@ -135,7 +135,7 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
 
           return DataRow(
             cells: [
-              _buildDataCell(data.key.separateWord.toTitle),
+              _buildDataCell(data.key.toSeparate.toTitle),
               _buildDataCell(val),
             ],
           );

@@ -94,7 +94,7 @@ extension InventoryTiles on dynamic {
       },
       {
         'hasSplit': true,
-        'label': 'returns . from customers',
+        'label': 'customer . returns',
         'icon': Icons.rotate_left,
         'route': RouteNames.returnsFromCustomers,
         'param': {},
@@ -110,37 +110,6 @@ extension InventoryTiles on dynamic {
   /// Sub Menu Tiles under Warehouse tab
   List<DashboardTile> get warehouseSubTiles {
     final tileData = [
-      // ───────────── Master Data ─────────────
-      {
-        'label': 'Warehouses',
-        'icon': Icons.store,
-        'route': RouteNames.warehouse,
-        'param': {},
-        'access': _getName(InventoryPermission.manageWarehouseAddress),
-        'description':
-            'Define physical storage facilities such as Main, Store, or Transit warehouses.',
-      },
-      {
-        'hasSplit': true,
-        'label': 'Storage . Location',
-        'icon': Icons.view_kanban,
-        'route': RouteNames.warehouseLocation,
-        'param': {},
-        'access': _getName(InventoryPermission.manageWHLocation),
-        'description':
-            'Define sub-levels within a warehouse, such as racks, aisles, or shelves.',
-      },
-      {
-        'hasSplit': true,
-        'label': 'Storage . Bin',
-        'icon': Icons.inbox,
-        'route': RouteNames.warehouseBin,
-        'param': {},
-        'access': _getName(InventoryPermission.manageWHBin),
-        'description':
-            'Define precise storage slots inside a location for accurate stock placement.',
-      },
-
       // ───────────── Inbound Execution ─────────────
       {
         'hasSplit': true,
@@ -166,7 +135,7 @@ extension InventoryTiles on dynamic {
       // ───────────── Outbound Execution ─────────────
       {
         'hasSplit': true,
-        'label': 'Picking . Shipments',
+        'label': 'Picking & Shipments',
         'icon': Icons.local_shipping,
         'route': RouteNames.outboundPickShipping,
         'param': {},
@@ -413,6 +382,106 @@ extension InventoryTiles on dynamic {
 
 // Get name from enum
 String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
+
+/* @TODO Goods Receipt (Inbound)
+
+      ✅ Key point:
+          - GR = stock received into a location
+          - Internal warehouse moves = stock movement, not GR
+          - Customer Returns GR: is distinct because it’s stock coming back from outside the company, not from production or suppliers.
+        VERY-IMPORTANT-NOTE:
+          - ERP forms like Goods Receipt Entry often allow selecting the source type: PO, Production, Transfer, Customer Return, Direct Receipt.
+
+        4️⃣ Goods Receipt (Inbound)
+        Purpose: Actually add stock to inventory - Increase inventory from external sources.
+        Sources:
+        Purchase Orders
+        Customer Returns
+        Production Output
+        Key objects:
+        Goods Receipt Notes (GRN)
+        Receiving Inspection
+        Partial Receipts
+        =====================
+        4️⃣ Goods Receipt (Inbound)
+          Purpose: Manages the receipt of goods from external sources—suppliers, customers, or even internal
+          production outputs. It ensures accurate, timely updates to stock levels.
+        Sources:
+          Purchase Orders: Goods received based on orders placed with suppliers.
+          Customer Returns: Items returned by customers for exchange or refund.
+          Production Orders: Finished goods produced in-house and added to stock.
+          Internal Transfer/Direct Receipt: Warehouse goods movement.
+
+                  Item Master
+                       ↓
+            --------------------------------------------------- => Goods Receipt Activities
+            |            |            |                       |
+          Purchase   Production   Internal Transfer   Customer Returns
+            Order       Order     / Direct Receipt
+             ↓           ↓                  ↓
+          Goods Receipt → Inventory Updated → Accounting (if applicable)
+
+        Key Objects:
+          Goods Receipt Notes (GRN): Documents used to confirm the receipt of items from suppliers or other sources.
+          Receiving Inspection: Process for inspecting goods on arrival for quality and quantity.
+          Partial Receipts: Handling of partial shipments from suppliers.
+        Why It Matters:
+          Without a robust Goods Receipt system, businesses can easily experience inventory discrepancies,
+          which could lead to overselling, stockouts, or misplaced goods. Accurate receipt tracking
+          ensures inventory levels are updated in real time and that the correct quantities are added.
+        What it does:
+          Increases on-hand quantity
+          Creates stock ledger entries
+          Triggers inventory valuation
+          Posts accounting entries
+          /// NOTE: There'll be Horizonal-tabs under the Goods / Service Receipt tab (for: GRN, SES)./*/
+      {
+        /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
+        /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
+        /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
+        'hasSplit': true,
+        'label': 'Goods / Service Receipt',
+        'icon': Icons.assignment_returned,
+        'route': RouteNames.items,
+        // Temporal Placeholder
+        // 'route': RouteNames.goodsReceipt,
+        'param': {},
+        'access': _getName(InventoryPermission.manageStock),
+        // Temporal Placeholder
+        // 'access': _getName(InventoryPermission.manageGoodsReceipt),
+        'description':
+            'Record/stock goods/services from suppliers, returns, or production into inventory.',
+      },
+
+        5️⃣ Goods Issue (Outbound)
+
+        Purpose: Decrease inventory.
+        Sources:
+        Sales Orders
+        POS Sales
+        Transfers
+        Write-offs
+        Key objects:
+        Delivery Issues
+        Picking Lists
+        Issue Notes
+
+        NOTE: Good Issue databases do NOT duplicate full item master data.
+        They store references (foreign keys) + a small snapshot.*/
+      {
+        'hasSplit': true,
+        'label': 'Goods . Issue',
+        'icon': Icons.call_made,
+        // 'route': RouteNames.goodsIssue,
+        'route': RouteNames.items, // Temporal Placeholder
+        'param': {},
+        // 'access': _getName(InventoryPermission.issueStock),
+        'access': _getName(
+          InventoryPermission.manageStock,
+        ), // Temporal Placeholder
+        'description':
+            'Release stock for in-store, online sales, POS or internal use.',
+      },*/
 
 /**In a **full ERP**, **Inventory** is not just “stock in / stock out”. It’s a **core operational domain** with multiple tightly related **sub-modules** that support Sales, Procurement, POS, Manufacturing, and Finance.
 
@@ -717,209 +786,3 @@ String _getName(e) => EnumUtil<InventoryPermission>(e).getName;
 
     Just tell me.
  */
-
-/*// Goods Receipt (Inbound)
-      /*4️⃣ Goods Receipt (Inbound)
-        Purpose: Actually add stock to inventory - Increase inventory from external sources.
-        Sources:
-        Purchase Orders
-        Customer Returns
-        Production Output
-        Key objects:
-        Goods Receipt Notes (GRN)
-        Receiving Inspection
-        Partial Receipts
-        =====================
-        4️⃣ Goods Receipt (Inbound)
-          Purpose: Manages the receipt of goods from external sources—suppliers, customers, or even internal
-          production outputs. It ensures accurate, timely updates to stock levels.
-        Sources:
-          Purchase Orders: Goods received based on orders placed with suppliers.
-          Customer Returns: Items returned by customers for exchange or refund.
-          Production Output: Finished goods produced in-house and added to stock.
-        Key Objects:
-          Goods Receipt Notes (GRN): Documents used to confirm the receipt of items from suppliers or other sources.
-          Receiving Inspection: Process for inspecting goods on arrival for quality and quantity.
-          Partial Receipts: Handling of partial shipments from suppliers.
-        Why It Matters:
-          Without a robust Goods Receipt system, businesses can easily experience inventory discrepancies,
-          which could lead to overselling, stockouts, or misplaced goods. Accurate receipt tracking
-          ensures inventory levels are updated in real time and that the correct quantities are added.
-        What it does:
-          Increases on-hand quantity
-          Creates stock ledger entries
-          Triggers inventory valuation
-          Posts accounting entries
-          /// NOTE: There'll be Horizonal-tabs under the Goods / Service Receipt tab (for: GRN, SES).*/
-      {
-        /// Goods Receipt (GR): the BUYER checking the goods delivered by the SUPPLIER to ensure they match
-        /// the details of the Purchase Order (PO). The Goods Receipt Note (GRN) is then generated (delivery receipt)
-        /// for both the BUYER and the SUPPLIER to SIGN as PROOF that the goods were received correctly and in the expected quantity.
-        'hasSplit': true,
-        'label': 'Goods / Service Receipt',
-        'icon': Icons.assignment_returned,
-        'route': RouteNames.items,
-        // Temporal Placeholder
-        // 'route': RouteNames.goodsReceipt,
-        'param': {},
-        'access': _getName(InventoryPermission.manageStock),
-        // Temporal Placeholder
-        // 'access': _getName(InventoryPermission.manageGoodsReceipt),
-        'description':
-            'Record/stock goods/services from suppliers, returns, or production into inventory.',
-      },
-
-      /*5️⃣ Goods Issue (Outbound)
-        Purpose: Decrease inventory.
-        Sources:
-        Sales Orders
-        POS Sales
-        Transfers
-        Write-offs
-        Key objects:
-        Delivery Issues
-        Picking Lists
-        Issue Notes
-
-        NOTE: Good Issue databases do NOT duplicate full item master data.
-        They store references (foreign keys) + a small snapshot.*/
-      {
-        'hasSplit': true,
-        'label': 'Goods . Issue',
-        'icon': Icons.call_made,
-        // 'route': RouteNames.goodsIssue,
-        'route': RouteNames.items, // Temporal Placeholder
-        'param': {},
-        // 'access': _getName(InventoryPermission.issueStock),
-        'access': _getName(
-          InventoryPermission.manageStock,
-        ), // Temporal Placeholder
-        'description':
-            'Release stock for in-store, online sales, POS or internal use.',
-      },*/
-
-/*/// Returns a list of Inventory-Dashboard-Tiles based on the Inventory license [inventoryTiles]
-  Map<EmployeeRole, List<DashboardTile>> get _rbcInventoryTiles {
-    final tilesData = [
-      // products tab
-      {
-        'label': 'stocks',
-        'icon': Icons.receipt_long,
-        'route': RouteNames.products,
-        'param': {},
-        'access': InventoryPermission.manageStock.name,
-        'description': 'add or create new products to the inventory.',
-      },
-      // orders tab
-      {
-        'label': 'orders',
-        'icon': Icons.shopping_cart,
-        'route': RouteNames.orders,
-        'param': {},
-        'access': InventoryPermission.manageOrders.name,
-        'description':
-            'create purchase orders (POs), sales orders (SOs), and miscellaneous orders for suppliers or customers',
-      },
-      // deliveries tab
-      {
-        'label': 'deliveries',
-        'icon': Icons.delivery_dining,
-        'route': RouteNames.deliveries,
-        'param': {},
-        'access': InventoryPermission.manageDeliveries.name,
-        'description':
-            'add or create delivery of order(s) and update their status.',
-      },
-      // sales tab
-      {
-        'label': 'sales',
-        'icon': Icons.shopping_basket,
-        'route': RouteNames.sales,
-        'param': {},
-        'access': InventoryPermission.manageSales.name,
-        'description': 'keep track of, and oversee the progress of sales.',
-      },
-      // credit/debit cards, mobile payments, and cash tabs
-      {
-        'label': 'payment',
-        'icon': Icons.payments_outlined,
-        'route': RouteNames.posPayments,
-        'param': {},
-        'access': InventoryPermission.manageOrders.name,
-        'description':
-            'records payment details for each transaction: payment method and any related information',
-      },
-      // finance tab
-      {
-        'label': 'finance',
-        'icon': Icons.money,
-        'route': RouteNames.posPayments,
-        'param': {},
-        'access': InventoryPermission.manageOrders.name,
-        'description':
-            'Manages & analyzes company\'s financial resources; budgeting, forecasting, investing',
-      },
-      // invoice tab
-      {
-        'label': 'invoice',
-        'icon': Icons.receipt,
-        'route': RouteNames.invoice,
-        'param': {},
-        'access': InventoryPermission.viewInvoice.name,
-        'description':
-            'keep history of the creation and processing of receipts',
-      },
-      // report analytics tab
-      {
-        'label': 'report - Analytics',
-        'icon': Icons.add_chart,
-        'route': RouteNames.inventReports,
-        'param': {},
-        'access': InventoryPermission.viewReport.name,
-        'description':
-            'generate sales reports, inventory status, turnover rates, forecasts, and performance analytics',
-      },
-      // tracking tab
-      {
-        'label': 'tracking',
-        'icon': Icons.location_on,
-        'route': RouteNames.ordersTracking,
-        'param': {},
-        'access': InventoryPermission.manageOrders.name,
-        'description': 'monitor the progress of order placement and deliveries',
-      },
-    ];
-    final defaultTiles = tilesData
-        .map((e) => DashboardTile.fromMap(e))
-        .toList();
-
-    final productsTile = defaultTiles[0];
-    final ordersTile = defaultTiles[1];
-    final deliveriesTile = defaultTiles[2];
-    final salesTile = defaultTiles[3];
-    final paymentTile = defaultTiles[4];
-    final financeTile = defaultTiles[5];
-    final invoiceTile = defaultTiles[6];
-    final reportAnalyticsTile = defaultTiles[7];
-
-    // Role Based Access Control
-    return {
-      EmployeeRole.businessOwner: defaultTiles,
-      EmployeeRole.manager: defaultTiles,
-      EmployeeRole.sale: [salesTile],
-      EmployeeRole.developer: defaultTiles,
-      EmployeeRole.cashier: [paymentTile],
-      EmployeeRole.delivery: [deliveriesTile],
-      EmployeeRole.stockControl: [productsTile],
-      EmployeeRole.procurement: [ordersTile, invoiceTile],
-      EmployeeRole.finance: [
-        financeTile,
-        salesTile,
-        invoiceTile,
-        reportAnalyticsTile,
-      ],
-    };
-  }
-
-  Map<EmployeeRole, RoleBasedDashboardTile<EmployeeRole>> get inventoryTiles =>
-      DashboardTileManager<EmployeeRole>(tiles: _rbcInventoryTiles).create();*/

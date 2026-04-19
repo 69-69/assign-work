@@ -18,6 +18,7 @@ extension LineItemChoicePopUp on BuildContext {
 
 class MaterialOrServiceChoice extends StatefulWidget {
   final String procureType;
+
   const MaterialOrServiceChoice({super.key, required this.procureType});
 
   @override
@@ -27,6 +28,7 @@ class MaterialOrServiceChoice extends StatefulWidget {
 
 class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
   String? selectedType;
+
   get _procureType => widget.procureType;
 
   @override
@@ -44,18 +46,12 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
       ),
       body: _buildBody(context),
       actions: [
-        Row(
-          children: [
-            Expanded(
-              child: context.confirmableActionButton(
-                label: "Continue",
-                onPressed: selectedType.isNullOrEmpty
-                    ? null
-                    : () => Navigator.pop(context, selectedType),
-                isDisabled: selectedType == null,
-              ),
-            ),
-          ],
+        context.confirmableActionButton(
+          label: "Continue",
+          onPressed: selectedType.isNullOrEmpty
+              ? null
+              : () => Navigator.pop(context, selectedType),
+          isDisabled: selectedType == null,
         ),
       ],
     );
@@ -71,18 +67,20 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
         children: types.map((type) {
           final isSelected = selectedType == type;
 
-          final color = isSelected
-              ? context.onPrimaryContainer
-              : context.outlineColor;
-
           final material = LineItemTypeUtil.isMaterial(type);
+
+          final baseColor = _baseColor(material);
+          final color = isSelected ? baseColor : context.outlineColor;
 
           return ChoiceChip(
             selected: isSelected,
             tooltip: type.toSentence,
             padding: EdgeInsets.all(30),
+            selectedColor: baseColor.toAlpha(0.15),
+            checkmarkColor: baseColor,
             label: Row(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
                   material ? Icons.shopping_bag : Icons.work,
@@ -90,7 +88,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
                   size: 20,
                   semanticLabel: 'line item type: $type',
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 4),
                 RichText(
                   text: TextSpan(
                     text: type.toUpperAll,
@@ -111,5 +109,12 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
         }).toList(),
       ),
     );
+  }
+
+  Color _baseColor(bool isMaterial) {
+    return switch (isMaterial) {
+      true => kPrimaryAccentColor,
+      false => kDangerColor,
+    };
   }
 }

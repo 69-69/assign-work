@@ -432,7 +432,7 @@ class _AddOrderBodyState extends State<_AddOrderBody> {
             ),
           ],
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: isMultipleOrders ? 'Create All Orders' : 'Create Order',
           onPressed: _onSubmit,

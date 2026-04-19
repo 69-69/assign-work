@@ -107,7 +107,10 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
   }
 
   _addStores(BuildContext context) {
-    final canAddStores = context.canAddMoreStores.addMore;
+    final canAddStores = context.canAddMoreStores().addMore;
+    final stores = context.getStores(true);
+
+    List<String>? existingNumbers = CompanyStore.getStoreNumbers(stores);
 
     return _buildContainer(
       context,
@@ -116,7 +119,9 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
         color: canAddStores ? kPrimaryLightColor : kGrayBlueColor,
         icon: canAddStores ? Icons.add : Icons.lock,
         onPressed: () async => canAddStores
-            ? await context.openStoresForm()
+            ? await context.openStoresForm(
+                existingStoreNumbers: existingNumbers,
+              )
             : await context.showUpgradeDialog(),
       ),
       subtitle: _buildSubtitle(subtitle: 'Add stores\nMulti-Location', context),
@@ -191,6 +196,7 @@ class SwitchStoreLocationsScreen extends StatelessWidget {
 
 class _WorkspaceInfoCard extends StatelessWidget {
   final bool showTitle;
+
   const _WorkspaceInfoCard({required this.showTitle});
 
   @override

@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
-import 'package:assign_erp/features/system_admin/data/models/item_master_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/item_master_model.dart';
 import 'package:flutter/material.dart';
 
 /// Costing Method Category [ItemCategoryDropdown]

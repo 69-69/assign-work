@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/util/with_bloc.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
@@ -11,39 +12,78 @@ import 'package:assign_erp/features/system_admin/data/models/company_store_model
 import 'package:assign_erp/features/system_admin/presentation/bloc/company/company_stores_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
+/*extension CompanyStoresBlocX on CompanyStoresBloc {
+  int get totalStores {
+    final state = this.state;
+    if (state is! SetupsLoaded<CompanyStore>) return 0;
+    return state.data.length;
+  }
+}*/
 
 extension CompanyStoreBranches on BuildContext {
-  /// Restricts multi-location (branch/store/shop) additions based on the workspace subscription.
+  /// Determines whether the company(Subscriber) can add additional branch stores (locations)
+  /// based on the current Workspace subscription limits.
   ///
-  /// Limits the number of branch stores or shops a company (subscriber) can add, according to the
-  /// maximum number of allowed devices defined in the current Workspace subscription license.
-  /// [canAddMoreStores]
-  ({bool addMore, int maxAllowed}) get canAddMoreStores {
+  /// Each workspace defines a maximum number of allowed stores (or devices).
+  /// This method compares the current number of stores against that limit
+  /// and returns both the allowance status and related metadata.
+  ///
+  /// Returns:
+  /// - [addMore]: whether new stores can still be added
+  /// - [maxAllowed]: maximum number of stores allowed by the workspace plan
+  /// - [stores]: current list of existing stores
+  ///
+  /// [reactive] controls data access behavior:
+  /// - true  → subscribes to store updates (UI reactive)
+  /// - false → reads current state once (non-reactive)
+  ({bool addMore, int maxAllowed, List<CompanyStore> stores}) canAddMoreStores({
+    bool reactive = true,
+  }) {
     final workspace = this.workspace;
+
     if (workspace == null) {
-      return (addMore: false, maxAllowed: 0); // no workspace, no action
+      // No active workspace → no store operations allowed
+      return (addMore: false, maxAllowed: 0, stores: []);
     }
-    // prettyPrint('workspace-maxAllowedDevices', workspace.maxAllowedDevices);
+
+    final stores = getStores(reactive);
+
     return (
-      addMore: totalStores < workspace.maxAllowedDevices,
+      addMore: stores.length < workspace.maxAllowedDevices,
       maxAllowed: workspace.maxAllowedDevices,
+      stores: stores,
     );
   }
 
-  /// [totalStores] Returns the total number of branch stores or shops a company (subscriber) has added.
-  int get totalStores {
-    final state = watch<CompanyStoresBloc>().state;
-    if (state is! SetupsLoaded<CompanyStore>) return 0;
-    return state.data.length;
+  /// [getStores] Returns the list of branch stores (or shops) created by the current company (subscriber).
+  ///
+  /// The data is sourced from `CompanyStoresBloc`, which is initialized at app startup
+  /// (see `main.dart`) and holds the current store state for the session.
+  ///
+  /// This method supports both reactive and non-reactive access:
+  /// - `listen = true`  → `subscribes` to bloc updates (triggers UI rebuilds)
+  /// - `listen = false` → `reads` the current state once without subscribing
+  List<CompanyStore> getStores(bool listen) {
+    final stores = withBloc<CompanyStoresBloc, List<CompanyStore>>(
+      this,
+      listen: listen,
+      builder: (bloc) {
+        final state = bloc.state;
+        if (state is! SetupsLoaded<CompanyStore>) return [];
+        return state.data;
+      },
+    );
+
+    return stores;
   }
 
   Future<bool> get _confirmUserSwitch async => await confirmAction<bool>(
     const Text(
-      'Switching stores will hide data from the previous store.\n\nDo you want to continue?',
+      'Switching stores will hide data from the previous store.\n\nDo you want to switch?',
     ),
     title: 'Confirm Store Switch',
-    onAcceptLabel: 'Switch Store',
+    onAcceptLabel: 'Switch',
     onRejectLabel: 'Cancel',
   );
 
@@ -111,7 +151,7 @@ extension CompanyStoreBranches on BuildContext {
   Future<dynamic> showUpgradeDialog() async {
     return await confirmAction(
       Text(
-        'You can\'t add more stores (branches). Please extend your subscription license for additional stores.\nFor further assistance, kindly contact support.',
+        'You can\'t add more stores (branches). Please extend your subscription license for additional stores.\nFor further assistance, kindly contact customer service.',
       ),
       onAcceptLabel: 'Got it',
       onRejectLabel: 'Cancel',

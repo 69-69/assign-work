@@ -25,7 +25,10 @@ class SetupPrintOutAdapter extends TypeAdapter<SetupPrintOut> {
       companyName: fields[5] as String?,
       companyEmail: fields[6] as String?,
       companyPhone: fields[7] as String?,
-      companyAddresses: fields[8] as List<Map<String, dynamic>>?,
+      companyAddresses: (fields[8] as List?)
+          ?.whereType<Map>() // filters bad data
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList(),
       companyFax: fields[9] as String?,
       bodyFontSize: fields[10] as double?,
       tableFontSize: fields[11] as double?,

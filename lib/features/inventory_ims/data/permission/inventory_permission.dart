@@ -86,28 +86,6 @@ final List<AccessControl> _warehousePermissions = [
         "Create, edit, and delete warehouse systems for inventory management.",
     access: InventoryPermission.manageWarehouse,
   ),
-  AccessControl(
-    module: "warehouse",
-    title: "Manage Warehouse addresses",
-    description:
-        "Create, edit, and deactivate warehouses used for inventory storage and operations.",
-    access: InventoryPermission.manageWarehouseAddress,
-  ),
-  AccessControl(
-    module: "warehouse",
-    title: "Manage Warehouse Locations",
-    description:
-        "Create, edit, and manage storage locations such as racks, aisles, or shelves within a warehouse.",
-    access: InventoryPermission.manageWHLocation,
-  ),
-  AccessControl(
-    module: "warehouse",
-    title: "Manage Warehouse Bins",
-    description:
-        "Create, edit, and manage individual storage bins within warehouse locations.",
-    access: InventoryPermission.manageWHBin,
-  ),
-
   // ───────────── Inbound Operations ─────────────
   AccessControl(
     module: "warehouse",

@@ -70,8 +70,8 @@ class ProfileMenuDropdown extends StatelessWidget {
         onSelected: (v) async => await _handleMenuAction(context, v),
         itemBuilder: (context) => _buildMenuItems(context, roleName: roleName),
         child: isAppbar
-            ? _buildAppBarProfile(context, isLargeScreen, roleName: roleName)
-            : _buildSideProfile(context, roleName: roleName),
+            ? _appBarProfileMenu(context, isLargeScreen, roleName: roleName)
+            : _sideProfileMenu(context, roleName: roleName),
       ),
     );
   }
@@ -90,7 +90,7 @@ class ProfileMenuDropdown extends StatelessWidget {
     );
   }
 
-  _buildSideProfile(BuildContext context, {String? roleName}) {
+  _sideProfileMenu(BuildContext context, {String? roleName}) {
     return Padding(
       padding: EdgeInsets.all(5.0),
       child: Row(
@@ -103,7 +103,7 @@ class ProfileMenuDropdown extends StatelessWidget {
     );
   }
 
-  _buildAppBarProfile(
+  _appBarProfileMenu(
     BuildContext context,
     bool isLargeScreen, {
     String? roleName,

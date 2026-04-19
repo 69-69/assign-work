@@ -172,7 +172,7 @@ class _GuideFormState extends State<_GuideForm> {
               '\nA guide to help users understand and use the ${_serverGuide?.category ?? 'software'}.',
           children: [_buildForm()],
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: _isServerNull ? 'Create Manual' : null,
           onPressed: _onSubmit,

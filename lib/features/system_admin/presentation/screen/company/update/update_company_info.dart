@@ -146,7 +146,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
     return FormGroupTabView(
       contents: formGroupCards,
       footers: [
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,
@@ -160,16 +160,20 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
   List<Map<String, dynamic>> get formGroupCards => [
     {
       'title': 'Company Information',
-      'subTitle': '\nEnter your company information to complete setup.',
+      'subTitle': '\nEdit company information to complete setup.',
       'children': [_buildCompanyInfo()],
     },
     {
       'title': 'Addresses',
       'subTitle':
-          '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
+          '\nEdit multiple addresses: Office, Billing, Shipping, etc.',
+      'children': [_buildAddresses()],
+    },
+    {
+      'title': 'Upload Logo',
+      'subTitle':
+          '\nEdit company logo to customize your print-outs.',
       'children': [
-        _buildAddresses(),
-        const SizedBox(height: 20.0),
         UploadCompanyLogo(
           serverFilePath: _serverInfo.logo,
           uploadedFilePath: (s) {

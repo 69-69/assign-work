@@ -56,7 +56,7 @@ class _CustomTabState extends State<CustomTab>
 
   // late List<bool> _loadedTabs;
   Set<int> loadedTabs = {};
-  bool _isNavigationRailVisible = false; // State variable for toggle
+  bool _isNavRailExpanded = true; // State variable for toggle
   List<CustomTabModel> get _tabsList => widget.tabs;
 
   get _length => widget.length ?? _tabsList.length;
@@ -114,9 +114,8 @@ class _CustomTabState extends State<CustomTab>
   }*/
 
   void _toggleNavigationRail() {
-    setState(() {
-      _isNavigationRailVisible = !_isNavigationRailVisible; // Toggle visibility
-    });
+      // Toggle visibility
+    setState(() =>_isNavRailExpanded = !_isNavRailExpanded);
   }
 
   void _handleTabTap(int index) {
@@ -139,6 +138,7 @@ class _CustomTabState extends State<CustomTab>
   Widget build(BuildContext context) {
     // Ensure the current tab is always loaded
     // loadedTabs.add(_tabController.index.clamp(0, _length - 1).toInt());
+    final isExpanded = context.isMobile ? false : _isNavRailExpanded;
 
     return DefaultTabController(
       length: _length,
@@ -150,7 +150,7 @@ class _CustomTabState extends State<CustomTab>
               bgColor: widget.bgColor,
               isScrollable: widget.isScrollable,
               showScrollUpButton: widget.showScrollUpButton,
-              isNavRailVisible: _isNavigationRailVisible,
+              isNavRailExpanded: isExpanded,
               onDestinationSelected: (i) {
                 _tabController.animateTo(i);
                 _handleTabTap(i);
@@ -334,7 +334,7 @@ class _VerticalTabBars extends StatelessWidget {
   final Color? bgColor;
   final bool isScrollable;
   final int? selectedIndex;
-  final bool isNavRailVisible; // State variable for toggle
+  final bool isNavRailExpanded; // State variable for toggle
   final bool showScrollUpButton;
   final Function()? toggleNavRail;
 
@@ -350,7 +350,7 @@ class _VerticalTabBars extends StatelessWidget {
     required this.content,
     required this.isScrollable,
     this.onDestinationSelected,
-    required this.isNavRailVisible,
+    required this.isNavRailExpanded,
     required this.showScrollUpButton,
   });
 
@@ -383,8 +383,8 @@ class _VerticalTabBars extends StatelessWidget {
       children: [
         // Toggle button for NavigationRail visibility
         IconButton(
-          icon: Icon(isNavRailVisible ? Icons.menu : Icons.menu_open),
-          tooltip: '${isNavRailVisible ? 'Open' : 'Close'} Sidebar',
+          icon: Icon(isNavRailExpanded ? Icons.menu_open : Icons.menu),
+          tooltip: '${isNavRailExpanded ? 'Close' : 'Open'} Sidebar',
           onPressed: toggleNavRail,
         ),
         Expanded(child: _buildSideNavRail(context)),
@@ -399,7 +399,7 @@ class _VerticalTabBars extends StatelessWidget {
       showScrollUpButton: showScrollUpButton,
       child: SizedBox(
         height: context.screenHeight,
-        width: isNavRailVisible ? 50 : 100,
+        width: isNavRailExpanded ? 100 : 50,
         child: _navigationRail(context),
       ),
     );
@@ -425,7 +425,7 @@ class _VerticalTabBars extends StatelessWidget {
               ? Tooltip(message: t.tooltip?.toTitle ?? label, child: Icon(icon))
               : SizedBox.shrink(),
           label: Text(
-            isNavRailVisible ? '' : label,
+            isNavRailExpanded ? label : '',
             textAlign: TextAlign.center,
           ),
           padding: EdgeInsets.symmetric(horizontal: 3),

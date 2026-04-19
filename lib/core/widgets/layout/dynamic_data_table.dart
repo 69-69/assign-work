@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_mode.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -8,6 +8,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
+import 'package:assign_erp/core/widgets/export_choice.dart';
 import 'package:assign_erp/core/widgets/files/file_doc_manager.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +58,9 @@ class DynamicDataTable extends StatefulWidget {
 
   /// Delete button label [deleteLabel]
   final String? deleteLabel;
+
+  /// Optional: Download a template for bulk data upload [template]
+  final Map<String, dynamic>? template;
 
   /// DataTable header [headers]
   final List<String> headers;
@@ -134,6 +138,7 @@ class DynamicDataTable extends StatefulWidget {
     this.selectedRowKeyIndex,
     this.selectedRowKeys,
     this.toolbarAlignment = WrapAlignment.start,
+    this.template,
   });
 
   @override
@@ -341,6 +346,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           toolbarAlignment: widget.toolbarAlignment,
           searchController: _searchController,
           currentSort: _currentSortColumn,
+          template: widget.template,
           onSortChanged: (column) {
             setState(() => _currentSortColumn = column);
           },
@@ -768,6 +774,7 @@ class _DataTableToolbar extends StatelessWidget {
 
   final List<String> headers;
   final String? currentSort;
+  final Map<String, dynamic>? template;
   final Function(String? col) onSortChanged;
 
   const _DataTableToolbar({
@@ -778,6 +785,7 @@ class _DataTableToolbar extends StatelessWidget {
     required this.currentSort,
     required this.onSortChanged,
     required this.onSelectedRows,
+    this.template,
   });
 
   @override
@@ -788,6 +796,7 @@ class _DataTableToolbar extends StatelessWidget {
         // Any custom widget above table (e.g., export buttons)
         _DataTableActionBar(
           headers: headers,
+          template: template,
           toolbar: toolbar,
           selectedRows: onSelectedRows,
         ),
@@ -1007,18 +1016,21 @@ class _SortByDropdown extends StatelessWidget {
 class _DataTableActionBar extends StatelessWidget {
   final Widget? toolbar;
   final List<String> headers;
+  final Map<String, dynamic>? template;
   final List<List<String>> Function() selectedRows;
 
   const _DataTableActionBar({
     required this.toolbar,
     required this.headers,
     required this.selectedRows,
+    this.template,
   });
 
   @override
   Widget build(BuildContext context) {
     final exportBtn = _ExportButton(
       headers: headers,
+      template: template,
       selectedRowsFunc: selectedRows,
     );
 
@@ -1100,12 +1112,17 @@ class _MaskToggleButton extends StatelessWidget {
   }
 }
 
-/// Export data into Excel-sheet
+/// Export existing data or Download template for bulk Upload (CSV, Excel, PDF)
 class _ExportButton extends StatelessWidget {
   final List<String> headers;
+  final Map<String, dynamic>? template;
   final List<List<String>> Function() selectedRowsFunc;
 
-  const _ExportButton({required this.headers, required this.selectedRowsFunc});
+  const _ExportButton({
+    required this.headers,
+    required this.selectedRowsFunc,
+    this.template,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1119,41 +1136,112 @@ class _ExportButton extends StatelessWidget {
         ? const SizedBox.shrink()
         : Padding(
             padding: EdgeInsets.symmetric(horizontal: 10),
-            child: context.toolbarButton(
-              label: 'Export',
-              icon: Icons.file_download,
-              tooltip: 'Export Data to Excel or PDF',
-              bgColor: kSuccessColor,
-              onPressed: () async {
-                final isExcel = await _buildPreference(context);
-                prettyPrint('is-Excel', isExcel);
-                if (isExcel == null) return;
-
-                if (isExcel == true) {
-                  await FileDocManager.exportDataToExcel(
-                    headers: headers,
-                    data: selectedRows,
-                  );
-                } else {
-                  await FileDocManager.exportDataToPdf(
-                    headers: headers,
-                    data: selectedRows,
-                  );
-                }
-              },
-            ),
+            child: _toolbarButton(context, selectedRows),
           );
   }
 
+  Widget _toolbarButton(BuildContext context, List<List<String>> selectedRows) {
+    return context.toolbarButton(
+      label: 'Export',
+      bgColor: kSuccessColor,
+      icon: Icons.file_download,
+      tooltip: 'Export data or download template (Excel, PDF, CSV)',
+      onPressed: () async => await _handleOnClick(context, selectedRows),
+    );
+  }
+
+  Future<void> _handleOnClick(
+    BuildContext context,
+    List<List<String>> selectedRows,
+  ) async {
+    while (true) {
+      if (!context.mounted) return;
+
+      ExportMode? exportMode = await _buildPreference(context);
+      if (exportMode == null || !context.mounted) return;
+
+      final exportType = await context.openExportChoice(exportMode);
+
+      // If user cancels → restart flow
+      if (!context.mounted) return;
+      if (exportType == null) continue;
+
+      // Remove internal ID columns before exporting
+      List<String> headColumns = headers.where((h) => h.toLowerAll != 'id').toList();
+      List<List<String>> dataRows = selectedRows.map((row) {
+        // Assume row order matches headers
+        return [
+          for (int i = 0; i < headers.length; i++)
+            if (headers[i].toLowerAll != 'id') row[i]
+        ];
+      }).toList();
+
+      if (exportMode == ExportMode.template) {
+        if (template == null) {
+          context.showAlertOverlay('Failed: Template is not available');
+          return;
+        }
+        headColumns = _extractHeaders(template!);
+        dataRows = [
+          headColumns.map((h) => 'Enter ${(h.toSeparate).toLowerAll}').toList(),
+        ];
+      } else {
+        // ExportMode.data
+        if (dataRows.isEmpty) {
+          context.showAlertOverlay('Failed: No data selected to export');
+          return;
+        }
+      }
+
+      await _createFile(exportType, headColumns, dataRows);
+      return;
+    }
+  }
+
+  Future<void> _createFile(
+    ExportType exportType,
+    List<String> headColumns,
+    List<List<String>> dataRows,
+  ) async {
+    await switch (exportType) {
+      ExportType.excel => FileDocManager.exportDataToExcel(
+        headers: headColumns,
+        data: dataRows,
+      ),
+      ExportType.pdf => FileDocManager.exportDataToPdf(
+        headers: headColumns,
+        data: dataRows,
+      ),
+      ExportType.csv => FileDocManager.exportDataToCsv(
+        headers: headColumns,
+        data: dataRows,
+      ),
+    };
+  }
+
   // choice
-  Future<dynamic> _buildPreference(BuildContext context) async {
-    return await context.confirmAction<dynamic>(
-      Text('Export data to Excel or PDF?'),
-      title: 'Confirm Export',
-      onAcceptLabel: 'Excel',
-      onRejectLabel: 'PDF',
+  Future<ExportMode?> _buildPreference(BuildContext context) async {
+    final choice = await context.confirmAction<dynamic>(
+      Text(
+        'Do you want to export data or download a template for bulk upload?',
+      ),
+      title: 'Document Choice',
+      onAcceptLabel: 'Export Data',
+      onRejectLabel: 'Download Template',
       anyAction: 'Cancel',
     );
+
+    if (choice == null) return null;
+
+    return choice ? ExportMode.data : ExportMode.template;
+  }
+
+  List<String> _extractHeaders(
+    Map<String, dynamic> map, {
+    bool isHuman = false,
+  }) {
+    // final map = (model as dynamic).toMap() as Map<String, dynamic>;
+    return map.keys.map((k) => isHuman ? k.toSeparate : k).toList();
   }
 }
 

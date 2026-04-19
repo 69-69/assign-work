@@ -167,7 +167,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
           ],
         ),
 
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: 'Create Supplier',
           onPressed: _onSubmit,

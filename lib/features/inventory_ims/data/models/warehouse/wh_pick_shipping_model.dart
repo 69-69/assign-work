@@ -46,7 +46,7 @@ class PickList extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory PickList.fromJson(Map<String, dynamic> map, {required String id}) =>
+  factory PickList.fromMap(Map<String, dynamic> map, {required String id}) =>
       PickList(
         id: id,
         warehouseId: map['warehouseId'],

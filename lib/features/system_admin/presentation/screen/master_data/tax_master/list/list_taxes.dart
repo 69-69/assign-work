@@ -2,7 +2,7 @@ import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/create/create_tax.dart';
@@ -72,6 +72,7 @@ class _ListTaxesState extends State<ListTaxes> {
     return DynamicDataTable(
       omitAtIndex: 0,
       headers: Tax.dataTableHeader,
+      template: Tax.templateHeader,
       toolbar: _buildToolbar(taxes),
       rows: taxes.map((d) => d.itemAsList).toList(),
       onEditTap: (row) async => await _onEditTap(taxes, row.first),

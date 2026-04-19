@@ -78,7 +78,7 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
         Padding(
           padding: EdgeInsets.only(top: 20.0),
           child: Text(
-            'Data Manipulation',
+            'App Data Management',
             style: context.textTheme.titleLarge?.copyWith(
               color: kTextColor,
               fontWeight: FontWeight.w500,
@@ -108,10 +108,12 @@ class _UserDeviceSpecState extends State<UserDeviceSpec> {
         crossAxisAlignment: CrossAxisAlignment.start,
         itemBuilder: (context, index) {
           final entry = _deviceInfo.entries.elementAt(index);
+          final title = entry.key.contains('os') ? 'OS' : entry.key;
+
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: Text(
-              '* ${(entry.key.separateWord).toTitle}: ${entry.value}',
+              '* ${title.toTitle}: ${entry.value}',
               textAlign: TextAlign.start,
               style: context.textTheme.bodyLarge,
             ),

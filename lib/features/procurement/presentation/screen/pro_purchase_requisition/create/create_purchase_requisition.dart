@@ -247,7 +247,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
           children: [_buildJustification()],
         ),
 
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,

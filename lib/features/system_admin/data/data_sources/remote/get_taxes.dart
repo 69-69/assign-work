@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

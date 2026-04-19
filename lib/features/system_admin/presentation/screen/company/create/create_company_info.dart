@@ -133,7 +133,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
     return FormGroupTabView(
       contents: formGroupCards,
       footers: [
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: _isSubmitting ? 'Creating...' : 'Create Info',
           isDisabled: _isSubmitting,
@@ -154,9 +154,13 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       'title': 'Addresses',
       'subTitle':
           '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
+      'children': [_buildAddresses(),],
+    },
+    {
+      'title': 'Upload Logo',
+      'subTitle':
+      '\nAdd company logo to customize your print-outs.',
       'children': [
-        _buildAddresses(),
-        const SizedBox(height: 20.0),
         UploadCompanyLogo(
           uploadedFilePath: (s) {
             setState(() => _uploadedLogoPath = s);

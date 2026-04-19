@@ -33,7 +33,7 @@ class WHMovement extends Equatable {
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
-  factory WHMovement.fromJson(Map<String, dynamic> map, {String? id}) =>
+  factory WHMovement.fromMap(Map<String, dynamic> map, {String? id}) =>
       WHMovement(
         id: id ?? map['id'] ?? '',
         fromLocationId: map['fromLocationId'] ?? '',

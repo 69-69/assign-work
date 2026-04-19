@@ -1,31 +1,14 @@
-# @TODO for Tomorrow
-
--
-    1. CRM - Customer
-- --------------------------
-    2. Workflow Approval Rules
-    3. My Approvals
-    4. Printouts
-    5. Inventory
-    6. Saved all CRUD operation ERRORS in
-        `final errorLogCache = ErrorLogCache();
-            errorLogCache.setError()`
-
--------------------------
-
-# @Continue
-    - Inform user when Generating Full BIN Locations
-- ChatGPT QA:
-    "im generating Full Bin Locations based on select ranges of 
-    zone, aisle, racks, shelf. However, after user selection of the 
-    ranges from the sublevels or sub-locations. 
-    since the for-loop is still permutating or creating the list of ranges. 
-    user needs to be prompted to so that user can wait before cling save button? how to do that?"
-     
-# 1- Refactor code `openStoresForm(` to check for 
-# Store-Branches existingCodes in `lib/features/system_admin/presentation/screen/switch_store_locations/switch_store_locations_screen.dart`
-
-# Master Data (BIN Location Code,UOM, PriceList, Payment Method&Type,)
+# @TODO - 
+## @Continue Tomorrow (Next Sprint)
+    - Master Data (BIN Location Code,UOM, PriceList, Payment Method & Type,)
+    - 
+- 
+- Workflow Approval Rules
+- 
+- My Approvals
+- 
+- Printouts
+- 
 - Connect Item Master to:
   - Stock Management
   - 
@@ -45,6 +28,9 @@
       - Returns from Customer
       - Reserve Stock
       - 
+- CRM - Customer
+  - 
+  - 
 # @TODO OLD Modules (These below modules will be remove entirely)
   - Inventory Module
     - stocking tab
@@ -70,3 +56,57 @@ git commit -m "resolved Creating and Saving Bin."
 git branch -M main
 git push -u origin main
 ```
+
+Item Master
+
+### 🧾 Basic Information
+
+* **Item Code / SKU** – Unique identifier
+* **Item Name / Description**
+* **Item Type** – Finished goods, raw material, service, etc.
+* **Product Category / Group**
+
+### 📦 Inventory Details
+
+* **Unit of Measure (UOM)** – e.g., pieces, kg, liters
+* **Stock Quantity**
+* **Reorder Level / Safety Stock**
+* **Warehouse / Storage Location**
+* **Lot/Batch Number (if applicable)**
+* **Serial Number (if applicable)**
+
+### 💰 Pricing & Costing
+
+* **Standard Cost / Purchase Cost**
+* **Selling Price**
+* **Currency**
+* **Discount rules (optional)**
+
+### 🏭 Procurement & Production
+
+* **Preferred Supplier / Vendor**
+* **Lead Time**
+* **Bill of Materials (BOM)** (for manufactured items)
+* **Make or Buy Indicator**
+
+### 📊 Accounting Information
+
+* **GL Accounts (Inventory, COGS, Revenue)**
+* **Tax Category / Tax Code**
+
+### 🚚 Sales & Distribution
+
+* **Sales Unit**
+* **Minimum Order Quantity**
+* **Shipping Details / Weight / Dimensions**
+
+### ⚙️ Other Fields
+
+* **Status (Active/Inactive)**
+* **Barcode**
+* **Country of Origin**
+* **Compliance / Regulatory info**
+
+---
+
+

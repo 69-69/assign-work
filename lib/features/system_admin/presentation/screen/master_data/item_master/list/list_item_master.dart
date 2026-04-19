@@ -4,7 +4,7 @@ import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/material_or_service_choice.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/system_admin/data/models/item_master_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/item_master_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/item_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/item_master/create/create_item_master.dart';
@@ -21,6 +21,7 @@ class ListItemMaster extends StatefulWidget {
 class _ListItemMasterState extends State<ListItemMaster> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
+
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
 
   void _isDeleting(bool status) {
@@ -76,9 +77,10 @@ class _ListItemMasterState extends State<ListItemMaster> {
     return DynamicDataTable(
       omitAtIndex: 0,
       maskAtIndex: 1,
-      headers: ItemMaster.dataTableHeader,
       toolbar: _buildToolbar(masters),
+      headers: ItemMaster.dataTableHeader,
       rows: masters.map((d) => d.itemAsList).toList(),
+      template: ItemMaster.templateHeader,
       selectedRowKeys: _selectedIds,
       onChecked: _onChecked,
       onAllChecked: _onAllChecked,

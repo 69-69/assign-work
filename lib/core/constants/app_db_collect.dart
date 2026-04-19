@@ -46,14 +46,19 @@ const rolesDBColPath = 'roles_db';
 // 📦 Inventory Management System (IMS) Collections Path
 // ---------------------------
 
-// Item Master
+/// Master-Data
 const itemMasterDBColPath = 'item_master_data';
 // Warehouse Facilities (Represents a physical storage place)
-const warehouseDBColPath = 'warehouse_facilities';
-// Functional Area
-const whLocationStorageDBColPath = 'warehouse_location_storage';
-// Physical slot/position inside the location
-const whBinStorageDBColPath = 'warehouse_bin_storage';
+const warehouseDBColPath = 'warehouse_sites_master_data';
+// Functional Area / Sub divisions/location/levels within the warehouse
+const whStorageLocationDBColPath = 'warehouse_sublocation_master_data';
+// Physical slot/position inside the location Sub divisions/levels
+const whBinStorageDBColPath = 'warehouse_bin_master_data';
+/// End Master-Data
+///
+const whInboundReceivingDBColPath = 'picking_shipments';
+const whPickShipmentsDBColPath = 'wh_picking_shipments';
+const whInternalMovementsDBColPath = 'wh_internal_movements';
 // Invoices
 const invoiceDBColPath = 'invoice_inventory_db';
 // Items
@@ -157,7 +162,7 @@ const erpCacheBoxes = [
   // Inventory / Sales / Procurement
   itemMasterDBColPath,
   warehouseDBColPath,
-  whLocationStorageDBColPath,
+  whStorageLocationDBColPath,
   whBinStorageDBColPath,
   itemsDBColPath,
   invoiceDBColPath,

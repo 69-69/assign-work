@@ -155,7 +155,7 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
             if (_formKey.currentState!.validate()) setState(() {});
           },
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: 'Add New Customer',
           onPressed: _onSubmit,

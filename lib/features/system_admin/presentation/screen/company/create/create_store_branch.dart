@@ -51,7 +51,9 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   final List<CompanyStore> _storeList = [];
 
   CompanyStore? get _serverStore => widget.serverStore;
+
   bool get _isServerNull => _serverStore == null;
+
   List<String>? get _existingStoreNumbers => widget.existingStoreNumbers;
 
   bool get _isFormValid => _formKey.currentState?.validate() ?? false;
@@ -179,7 +181,8 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   }
 
   DynamicTextFields _buildStoresFields() {
-    ({bool addMore, int maxAllowed}) canAdd = context.canAddMoreStores;
+    ({bool addMore, int maxAllowed, List<CompanyStore> stores}) canAdd = context
+        .canAddMoreStores();
 
     return DynamicTextFields(
       title: _serverStore?.name ?? 'Store Branch',

@@ -228,7 +228,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
     return FormGroupTabView(
       contents: formGroupCards,
       footers: [
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting,

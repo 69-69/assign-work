@@ -145,7 +145,7 @@ class _UpdateCustomerBodyState extends State<_UpdateCustomerBody> {
             if (_formKey.currentState!.validate()) setState(() {});
           },
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(onPressed: _onSubmit),
       ],
     );

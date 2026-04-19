@@ -724,7 +724,7 @@ class UpdateWorkspacePasswordButton extends StatelessWidget {
     bool inProgress = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
-    label: inProgress ? "Updating..." : "Change Workspace Password",
+    label: inProgress ? "Updating..." : "Save Changes",
     onPressed: onPress,
   );
 }

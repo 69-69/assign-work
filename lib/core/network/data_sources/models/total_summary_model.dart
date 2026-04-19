@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 
 extension TaxableLineItemExt on List<LineItem> {
   /// Applies taxes to all taxable line items.

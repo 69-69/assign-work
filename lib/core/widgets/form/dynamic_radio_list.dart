@@ -29,8 +29,11 @@ class DynamicRadioList extends StatefulWidget {
 
 class _DynamicRadioListState extends State<DynamicRadioList> {
   String? _selectedKey;
+
   String? get _title => widget.title;
+
   List<RadioGroupConfig> get _radiosConfig => widget.radiosConfig;
+
   List<Map<String, dynamic>>? get _initialData => widget.initialData;
 
   @override
@@ -39,7 +42,59 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
     _initializeSelectedKey();
   }
 
+  @override
+  void didUpdateWidget(covariant DynamicRadioList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final isRadiosChanged = !const DeepCollectionEquality().equals(
+      oldWidget.radiosConfig,
+      widget.radiosConfig,
+    );
+
+    final isInitialDataChanged = !const DeepCollectionEquality().equals(
+      oldWidget.initialData,
+      widget.initialData,
+    );
+
+    if (isRadiosChanged || isInitialDataChanged) {
+      _initializeSelectedKey();
+    }
+  }
+
+  /*@override
+  void didUpdateWidget(covariant DynamicRadioList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.radiosConfig != widget.radiosConfig ||
+        oldWidget.initialData != widget.initialData) {
+      _initializeSelectedKey();
+    }
+  }*/
+
   void _initializeSelectedKey() {
+    if (_initialData.hasValue && _initialData!.isNotEmpty) {
+      final selectedItem = _initialData!.firstWhere(
+        (map) => map['selected'] == true,
+        orElse: () => _initialData!.first,
+      );
+
+      _selectedKey = selectedItem['key']?.toString();
+    } else if (_radiosConfig.isNotEmpty) {
+      final selectedConfig = _radiosConfig.firstWhere(
+        (config) => config.selected,
+        orElse: () => _radiosConfig.first,
+      );
+
+      _selectedKey = selectedConfig.key;
+    } else {
+      // Nothing to select from
+      _selectedKey = null;
+    }
+
+    _notifyParent();
+  }
+
+  /*void _initializeSelectedKey2() {
     if (_initialData.hasValue) {
       final selectedItem = _initialData!.firstWhere(
         (map) => map['selected'] == true,
@@ -56,7 +111,7 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
     }
 
     _notifyParent();
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +131,7 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
     final options = _radiosConfig.map((config) {
       return CustomRadioModel<String>(
         value: config.key,
+        enabled: config.enabled,
         title: Row(
           children: [
             Expanded(
@@ -143,6 +199,7 @@ class _DynamicRadioListState extends State<DynamicRadioList> {
 
 class RadioGroupConfig {
   final String key;
+  final bool enabled;
   final String label;
   final bool selected;
   final String? data;
@@ -154,6 +211,7 @@ class RadioGroupConfig {
     required this.key,
     required this.label,
     this.selected = false,
+    this.enabled = true,
     this.subtitle = '',
     this.data,
     this.tooltip,
@@ -179,4 +237,29 @@ class RadioGroupConfig {
   // empty instance
   static RadioGroupConfig get empty =>
       RadioGroupConfig(key: '', label: '', description: '');
+
+  /// new
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RadioGroupConfig &&
+          key == other.key &&
+          enabled == other.enabled &&
+          label == other.label &&
+          selected == other.selected &&
+          data == other.data &&
+          tooltip == other.tooltip &&
+          subtitle == other.subtitle &&
+          description == other.description;
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      enabled.hashCode ^
+      label.hashCode ^
+      selected.hashCode ^
+      data.hashCode ^
+      tooltip.hashCode ^
+      subtitle.hashCode ^
+      description.hashCode;
 }

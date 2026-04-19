@@ -30,6 +30,7 @@ class SetupScreen extends StatelessWidget {
     return CustomScaffold(
       title: systemAdminAppTitle.toUpperAll,
       body: _buildBody(context),
+      floatingActionBtnLocation: FloatingActionButtonLocation.miniCenterFloat,
       floatingActionButton: FittedBox(
         child: context.toolbarButton(
           label: 'Change Workspace Password',

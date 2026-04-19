@@ -1,6 +1,9 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -12,7 +15,7 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/item_master_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/item_master_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/item_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/item_master/widget/item_master_form_fields.dart';
@@ -50,13 +53,15 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid = false;
 
   // Current employee info
   Employee? get _employee => context.employee;
 
   String get _employeeName => _employee!.fullName;
+
   String get _employeeId => _employee!.employeeId;
+
   String get _employeeStore => _employee!.storeNumber;
 
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
@@ -72,6 +77,12 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   String _imNumber = '';
   bool _isSubmitting = false;
   late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
+  final List<String> _taxCodes = [];
+
+  void _updateValidity() => _formKey.updateValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _onSubmit() async {
     if (_isSubmitting) return;
@@ -92,10 +103,10 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     }
 
     // Case 3: Add new ItemMaster
-    _addNewItemMaster();
+    _createNewItemMaster();
   }
 
-  void _addNewItemMaster() {
+  void _createNewItemMaster() {
     final newData = _itemMaster.copyWith(
       sku: _imNumber,
       storeNumber: _employeeStore,
@@ -223,11 +234,26 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           children: [_buildCosting()],
         ),
 
+        /// Taxes
+        FormGroupCard(
+          isExpanded: false,
+          title: 'Taxes',
+          subTitle: '\nSelect applicable taxes',
+          children: [_buildTaxModeSelector()],
+        ),
+
         const SizedBox(height: 20),
+        Text(
+          'Needed & Optional Fields\n Tax / Pricing info\n'
+          'Optional / default warehouse fields (for ease of transactions):\n'
+          'Default Warehouse\n'
+          'Default Storage Location (shelf, aisle, BIN)\n'
+          'Reorder Point / Min-Max levels',
+        ),
 
         context.confirmableActionButton(
           onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
+          isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Item')
               : (_isSubmitting ? 'Updating...' : null),
@@ -254,6 +280,8 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           category: i.category,
           description: i.description,
         );
+
+        _updateValidity();
       },
     );
   }
@@ -326,6 +354,17 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           standardCost: i.standardCost,
           costingMethod: i.costingMethod,
         );
+      },
+    );
+  }
+
+  Widget _buildTaxModeSelector() {
+    return ItemMasterFormFields.buildTaxModeSelector(
+      isEnabled: false,
+      selectedTaxCodes: _taxCodes,
+      defaultTaxMode: TaxMode.headerTax,
+      selectedTaxMode: (TaxMode? mode) {
+        prettyPrint('Selected-tax-mode', mode);
       },
     );
   }

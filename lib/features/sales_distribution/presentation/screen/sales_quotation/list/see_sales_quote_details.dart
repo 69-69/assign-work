@@ -277,7 +277,7 @@ class _SQInfoPage extends StatelessWidget {
       ),
       (
         title: 'Tax Mode',
-        value: _salesQuote?.getTaxName.separateWord.toTitle ?? 'N/A',
+        value: _salesQuote?.getTaxName.toSeparate.toTitle ?? 'N/A',
       ),
       (title: 'Customer', value: _salesQuote?.customerName.toTitle ?? 'N/A'),
       (title: 'Sales Person', value: _salesQuote?.salesRepId.toTitle ?? 'N/A'),

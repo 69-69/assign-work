@@ -8,6 +8,9 @@ enum SetupPermission {
   manageTaxes,
   manageMasterData,
   manageItemMaster,
+  manageWarehouseMaster,
+  manageWHLocationMaster,
+  manageWHBinMaster,
   managePriceListMaster,
   manageCurrencyMaster,
   referenceMaster,
@@ -102,14 +105,32 @@ final List<AccessControl> _masterDataPermissions = [
     description: "Allow users to create, edit, and delete ERP master data.",
     access: SetupPermission.manageMasterData,
   ),
-];
-
-final List<AccessControl> _itemMasterPermissions = [
   AccessControl(
-    module: "item master",
+    module: "master data",
     title: "Manage item master",
     description: "Allow users to create, edit, and delete item master data.",
     access: SetupPermission.manageItemMaster,
+  ),
+  AccessControl(
+    module: "master data",
+    title: "Manage Warehouse Sites",
+    description:
+    "Create, edit, and deactivate warehouses used for inventory storage and operations.",
+    access: SetupPermission.manageWarehouseMaster,
+  ),
+  AccessControl(
+    module: "master data",
+    title: "Manage Warehouse Locations",
+    description:
+    "Create, edit, and manage storage locations such as racks, aisles, or shelves within a warehouse.",
+    access: SetupPermission.manageWHLocationMaster,
+  ),
+  AccessControl(
+    module: "master data",
+    title: "Manage Warehouse Bins",
+    description:
+    "Create, edit, and manage individual storage bins within warehouse locations.",
+    access: SetupPermission.manageWHBinMaster,
   ),
 ];
 
@@ -436,7 +457,6 @@ final systemAdminDisplayName = 'system admin';
 final List<AccessControl> setupPermissions = [
   ..._setupPermissions,
   ..._masterDataPermissions,
-  ..._itemMasterPermissions,
   ..._taxesPermissions,
   ..._companyInfoPermissions,
   ..._storeLocationPermissions,

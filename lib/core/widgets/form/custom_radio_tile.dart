@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class CustomRadioModel<T> {
   final T value;
+  final bool enabled;
   final Widget title;
   final Widget? subtitle;
   final Widget? secondary;
@@ -13,6 +14,7 @@ class CustomRadioModel<T> {
     required this.title,
     this.subtitle,
     this.secondary,
+    this.enabled = true,
   });
 }
 
@@ -57,6 +59,7 @@ class CustomRadioList<T> extends StatelessWidget {
   List<CustomRadioBoxTile<T>> _buildOptions() {
     final radios = options.map((option) {
       return CustomRadioBoxTile<T>(
+        enabled: option.enabled,
         tileColor: tileColor,
         fillColor: fillColor,
         contentPadding: padding,
@@ -92,6 +95,7 @@ class CustomRadioList<T> extends StatelessWidget {
 /// A Single Custom Radio button tile.
 class CustomRadioBoxTile<T> extends StatelessWidget {
   final T value;
+  final bool? enabled;
   final Widget title;
   final Widget? subtitle;
   final Widget? secondary;
@@ -104,6 +108,7 @@ class CustomRadioBoxTile<T> extends StatelessWidget {
     super.key,
     required this.value,
     required this.title,
+    this.enabled,
     this.subtitle,
     this.secondary,
     this.tileColor,
@@ -116,6 +121,7 @@ class CustomRadioBoxTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return RadioListTile<T>.adaptive(
       dense: true,
+      enabled: enabled,
       tileColor: tileColor,
       fillColor: fillColor,
       contentPadding: contentPadding,

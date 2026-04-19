@@ -8,7 +8,7 @@ import 'package:assign_erp/core/widgets/form/dynamic_radio_list.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
 import 'package:collection/collection.dart';
@@ -17,12 +17,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TaxModeSelectorFactory {
   static Widget create({
+    bool? isEnabled,
     TaxMode? defaultTaxMode,
     List<String>? initialValues,
     required List<String> selectedTaxCodes,
     required Function(TaxMode?) selectedTaxMode,
   }) {
     return TaxModeSelector(
+      isEnabled: isEnabled ?? true,
       initialValues: initialValues ?? [],
       defaultTaxMode: defaultTaxMode,
       onTaxModesChanged: (modes) => _onSelectTaxMode(modes, selectedTaxMode),
@@ -61,6 +63,7 @@ class TaxModeSelectorFactory {
 
 /// Tax Modes Radio-Selector [TaxModeSelector]
 class TaxModeSelector extends StatefulWidget {
+  final bool isEnabled;
   final TaxMode? defaultTaxMode;
   final List<String>? initialValues;
   final ValueChanged<double>? onValueChanged;
@@ -74,6 +77,7 @@ class TaxModeSelector extends StatefulWidget {
     this.onValueChanged,
     this.onTaxCodesChanged,
     this.onTaxModesChanged,
+    this.isEnabled = true,
   });
 
   @override
@@ -87,6 +91,8 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
   double _taxPercent = 0.0;
 
   TaxMode? get _taxModeToApply => widget.defaultTaxMode;
+
+  bool get _isEnabled => widget.isEnabled;
 
   void _handleSelectedTaxes(List<CheckboxGroupConfig> data) {
     final selectedTaxes = data
@@ -143,6 +149,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
       radiosConfig: [
         RadioGroupConfig(
           key: perLineTax.getName,
+          enabled: _isEnabled && (_taxModeToApply == perLineTax),
           selected: _taxModeToApply == perLineTax,
           label: 'Apply Tax Per Item (Line-Level)',
           tooltip:
@@ -150,8 +157,10 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
           description:
               'Select this option if products or services have different tax rates. You\'ll choose or enter tax for each line item.',
         ),
+
         RadioGroupConfig(
           key: headerTax.getName,
+          enabled: _isEnabled && (_taxModeToApply == headerTax),
           selected: _taxModeToApply == headerTax,
           label: 'Apply Single Tax (Document-Level)',
           tooltip:

@@ -263,9 +263,9 @@ extension SanitizeExtensions on String? {
     return '${baseUsername}_$randomSuffix';
   }
 
-  /// [separateWord] Convert lowerCamelCase to two separate words
+  /// [toSeparate] Convert lowerCamelCase to two separate words
   /// e.g., 'thisIsAString' => 'this Is A String'
-  String get separateWord {
+  String get toSeparate {
     // If the string is empty, no need to process further
     if (_isNullEmpty.isEmpty) return '';
 
@@ -278,9 +278,9 @@ extension SanitizeExtensions on String? {
     );
   }
 
-  /// [combineWord] Convert "separate words" back to lowerCamelCase
+  /// [toCombine] Convert "separate words" back to lowerCamelCase
   /// e.g., 'this Is A String' => 'thisIsAString'
-  String get combineWord {
+  String get toCombine {
     final value = _isNullEmpty; // has word or ''
     // Trim and handle empty/null strings
     if (value.isEmpty) return '';

@@ -150,7 +150,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       ),
       childrenPadding: const EdgeInsets.only(bottom: 20.0),
       children: <Widget>[
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(onPressed: null),
       ],
     );

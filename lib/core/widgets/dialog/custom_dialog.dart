@@ -4,14 +4,14 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:flutter/material.dart';
 
 extension CustomDialogExt on Widget {
-  Future<void> openCustomDialog(
+  Future<T?> openCustomDialog<T>(
     BuildContext context, {
     Color? bgColor,
     bool? isDismissible,
     double maxHeightRatio = 0.94,
     bool? isScrollControlled,
     BoxConstraints? constraints = const BoxConstraints(),
-  }) => showModalBottomSheet(
+  }) => showModalBottomSheet<T>(
     context: context,
     isDismissible: isDismissible ?? true,
     isScrollControlled: isScrollControlled ?? false,

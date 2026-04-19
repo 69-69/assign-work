@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -9,7 +10,7 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/taxes/tax_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/widget/tax_form_inputs.dart';
@@ -40,15 +41,26 @@ class _AddTaxFormState extends State<_AddTaxForm> {
   final List<Tax> _taxList = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+
   bool get _isEditing => _serverTax.hasValue;
+
   TaxBloc get _bloc => context.read<TaxBloc>();
 
   Tax? get _serverTax => widget.serverTax;
+
   bool get _isServerNull => _serverTax == null;
+
   Employee? get _employee => context.employee;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeId => _employee!.employeeId;
-  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
+  bool _isFormValid = false;
+
+  void _updateValidity() => _formKey.updateValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _onSubmit() {
     if (_isSubmitting) return;
@@ -182,19 +194,21 @@ class _AddTaxFormState extends State<_AddTaxForm> {
                   map: data,
                   fromMap: (map, id) => Tax.fromMap(map),
                 );
+
+                _updateValidity();
               },
             ),
           ],
         ),
 
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
+          isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Taxes')
               : (_isSubmitting ? 'Updating...' : null),
         ),
-        const SizedBox(height: 20.0),
       ],
     );
   }

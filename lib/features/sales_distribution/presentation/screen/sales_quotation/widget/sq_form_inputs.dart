@@ -16,7 +16,7 @@ import 'package:assign_erp/features/sales_distribution/data/model/sales_quotatio
 import 'package:assign_erp/features/sales_distribution/presentation/bloc/sales_distribution_bloc.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/screen/widget/sales_dist_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/widget/search_taxes.dart';
 import 'package:flutter/material.dart';

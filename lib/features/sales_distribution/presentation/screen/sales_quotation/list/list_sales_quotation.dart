@@ -123,6 +123,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
       toolbar: _buildToolbar(quotes),
       headers: SalesQuotation.dataTableHeader,
       rows: filtered.rows,
+      template: SalesQuotation.templateHeader,
       childrenRow: filtered.childrenRow,
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
       selectedRowKeyIndex: 0,

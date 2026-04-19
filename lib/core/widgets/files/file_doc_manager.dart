@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:assign_erp/core/constants/app_db_collect.dart';
 import 'package:assign_erp/core/network/data_sources/models/result_data.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/doc_type_mode.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
@@ -86,7 +88,7 @@ class FileDocManager {
 
     // If no files are added, handle it
     if (archive.isEmpty) {
-      Failure(message: 'No files to zip in the directory');
+      return Failure(message: 'No files to zip in the directory');
     }
 
     // Encode the archive data to a zip format
@@ -300,19 +302,76 @@ class FileDocManager {
     final pdf = pw.Document();
 
     pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4.landscape, // ✅ more horizontal space
+        margin: const pw.EdgeInsets.all(16),
+        build: (context) {
+          return [
+            pw.Table(
+              border: pw.TableBorder.all(color: PdfColors.grey),
+              children: [
+                // ✅ Header row
+                pw.TableRow(
+                  decoration: const pw.BoxDecoration(color: PdfColors.blue50),
+                  children: headers.map((header) {
+                    return pw.Padding(
+                      padding: const pw.EdgeInsets.all(6),
+                      child: pw.Text(
+                        header,
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+
+                // ✅ Data rows
+                ...data.map((row) {
+                  return pw.TableRow(
+                    children: row.map((cell) {
+                      return pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(
+                          cell,
+                          style: const pw.TextStyle(fontSize: 9),
+                          maxLines: 2, // ✅ prevent ugly overflow
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
+
+    await savePdf(pdf);
+  }
+
+  /*static Future<void> exportDataToPdf2({
+    required List<String> headers,
+    required List<List<String>> data,
+  }) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
       pw.Page(
-        build: (pw.Context context) {
+        pageFormat: PdfPageFormat.a4.landscape,
+        build: (context) {
           return pw.TableHelper.fromTextArray(
             headers: headers,
             data: data,
-            cellStyle: const pw.TextStyle(fontSize: 10),
+            cellStyle: const pw.TextStyle(fontSize: 8),
             headerStyle: pw.TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: pw.FontWeight.bold,
             ),
-            border: pw.TableBorder.all(color: PdfColors.grey),
+            cellPadding: const pw.EdgeInsets.all(4),
             headerDecoration: const pw.BoxDecoration(color: PdfColors.blue50),
-            cellAlignment: pw.Alignment.centerLeft,
           );
         },
       ),
@@ -320,6 +379,37 @@ class FileDocManager {
 
     // You can either share or save
     await savePdf(pdf);
+  }*/
+
+  static Future<void> exportDataToCsv({
+    required List<String> headers,
+    required List<List<String>> data,
+  }) async {
+    try {
+      final buffer = StringBuffer();
+
+      // Add headers
+      buffer.writeln(headers.join(','));
+
+      // Add rows
+      for (final row in data) {
+        buffer.writeln(row.map(_escapeCsv).join(','));
+      }
+
+      final bytes = utf8.encode(buffer.toString());
+
+      // You can either share or save
+      await saveCsv(bytes);
+    } catch (e) {
+      prettyPrint('Error exporting CSV', '$e');
+    }
+  }
+
+  static String _escapeCsv(String value) {
+    if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+      return '"${value.replaceAll('"', '""')}"';
+    }
+    return value;
   }
 
   /// Save binary data to a user-selected location
@@ -353,26 +443,45 @@ class FileDocManager {
   /// Save Excel file
   static Future<void> saveExcel(Excel excel) async {
     final bytes = excel.save();
-
-    if (bytes != null) {
-      await saveFileToUserLocation(
-        bytes: bytes,
-        defaultFileName: 'exported_excel_data.xlsx',
-        dialogTitle: 'Save Excel File',
-      );
-    } else {
+    if (bytes == null) {
       prettyPrint('Failed to generate Excel file', 'Error');
+      return;
     }
+
+    await _saveByType(bytes: bytes, type: ExportType.excel);
   }
 
   /// Save PDF file
   static Future<void> savePdf(pw.Document pdf) async {
     final bytes = await pdf.save();
+    await _saveByType(bytes: bytes, type: ExportType.pdf);
+  }
+
+  /// Save CSV file
+  static Future<void> saveCsv(List<int> bytes) async {
+    await _saveByType(bytes: bytes, type: ExportType.csv);
+  }
+
+  static Future<void> _saveByType({
+    required List<int> bytes,
+    required ExportType type,
+  }) async {
+    final fileName = switch (type) {
+      ExportType.csv => 'csv_data.csv',
+      ExportType.pdf => 'pdf_data.pdf',
+      ExportType.excel => 'excel_data.xlsx',
+    };
+
+    final title = switch (type) {
+      ExportType.csv => 'CSV',
+      ExportType.pdf => 'PDF',
+      ExportType.excel => 'Excel',
+    };
 
     await saveFileToUserLocation(
       bytes: bytes,
-      defaultFileName: 'exported_pdf_data.pdf',
-      dialogTitle: 'Save PDF File',
+      defaultFileName: 'exported_$fileName',
+      dialogTitle: 'Save $title File',
     );
   }
 }

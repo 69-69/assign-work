@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/form/costing_method_dropdown.dart';
@@ -7,6 +8,7 @@ import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/widget/search_taxes.dart';
 import 'package:flutter/material.dart';
 
 class ItemMasterFormFields {
@@ -19,6 +21,20 @@ class ItemMasterFormFields {
     count: count,
     what: 'Item Master',
     onPressed: onPressed,
+  );
+
+  static Widget buildTaxModeSelector({
+    TaxMode? defaultTaxMode,
+    bool? isEnabled,
+    List<String>? initialValues,
+    required List<String> selectedTaxCodes,
+    required Function(TaxMode?) selectedTaxMode,
+  }) => TaxModeSelectorFactory.create(
+    isEnabled: isEnabled,
+    initialValues: initialValues,
+    defaultTaxMode: defaultTaxMode,
+    selectedTaxMode: selectedTaxMode,
+    selectedTaxCodes: selectedTaxCodes,
   );
 
   static List<FieldGroupConfig> nameAndDescFields({LineItemType? itemType}) => [
@@ -184,8 +200,7 @@ class ItemMasterFormFields {
     FieldGroupConfig(
       key: 'reorderQty',
       label: 'Reorder Quantity',
-      helperText:
-          'Default quantity to reorder when the stock reaches the reorder point',
+      helperText: 'Quantity to order when stock reaches the reorder point',
       type: TextInputType.number,
       validator: (_) => null,
     ),

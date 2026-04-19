@@ -243,7 +243,7 @@ class _BusinessToIndustriesGridState extends State<BusinessToIndustriesGrid> {
       titleAlignment: ListTileTitleAlignment.center,
       title: Text(
         _selectedIndustry?.toSentence ??
-            'What kind of ${_selectedBusiness?.toSentence ?? 'work do you do'}?',
+            'What kind of ${_selectedBusiness?.toSentence ?? 'business do you do'}?',
         textAlign: TextAlign.center,
         style: context.textTheme.bodyLarge?.copyWith(
           color: context.onPrimaryContainer,

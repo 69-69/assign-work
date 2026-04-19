@@ -89,9 +89,6 @@ abstract class RouteNames {
 
   /// ─────────────────────── 🏢 Warehouse Module ───────────────────────
   static const wmsModule = 'warehouse_management_screen';
-  static const warehouse = 'warehouses_screen';
-  static const warehouseLocation = 'storage_location_screen';
-  static const warehouseBin = 'storage_bin_screen';
   static const inboundReceiving = 'wms_inbound_receiving_screen';
   static const internalMovements = 'wms_internal_movements_screen';
   static const outboundPickShipping = 'wms_outbound_pick_shipping_screen';
@@ -116,6 +113,9 @@ abstract class RouteNames {
   /// ─────────────────────────  📋 Master Sub-Screens ─────────────────────────
   static const itemMaster = 'item_master_screen';
   static const taxMaster = 'tax_master_screen';
+  static const warehouseMaster = 'warehouse_master_screen';
+  static const warehouseLocationMaster = 'storage_loc_master_screen';
+  static const warehouseBinMaster = 'storage_bin_master_screen';
   // workflow Approval Rules
   static const workflowMaster = 'workflow_master_screen';
   static const referenceMaster = 'reference_master_screen';

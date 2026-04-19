@@ -39,11 +39,6 @@ git push -u origin main
 
 ---
 
-### InCompactible:
-
-    > file_picker, printing, flutter_tts, path_provider, 
-    > device_info_plus, url_launcher, FirebaseAuth
-
 # 🔐 ERP Authentication Flow (Two-Tier)
 
 ### 🧩 1. Workspace Sign-In (Tenant-Level Access)

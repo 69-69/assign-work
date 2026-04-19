@@ -17,7 +17,7 @@ class EnumUtil<T extends Enum> {
   String get getName => _getEnumName(enumValue);
 
   /// [getLabel] Returns a user-friendly label (e.g. "Office Supplies")
-  String get getLabel => getName.separateWord;
+  String get getLabel => getName.toSeparate;
 
   /// [isValid] Checks if [value] corresponds to any enum value in [enumValues].
   ///
@@ -43,7 +43,7 @@ class EnumUtil<T extends Enum> {
   /// USAGE: isEqual(Color.red, 'red'); // true
   static bool isEqual<T extends Enum>(T e, String? str) {
     final val = str
-        ?.combineWord; // Convert to camelCase e.g., "office supplies" -> "officeSupplies"
+        ?.toCombine; // Convert to camelCase e.g., "office supplies" -> "officeSupplies"
     return _getEnumName(e).toLowerAll == val.toLowerAll;
   }
 
@@ -70,7 +70,7 @@ class EnumUtil<T extends Enum> {
   ]) {
     if (enumValues.isEmpty) return [];
 
-    final list = enumValues.map((e) => _getEnumName(e).separateWord).toList();
+    final list = enumValues.map((e) => _getEnumName(e).toSeparate).toList();
     return header.isEmpty ? list : [header, ...list];
   }
 }

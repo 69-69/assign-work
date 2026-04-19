@@ -26,6 +26,7 @@ extension Custombutton on BuildContext {
     String? tooltip,
     Widget? anyButton,
     ButtonStyle? style,
+    Function(dynamic)? onCancelCallback,
   }) {
     final labelText = label ?? 'Save Changes';
     final onCancel = Navigator.canPop(this) ? () => Navigator.pop(this) : null;
@@ -35,7 +36,10 @@ extension Custombutton on BuildContext {
 
     final cancelBtn = outlinedButton(
       'Cancel',
-      onPressed: onCancel,
+      onPressed: (){
+        onCancel?.call();
+        onCancelCallback?.call(true);
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: kWhiteColor,
         elevation: elevation,
@@ -51,9 +55,7 @@ extension Custombutton on BuildContext {
           ? null
           : (label == null
                 ? () async {
-                    final isConfirmed = await _confirmUpdateDialog();
-
-                    if (mounted && isConfirmed) {
+                    if (mounted && (await _confirmUpdateDialog())) {
                       onPressed!();
                     }
                   }

@@ -193,6 +193,21 @@ GoRoute _masterDataRoute() {
       screen: ({openTab}) => const ManageTaxScreen(),
     ),
     (
+      name: RouteNames.warehouseMaster,
+      openTab: false,
+      screen: ({openTab}) => const WarehouseScreen(),
+    ),
+    (
+      name: RouteNames.warehouseLocationMaster,
+      openTab: false,
+      screen: ({openTab}) => const WHLocationScreen(),
+    ),
+    (
+      name: RouteNames.warehouseBinMaster,
+      openTab: false,
+      screen: ({openTab}) => const WHBinScreen(),
+    ),
+    (
       name: RouteNames.referenceMaster,
       openTab: false,
       screen: ({openTab}) => const ReferenceMasterScreen(),
@@ -325,34 +340,19 @@ GoRoute _wmsRoute() {
   // Sub routes for Warehouse Management
   final List<StaticRouteConfig> wmsSubRoutes = [
     (
-      name: RouteNames.warehouse,
-      openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
-    ),
-    (
-      name: RouteNames.warehouseLocation,
-      openTab: false,
-      screen: ({openTab}) => const WHLocationScreen(),
-    ),
-    (
-      name: RouteNames.warehouseBin,
-      openTab: false,
-      screen: ({openTab}) => const WHBinScreen(),
-    ),
-    (
       name: RouteNames.inboundReceiving,
       openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
+      screen: ({openTab}) => const InboundReceivingScreen(),
     ),
     (
       name: RouteNames.internalMovements,
       openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
+      screen: ({openTab}) => const InternalMovementScreen(),
     ),
     (
       name: RouteNames.outboundPickShipping,
       openTab: false,
-      screen: ({openTab}) => const WarehouseScreen(),
+      screen: ({openTab}) => const PickingShipmentScreen(),
     ),
   ];
 

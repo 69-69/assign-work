@@ -12,7 +12,7 @@ const errorPrefix = 'Assign';
 /// APP NAME
 const _nChar = '⏺';
 // WORKSPACE/WORKER/WORKING, HEALTHSPACE, EDUSPACE
-const appName = 'ASSIGN.WORK';
+const appName = 'ASSIGN'; // Assign.Work
 const appSubName =
     'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Manufacturing $_nChar Multi-Location $_nChar Reports';
 const ghanaCedis = 'GHS';
@@ -89,6 +89,9 @@ const reportsAnalyticsScreenTitle = 'reports analytics';
 const salesScreenTitle = 'sales management';
 const wmsScreenTitle = 'warehouse - WMS'; // Warehouse Management System
 const warehouseScreenTitle = 'warehouse';
+const whInboundReceivingScreenTitle = 'Inbound Receiving';
+const whPickShipmentScreenTitle = 'Picking Shipment';
+const whInternalMovementScreenTitle = 'Internal Movement';
 const whLocStorageScreenTitle = 'WH Location Storage';
 const whBinStorageScreenTitle = 'WH Bin Storage';
 const customersScreenTitle = 'customer management';

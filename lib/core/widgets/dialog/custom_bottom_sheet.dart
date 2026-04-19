@@ -37,6 +37,13 @@ extension ShowBottomSheet<T> on BuildContext {
       isScrollControlled: true,
       backgroundColor: kTransparentColor,
       constraints: constraints ?? BoxConstraints(maxWidth: screenWidth),
+
+      /// New
+      // isDismissible: false,
+      // ❗ disables tap outside dismiss
+      enableDrag: false,
+
+      // ❗ disables swipe-down dismiss
       builder: (context) => MediaQuery(
         data: MediaQuery.of(context),
         child: _buildZoom(zoomLevel, child, showZoomIcon: showZoomIcon),
@@ -109,7 +116,7 @@ extension ShowBottomSheet<T> on BuildContext {
   }
 }
 
-class CustomDraggableBottomSheet extends StatelessWidget {
+class CustomDraggableBottomSheet extends StatefulWidget {
   final double? initialChildSize, maxChildSize;
   final Widget child;
   final Widget? header;
@@ -133,20 +140,56 @@ class CustomDraggableBottomSheet extends StatelessWidget {
   });
 
   @override
+  State<CustomDraggableBottomSheet> createState() =>
+      _CustomDraggableBottomSheetState();
+}
+
+class _CustomDraggableBottomSheetState
+    extends State<CustomDraggableBottomSheet> {
+  double? _lastExtent;
+  bool _isClosing = false;
+
+  @override
   Widget build(BuildContext context) {
     Widget buildSheet() {
-      final initialCSize = initialChildSize ?? 0.33;
-      final maxCSize = maxChildSize ?? 0.8;
+      final initialCSize = widget.initialChildSize ?? 0.33;
+      final maxCSize = widget.maxChildSize ?? 0.8;
 
-      return makeDismissible(
-        context,
-        child: DraggableScrollableSheet(
-          initialChildSize: initialCSize,
-          minChildSize: 0.2,
-          maxChildSize: maxCSize,
-          builder: (cxt, controller) => MediaQuery(
-            data: MediaQuery.of(context),
-            child: isScrollable ? _buildBody(controller, cxt) : child,
+      return NotificationListener<DraggableScrollableNotification>(
+        onNotification: (notification) {
+          // final closeThreshold = notification.minExtent + 0.02;
+          final current = notification.extent;
+          final isShrinking = _lastExtent != null && current < _lastExtent!;
+          _lastExtent = current;
+
+          final isNearMin =
+              current <= notification.minExtent + 0.015;// if (notification.extent <= notification.minExtent + 0.01)
+          if (isShrinking && isNearMin && !_isClosing) {
+            _isClosing = true;
+            Future.microtask(() async {
+              if (context.mounted) {
+                await _confirmClose(context);
+                await Future.delayed(const Duration(milliseconds: 300));
+                _isClosing = false;
+              }
+            });
+            // _confirmClose(context).then((_) => _isClosing = false);
+            return true;
+          }
+          return false;
+        },
+        child: makeDismissible(
+          context,
+          child: DraggableScrollableSheet(
+            initialChildSize: initialCSize,
+            minChildSize: 0.2,
+            maxChildSize: maxCSize,
+            builder: (cxt, controller) => MediaQuery(
+              data: MediaQuery.of(context),
+              child: widget.isScrollable
+                  ? _buildBody(controller, cxt)
+                  : widget.child,
+            ),
           ),
         ),
       );
@@ -158,30 +201,38 @@ class CustomDraggableBottomSheet extends StatelessWidget {
   Widget makeDismissible(BuildContext context, {required Widget child}) {
     final body = GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onPress ?? () => Navigator.of(context).pop(),
+      onTap: widget.onPress ?? () async => await _confirmClose(context),
       child: GestureDetector(onTap: () {}, child: child),
     );
 
-    return confirmOnClose ? _buildWillPopScope(context, child: body) : body;
+    return widget.confirmOnClose
+        ? _handleWillPopScope(context, child: body)
+        : body;
   }
 
-  PopScope<Object> _buildWillPopScope(
+  Future<bool> _confirmClose(BuildContext context) async {
+    if (!widget.confirmOnClose) return true;
+
+    final shouldPop = await context.confirmAction(
+      Text('Are you sure you want to exit?'),
+      title: 'Confirm Exit',
+    );
+
+    if (shouldPop && context.mounted) {
+      Navigator.of(context).pop();
+    }
+
+    return shouldPop;
+  }
+
+  PopScope<Object> _handleWillPopScope(
     BuildContext context, {
     required Widget child,
   }) {
     return PopScope(
       canPop: false, // disables default back navigation
       onPopInvokedWithResult: (didPop, result) async {
-        if (!didPop) {
-          bool shouldPop = await context.confirmAction(
-            Text('Are you sure you want to exit?'),
-            title: 'Confirm Exit',
-          );
-          if (context.mounted && shouldPop) {
-            // or pass result: Navigator.of(context).pop(myResult);
-            Navigator.of(context).pop();
-          }
-        }
+        if (!didPop) await _confirmClose(context);
       },
       child: child,
     );
@@ -190,20 +241,26 @@ class CustomDraggableBottomSheet extends StatelessWidget {
   Container _buildBody(ScrollController controller, BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(16.00),
+      padding: widget.padding ?? const EdgeInsets.all(16.00),
       margin: EdgeInsets.zero,
       decoration: BoxDecoration(
         // color: const Color.fromRGBO(0, 0, 0, 0.001),
-        color: sheetBgColor ?? context.ofTheme.cardColor,
+        color: widget.sheetBgColor ?? context.ofTheme.cardColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16.00)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.remove, color: context.surfaceColor),
-          if (header != null) ...{header!, const HorizontalDivider()},
+          if (widget.header != null) ...{
+            widget.header!,
+            const HorizontalDivider(),
+          },
           Flexible(
-            child: SingleChildScrollView(controller: controller, child: child),
+            child: SingleChildScrollView(
+              controller: controller,
+              child: widget.child,
+            ),
           ),
           /*Expanded(
             child: SingleChildScrollView(controller: controller, child: child),

@@ -8,7 +8,7 @@ import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:equatable/equatable.dart';
 
 class SalesQuotation extends Equatable {
@@ -236,11 +236,17 @@ class SalesQuotation extends Equatable {
 
   /// Financial Summaries
   double get subTotal => _totalSum.subTotal;
+
   double get taxableAmount => _totalSum.taxableAmount;
+
   double get totalDiscountAmount => _totalSum.totalDiscountAmount;
+
   double get totalTaxPercent => _totalSum.totalTaxPercent;
+
   double get totalTaxAmount => _totalSum.totalTaxAmount;
+
   double get netTotal => _totalSum.netTotal;
+
   double get grandTotal => _totalSum.grandTotal;
 
   // Singleton instance for fallback (empty SalesQuotation)
@@ -265,7 +271,7 @@ class SalesQuotation extends Equatable {
 
   String get getSalesChannel => salesChannel.getLabel;
 
-  // The name is needed not label
+  // The name is needed not a label
   String get getTaxName => taxMode.getName;
 
   bool get isApproved => status == WorkflowStatus.approved;
@@ -443,19 +449,22 @@ class SalesQuotation extends Equatable {
     getUpdatedAt,
   ];
 
+  /// Download Template for Bulk Upload [templateHeader]
+  static Map<String, dynamic> get templateHeader => empty.toMap();
+
   /// For UI Header display only
   static List<String> get dataTableHeader => const [
     'ID',
     'Store #',
-    'Quote Number',
-    'Customer Name',
+    'Quote #',
+    'Customer',
     'Status',
     'Sales Channel',
-    'validFrom',
-    'Created By',
-    'Created At',
-    'Updated By',
-    'Updated At',
+    'Validity',
+    'Created',
+    'On',
+    'Updated',
+    'On',
   ];
 }
 

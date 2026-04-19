@@ -202,7 +202,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
             ),
           ],
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: _isSubmitting ? 'Submitting...' : 'Create Employee',
           isDisabled: _isSubmitting,

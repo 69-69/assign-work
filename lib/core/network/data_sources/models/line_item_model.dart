@@ -3,7 +3,7 @@ import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/features/system_admin/data/models/tax_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 
 /// Taxable Line Item
 mixin TaxableLineItem on LineItem {

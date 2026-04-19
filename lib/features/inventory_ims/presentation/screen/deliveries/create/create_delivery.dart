@@ -110,7 +110,7 @@ class _AddDeliveryBodyState extends State<_AddDeliveryBody> {
           controller: _barcodeController,
           onChanged: (t) => setState(() {}),
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: 'Add Delivery',
           onPressed: _onSubmit,

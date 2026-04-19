@@ -188,7 +188,7 @@ class _UploadCompanyLogoState extends State<UploadCompanyLogo> {
       children: [
         (_imageFile != null)
             ? _buildPreviewImage(_imageFile)
-            : const Text('Upload company logo'),
+            : const Text('Add company logo'),
         const SizedBox(height: 20),
         _buildUploadBtn(),
       ],

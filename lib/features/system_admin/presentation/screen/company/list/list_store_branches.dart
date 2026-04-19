@@ -84,7 +84,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
             results.isEmpty
                 ? context.buildAddButton(
                     'Add Stores',
-                    onPressed: () => _openStoreForm(),
+                    onPressed: () async => await _openStoreForm(),
                   )
                 : _buildCard(results),
           SetupError<CompanyStore>(error: final error) => context.buildError(
@@ -126,7 +126,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
       secondaryIcon: Icons.edit,
       dataLength: stores.length,
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete Store',
-      onPrimary: () => _openStoreForm(stores: stores),
+      onPrimary: () async => await _openStoreForm(stores: stores),
       onRefresh: () => _bloc.add(RefreshSetups<CompanyStore>()),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(stores, _selectedIds.first)
@@ -167,12 +167,17 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     CompanyStore? serverStore,
     List<CompanyStore>? stores,
   }) async {
+    if (!context.mounted) return;
+    final canAddStores = context.canAddMoreStores(reactive: false).addMore;
+
     List<String>? existingNumbers = CompanyStore.getStoreNumbers(stores ?? []);
 
-    await context.openStoresForm(
-      serverStore: serverStore,
-      existingStoreNumbers: existingNumbers,
-    );
+    return canAddStores
+        ? await context.openStoresForm(
+            serverStore: serverStore,
+            existingStoreNumbers: existingNumbers,
+          )
+        : await context.showUpgradeDialog();
   }
 
   CompanyStore? _findStoresById(List<CompanyStore> stores, String id) =>
@@ -182,7 +187,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     final store = _findStoresById(stores, id);
     if (store == null) return;
 
-    await _openStoreForm(serverStore: store);
+    await context.openStoresForm(serverStore: store);
   }
 
   Future<void> _onDeleteTap(

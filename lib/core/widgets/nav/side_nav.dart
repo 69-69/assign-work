@@ -44,9 +44,8 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _getWorkspace();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() => _cachedIsMobile = context.isMobile);
-    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncDeviceType());
 
     _controller = AnimationController(vsync: this, duration: kAnimateDuration);
   }
@@ -56,6 +55,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     super.didChangeDependencies();
     _cachedIsMobile = context.isMobile;
     final beginWidth = _cachedIsMobile ? 200.0 : _size;
+
     _widthAnimation ??= Tween<double>(
       begin: beginWidth,
       end: 200.0,
@@ -122,6 +122,10 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     });
   }
 
+  void _syncDeviceType() {
+    setState(() => _cachedIsMobile = context.isMobile);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -143,7 +147,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
               ),
             ).copyWith(backgroundColor: _buildResolveWith(context)),
             onPressed: () =>
-                _cachedIsMobile ? _buildMobileDrawer(context) : _toggleDrawer(),
+                _cachedIsMobile ? _showMobileDrawer(context) : _toggleDrawer(),
           ),
         ),
         if (!_cachedIsMobile) Expanded(child: _buildDesktopDrawer(context)),
@@ -163,7 +167,7 @@ class _SideNavState extends State<SideNav> with SingleTickerProviderStateMixin {
     });
   }
 
-  void _buildMobileDrawer(BuildContext context) {
+  void _showMobileDrawer(BuildContext context) {
     showCupertinoDialog(
       context: context,
       barrierLabel: "SideNav",

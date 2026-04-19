@@ -72,6 +72,36 @@ extension SetupTiles on dynamic {
       },
       {
         'hasSplit': true,
+        'label': 'warehouse . master',
+        'icon': Icons.store,
+        'route': RouteNames.warehouseMaster,
+        'param': {},
+        'access': _getName(SetupPermission.referenceMaster),
+        'description':
+        'Define physical site or storage facilities such as Main, Store, or Transit warehouses.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'storage loc . master',
+        'icon': Icons.view_kanban,
+        'route': RouteNames.warehouseLocationMaster,
+        'param': {},
+        'access': _getName(SetupPermission.referenceMaster),
+        'description':
+        'Define sub-levels/divisions/locations within a warehouse, such as racks, aisles, or shelves.',
+      },
+      {
+        'hasSplit': true,
+        'label': 'storage bin . master',
+        'icon': Icons.inbox,
+        'route': RouteNames.warehouseBinMaster,
+        'param': {},
+        'access': _getName(SetupPermission.referenceMaster),
+        'description':
+        'Define precise storage slots inside a location for accurate stock placement.',
+      },
+      {
+        'hasSplit': true,
         'label': 'Price List . master',
         'icon': Icons.price_change,
         'route': RouteNames.priceListMaster,
@@ -135,7 +165,7 @@ extension SetupTiles on dynamic {
         'route': RouteNames.companyInfo,
         'param': {'openTab': '0'},
         'access': _getName(SetupPermission.manageCompany),
-        'description': 'enter organization details; name, logo, address, etc.',
+        'description': 'enter organization details: name, logo, address, etc.',
       },
       {
         'hasSplit': true,

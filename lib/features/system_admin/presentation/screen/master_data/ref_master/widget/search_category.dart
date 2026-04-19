@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_category.dart';
-import 'package:assign_erp/features/system_admin/data/models/category_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:flutter/material.dart';
 
 /// Search Item Categories [SearchCategory]

@@ -25,7 +25,7 @@ extension GenerateUID on DocType {
     DocType.pOrder: posOrdersDBColPath,
     DocType.itemMaster: itemMasterDBColPath,
     DocType.warehouse: warehouseDBColPath,
-    DocType.whLocation: whLocationStorageDBColPath,
+    DocType.whLocation: whStorageLocationDBColPath,
     DocType.whBin: whBinStorageDBColPath,
     DocType.pSale: posSalesDBColPath,
     DocType.employee: employeesDBColPath,

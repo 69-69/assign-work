@@ -334,7 +334,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
             }
           },
         ),
-        const SizedBox(height: 20.0),
+        const SizedBox(height: 10.0),
         context.confirmableActionButton(onPressed: _onSubmit),
       ],
     );
