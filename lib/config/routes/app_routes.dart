@@ -208,7 +208,7 @@ GoRoute _masterDataRoute() {
       screen: ({openTab}) => const WHBinScreen(),
     ),
     (
-      name: RouteNames.currenciesMaster,
+      name: RouteNames.currencyMaster,
       openTab: false,
       screen: ({openTab}) => const CurrencyMasterScreen(),
     ),

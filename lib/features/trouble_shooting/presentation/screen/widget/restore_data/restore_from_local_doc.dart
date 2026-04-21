@@ -27,6 +27,7 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
     return Padding(
       padding: EdgeInsets.all(20.0),
       child: Column(
+        spacing: 20,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -35,9 +36,7 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
               fontWeight: FontWeight.normal,
             ),
           ),
-          const SizedBox(height: 20),
           _getLocalBackupFilenames(context),
-          SizedBox(height: 20),
           context.confirmableActionButton(
             isDisabled: _selectedFilename.isNullOrEmpty,
             label: 'Restore From Local',

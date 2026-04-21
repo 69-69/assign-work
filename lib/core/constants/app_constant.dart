@@ -16,6 +16,8 @@ const appName = 'ASSIGN'; // Assign.Work
 const appSubName =
     'A.I $_nChar P.O.S $_nChar Inventory $_nChar C.R.M $_nChar Procurement $_nChar Cloud $_nChar Warehouse $_nChar Manufacturing $_nChar Multi-Location $_nChar Reports';
 const ghanaCedis = 'GHS';
+const currencyMasterCacheId = 'currency_master';
+const uomMasterCacheId = 'uom_master';
 
 /// APP LOGO
 const assetPath = 'assets/images';

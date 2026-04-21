@@ -1,8 +1,12 @@
 # @TODO - 
+LINKEDIN-MSG: "Thank you for being our SMU panelist during the AT&T tour on Friday, 
+April 17. It was an incredible experience, and we truly appreciate the effort 
+you and your team put into making it happen."
+
 ## @Continue Tomorrow (Next Sprint)
-    ## Work Reference master under Item master
-        - Item Variance
-        - Units of Measure
+    ## Reference master 
+        - Item master
+        - Item Variance & Attributes
     
     ##  Master Data (BIN Location Code, UOM, PriceList, Payment Method&Type,)
     - Item Master: adding taxes, warehouse and linking Item Master to

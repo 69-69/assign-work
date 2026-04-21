@@ -14,6 +14,7 @@ class RestoreFromDrive extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(20.0),
       child: Column(
+        spacing: 20,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -22,7 +23,6 @@ class RestoreFromDrive extends StatelessWidget {
               fontWeight: FontWeight.normal,
             ),
           ),
-          const SizedBox(height: 20),
           context.confirmableActionButton(
             label: 'Restore From Drive',
             onPressed: () async => await _confirmRestoreDialog(context),

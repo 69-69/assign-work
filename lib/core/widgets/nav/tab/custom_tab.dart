@@ -16,6 +16,7 @@ class CustomTab extends StatefulWidget {
   /// [children] TabBarView contents
   final List<Widget> children;
   final bool isScrollable;
+  final double? contentHeight;
   final bool useDynamicHeight;
   final Color? bgColor;
   final bool isVertical;
@@ -36,6 +37,7 @@ class CustomTab extends StatefulWidget {
     required this.children,
     this.hideIcon = true,
     this.useDynamicHeight = false,
+    this.contentHeight,
     this.bgColor,
     this.isScrollable = false,
     this.isVertical = false,
@@ -114,8 +116,8 @@ class _CustomTabState extends State<CustomTab>
   }*/
 
   void _toggleNavigationRail() {
-      // Toggle visibility
-    setState(() =>_isNavRailExpanded = !_isNavRailExpanded);
+    // Toggle visibility
+    setState(() => _isNavRailExpanded = !_isNavRailExpanded);
   }
 
   void _handleTabTap(int index) {
@@ -161,6 +163,7 @@ class _CustomTabState extends State<CustomTab>
             )
           : _HorizontalTabBars(
               tabs: _tabsList,
+              contentHeight: widget.contentHeight,
               useDynamicHeight: widget.useDynamicHeight,
               bgColor: widget.bgColor,
               indicatorWeight: widget.indicatorWeight,
@@ -223,6 +226,7 @@ class _HorizontalTabBars extends StatelessWidget {
 
   final List<CustomTabModel> tabs;
   final Color? bgColor;
+  final double? contentHeight;
   final double indicatorWeight;
   final bool hideIcon;
   final bool useDynamicHeight;
@@ -234,6 +238,7 @@ class _HorizontalTabBars extends StatelessWidget {
   const _HorizontalTabBars({
     required this.tabs,
     this.bgColor,
+    this.contentHeight,
     required this.indicatorWeight,
     required this.tabController,
     required this.hideIcon,
@@ -258,10 +263,14 @@ class _HorizontalTabBars extends StatelessWidget {
       child: Column(
         children: [
           ColoredBox(
-            color: bgColor ?? context.secondaryContainerColor,
+            color: bgColor ?? context.outlineColor.toAlpha(0.1),
+            // context.secondaryContainerColor
             child: _buildTabBar(context),
           ),
-          SizedBox(height: context.screenHeight, child: content),
+          SizedBox(
+            height: contentHeight ?? context.screenHeight,
+            child: content,
+          ),
         ],
       ),
     );

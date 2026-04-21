@@ -36,19 +36,20 @@ class _CreateEmployeeForm extends StatefulWidget {
 }
 
 class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
-  bool _isSubmitting = false;
-  Key _formResetKey = UniqueKey();
   String _selectedRoleId = '';
   String _selectedRole = '';
   String _selectedDepartCode = '';
   String _selectedStoreNumber = '';
   String _newEmployeeId = '';
 
+  bool _isSubmitting = false;
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passcodeController = TextEditingController();
+  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
   void _generateEmployeeId() async {
     await DocType.employee.getShortUID(
@@ -205,7 +206,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
           label: _isSubmitting ? 'Submitting...' : 'Create Employee',
-          isDisabled: _isSubmitting,
+          isDisabled: _isSubmitting || !_isFormValid,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -213,5 +214,4 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
     );
   }
 
-  bool get _isFormValid => _formKey.currentState!.validate();
 }

@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
+import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/screen/widget/restore_data/index.dart';
@@ -17,12 +18,10 @@ class RestoreBackupPreference extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomDraggableBottomSheet(
-      padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
-      initialChildSize: 0.90,
-      maxChildSize: 0.90,
-      header: _buildHeader(context),
-      child: SizedBox(height: context.screenHeight, child: _buildBody(context)),
+    return BottomSheetScaffold(
+      initialSize: 0.33,
+      title: _buildHeader(context),
+      body: _buildBody(context),
     );
   }
 
@@ -53,10 +52,11 @@ class RestoreBackupPreference extends StatelessWidget {
     return CustomTab(
       length: 3,
       padding: EdgeInsets.zero,
+      contentHeight: context.screenHeight * (context.isMobile ? 1 : 0.4),
       tabs: [
-        CustomTabModel(label: 'From Local', icon: Icons.computer),
-        CustomTabModel(label: 'From Drive', icon: Icons.storage_sharp),
-        CustomTabModel(label: 'From Cloud', icon: Icons.cloud_download),
+        CustomTabModel(label: 'Local', icon: Icons.computer),
+        CustomTabModel(label: 'Drive', icon: Icons.storage_sharp),
+        CustomTabModel(label: 'Cloud', icon: Icons.cloud_download),
       ],
       children: [RestoreFromLocalDoc(), RestoreFromDrive(), RestoreFromCloud()],
     );

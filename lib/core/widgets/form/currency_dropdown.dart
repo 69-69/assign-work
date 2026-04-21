@@ -1,5 +1,8 @@
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/local/ref_master_cache.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/ref_master_model.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +10,8 @@ import 'package:flutter/material.dart';
 class CurrencyDropdown extends StatelessWidget {
   final String? label;
   final String? initialCurrency;
-  final void Function(({String code, String symbol, String country})? s) onChanged;
+  final void Function(({String code, String symbol, String country})? s)
+  onChanged;
 
   const CurrencyDropdown({
     super.key,
@@ -16,12 +20,16 @@ class CurrencyDropdown extends StatelessWidget {
     required this.onChanged,
   });
 
+  RefMaster? get _cache => RefMasterCache().getById(currencyMasterCacheId);
+
+  get _excludedCurrencies => (_cache?.references ?? const <String>[]);
+
   @override
   Widget build(BuildContext context) {
     return StaticDropdown<({String code, String symbol, String country})>(
-      key: key,
       // isMenu: true,
-      items: currencyType,
+      key: key,
+      items: currencyType.where((c) => !_excludedCurrencies.contains(c.code)).toList(),
       label: label ?? 'Select currency',
       initialValue: currencyType.firstWhereOrNull(
         (e) => e.code == initialCurrency,

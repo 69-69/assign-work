@@ -13,6 +13,7 @@ class RestoreFromCloud extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(20.0),
       child: Column(
+        spacing: 20,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -21,7 +22,6 @@ class RestoreFromCloud extends StatelessWidget {
               fontWeight: FontWeight.normal,
             ),
           ),
-          const SizedBox(height: 20),
           context.confirmableActionButton(
             label: 'Restore From Cloud',
             onPressed: () async => await _confirmRestoreDialog(context),

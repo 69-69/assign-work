@@ -278,6 +278,10 @@ const List<({String code, String symbol, String country})> currencyType = [
   (code: 'GMD', symbol: 'D', country:'Gambia'),
 ];
 
+String formatCurrency(({String code, String symbol, String country}) c) {
+  return '${c.code} ${c.symbol} - ${c.country}';
+}
+
 /// Get Specific Currency Symbol (Sign) by Code [getCurrencySign]
 String? getCurrencySign(String code) =>
     currencyType.firstWhere((c) => c.code == code).symbol;

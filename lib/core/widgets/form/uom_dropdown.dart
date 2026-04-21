@@ -1,6 +1,9 @@
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
+import 'package:assign_erp/features/system_admin/data/data_sources/local/ref_master_cache.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/ref_master_model.dart';
 import 'package:flutter/material.dart';
 
 /// Unit of measure [UOMDropdown] - Single select
@@ -18,6 +21,10 @@ class UOMDropdown extends StatelessWidget {
     // this.label,
   });
 
+  RefMaster? get _cache => RefMasterCache().getById(uomMasterCacheId);
+
+  get _excludedUoms => (_cache?.references ?? const <String>[]);
+
   @override
   Widget build(BuildContext context) {
     final strList = UOMUtil.toStringList();
@@ -29,7 +36,7 @@ class UOMDropdown extends StatelessWidget {
       enabled: enabled,
       label: strList.first,
       initialValue: initialValue,
-      items: strList,
+      items: strList.where((u) => !_excludedUoms.contains(u)).toList(),
       getDisplayText: (uom) => uom.toTitle,
       onChanged: onChanged,
     );
@@ -65,6 +72,10 @@ class _UOMMultiDropdownState extends State<UOMMultiDropdown> {
 
   String get _labelText => widget.label ?? 'Units of Measure';
 
+  RefMaster? get _cache => RefMasterCache().getById(uomMasterCacheId);
+
+  get _excludedUoms => (_cache?.references ?? const <String>[]);
+
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<String>(
@@ -87,10 +98,16 @@ class _UOMMultiDropdownState extends State<UOMMultiDropdown> {
   /// Load UOMs filtered by search string
   List<String> _loadUOMs(String filter) {
     // If no filter, return full list
-    if (filter.isEmpty) return _allUOMs;
+    if (filter.isEmpty) {
+      return _allUOMs
+          .where((u) => !_excludedUoms.contains(u))
+          .toList();
+    }
 
-    // Filter using generic filterAny on the UOM label
-    return _allUOMs.where((uom) => uom.filterAny(filter)).toList();
+        // Filter using generic filterAny on the UOM label
+    return _allUOMs
+        .where((u) => !_excludedUoms.contains(u) && u.filterAny(filter))
+        .toList();
   }
 
   /// Used by AsyncSearchDropdown for real-time filtering

@@ -40,6 +40,7 @@ class BottomSheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = isDetailMode ? 0.92 : 0.98;
+
     return CustomDraggableBottomSheet(
       confirmOnClose: confirmOnClose,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),

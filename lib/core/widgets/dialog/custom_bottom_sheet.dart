@@ -139,7 +139,8 @@ class CustomDraggableBottomSheet extends StatefulWidget {
       _CustomDraggableBottomSheetState();
 }
 
-class _CustomDraggableBottomSheetState extends State<CustomDraggableBottomSheet> {
+class _CustomDraggableBottomSheetState
+    extends State<CustomDraggableBottomSheet> {
   final GlobalKey _contentKey = GlobalKey();
   bool _isClosing = false;
   double? _initialSize;
@@ -163,7 +164,7 @@ class _CustomDraggableBottomSheetState extends State<CustomDraggableBottomSheet>
   void _determineMinHeight() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = _contentKey.currentContext;
-      if (context == null) return;
+      if (context == null || context.isMobile) return;
 
       final box = context.findRenderObject() as RenderBox;
       if (!box.hasSize) return;
@@ -219,8 +220,8 @@ class _CustomDraggableBottomSheetState extends State<CustomDraggableBottomSheet>
         child: makeDismissible(
           context,
           child: DraggableScrollableSheet(
-            initialChildSize: initialCSize,
-            minChildSize: 0.2,
+            initialChildSize: context.isMobile ? _maxChildSize : initialCSize,
+            minChildSize: 0.25,
             maxChildSize: _maxChildSize,
             builder: (cxt, controller) => MediaQuery(
               data: MediaQuery.of(context),

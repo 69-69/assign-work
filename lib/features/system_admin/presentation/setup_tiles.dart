@@ -116,7 +116,7 @@ extension SetupTiles on dynamic {
         'hasSplit': true,
         'label': 'Currency . master',
         'icon': Icons.currency_exchange,
-        'route': RouteNames.currenciesMaster,
+        'route': RouteNames.currencyMaster,
         'param': {},
         'access': _getName(SetupPermission.manageCurrencyMaster),
         'description':
