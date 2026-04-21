@@ -241,41 +241,41 @@ const paymentMethod = [
   {'code': 'SGD', 'symbol': 'S\$'},
 ];*/
 
-const List<({String code, String symbol})> currencyType = [
+const List<({String code, String symbol, String country})> currencyType = [
   // Default
-  (code: 'Select currency', symbol: '-'),
+  (code: 'Select currency', symbol: '-', country: 'placeholder'),
 
   // Major global
-  (code: 'USD', symbol: r'$'),
-  (code: 'EUR', symbol: '€'),
-  (code: 'GBP', symbol: '£'),
-  (code: 'CAD', symbol: r'C$'),
-  (code: 'AUD', symbol: r'A$'),
-  (code: 'CHF', symbol: 'CHF'),
-  (code: 'JPY', symbol: '¥'),
-  (code: 'NZD', symbol: r'NZ$'),
-  (code: 'SGD', symbol: r'S$'),
+  (code: 'USD', symbol: r'$', country: 'United States'),
+  (code: 'EUR', symbol: '€', country: 'Eurozone'),
+  (code: 'GBP', symbol: '£', country: 'United Kingdom'),
+  (code: 'CAD', symbol: r'C$', country: 'Canada'),
+  (code: 'AUD', symbol: r'A$', country: 'Australia'),
+  (code: 'CHF', symbol: 'CHF', country: 'Switzerland'),
+  (code: 'JPY', symbol: '¥', country: 'Japan'),
+  (code: 'NZD', symbol: r'NZ$', country: 'New Zealand'),
+  (code: 'SGD', symbol: r'S$', country: 'Singapore'),
 
   // Africa
-  (code: 'GHS', symbol: '₵'), // Ghana Cedi
-  (code: 'NGN', symbol: '₦'), // Nigerian Naira
-  (code: 'ZAR', symbol: 'R'), // South African Rand
-  (code: 'KES', symbol: 'KSh'), // Kenyan Shilling
-  (code: 'UGX', symbol: 'USh'), // Ugandan Shilling
-  (code: 'TZS', symbol: 'TSh'), // Tanzanian Shilling
-  (code: 'EGP', symbol: '£'), // Egyptian Pound
-  (code: 'MAD', symbol: 'DH'), // Moroccan Dirham
-  (code: 'XOF', symbol: 'CFA'), // West African CFA Franc
-  (code: 'XAF', symbol: 'CFA'), // Central African CFA Franc
-  (code: 'RWF', symbol: 'FRw'), // Rwandan Franc
-  (code: 'ETB', symbol: 'Br'), // Ethiopian Birr
-  (code: 'ZMW', symbol: 'ZK'), // Zambian Kwacha
-  (code: 'MWK', symbol: 'MK'), // Malawian Kwacha
-  (code: 'BWP', symbol: 'P'), // Botswana Pula
-  (code: 'MUR', symbol: '₨'), // Mauritian Rupee
-  (code: 'SCR', symbol: '₨'), // Seychellois Rupee
-  (code: 'SLL', symbol: 'Le'), // Sierra Leonean Leone
-  (code: 'GMD', symbol: 'D'), // Gambian Dalasi
+  (code: 'GHS', symbol: '₵', country: 'Ghana'),
+  (code: 'NGN', symbol: '₦', country:'Nigeria'),
+  (code: 'ZAR', symbol: 'R', country:'South Africa'),
+  (code: 'KES', symbol: 'KSh', country:'Kenya'),
+  (code: 'UGX', symbol: 'USh', country:'Uganda'),
+  (code: 'TZS', symbol: 'TSh', country:'Tanzania'),
+  (code: 'EGP', symbol: '£', country:'Egypt'),
+  (code: 'MAD', symbol: 'DH', country:'Morocco'),
+  (code: 'XOF', symbol: 'CFA', country:'West Africa'),
+  (code: 'XAF', symbol: 'CFA', country:'Central Africa'),
+  (code: 'RWF', symbol: 'FRw', country:'Rwanda'),
+  (code: 'ETB', symbol: 'Br', country:'Ethiopia'),
+  (code: 'ZMW', symbol: 'ZK', country:'Zambia'),
+  (code: 'MWK', symbol: 'MK', country:'Malawi'),
+  (code: 'BWP', symbol: 'P', country:'Botswana'),
+  (code: 'MUR', symbol: '₨', country:'Mauritius'),
+  (code: 'SCR', symbol: '₨', country: 'Seychellois'),
+  (code: 'SLL', symbol: 'Le', country:'Sierra Leon'),
+  (code: 'GMD', symbol: 'D', country:'Gambia'),
 ];
 
 /// Get Specific Currency Symbol (Sign) by Code [getCurrencySign]

@@ -30,13 +30,7 @@ class ReferenceMasterScreen extends StatelessWidget {
       ],
       children: [
         ListCategories(),
-        Center(
-          child: Text(
-            'Unit of Measure',
-            style: context.textTheme.titleLarge,
-            textAlign: TextAlign.center,
-          ),
-        ),
+        AllUOM(),
         Center(
           child: Text(
             'Variants: ex: [Color: red, Size: M, Material: Cotton, Model: 2023, Brand: Nike, Type: Sport, Gender: Men, Age: 20-30,]',

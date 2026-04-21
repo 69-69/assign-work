@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class CurrencyDropdown extends StatelessWidget {
   final String? label;
   final String? initialCurrency;
-  final void Function(({String code, String symbol})? s) onChanged;
+  final void Function(({String code, String symbol, String country})? s) onChanged;
 
   const CurrencyDropdown({
     super.key,
@@ -18,7 +18,7 @@ class CurrencyDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaticDropdown<({String code, String symbol})>(
+    return StaticDropdown<({String code, String symbol, String country})>(
       key: key,
       // isMenu: true,
       items: currencyType,

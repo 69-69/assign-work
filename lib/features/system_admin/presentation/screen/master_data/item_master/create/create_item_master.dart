@@ -237,7 +237,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         /// Taxes
         FormGroupCard(
           isExpanded: false,
-          title: 'Taxes',
+          title: '6.Taxes & Pricing',
           subTitle: '\nSelect applicable taxes',
           children: [_buildTaxModeSelector()],
         ),

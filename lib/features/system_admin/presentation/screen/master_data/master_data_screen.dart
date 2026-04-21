@@ -13,6 +13,7 @@ class MasterDataScreen extends StatelessWidget {
     return CustomScaffold(
       isGradientBg: true,
       title: masterDataScreenTitle.toTitle,
+        tiles: masterDataTiles,
       body: DashboardTileCard(tiles: masterDataTiles),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -41,7 +42,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   final List<Category> _categories = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
-  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
+  bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
   Category? get _serverCategory => widget.serverCategory;
   bool get _isServerNull => _serverCategory == null;
@@ -52,6 +53,11 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   String get _employeeName => _employee!.fullName;
   String get _employeeStore => _employee!.storeNumber;
   CategoryBloc get _bloc => context.read<CategoryBloc>();
+
+  void _updateValidity() => _formKey.updateValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _onSubmit() {
     if (_isSubmitting) return;
@@ -170,21 +176,23 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
               fieldsConfig: ItemPref.categoryField,
               initialData: [?_serverCategory?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
-                if (_isFormValid) setState(() {});
+                // if (_isFormValid) setState(() {});
 
                 // Create a new line item
                 _categories
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map((e) => Category.fromMap(e)));
+
+                _updateValidity();
               },
             ),
           ],
         ),
         context.confirmableActionButton(
+          isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Category')
               : (_isSubmitting ? 'Updating...' : null),
-          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),

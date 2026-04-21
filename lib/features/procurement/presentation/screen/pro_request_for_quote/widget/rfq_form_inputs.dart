@@ -305,7 +305,7 @@ class CurrencyAndCostCenterDepartment extends StatelessWidget {
       children: [
         CurrencyDropdown(
           initialCurrency: initialCurrency,
-          onChanged: (({String code, String symbol})? s) =>
+          onChanged: (({String code, String symbol, String country})? s) =>
               onCurrencyChanged(s!.code),
         ),
         SearchDepartments(

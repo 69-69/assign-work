@@ -1,8 +1,16 @@
 # @TODO - 
 ## @Continue Tomorrow (Next Sprint)
-    - Master Data (BIN Location Code,UOM, PriceList, Payment Method & Type,)
-    - 
-- 
+    ## Work Reference master under Item master
+        - Item Variance
+        - Units of Measure
+    
+    ##  Master Data (BIN Location Code, UOM, PriceList, Payment Method&Type,)
+    - Item Master: adding taxes, warehouse and linking Item Master to
+        - Procurement, Inventory, POS, Sales & Distribution
+    > NOTE: watch item master link to warehouse on YouTube.com
+    > REF Doc: lib/features/system_admin/presentation/setup_tiles.dart
+
+-
 - Workflow Approval Rules
 - 
 - My Approvals

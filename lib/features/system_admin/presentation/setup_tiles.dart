@@ -21,10 +21,12 @@ extension SetupTiles on dynamic {
         📌 Shared across Sales, Procurement, POS, Manufacturing.
         =========================
         1️⃣ Item / Product Master
-          Purpose: This module acts as the central repository for defining and categorizing all items/products that are stocked, sold, or procured. It’s essential for standardizing product information across all other ERP modules.
+          Purpose: This module acts as the central repository for defining and categorizing all items/products that are stocked, sold, or procured.
+          It’s essential for standardizing product information across all other ERP modules.
+
         Key Objects:
           Items / Products: Defines each individual item in the system.
-          Item Categories: Groups products by type (e.g., electronics, furniture, raw materials).
+          Item Categories: Group products by type (e.g., electronics, furniture, raw materials).
           Units of Measure (UOM): Defines how items are measured (e.g., pieces, kilograms, liters).
           Barcodes / SKUs: Unique identifiers for easy tracking and sales processing.
           Variants: Variations of a product like size, color, or model (e.g., “T-shirt (Large, Red)”).
@@ -112,13 +114,13 @@ extension SetupTiles on dynamic {
       },
       {
         'hasSplit': true,
-        'label': 'Currencies . master',
+        'label': 'Currency . master',
         'icon': Icons.currency_exchange,
         'route': RouteNames.currenciesMaster,
         'param': {},
         'access': _getName(SetupPermission.manageCurrencyMaster),
         'description':
-            'Manage supported currencies and exchange settings used across the system.',
+            'Manage supported currencies and exchange rate settings used across the system.',
       },
       {
         'hasSplit': true,

@@ -104,7 +104,7 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        CRMFormInputs.buildCustNumber(
+        CRMFormInputs.buildCustomerNumber(
           context,
           what: 'RFQ',
           onPressed: _generateCustomerID,

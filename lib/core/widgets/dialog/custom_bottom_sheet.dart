@@ -38,7 +38,6 @@ extension ShowBottomSheet<T> on BuildContext {
       backgroundColor: kTransparentColor,
       constraints: constraints ?? BoxConstraints(maxWidth: screenWidth),
 
-      /// New
       // isDismissible: false,
       // ❗ disables tap outside dismiss
       enableDrag: false,
@@ -70,12 +69,10 @@ extension ShowBottomSheet<T> on BuildContext {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (!isSmall && showZoomIcon) ...{
+              if (!isSmall && showZoomIcon)
                 _buildZoomIcon(value, context, zoomLevel),
-                const SizedBox(height: 10),
-              },
-              // Flexible(fit: FlexFit.loose, child: child!),
               Expanded(child: child!),
+              // Flexible(fit: FlexFit.loose, child: child!),
             ],
           ),
         );
@@ -84,34 +81,32 @@ extension ShowBottomSheet<T> on BuildContext {
     );
   }
 
-  Align _buildZoomIcon(
+  Widget _buildZoomIcon(
     double value,
     BuildContext context,
     ValueNotifier<double> zoomLevel,
   ) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: IconButton(
-        tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
-        style: IconButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: ContinuousRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor)
-              .toAlpha(0.4),
+    return IconButton(
+      tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
+      style: IconButton.styleFrom(
+        padding: EdgeInsets.zero,
+        shape: ContinuousRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
         ),
-        icon:
-            Icon(
-              semanticLabel: 'zoom',
-              color: context.surfaceColor,
-              value > 1.0 ? Icons.zoom_out_map : Icons.zoom_in_map,
-            ).addNeumorphism(
-              topShadowColor: kDangerColor,
-              offset: const Offset(1, 1),
-            ),
-        onPressed: () => zoomLevel.value = value > 1.0 ? 0.5 : 1.2,
+        backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor).toAlpha(
+          0.4,
+        ),
       ),
+      icon:
+          Icon(
+            semanticLabel: 'zoom',
+            color: context.surfaceColor,
+            value > 1.0 ? Icons.zoom_out_map : Icons.zoom_in_map,
+          ).addNeumorphism(
+            topShadowColor: kDangerColor,
+            offset: const Offset(1, 1),
+          ),
+      onPressed: () => zoomLevel.value = value > 1.0 ? 0.5 : 1.2,
     );
   }
 }
@@ -144,16 +139,58 @@ class CustomDraggableBottomSheet extends StatefulWidget {
       _CustomDraggableBottomSheetState();
 }
 
-class _CustomDraggableBottomSheetState
-    extends State<CustomDraggableBottomSheet> {
-  double? _lastExtent;
+class _CustomDraggableBottomSheetState extends State<CustomDraggableBottomSheet> {
+  final GlobalKey _contentKey = GlobalKey();
   bool _isClosing = false;
+  double? _initialSize;
+  double? _lastExtent;
+
+  double get _maxChildSize => widget.maxChildSize ?? 0.8;
+
+  @override
+  void initState() {
+    super.initState();
+    _determineMinHeight();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _determineMinHeight();
+  }
+
+  void _determineMinHeight() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _contentKey.currentContext;
+      if (context == null) return;
+
+      final box = context.findRenderObject() as RenderBox;
+      if (!box.hasSize) return;
+
+      final contentHeight = box.size.height;
+      // Calculate the fraction of the screen the content needs
+      double relativeSize = contentHeight / context.screenHeight;
+
+      // Add small buffer for padding, but clamp to min/max
+      double value = (relativeSize + 0.18).clamp(0.2, _maxChildSize);
+
+      // prevent DraggableScrollableSheet errors: min shouldn't exceed max
+      if (value > _maxChildSize) return;
+
+      setState(() => _initialSize = value);
+
+      // Optional: re-run after a short delay if the content might still change
+      // This is useful if images or async widgets are loading
+      Future.delayed(const Duration(milliseconds: 100), _determineMinHeight);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget buildSheet() {
-      final initialCSize = widget.initialChildSize ?? 0.33;
-      final maxCSize = widget.maxChildSize ?? 0.8;
+      final initialCSize = _initialSize ?? widget.initialChildSize ?? 0.33;
+      // final maxCSize = widget.maxChildSize ?? 0.8;
 
       return NotificationListener<DraggableScrollableNotification>(
         onNotification: (notification) {
@@ -162,8 +199,9 @@ class _CustomDraggableBottomSheetState
           final isShrinking = _lastExtent != null && current < _lastExtent!;
           _lastExtent = current;
 
-          final isNearMin =
-              current <= notification.minExtent + 0.015;// if (notification.extent <= notification.minExtent + 0.01)
+          // if (notification.extent <= notification.minExtent + 0.01)
+          final isNearMin = current <= notification.minExtent + 0.015;
+
           if (isShrinking && isNearMin && !_isClosing) {
             _isClosing = true;
             Future.microtask(() async {
@@ -183,7 +221,7 @@ class _CustomDraggableBottomSheetState
           child: DraggableScrollableSheet(
             initialChildSize: initialCSize,
             minChildSize: 0.2,
-            maxChildSize: maxCSize,
+            maxChildSize: _maxChildSize,
             builder: (cxt, controller) => MediaQuery(
               data: MediaQuery.of(context),
               child: widget.isScrollable
@@ -257,6 +295,7 @@ class _CustomDraggableBottomSheetState
             const HorizontalDivider(),
           },
           Flexible(
+            key: _contentKey,
             child: SingleChildScrollView(
               controller: controller,
               child: widget.child,

@@ -23,11 +23,13 @@ import 'package:flutter/material.dart';
 
 class SQFormInputs {
   static Widget buildTaxModeSelector({
+    bool? isEnabled,
     TaxMode? defaultTaxMode,
     List<String>? initialValues,
     required List<String> selectedTaxCodes,
     required Function(TaxMode?) selectedTaxMode,
   }) => TaxModeSelectorFactory.create(
+    isEnabled: isEnabled,
     initialValues: initialValues,
     defaultTaxMode: defaultTaxMode,
     selectedTaxMode: selectedTaxMode,
@@ -126,7 +128,7 @@ class SQFormInputs {
       customBuilder: ({required initialData, required onChanged}) {
         return CurrencyDropdown(
           initialCurrency: initialData,
-          onChanged: (({String code, String symbol})? s) => onChanged(s!.code),
+          onChanged: (({String code, String symbol, String country})? s) => onChanged(s!.code),
         );
       },
     ),

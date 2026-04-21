@@ -6,7 +6,7 @@ import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
 class CRMFormInputs {
-  static Widget buildCustNumber(
+  static Widget buildCustomerNumber(
     BuildContext context, {
     String count = '',
     String what = 'Customer',

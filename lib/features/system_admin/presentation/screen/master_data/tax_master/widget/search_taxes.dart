@@ -149,7 +149,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
       radiosConfig: [
         RadioGroupConfig(
           key: perLineTax.getName,
-          enabled: _isEnabled && (_taxModeToApply == perLineTax),
+          enabled: _isEnabled, // && (_taxModeToApply == perLineTax),
           selected: _taxModeToApply == perLineTax,
           label: 'Apply Tax Per Item (Line-Level)',
           tooltip:
@@ -160,7 +160,7 @@ class _TaxModeSelectorState extends State<TaxModeSelector> {
 
         RadioGroupConfig(
           key: headerTax.getName,
-          enabled: _isEnabled && (_taxModeToApply == headerTax),
+          enabled: _isEnabled, // && (_taxModeToApply == headerTax),
           selected: _taxModeToApply == headerTax,
           label: 'Apply Single Tax (Document-Level)',
           tooltip:

@@ -2,6 +2,7 @@ export 'item_master/item_master_screen.dart';
 export 'master_data_screen.dart';
 export 'ref_master/reference_master_screen.dart';
 export 'tax_master/tax_master_screen.dart';
+export 'currency_master/currency_master_screen.dart';
 export 'workflow_master/workflow_master_screen.dart';
 export 'wh_bin/wh_bin_screen.dart';
 export 'wh_location/wh_location_screen.dart';

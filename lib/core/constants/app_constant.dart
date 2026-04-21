@@ -61,6 +61,7 @@ const masterDataScreenTitle = 'master data';
 const itemMasterScreenTitle = 'item master';
 const taxMasterScreenTitle = 'tax master';
 const referenceMasterScreenTitle = 'reference master';
+const currencyMasterScreenTitle = 'currency master';
 const goodsReceiptScreenTitle = 'goods receipt';
 const goodsIssueScreenTitle = 'goods issue';
 const stockAdjustScreenTitle = 'stock adjustment';
