@@ -51,6 +51,7 @@ class App extends StatelessWidget {
       _bloc<CompanyStoresBloc>(() => CompanyStoresBloc(firestore: _fireStore)),
       _bloc<TaxBloc>(() => TaxBloc(firestore: _fireStore)),
       _bloc<CategoryBloc>(() => CategoryBloc(firestore: _fireStore)),
+      _bloc<AttributeBloc>(() => AttributeBloc(firestore: _fireStore)),
       _bloc<SupplierBloc>(() => SupplierBloc(firestore: _fireStore)),
       _bloc<EmployeeBloc>(() => EmployeeBloc(firestore: _fireStore)),
       _bloc<ItemBloc>(() => ItemBloc(firestore: _fireStore)),

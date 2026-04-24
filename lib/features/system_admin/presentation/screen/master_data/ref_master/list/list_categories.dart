@@ -75,7 +75,7 @@ class _ListCategoriesState extends State<ListCategories> {
 
   Future<void> _onEditTap(List<Category> categories, String id) async {
     final category = Category.findCategoriesById(categories, id).first;
-    await context.openAddCategory(serverCategory: category);
+    await context.openAddCategory(serverAttribute: category);
   }
 
   Future<void> _onDeleteTap(List<Category> categories, String id) async {

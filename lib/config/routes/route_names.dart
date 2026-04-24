@@ -119,9 +119,9 @@ abstract class RouteNames {
   // workflow Approval Rules
   static const workflowMaster = 'workflow_master_screen';
   static const referenceMaster = 'reference_master_screen';
+  static const variantsMaster = 'variants_master_screen';
   static const priceListMaster = 'price_list_master_screen';
   static const currencyMaster = 'currency_master_screen';
-  // static const variantsMaster = 'variants_master_screen';
   // static const uomMaster = 'uom_master_screen';
 
   /// ───────────────────────── 🔄 Switch/Change Store/Shop Locations ─────────────────────────

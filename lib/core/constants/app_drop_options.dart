@@ -258,24 +258,24 @@ const List<({String code, String symbol, String country})> currencyType = [
 
   // Africa
   (code: 'GHS', symbol: '₵', country: 'Ghana'),
-  (code: 'NGN', symbol: '₦', country:'Nigeria'),
-  (code: 'ZAR', symbol: 'R', country:'South Africa'),
-  (code: 'KES', symbol: 'KSh', country:'Kenya'),
-  (code: 'UGX', symbol: 'USh', country:'Uganda'),
-  (code: 'TZS', symbol: 'TSh', country:'Tanzania'),
-  (code: 'EGP', symbol: '£', country:'Egypt'),
-  (code: 'MAD', symbol: 'DH', country:'Morocco'),
-  (code: 'XOF', symbol: 'CFA', country:'West Africa'),
-  (code: 'XAF', symbol: 'CFA', country:'Central Africa'),
-  (code: 'RWF', symbol: 'FRw', country:'Rwanda'),
-  (code: 'ETB', symbol: 'Br', country:'Ethiopia'),
-  (code: 'ZMW', symbol: 'ZK', country:'Zambia'),
-  (code: 'MWK', symbol: 'MK', country:'Malawi'),
-  (code: 'BWP', symbol: 'P', country:'Botswana'),
-  (code: 'MUR', symbol: '₨', country:'Mauritius'),
+  (code: 'NGN', symbol: '₦', country: 'Nigeria'),
+  (code: 'ZAR', symbol: 'R', country: 'South Africa'),
+  (code: 'KES', symbol: 'KSh', country: 'Kenya'),
+  (code: 'UGX', symbol: 'USh', country: 'Uganda'),
+  (code: 'TZS', symbol: 'TSh', country: 'Tanzania'),
+  (code: 'EGP', symbol: '£', country: 'Egypt'),
+  (code: 'MAD', symbol: 'DH', country: 'Morocco'),
+  (code: 'XOF', symbol: 'CFA', country: 'West Africa'),
+  (code: 'XAF', symbol: 'CFA', country: 'Central Africa'),
+  (code: 'RWF', symbol: 'FRw', country: 'Rwanda'),
+  (code: 'ETB', symbol: 'Br', country: 'Ethiopia'),
+  (code: 'ZMW', symbol: 'ZK', country: 'Zambia'),
+  (code: 'MWK', symbol: 'MK', country: 'Malawi'),
+  (code: 'BWP', symbol: 'P', country: 'Botswana'),
+  (code: 'MUR', symbol: '₨', country: 'Mauritius'),
   (code: 'SCR', symbol: '₨', country: 'Seychellois'),
-  (code: 'SLL', symbol: 'Le', country:'Sierra Leon'),
-  (code: 'GMD', symbol: 'D', country:'Gambia'),
+  (code: 'SLL', symbol: 'Le', country: 'Sierra Leon'),
+  (code: 'GMD', symbol: 'D', country: 'Gambia'),
 ];
 
 String formatCurrency(({String code, String symbol, String country}) c) {
@@ -362,6 +362,31 @@ const requestForQuoteStatus = ['Select Quote status', ..._rFqPrStatus];
 
 /// Purchase Requisition Statuses
 const requisitionStatus = ['Select Requisition status', ..._rFqPrStatus];
+
+/// Variant Attributes
+const variantAttributes = [
+  'Select Attribute',
+  'Color',
+  'Size',
+  'Weight',
+  'Dimension',
+  'Style',
+  'Model',
+  'Flavor',
+  'Volume',
+  'Material',
+  'Edition',
+  'Compatibility',
+  'Collection',
+  'Group',
+  'Pattern',
+  'Gender',
+  'Season',
+  'Grade',
+  'Condition',
+  'Packaging',
+  'Configuration',
+];
 
 /// Orders Sources
 const orderSources = [

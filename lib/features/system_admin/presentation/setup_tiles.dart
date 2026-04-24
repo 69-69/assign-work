@@ -78,9 +78,9 @@ extension SetupTiles on dynamic {
         'icon': Icons.store,
         'route': RouteNames.warehouseMaster,
         'param': {},
-        'access': _getName(SetupPermission.referenceMaster),
+        'access': _getName(SetupPermission.manageWarehouseMaster),
         'description':
-        'Define physical site or storage facilities such as Main, Store, or Transit warehouses.',
+            'Define physical site or storage facilities such as Main, Store, or Transit warehouses.',
       },
       {
         'hasSplit': true,
@@ -88,9 +88,9 @@ extension SetupTiles on dynamic {
         'icon': Icons.view_kanban,
         'route': RouteNames.warehouseLocationMaster,
         'param': {},
-        'access': _getName(SetupPermission.referenceMaster),
+        'access': _getName(SetupPermission.manageWHLocationMaster),
         'description':
-        'Define sub-levels/divisions/locations within a warehouse, such as racks, aisles, or shelves.',
+            'Create & organize warehouse sub-levels/divisions/locations: such as zones, aisles, racks, shelves, for structured storage segmentation.',
       },
       {
         'hasSplit': true,
@@ -98,9 +98,9 @@ extension SetupTiles on dynamic {
         'icon': Icons.inbox,
         'route': RouteNames.warehouseBinMaster,
         'param': {},
-        'access': _getName(SetupPermission.referenceMaster),
+        'access': _getName(SetupPermission.manageWHBinMaster),
         'description':
-        'Define precise storage slots inside a location for accurate stock placement.',
+            'Create detailed storage bins & assign unique bin addresses within sub-locations to ensure precise stock placement & tracking.',
       },
       {
         'hasSplit': true,
@@ -124,8 +124,18 @@ extension SetupTiles on dynamic {
       },
       {
         'hasSplit': true,
+        'label': 'variants master',
+        'icon': Icons.palette,
+        'route': RouteNames.variantsMaster,
+        'param': {},
+        'access': _getName(SetupPermission.manageVariants),
+        'description':
+            'Easily manage items or services options, such as size, color, and material.',
+      },
+      {
+        'hasSplit': true,
         'label': 'reference . master',
-        'icon': Icons.list_alt,
+        'icon': Icons.link, // Icons.list_alt
         'route': RouteNames.referenceMaster,
         'param': {},
         'access': _getName(SetupPermission.referenceMaster),

@@ -115,6 +115,8 @@ const companyInfoDBColPath = 'company_info_db';
 const supplierDBColPath = 'item_suppliers_db';
 // Item/product categories
 const categoryDBColPath = 'item_categories_db';
+// Variant Attributes
+const attributeDBColPath = 'variant_attributes_db';
 
 // ---------------------------
 // 🧾 POS (Point of Sale) System Path
@@ -157,6 +159,7 @@ const erpCacheBoxes = [
   departmentsDBColPath,
   supplierDBColPath,
   categoryDBColPath,
+  attributeDBColPath,
   taxesDBColPath,
 
   // CRM

@@ -9,6 +9,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -284,7 +285,19 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
       anyButton: context.outlinedButton(
         'Manage Codes',
-        onPressed: () async => await context.openGenerateWHLocCodesForm(
+        onPressed: () async {
+          final shouldContinue = await context.confirmAction<bool>(
+            const Text(
+              'A location must be created before generating sub-location codes. Continue?',
+            ),
+            title: 'Prerequisite Required',
+            onAcceptLabel: 'Continue',
+            onRejectLabel: 'Cancel',
+          );
+
+          if (shouldContinue != true) return;
+
+          await context.openGenerateWHLocCodesForm(
           serverItem: _serverItem,
           onCreateCodeRanges: (codeRanges) {
             _whLocationData = _whLocationData.copyWith(
@@ -292,7 +305,8 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
             );
             _cacheCodeRanges = codeRanges.join(',');
           },
-        ),
+        );
+        },
         style: ElevatedButton.styleFrom(
           elevation: 0.4,
           backgroundColor: kOffWhiteColor,

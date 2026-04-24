@@ -168,6 +168,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
 
   Future<void> _openCreateSQ(BuildContext cxt) async {
     final lineItemType = await cxt.openMaterialOrServiceToggle('Quote');
+
     if (cxt.mounted && '$lineItemType'.hasValue) {
       await cxt.openCreateSQForm(
         type: lineItemType,

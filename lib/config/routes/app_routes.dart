@@ -16,6 +16,7 @@ import 'package:assign_erp/features/pos_system/presentation/index.dart';
 import 'package:assign_erp/features/procurement/presentation/index.dart';
 import 'package:assign_erp/features/sales_distribution/presentation/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/variants_master_screen.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/index.dart';
 import 'package:assign_erp/features/user_guide/presentation/index.dart';
 import 'package:flutter/material.dart';
@@ -216,6 +217,11 @@ GoRoute _masterDataRoute() {
       name: RouteNames.referenceMaster,
       openTab: false,
       screen: ({openTab}) => const ReferenceMasterScreen(),
+    ),
+    (
+      name: RouteNames.variantsMaster,
+      openTab: false,
+      screen: ({openTab}) => const VariantsMasterScreen(),
     ),
     (
       name: RouteNames.workflowMaster,

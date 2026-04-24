@@ -341,7 +341,7 @@ String? _selectionValidator(
   List<String>? invalidPrefixes,
 }) {
   final text = value?.toString().trim();
-  final errMsg = errorMsg ?? 'Select $label';
+  final errMsg = errorMsg ?? 'Select ${label.replaceFirst('Select ', '')}';
 
   if (text == null || text.isEmpty) {
     return errMsg;

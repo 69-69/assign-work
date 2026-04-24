@@ -209,37 +209,37 @@ final List<AccessControl> _companyInfoPermissions = [
 
 final List<AccessControl> _storeLocationPermissions = [
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "Manage store branches",
     description: "Allow users to create, edit, and delete store branches.",
     access: SetupPermission.manageStoreBranch,
   ),
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "Create new store branch",
     description: "Allow users to create new store branches.",
     access: SetupPermission.createStoreBranch,
   ),
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "View store branches",
     description: "Allow access to a list of all store branches.",
     access: SetupPermission.viewStoreBranch,
   ),
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "Edit store branches",
     description: "Allow users to modify details of an existing store branch.",
     access: SetupPermission.updateStoreBranch,
   ),
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "Delete store branches",
     description: "Allow users to permanently remove a store branch record.",
     access: SetupPermission.deleteStoreBranch,
   ),
   AccessControl(
-    module: "store branch",
+    module: "stores",
     title: "Assign store branches",
     description: "Allow users to assign store branches to employees.",
     access: SetupPermission.assignStoreBranch,

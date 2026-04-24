@@ -7,6 +7,7 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
@@ -36,6 +37,7 @@ extension WHBinExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       title: serverItem?.description.toTitle ?? 'Bin Location Master',
+      subtitle: 'Rack-Aisle-Shelf-Position',
       body: _CreateWHBinForm(
         serverItem: serverItem,
         existingCodes: existingCodes,
@@ -241,15 +243,28 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
           : (_isSubmitting ? 'Updating...' : null),
       anyButton: context.outlinedButton(
         'Manage Bin Locations',
-        onPressed: () async => await context.openWHBinLocationsForm(
-          serverItem: _serverItem,
-          onCreateFullBinLocation: (fullCodes) {
-            _whBinData = _whBinData.copyWith(
-              fullBinLocations: fullCodes.join(','),
-            );
-            _cacheFullBinLocations = fullCodes.join(',');
-          },
-        ),
+        onPressed: () async {
+          final shouldContinue = await context.confirmAction<bool>(
+            const Text(
+              'Sub-location codes must be created before generating full bin locations (unique addresses). Continue?',
+            ),
+            title: 'Prerequisite Required',
+            onAcceptLabel: 'Continue',
+            onRejectLabel: 'Cancel',
+          );
+
+          if (shouldContinue != true) return;
+
+          await context.openWHBinLocationsForm(
+            serverItem: _serverItem,
+            onCreateFullBinLocation: (fullCodes) {
+              _whBinData = _whBinData.copyWith(
+                fullBinLocations: fullCodes.join(','),
+              );
+              _cacheFullBinLocations = fullCodes.join(',');
+            },
+          );
+        },
         style: ElevatedButton.styleFrom(
           elevation: 0.4,
           backgroundColor: kOffWhiteColor,
@@ -294,7 +309,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
                       subLocCodes: codeRanges,
                       // onChanged: (code) => setState(() => _binLocationCode.add(code ?? '')),
                       onChanged: (code) {
-                        setState(() =>_binLocationCode[type] = code ?? '');
+                        setState(() => _binLocationCode[type] = code ?? '');
                       },
                     ),
                   );

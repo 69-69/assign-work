@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -180,9 +181,25 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
         child: KeyedSubtree(
           key: _formResetKey,
           child: Column(
+            spacing: 10,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Title(
+                color: kGrayBlueColor,
+                child: Text.rich(
+                  TextSpan(
+                    text: ' Note: ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    children: [
+                      TextSpan(
+                        text: 'Create a sub-location before generating location codes.',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               FormGroupTabView(contents: formGroupCards),
-              const SizedBox(height: 10),
               context.confirmableActionButton(
                 onPressed: _canGenerate ? _onGenerate : null,
                 isDisabled: _isGenerating || !_canGenerate,

@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
@@ -170,7 +171,23 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         child: KeyedSubtree(
           key: _formResetKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Title(
+                color: kGrayBlueColor,
+                child: Text.rich(
+                  TextSpan(
+                    text: ' Note: ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    children: [
+                      TextSpan(
+                        text: 'Create sub-location codes before generating full bin-locations.',
+                        style: const TextStyle(fontWeight: FontWeight.normal),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               FormGroupTabView(contents: formGroupCards),
 
               if (_subLocations.hasValue) ...[

@@ -12,18 +12,18 @@ import 'package:assign_erp/features/system_admin/data/models/master_data/categor
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/item_pref_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/ref_master_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension CreateCategory<T> on BuildContext {
-  Future<void> openAddCategory({Category? serverCategory}) => openBottomSheet(
+  Future<void> openAddCategory({Category? serverAttribute}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: serverCategory != null
-          ? 'Edit ${serverCategory.name}'
+      title: serverAttribute != null
+          ? 'Edit ${serverAttribute.name}'
           : 'Create Category',
-      body: _AddCategoryForm(serverCategory: serverCategory),
+      body: _AddCategoryForm(serverCategory: serverAttribute),
     ),
   );
 }
@@ -173,7 +173,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
             DynamicTextFields(
               showButton: true,
               title: 'Item Categories',
-              fieldsConfig: ItemPref.categoryField,
+              fieldsConfig: RefMasterFormInputs.categoryField,
               initialData: [?_serverCategory?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isFormValid) setState(() {});

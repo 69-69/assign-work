@@ -3,16 +3,16 @@ import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/index.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/index.dart';
 import 'package:flutter/material.dart';
 
-class ReferenceMasterScreen extends StatelessWidget {
-  const ReferenceMasterScreen({super.key});
+class VariantsMasterScreen extends StatelessWidget {
+  const VariantsMasterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: referenceMasterScreenTitle.toUpperAll,
+      title: variantMasterScreenTitle.toUpperAll,
       body: _buildBody(context),
     );
   }
@@ -23,12 +23,12 @@ class ReferenceMasterScreen extends StatelessWidget {
       isVertical: true,
       isScrollable: true,
       tabs: [
-        CustomTabModel(label: 'Item Category', icon: Icons.category),
-        CustomTabModel(label: 'Units of Measure', icon: Icons.straighten),
+        CustomTabModel(label: 'Attributes', icon: Icons.tune),
+        CustomTabModel(label: 'Variants', icon: Icons.copy_all),
       ],
       children: [
-        ListCategories(),
-        AllUOM(),
+        ListAttributes(),
+        ListVariants(),
         /*Center(
           child: Text(
             'Variants: ex: [Color: red, Size: M, Material: Cotton]\n'

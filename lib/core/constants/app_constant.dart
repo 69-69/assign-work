@@ -18,6 +18,7 @@ const appSubName =
 const ghanaCedis = 'GHS';
 const currencyMasterCacheId = 'currency_master';
 const uomMasterCacheId = 'uom_master';
+const attributeMasterCacheId = 'attribute_master';
 
 /// APP LOGO
 const assetPath = 'assets/images';
@@ -63,6 +64,7 @@ const masterDataScreenTitle = 'master data';
 const itemMasterScreenTitle = 'item master';
 const taxMasterScreenTitle = 'tax master';
 const referenceMasterScreenTitle = 'reference master';
+const variantMasterScreenTitle = 'variant master';
 const currencyMasterScreenTitle = 'currency master';
 const goodsReceiptScreenTitle = 'goods receipt';
 const goodsIssueScreenTitle = 'goods issue';
