@@ -4,11 +4,13 @@ import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/local/ref_master_cache.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +20,6 @@ class AttributeTypes extends StatefulWidget {
   @override
   State<AttributeTypes> createState() => _AttributeTypesState();
 }
-
 
 class _AttributeTypesState extends State<AttributeTypes> {
   final _cacheId = attributeMasterCacheId;
@@ -38,7 +39,8 @@ class _AttributeTypesState extends State<AttributeTypes> {
   void initState() {
     super.initState();
 
-    _attributeNames = variantAttributes.where((a) => !a.contains('Select'))
+    _attributeNames = variantAttributes
+        .where((a) => !a.contains('Select'))
         .toList();
 
     /// ✅ Load cache safely
@@ -73,15 +75,13 @@ class _AttributeTypesState extends State<AttributeTypes> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: Column(
-        spacing: 10,
+        spacing: 20,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildToolbar(context),
-
-          /// 🔍 SEARCH
           SizedBox(
             height: 40,
             width: context.screenWidth,
@@ -94,8 +94,7 @@ class _AttributeTypesState extends State<AttributeTypes> {
             ),
           ),
 
-          /// 📦 GRID
-          Expanded(child: _buildBody(_filteredAttrNames)),
+          ..._buildList(_filteredAttrNames),
         ],
       ),
     );
@@ -125,40 +124,68 @@ class _AttributeTypesState extends State<AttributeTypes> {
     );
   }
 
-  /// ✅ Save + reset baseline correctly
+  /// Save + reset baseline correctly
   Future<void> _onSave() async {
     final unchecked = _attributeNames
         .where((c) => !_selectedAttrNames.contains(c))
         .toList();
 
-    await _cache.setRef({
-      'id': _cacheId,
-      'references': unchecked,
-    });
+    await _cache.setRef({'id': _cacheId, 'references': unchecked});
 
-    setState(() {
-      _initialUnchecked = unchecked.toSet();
-      _hasChanges = false;
-    });
+    if (!mounted) return;
+
+    context.showAlertOverlay(
+      'Changes successfully saved',
+      onCallback: () {
+        setState(() {
+          _initialUnchecked = unchecked.toSet();
+          _hasChanges = false;
+        });
+      },
+    );
   }
 
-  Widget _buildBody(List<String> names) {
-    if (names.isEmpty) {
-      return const Center(child: Text('Attribute type not found...'));
+  List<Widget> _buildList(List<String> types) {
+    if (types.isEmpty) {
+      return const [Center(child: Text('Attribute type not found...'))];
     }
 
-    return GridView.builder(
-      itemCount: names.length,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent:
-        context.screenWidth / (context.isMobile ? 1 : 6),
-        mainAxisExtent: 90,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1,
-      ),
-      itemBuilder: (context, i) =>
-          _itemBuilder(names[i], context),
-    );
+    final grouped = Attribute.groupByPriority(types, attributePriorities);
+
+    return grouped.entries.map((entry) {
+      final groupName = entry.key;
+      final items = entry.value;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Group Header
+          Title(
+            color: kTextColor,
+            child: Text(
+              groupName,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          // Grid per group
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: items.length,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent:
+                  context.screenWidth / (context.isMobile ? 1 : 6),
+              mainAxisExtent: 90,
+              crossAxisSpacing: 10,
+            ),
+            itemBuilder: (_, i) => _itemBuilder(items[i], context),
+          ),
+        ],
+      );
+    }).toList();
   }
 
   FormGroupCard _itemBuilder(String name, BuildContext context) {
@@ -174,12 +201,8 @@ class _AttributeTypesState extends State<AttributeTypes> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          subtitle: Text(
-            'Attribute',
-            overflow: TextOverflow.ellipsis,
-          ),
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 6.0),
+          subtitle: Text('Attribute', overflow: TextOverflow.ellipsis),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 6.0),
           value: isChecked,
           onChanged: (v) {
             setState(() {
@@ -203,20 +226,20 @@ class _AttributeTypesState extends State<AttributeTypes> {
       keyboardType: TextInputType.text,
       inputDecoration: InputDecoration(
         labelText: 'Search...',
-        prefixIcon:
-        const Icon(Icons.search, color: kGrayColor),
+        prefixIcon: const Icon(Icons.search, color: kGrayColor),
         suffixIcon: _searchController.text.isEmpty
             ? const SizedBox.shrink()
             : IconButton(
-          tooltip: 'Clear Search',
-          color: kGrayColor,
-          onPressed: () {
-            _searchController.clear();
-            setState(() =>
-            _filteredAttrNames = List.from(_attributeNames));
-          },
-          icon: const Icon(Icons.clear),
-        ),
+                tooltip: 'Clear Search',
+                color: kGrayColor,
+                onPressed: () {
+                  _searchController.clear();
+                  setState(
+                    () => _filteredAttrNames = List.from(_attributeNames),
+                  );
+                },
+                icon: const Icon(Icons.clear),
+              ),
       ),
       onChanged: _filter,
     );
@@ -228,11 +251,9 @@ class _AttributeTypesState extends State<AttributeTypes> {
         _filteredAttrNames = List.from(_attributeNames);
       } else {
         _filteredAttrNames = _attributeNames
-            .where((item) =>
-            item.toLowerCase().contains(query.toLowerCase()))
+            .where((item) => item.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
   }
-
 }

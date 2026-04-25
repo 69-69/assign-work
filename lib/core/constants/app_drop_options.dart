@@ -363,30 +363,40 @@ const requestForQuoteStatus = ['Select Quote status', ..._rFqPrStatus];
 /// Purchase Requisition Statuses
 const requisitionStatus = ['Select Requisition status', ..._rFqPrStatus];
 
-/// Variant Attributes
-const variantAttributes = [
-  'Select Attribute',
-  'Color',
-  'Size',
-  'Weight',
-  'Dimension',
-  'Style',
-  'Model',
-  'Flavor',
-  'Volume',
-  'Material',
-  'Edition',
-  'Compatibility',
-  'Collection',
-  'Group',
-  'Pattern',
-  'Gender',
-  'Season',
-  'Grade',
-  'Condition',
-  'Packaging',
-  'Configuration',
-];
+/// Variant Attribute Priorities
+const attributePriorities = {
+  'Model': 0,
+
+  // Core variant drivers
+  'Gender': 1,
+  'Color': 2,
+  'Size': 3,
+  'Style': 4,
+
+  // Secondary attributes
+  'Material': 5,
+  'Pattern': 6,
+  'Flavor': 7,
+  'Edition': 8,
+  'Collection': 9,
+
+  // Technical / optional
+  'Weight': 10,
+  'Dimension': 11,
+  'Volume': 12,
+  'Configuration': 13,
+  'Compatibility': 14,
+
+  // Misc
+  'Season': 15,
+  'Condition': 16,
+  'Grade': 17,
+  'Packaging': 18,
+  'Group': 19,
+};
+
+/// Variant Attribute Types
+List<String> variantAttributes = [ 'Select Attribute', ...attributePriorities.keys];
 
 /// Orders Sources
 const orderSources = [

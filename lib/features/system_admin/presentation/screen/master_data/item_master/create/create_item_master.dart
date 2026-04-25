@@ -76,6 +76,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   // Basic fields
   String _imNumber = '';
   bool _isSubmitting = false;
+  bool _isVariantEnabled = false;
   late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
   final List<String> _taxCodes = [];
 
@@ -240,6 +241,38 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           title: '6.Taxes & Pricing',
           subTitle: '\nSelect applicable taxes',
           children: [_buildTaxModeSelector()],
+        ),
+
+        SwitchListTile(
+          title: Text(
+            'Enable Variants',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text(
+            'Create multiple versions of this item using attributes like size or color.',
+          ),
+          value: _isVariantEnabled,
+          onChanged: (val) => setState(() => _isVariantEnabled = val),
+        ),
+
+        /// Attributes & Variants
+        if (_isVariantEnabled) ...{
+          FormGroupCard(
+            isExpanded: false,
+            title: '7.Attributes & Variants',
+            subTitle:
+                '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
+            children: [/*Widget here*/],
+          ),
+        },
+
+        /// Warehouse + Sub-location + Bin address
+        FormGroupCard(
+          isExpanded: false,
+          title: '8.Warehouse + Sub-location + Bin',
+          subTitle:
+              '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
+          children: [/*Widget here*/],
         ),
 
         const SizedBox(height: 20),

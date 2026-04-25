@@ -117,6 +117,7 @@ const supplierDBColPath = 'item_suppliers_db';
 const categoryDBColPath = 'item_categories_db';
 // Variant Attributes
 const attributeDBColPath = 'variant_attributes_db';
+const variantDBColPath = 'variants_db';
 
 // ---------------------------
 // 🧾 POS (Point of Sale) System Path
@@ -160,6 +161,7 @@ const erpCacheBoxes = [
   supplierDBColPath,
   categoryDBColPath,
   attributeDBColPath,
+  variantDBColPath,
   taxesDBColPath,
 
   // CRM

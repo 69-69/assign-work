@@ -295,7 +295,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
             onRejectLabel: 'Cancel',
           );
 
-          if (shouldContinue != true) return;
+          if (!mounted || shouldContinue != true) return;
 
           await context.openGenerateWHLocCodesForm(
           serverItem: _serverItem,

@@ -1,5 +1,9 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
+import 'package:assign_erp/core/util/extensions/variant_attr_ext.dart';
+import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -22,10 +26,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreateVariants<T> on BuildContext {
   Future<void> openAddVariant({
     Attribute? serverVariant,
-    Map<String, List<String>>? groupedAttrs,
+    Map<String, List<Attribute>>? groupedAttrs,
   }) => openBottomSheet(
-    isExpand: false,
+    isExpand: true,
+    showZoomIcon: false,
     child: BottomSheetScaffold(
+      isDetailMode: true,
       title: serverVariant != null
           ? 'Edit ${serverVariant.type}'
           : 'Create Variant(s)',
@@ -39,7 +45,7 @@ extension CreateVariants<T> on BuildContext {
 
 class _AddAttributeForm extends StatefulWidget {
   final Attribute? serverAttribute;
-  final Map<String, List<String>>? groupedAttrs;
+  final Map<String, List<Attribute>>? groupedAttrs;
 
   const _AddAttributeForm({this.serverAttribute, this.groupedAttrs});
 
@@ -52,10 +58,12 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   final List<Attribute> _attributes = [];
 
   Attribute? get _serverAttribute => widget.serverAttribute;
-  Map<String, Map<String, bool>> _selectedAttributes = {};
-  List<Map<String, String>> _variants = [];
+  Map<String, Map<Attribute, bool>> _selectedAttributes = {};
+  List<Map<String, Attribute>> _variants = [];
 
   bool get _isServerNull => _serverAttribute == null;
+
+  Map<String, List<Attribute>>? get _groupedAttrs => widget.groupedAttrs;
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -70,7 +78,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
     if (!_isSubmitting) {
       final variantsToSave = Variant.buildVariants(
         itemCode: "TS-001",
-        variants: _variants,
+        variants: _variants.map((v) => v.toCodeMap()).toList(),
       );
       prettyPrint('variants-To-Save', variantsToSave);
 
@@ -141,23 +149,19 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   }
 
   // Initialize selection from grouped data
-  void _initSelection(Map<String, List<String>> grouped) {
+  void _initSelection(Map<String, List<Attribute>> grouped) {
     _selectedAttributes = {};
 
     grouped.forEach((key, values) {
+      _selectedAttributes[key] = {for (final v in values) v: values.first == v};
+    });
+
+    _generateFromSelection();
+    /*grouped.forEach((key, values) {
       _selectedAttributes[key] = {for (final v in values) v: false};
     });
 
-    setState(() {});
-    /* default selection:
-    grouped.forEach((key, values) {
-    selectedAttributes[key] = {
-      for (final v in values)
-        v: values.first == v // auto select first
-    };
-  });
-
-  _generateFromSelection(); */
+    setState(() {});*/
   }
 
   @override
@@ -165,9 +169,9 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
     super.initState();
     _loadExistingAttributes();
 
-    if (!widget.groupedAttrs.isNullOrEmpty) {
+    if (!_groupedAttrs.isNullOrEmpty) {
       // prettyPrint('widget-groupedAttrs', widget.groupedAttrs);
-      _initSelection(widget.groupedAttrs!);
+      _initSelection(_groupedAttrs!);
     }
   }
 
@@ -185,27 +189,19 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         AdaptiveLayout(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FormGroupCard(
-              title: 'Variant Preview',
-              subTitle:
-                  '\nAutomatically generated combinations based on your selections.',
-              showCollapseButton: false,
-              contentPadding: EdgeInsets.all(20),
-              children: [_buildVariantPreview()],
-            ),
-            FormGroupCard(
-              title: 'Attribute Set',
-              showCollapseButton: false,
-              contentPadding: EdgeInsets.all(20),
-              helperText:
-                  '\nSelect attribute values (e.g., Red, Blue, Large) to generate product variants.',
-              children: [_buildAttributeSelector()],
+            _VariantPreview(variants: _variants),
+            _AttributeSelector(
+              selectedAttrs: _selectedAttributes,
+              onChanged: ({checked, required key, required name}) {
+                _selectedAttributes[name]![key] = checked ?? false;
+                _generateFromSelection();
+              },
             ),
           ],
         ),
 
         context.confirmableActionButton(
-          isDisabled: _isSubmitting || _variants.isEmpty,
+          isDisabled: _isSubmitting || _variants.first.isEmpty,
           label: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Variant')
               : (_isSubmitting ? 'Updating...' : null),
@@ -215,40 +211,215 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
     );
   }
 
-  Widget _buildVariantPreview() {
-    if (_variants.isEmpty) {
+  // Cry Freedom Movie
+  // Generate variants ONLY from selected values
+  List<Map<String, Attribute>> _generateFromSelection() {
+    final Map<String, List<Attribute>> filtered = {};
+
+    _selectedAttributes.forEach((attr, values) {
+      final selectedValues = values.entries
+          .where((e) => e.value == true)
+          .map((e) => e.key)
+          .toList();
+
+      if (selectedValues.isNotEmpty) {
+        filtered[attr] = selectedValues;
+      }
+    });
+
+    final variants = _generateCartesian(filtered);
+
+    setState(() => _variants = variants);
+
+    return variants;
+  }
+
+  // Cartesian generator
+  List<Map<String, Attribute>> _generateCartesian(
+    Map<String, List<Attribute>> attributes,
+  ) {
+    List<Map<String, Attribute>> result = [{}];
+
+    attributes.forEach((key, values) {
+      final temp = <Map<String, Attribute>>[];
+
+      for (final existing in result) {
+        for (final value in values) {
+          final map = Map<String, Attribute>.from(existing);
+          map[key] = value;
+          temp.add(map);
+        }
+      }
+
+      result = temp;
+    });
+
+    return result;
+  }
+}
+
+
+typedef AttributeChanged =
+    void Function({
+      required bool? checked,
+      required Attribute key,
+      required String name,
+    });
+
+class _AttributeSelector extends StatelessWidget {
+  final AttributeChanged? onChanged;
+  final Map<String, Map<Attribute, bool>> selectedAttrs;
+
+  const _AttributeSelector({
+    required this.onChanged,
+    required this.selectedAttrs,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildBody(context);
+  }
+
+  Widget _buildBody(BuildContext context) {
+    return FormGroupCard(
+        title: 'Attribute Set',
+        showCollapseButton: false,
+        contentPadding: EdgeInsets.all(10),
+        helperText:
+        '\nSelect attribute values (e.g., Red, Blue, Large) to generate product variants.',
+        children: _buildChildren(context),
+    );
+  }
+
+  List<FormGroupCard> _buildChildren(BuildContext context) {
+    return selectedAttrs.entries.map((entry) {
+      final attributeName = entry.key;
+      final values = entry.value.entries.toList();
+      final maxCross = context.screenWidth / (context.isMobile ? 1 : 8);
+
+      return FormGroupCard(
+        isExpanded: false,
+        title: attributeName.toTitle,
+        contentMargin: EdgeInsets.zero,
+        cardElevation: 0.5,
+        // crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: values.length,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: maxCross,
+              mainAxisExtent: 50,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+            ),
+            itemBuilder: (context, i) =>
+                _itemBuilder(values[i], attributeName),
+          ),
+        ],
+      );
+    }).toList();
+  }
+
+  Widget _itemBuilder(MapEntry<Attribute, bool> val, String attributeName) {
+    return Tooltip(
+      message: val.key.value.toTitle,
+      child: CustomCheckboxTile(
+        title: Text(val.key.value.toTitle, overflow: TextOverflow.ellipsis),
+        value: val.value,
+        onChanged: (bool? checked) => onChanged?.call(
+          key: val.key,
+          checked: checked,
+          name: attributeName,
+        ),
+      ),
+    );
+  }
+
+  /*Widget _buildBody2(BuildContext context) {
+    return Column(
+      children: selectedAttrs.entries.map((entry) {
+        final attributeName = entry.key;
+        final values = entry.value;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${attributeName.toTitle}:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            ...values.entries.map((v) {
+              return CustomCheckboxTile(
+                title: Text(v.key.value.toTitle,
+                  overflow: TextOverflow.ellipsis,),
+                value: v.value,
+                onChanged: (bool? checked) {
+                  onChanged?.call(
+                    checked: checked,
+                    key: v.key,
+                    name: attributeName,
+                  );
+                },
+              );
+            }),
+          ],
+        );
+      }).toList(),
+    );
+  }*/
+}
+
+class _VariantPreview extends StatelessWidget {
+  final List<Map<String, Attribute>> variants;
+
+  const _VariantPreview({required this.variants});
+
+  @override
+  Widget build(BuildContext context) {
+    return FormGroupCard(
+      title: 'Variant Preview',
+      subTitle:
+          '\nAutomatically generated combinations based on your selections.',
+      showCollapseButton: false,
+      contentPadding: EdgeInsets.all(20),
+      children: [_buildBody()],
+    );
+  }
+
+  StatelessWidget _buildBody() {
+    if (variants.isEmpty) {
       return BlockQuote(
         child: Text('Select attributes to preview generated variants here.'),
       );
     }
 
-    final keyList = _variants.first.keys.toList();
+    final keyList = variants.first.keys.toList()
+      ..sortByComparable((e) => attributePriorities[e] ?? 999);
 
-    final columnLabels = [
-      ...keyList.map((k) => k.toTitle),
-      'Parent SKU',
-      'Variant SKU',
-    ];
+    final columnLabels = [...keyList.map((k) => k.toTitle), 'SKU'];
 
-    return StaticHistoryTable<Map<String, String>>(
+    return StaticHistoryTable<Map<String, Attribute>>(
       columnLabels: columnLabels,
-      items: _variants,
+      items: variants,
       rowBuilder: (entry, index) {
-        const parentSku = 'TS-001';
+        const itemCode = 'TS-001';
 
-        final variantSku = Variant.buildVariantSKU(parentSku, entry);
+        final sku = Variant.buildVariantSKU(itemCode, entry.toCodeMap());
 
         final cells = <DataCell>[
-          ...keyList.map((k) => DataCell(Text(entry[k]?.toUpperAll ?? ""))),
-          DataCell(Text(parentSku.toUpperAll)),
-          DataCell(Text(variantSku.toUpperAll)),
+          ...keyList.map((k) => DataCell(Text(entry[k]?.value.toTitle ?? ""))),
+          DataCell(Text(sku.toUpperAll)),
         ];
 
         return DataRow(cells: cells);
       },
     );
+  }
 
-    /*return Column(
+  /*return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DataTable(
@@ -273,747 +444,4 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         ),
       ],
     );*/
-  }
-
-  // Build Checkbox UI per attribute group
-  Widget _buildAttributeSelector() {
-    return Column(
-      children: _selectedAttributes.entries.map((entry) {
-        final attributeName = entry.key;
-        final values = entry.value;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              attributeName.toTitle,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            ...values.entries.map((v) {
-              return CustomCheckboxTile(
-                title: Text(v.key.toTitle),
-                value: v.value,
-                onChanged: (bool? checked) {
-                  setState(
-                    () => _selectedAttributes[attributeName]![v.key] =
-                        checked ?? false,
-                  );
-
-                  _generateFromSelection();
-                },
-              );
-            }),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  // Generate variants ONLY from selected values
-  List<Map<String, String>> _generateFromSelection() {
-    final Map<String, List<String>> filtered = {};
-
-    _selectedAttributes.forEach((attr, values) {
-      final selectedValues = values.entries
-          .where((e) => e.value == true)
-          .map((e) => e.key)
-          .toList();
-
-      if (selectedValues.isNotEmpty) {
-        filtered[attr] = selectedValues;
-      }
-    });
-
-    final variants = _generateCartesian(filtered);
-
-    setState(() => _variants = variants);
-
-    return variants;
-  }
-
-  // Cartesian generator
-  List<Map<String, String>> _generateCartesian(
-    Map<String, List<String>> attributes,
-  ) {
-    List<Map<String, String>> result = [{}];
-
-    attributes.forEach((key, values) {
-      final temp = <Map<String, String>>[];
-
-      for (final existing in result) {
-        for (final value in values) {
-          final map = Map<String, String>.from(existing);
-          map[key] = value;
-          temp.add(map);
-        }
-      }
-
-      result = temp;
-    });
-
-    return result;
-  }
 }
-
-/*🔹 Step 4: Best-practice structure
-✔️ Product Master (Base Product)
-  Name: “Nike Sports T-Shirt 2023”
-  Brand: Nike
-  Model: 2023
-  Type: Sport
-✔️ Variant Attributes
-  Color
-  Size
-✔️ Generated Variants (SKUs)
-  Red / M
-  Red / L
-  Blue / M
-  Blue / L
-Each gets:
-  SKU
-  Barcode
-  Stock (linked to your BIN / warehouse setup 👍)*/
-
-/// Variants Attributes Steps involved:
-/*
-* You’re on the right track—that structure is exactly how most ERP systems expect it to work. The key now is to design it in a way that’s **clean, scalable, and tightly integrated with your Item Master**.
-
-Let’s walk through how to implement this properly.
-
----
-
-# 🔹 1. Core Design Overview
-
-You essentially need **3 layers**:
-
-### ✅ A. Variant Attributes (Master Data)
-
-Define reusable attributes and their values.
-
-**Attribute: Color**
-
-* Red
-* Blue
-
-**Attribute: Size**
-
-* M
-* L
-
----
-
-### ✅ B. Item Master (Base Product)
-
-This is your **parent item** (non-stock or template item depending on ERP).
-
-Example:
-
-* Item Code: TS-001
-* Name: Sports T-Shirt
-* Variant Enabled: ✔️ Yes
-
----
-
-### ✅ C. Item Variants (Child SKUs)
-
-These are the **actual inventory items** generated from combinations.
-
-| SKU        | Color | Size |
-| ---------- | ----- | ---- |
-| TS-001-R-M | Red   | M    |
-| TS-001-R-L | Red   | L    |
-| TS-001-B-M | Blue  | M    |
-| TS-001-B-L | Blue  | L    |
-
----
-
-# 🔹 2. How Integration Works
-
-Your **Item Master links to Variant Attributes**, not directly to variants.
-
-### Flow:
-
-1. Assign attributes to item:
-
-   * TS-001 → Color, Size
-
-2. System generates combinations:
-
-   * Red + M
-   * Red + L
-   * Blue + M
-   * Blue + L
-
-3. Each combination becomes:
-
-   * A **child item (SKU)**
-   * Linked back to TS-001
-
----
-
-# 🔹 3. Suggested Table Structure (important for backend clarity)
-
-If you're thinking in database terms:
-
-### 🔸 Attribute Table
-
-| Attribute_ID | Name  |
-| ------------ | ----- |
-| 1            | Color |
-| 2            | Size  |
-
-### 🔸 Attribute Values
-
-| Value_ID | Attribute_ID | Value |
-| -------- | ------------ | ----- |
-| 1        | 1            | Red   |
-| 2        | 1            | Blue  |
-| 3        | 2            | M     |
-| 4        | 2            | L     |
-
----
-
-### 🔸 Item Master
-
-| Item_ID | Name           | Variant_Flag |
-| ------- | -------------- | ------------ |
-| TS-001  | Sports T-Shirt | Yes          |
-
----
-
-### 🔸 Item Variant Table
-
-| Variant_ID | Item_ID | SKU        |
-| ---------- | ------- | ---------- |
-| 1          | TS-001  | TS-001-R-M |
-| 2          | TS-001  | TS-001-R-L |
-
----
-
-### 🔸 Variant Mapping Table (CRUCIAL)
-
-| Variant_ID | Attribute | Value |
-| ---------- | --------- | ----- |
-| 1          | Color     | Red   |
-| 1          | Size      | M     |
-
----
-
-# 🔹 4. SKU Naming Logic (don’t skip this)
-
-Define a **consistent SKU format early**:
-
-Example:
-
-```
-[ItemCode]-[ColorCode]-[SizeCode]
-TS-001-R-M
-```
-
-This avoids chaos later when scaling.
-
----
-
-# 🔹 5. Inventory Integration (ties to your current work)
-
-Each **variant SKU** should:
-
-* Be stored in your **Warehouse / BIN master**
-* Have its **own stock quantity**
-* Have its **own barcode (optional but recommended)**
-
-👉 Important:
-Inventory is **never tracked at the parent level**, only at the variant level.
-
----
-
-# 🔹 6. Common mistakes to avoid
-
-* ❌ Creating variants manually instead of generating them
-* ❌ Mixing non-variant fields (Brand, Model) into variant logic
-* ❌ Not enforcing unique combinations
-* ❌ Poor SKU naming (this becomes a nightmare fast)
-* ❌ Allowing duplicate attribute values ("Red", "RED", "red")
-
----
-
-# 🔹 7. What you should do next
-
-1. Create:
-
-   * Attribute Master (Color, Size)
-   * Attribute Values
-
-2. Update Item Master:
-
-   * Add “Variant सक्षम / Enabled” flag
-   * Link attributes
-
-3. Build or configure:
-
-   * Variant generation logic
-
-4. Ensure:
-
-   * Each variant = separate inventory item
-
----
-
-If you want, I can help you design:
-
-* A **UI flow** (how users will create items + variants)
-* Or a **real ERP example** (like how Odoo or SAP S/4HANA handles this)
-
-That’s usually the next step once the data model is clear.
-*/
-
-/// Variants generations:
-/*
-Variants aren’t really “a Flutter feature”—they’re **business logic + data modeling**, and Flutter just becomes the UI layer that triggers and displays the results. If you try to hardcode variant generation directly in UI widgets, it’ll get messy fast.
-
-Here’s how to structure it cleanly.
-
----
-
-# 🔹 1. Core idea: generate combinations programmatically
-
-Given:
-
-* Color → [Red, Blue]
-* Size → [M, L]
-
-You need to generate the **Cartesian product**:
-
-```
-Red + M
-Red + L
-Blue + M
-Blue + L
-```
-
----
-
-# 🔹 2. Dart logic for variant generation
-
-You can write a reusable function like this:
-
-```dart
-List<Map<String, String>> generateVariants(
-    Map<String, List<String>> attributes) {
-  List<Map<String, String>> result = [{}];
-
-  attributes.forEach((attribute, values) {
-    List<Map<String, String>> temp = [];
-
-    for (var existing in result) {
-      for (var value in values) {
-        var newVariant = Map<String, String>.from(existing);
-        newVariant[attribute] = value;
-        temp.add(newVariant);
-      }
-    }
-
-    result = temp;
-  });
-
-  return result;
-}
-```
-
----
-
-### 🔹 Example usage
-
-```dart
-void main() {
-  var attributes = {
-    "Color": ["Red", "Blue"],
-    "Size": ["M", "L"]
-  };
-
-  var variants = generateVariants(attributes);
-
-  for (var v in variants) {
-    print(v);
-  }
-}
-```
-
----
-
-### 🔹 Output
-
-```
-{Color: Red, Size: M}
-{Color: Red, Size: L}
-{Color: Blue, Size: M}
-{Color: Blue, Size: L}
-```
-
----
-
-# 🔹 3. Generating SKU in Flutter
-
-Extend the logic:
-
-```dart
-String generateSKU(String itemCode, Map<String, String> variant) {
-  return itemCode +
-      "-" +
-      variant.values.map((e) => e.substring(0, 1)).join("-");
-}
-```
-
-Example:
-
-```
-TS-001-R-M
-```
-
----
-
-# 🔹 4. Flutter UI flow (practical)
-
-### Step 1: Select attributes
-
-* Multi-select chips / dropdowns:
-
-  * Color → Red, Blue
-  * Size → M, L
-
----
-
-### Step 2: Tap “Generate Variants”
-
-Call:
-
-```dart
-setState(() {
-  variants = generateVariants(selectedAttributes);
-});
-```
-
----
-
-### Step 3: Display in table/list
-
-Example UI:
-
-```
-Color | Size | SKU
--------------------
-Red   | M    | TS-001-R-M
-Red   | L    | TS-001-R-L
-Blue  | M    | TS-001-B-M
-Blue  | L    | TS-001-B-L
-```
-
-Use:
-
-* `DataTable` (simple)
-* or `ListView.builder` (scalable)
-
----
-
-# 🔹 5. Where this logic should live (important)
-
-Don’t bury this inside UI widgets.
-
-Better structure:
-
-* `variant_service.dart` → generation logic
-* `item_controller.dart` → manages state
-* UI → just displays and triggers
-
----
-
-# 🔹 6. Backend vs Flutter (important decision)
-
-### Option A: Generate in Flutter
-
-✔️ Fast UI preview
-✔️ Good for user experience
-
-### Option B: Generate in backend (recommended for ERP)
-
-✔️ Ensures consistency
-✔️ Prevents duplicates
-✔️ Centralized logic
-
-👉 Best practice:
-
-* Generate in Flutter (preview)
-* Final save + validation in backend
-
----
-
-# 🔹 7. Real-world ERP behavior
-
-Systems like Odoo or SAP S/4HANA:
-
-* Let users pick attributes in UI
-* Instantly preview variants
-* Store final variants in database with unique IDs
-
----
-
-# 🔹 8. One thing to watch out for
-
-If a user selects:
-
-* 10 colors
-* 10 sizes
-
-👉 You just created **100 variants instantly**
-
-So always:
-
-* Show **variant count before generating**
-* Add a **limit or warning**
-
----
-
-If you want, I can help you build:
-
-* A full Flutter screen (UI + state management)
-* Or connect this to your existing **Item Master + Warehouse/BIN setup**
-
-That’s where this becomes a complete ERP flow.
-
-* */
-
-/*
-* That table is **not** your Item Master and **not** your Attributes table.
-
-It represents the **Variants (Item Variants / SKU table)**.
-
----
-
-## 🔹 Why?
-
-Look at what your table contains:
-
-| Color | Size | SKU        |
-| ----- | ---- | ---------- |
-| Red   | M    | TS-001-R-M |
-
-Each row:
-
-* Has a **specific combination of attribute values**
-* Has a **unique SKU**
-* Represents a **sellable, stockable item**
-
-👉 That is exactly what a **variant** is.
-
----
-
-## 🔹 Where each table fits
-
-### ✅ 1. Item Master (Parent)
-
-Only **one record** for the product:
-
-| Item Code | Name           |
-| --------- | -------------- |
-| TS-001    | Sports T-Shirt |
-
-No Color, no Size here.
-
----
-
-### ✅ 2. Attributes Tables
-
-Separate structure entirely:
-
-**Attributes**
-
-| Attribute |
-| --------- |
-| Color     |
-| Size      |
-
-**Attribute Values**
-
-| Attribute | Value |
-| --------- | ----- |
-| Color     | Red   |
-| Color     | Blue  |
-| Size      | M     |
-| Size      | L     |
-
----
-
-### ✅ 3. Variants Table (THIS is your UI table)
-
-| SKU        | Item Code | Color | Size |
-| ---------- | --------- | ----- | ---- |
-| TS-001-R-M | TS-001    | Red   | M    |
-| TS-001-R-L | TS-001    | Red   | L    |
-
-👉 Your UI table = **frontend view of this variants table**
-
----
-
-## 🔹 Important distinction
-
-* **Attributes table** → defines possibilities
-* **Item master** → defines the product
-* **Variants table** → defines actual inventory items
-
----
-
-## 🔹 One subtle but important detail
-
-In a proper normalized database, your variants table might actually look like:
-
-| Variant_ID | Item_ID | SKU |
-| ---------- | ------- | --- |
-
-And then a **mapping table** stores:
-
-* Variant → Color = Red
-* Variant → Size = M
-
-But in UI, you flatten it into:
-
-```
-Color | Size | SKU
-```
-
----
-
-## 🔹 Final answer (clear)
-
-👉 Your displayed table = **Variants Table (Item Variants / SKU level)**
-❌ Not Item Master
-❌ Not Attributes Master
-
----
-
-If you want, I can show you how to connect this exact table to:
-
-* your **BIN / warehouse stock**
-* and how each row becomes a **stock ledger entry**
-
-That’s the next step where many ERP designs go wrong.
-*/
-
-/*Close—but not quite. You don’t need the **SKU from the Item Master**, you need a **base item code (or parent SKU)** from the Item Master to *build* the variant SKUs.
-
-Let’s clean that up.
-
----
-
-## 🔹 Correct concept
-
-### ✅ Item Master (Parent)
-
-This holds a **base identifier**, not the final SKU for selling units.
-
-Example:
-
-* Item Code: `TS-001`
-* Name: Sports T-Shirt
-
-👉 This is sometimes called:
-
-* Parent SKU
-* Template Code
-* Item Code
-
----
-
-### ✅ Variants (Actual SKUs)
-
-These are generated by combining:
-
-* Base Item Code
-* Attribute values
-
-Example:
-
-```plaintext
-TS-001-R-M
-TS-001-R-L
-TS-001-B-M
-TS-001-B-L
-```
-
----
-
-## 🔹 So the logic is:
-
-```id="1h7xke"
-Variant SKU = Item Code + Attribute Codes
-```
-
-Example:
-
-* Item Code → TS-001
-* Color → Red (R)
-* Size → M
-
-👉 Result:
-
-```id="g9sk2a"
-TS-001-R-M
-```
-
----
-
-## 🔹 Important clarification
-
-* ❌ Item Master should NOT store full SKUs like `TS-001-R-M`
-* ❌ Item Master should NOT have multiple SKUs
-* ✅ Item Master has **one base code only**
-
----
-
-## 🔹 Why this design matters
-
-If you try to store full SKUs in Item Master:
-
-* You lose the parent-child relationship
-* Variant grouping becomes messy
-* Reporting (by product) becomes harder
-
----
-
-## 🔹 Best practice
-
-### In Item Master:
-
-* `item_code = TS-001`
-
-### In Variants Table:
-
-* `sku = TS-001-R-M`
-* `parent_item = TS-001`
-
----
-
-## 🔹 Optional (but recommended)
-
-Instead of using full words:
-
-* Red → R
-* Blue → B
-
-This keeps SKUs:
-
-* Short
-* Consistent
-* Easy to scan (especially for barcodes)
-
----
-
-## 🔹 Final answer (simple)
-
-👉 Yes, you use the **Item Master code**
-👉 But you **generate a new SKU for each variant**
-
----
-
-If you want, I can help you design a **SKU coding standard** (length, separators, abbreviations, edge cases). That decision becomes very hard to change later once data grows.
-*/

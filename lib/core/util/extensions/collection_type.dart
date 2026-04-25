@@ -12,6 +12,7 @@ enum CollectionType { global, workspace, chats, stores, clients }
 extension CollectionTypeExtension on CollectionType {
   /// [getName] Get the specific Enum Name
   String get getName => EnumUtil<CollectionType>(this).getName;
+
   /*
   String get getName => getEnumName<CollectionType>(this);
   String get label {

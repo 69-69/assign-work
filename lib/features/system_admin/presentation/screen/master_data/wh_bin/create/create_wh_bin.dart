@@ -253,7 +253,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
             onRejectLabel: 'Cancel',
           );
 
-          if (shouldContinue != true) return;
+          if (!mounted || shouldContinue != true) return;
 
           await context.openWHBinLocationsForm(
             serverItem: _serverItem,

@@ -9,6 +9,7 @@ class FormGroupCard extends StatefulWidget {
   final String helperText;
   final bool isExpanded;
   final Color? bgColor;
+  final double? cardElevation;
   final Color? textColor;
   final List<Widget> children;
   final Axis? scrollDirection;
@@ -22,6 +23,7 @@ class FormGroupCard extends StatefulWidget {
     super.key,
     this.formKey,
     this.bgColor,
+    this.cardElevation,
     this.textColor,
     this.title = '',
     this.subTitle = '',
@@ -58,6 +60,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
   Color? get _textColor => widget.textColor;
 
   Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+  double? get _cardElevation => widget.cardElevation;
 
   Axis get _scrollDirection => widget.scrollDirection ?? Axis.horizontal;
 
@@ -104,7 +107,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // elevation: 2.0,
+      elevation: _cardElevation,
       color: _bgColor, // context.scaffoldBgColor
       margin: _contentMargin,
       child: Padding(

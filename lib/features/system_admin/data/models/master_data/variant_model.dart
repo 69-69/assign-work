@@ -24,7 +24,7 @@ Red   | L    | TS-001-R-L
 Blue  | M    | TS-001-B-M
 Blue  | L    | TS-001-B-L*/
 
-/// Variant Attributes
+/// Variant
 class Variant extends Equatable {
   static get _today => DateTime.now();
 
@@ -72,9 +72,6 @@ class Variant extends Equatable {
   }
 
   static String buildVariantSKU(String itemCode, Map<String, String> variant) {
-    /*final suffix = variant.values
-        .map((e) => e.isNotEmpty ? e.toUpperAll : '')
-        .join('-');*/
     final sortedKeys = variant.keys.toList()..sort();
 
     final suffix = sortedKeys

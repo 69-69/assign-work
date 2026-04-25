@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/variant_attr_ext.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -34,15 +35,46 @@ class Attribute extends Equatable {
        updatedAt = updatedAt ?? _today; // Set default value
 
   // 'Type' must group values logically
-  static Map<String, List<String>> groupAttributes(List<Attribute> attrs) {
-    final Map<String, List<String>> grouped = {};
+  static Map<String, List<Attribute>> groupByType(List<Attribute> attrs) {
+    final Map<String, List<Attribute>> grouped = {};
 
     for (final a in attrs) {
       grouped.putIfAbsent(a.type, () => []);
-      grouped[a.type]!.add(a.value);
+      grouped[a.type]!.add(a);
     }
 
     return grouped;
+  }
+
+  // Group Attribute types by Priority
+  static Map<String, List<String>> groupByPriority(
+    List<String> types,
+    Map<String, int> priorities,
+  ) {
+    final map = <String, List<String>>{};
+
+    for (final name in types) {
+      final priority = priorities[name] ?? 999;
+      final group = _getGroup(priority);
+
+      map.putIfAbsent(group, () => []).add(name);
+    }
+
+    // Sort each group by priority
+    for (final entry in map.entries) {
+      entry.value.sortByComparable((e) => priorities[e] ?? 999);
+    }
+
+    return map;
+  }
+
+  static String _getGroup(int priority) {
+    return switch (priority) {
+      >= 0 && <= 4 => 'Core',
+      >= 5 && <= 9 => 'Secondary',
+      >= 10 && <= 14 => 'Technical',
+      _ => 'Misc',
+    };
   }
 
   // Generate Short Code for Attribute value
@@ -193,7 +225,7 @@ class Attribute extends Equatable {
     id,
     type.toTitle,
     value.toTitle,
-    (code.isEmpty ? safeCode:code).toUpperAll,
+    (code.isEmpty ? safeCode : code).toUpperAll,
     createdBy.toTitle,
     getCreatedAt,
     updatedBy.toTitle,
@@ -211,5 +243,3 @@ class Attribute extends Equatable {
     'Updated At',
   ];
 }
-
-/**/

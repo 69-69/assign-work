@@ -1,16 +1,9 @@
-# @TODO - 
-LINKEDIN-MSG: "Thank you for being our SMU panelist during the AT&T tour on Friday, 
-April 17. It was an incredible experience, and we truly appreciate the effort 
-you and your team put into making it happen."
+# @TODO - PriceList, Payment Method & Type
 
 ## @Continue Tomorrow (Next Sprint)
-    ## Reference master 
-        - Item master
-        - Item Variance & Attributes
-    
-    ##  Master Data (BIN Location Code, UOM, PriceList, Payment Method&Type,)
-    - Item Master: adding taxes, warehouse and linking Item Master to
-        - Procurement, Inventory, POS, Sales & Distribution
+    ## Linking Item Master with
+        - Attributes & Variant master
+        - Warehouse, Sub Location, Bin
     > NOTE: watch item master link to warehouse on YouTube.com
     > REF Doc: lib/features/system_admin/presentation/setup_tiles.dart
 

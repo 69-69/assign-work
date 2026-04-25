@@ -4,6 +4,7 @@ import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
@@ -18,7 +19,6 @@ class AllUOM extends StatefulWidget {
   @override
   State<AllUOM> createState() => _AllUOMState();
 }
-
 
 class _AllUOMState extends State<AllUOM> {
   final _cacheId = uomMasterCacheId;
@@ -130,15 +130,19 @@ class _AllUOMState extends State<AllUOM> {
         .where((c) => !_selectedUoms.contains(c))
         .toList();
 
-    await _cache.setRef({
-      'id': _cacheId,
-      'references': unchecked,
-    });
+    await _cache.setRef({'id': _cacheId, 'references': unchecked});
 
-    setState(() {
-      _initialUnchecked = unchecked.toSet();
-      _hasChanges = false;
-    });
+    if (!mounted) return;
+
+    context.showAlertOverlay(
+      'Changes successfully saved',
+      onCallback: () {
+        setState(() {
+          _initialUnchecked = unchecked.toSet();
+          _hasChanges = false;
+        });
+      },
+    );
   }
 
   Widget _buildBody(List<String> uoms) {
@@ -149,14 +153,12 @@ class _AllUOMState extends State<AllUOM> {
     return GridView.builder(
       itemCount: uoms.length,
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent:
-        context.screenWidth / (context.isMobile ? 1 : 6),
+        maxCrossAxisExtent: context.screenWidth / (context.isMobile ? 1 : 6),
         mainAxisExtent: 90,
         crossAxisSpacing: 10,
         childAspectRatio: 1,
       ),
-      itemBuilder: (context, i) =>
-          _itemBuilder(uoms[i], context),
+      itemBuilder: (context, i) => _itemBuilder(uoms[i], context),
     );
   }
 
@@ -178,8 +180,7 @@ class _AllUOMState extends State<AllUOM> {
             title.last.trim().toTitle,
             overflow: TextOverflow.ellipsis,
           ),
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 6.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 6.0),
           value: isChecked,
           onChanged: (v) {
             setState(() {
@@ -203,20 +204,18 @@ class _AllUOMState extends State<AllUOM> {
       keyboardType: TextInputType.text,
       inputDecoration: InputDecoration(
         labelText: 'Search...',
-        prefixIcon:
-        const Icon(Icons.search, color: kGrayColor),
+        prefixIcon: const Icon(Icons.search, color: kGrayColor),
         suffixIcon: _searchController.text.isEmpty
             ? const SizedBox.shrink()
             : IconButton(
-          tooltip: 'Clear Search',
-          color: kGrayColor,
-          onPressed: () {
-            _searchController.clear();
-            setState(() =>
-            _filteredUoms = List.from(_allUoms));
-          },
-          icon: const Icon(Icons.clear),
-        ),
+                tooltip: 'Clear Search',
+                color: kGrayColor,
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _filteredUoms = List.from(_allUoms));
+                },
+                icon: const Icon(Icons.clear),
+              ),
       ),
       onChanged: _filter,
     );
@@ -228,15 +227,13 @@ class _AllUOMState extends State<AllUOM> {
         _filteredUoms = List.from(_allUoms);
       } else {
         _filteredUoms = _allUoms
-            .where((item) =>
-            item.toLowerCase().contains(query.toLowerCase()))
+            .where((item) => item.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
   }
 
-
-/*return SearchAnchor.bar(
+  /*return SearchAnchor.bar(
       searchController: _searchController,
       barHintText: 'Search...',
       barElevation: WidgetStateProperty.all(0),

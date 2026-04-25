@@ -4,4 +4,5 @@ export 'wh_location_bloc.dart';
 export 'category_bloc.dart';
 export 'item_master_bloc.dart';
 export 'attribute_bloc.dart';
+export 'variant_bloc.dart';
 

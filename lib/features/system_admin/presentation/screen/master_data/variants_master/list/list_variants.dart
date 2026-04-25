@@ -4,7 +4,8 @@ import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_attributes.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/attribute_bloc.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/variant_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/variant_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/create/create_variants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,21 +21,21 @@ class ListVariants extends StatefulWidget {
 
 class _ListVariantsState extends State<ListVariants> {
   Future<void> _getAttributes({
-    required Future<void> Function(Map<String, List<String>> grouped)
+    required Future<void> Function(Map<String, List<Attribute>> grouped)
     attributes,
   }) async {
     final attrs = await GetAttributes.load();
-    final group = Attribute.groupAttributes(attrs);
+    final group = Attribute.groupByType(attrs);
 
     return await attributes(group);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AttributeBloc>(
+    return BlocProvider<VariantBloc>(
       create: (context) =>
-          AttributeBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetSetups<Attribute>()),
+      VariantBloc(firestore: FirebaseFirestore.instance)
+            ..add(GetSetups<Variant>()),
       child: CustomScaffold(
         noAppBar: true,
         body: _buildBody(),
@@ -43,12 +44,12 @@ class _ListVariantsState extends State<ListVariants> {
     );
   }
 
-  BlocBuilder<AttributeBloc, SetupState<Attribute>> _buildBody() {
-    return BlocBuilder<AttributeBloc, SetupState<Attribute>>(
+  BlocBuilder<VariantBloc, SetupState<Variant>> _buildBody() {
+    return BlocBuilder<VariantBloc, SetupState<Variant>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingSetup<Attribute>() => context.loader,
-          SetupsLoaded<Attribute>(data: var results) =>
+          LoadingSetup<Variant>() => context.loader,
+          SetupsLoaded<Variant>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
                     'Create Variant',
@@ -60,7 +61,7 @@ class _ListVariantsState extends State<ListVariants> {
                     },
                   )
                 : _buildCard(context, results),
-          SetupError<Attribute>(error: final error) => context.buildError(
+          SetupError<Variant>(error: final error) => context.buildError(
             error,
           ),
           _ => const SizedBox.shrink(),
@@ -69,22 +70,21 @@ class _ListVariantsState extends State<ListVariants> {
     );
   }
 
-  Widget _buildCard(BuildContext c, List<Attribute> categories) {
+  Widget _buildCard(BuildContext c, List<Variant> variants) {
     return DynamicDataTable(
       omitAtIndex: 0,
-      headers: Attribute.dataHeader,
-      toolbar: _buildToolbar(categories),
-      rows: categories.map((cat) => cat.itemAsList).toList(),
-      onEditTap: (row) async => _onEditTap(categories, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(categories, row.first),
+      headers: Variant.dataHeader,
+      toolbar: _buildToolbar(variants),
+      rows: variants.map((cat) => cat.itemAsList).toList(),
+      onDeleteTap: (row) async => _onDeleteTap(variants, row.first),
     );
   }
 
-  _buildToolbar(List<Attribute> attributes) {
+  _buildToolbar(List<Variant> variants) {
     return ListToolbarButtons(
       primaryLabel: 'Add Variant',
       refreshLabel: 'Refresh Variants',
-      dataLength: attributes.length,
+      dataLength: variants.length,
       onPrimary: () async {
         await _getAttributes(
           attributes: (grouped) async =>
@@ -92,23 +92,18 @@ class _ListVariantsState extends State<ListVariants> {
         );
       },
       onRefresh: () =>
-          context.read<AttributeBloc>().add(RefreshSetups<Attribute>()),
+          context.read<VariantBloc>().add(RefreshSetups<Variant>()),
     );
   }
 
-  Future<void> _onEditTap(List<Attribute> attributes, String id) async {
-    final attribute = Attribute.findAttributesById(attributes, id).first;
-    await context.openAddVariant(serverVariant: attribute);
-  }
-
-  Future<void> _onDeleteTap(List<Attribute> attributes, String id) async {
-    final attribute = Attribute.findAttributesById(attributes, id).first;
+  Future<void> _onDeleteTap(List<Variant> variants, String id) async {
+    final variant = Variant.findVariantsById(variants, id).first;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      /// Delete specific Attribute
-      context.read<AttributeBloc>().add(
-        DeleteSetup<String>(documentId: attribute.id),
+      /// Delete specific Variant
+      context.read<VariantBloc>().add(
+        DeleteSetup<String>(documentId: variant.id),
       );
     }
   }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CustomSwitchTile extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
-  final String title;
+  final dynamic title;
   final String subtitle;
   final bool isSelected;
   final EdgeInsetsGeometry? padding;
@@ -23,7 +23,7 @@ class CustomSwitchTile extends StatelessWidget {
       dense: true,
       contentPadding: padding,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      title: Text(
+      title: title is Widget ? title:Text(
         title,
         style: context.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.w500,
