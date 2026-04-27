@@ -11,14 +11,18 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/form/custom_switch_tile.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/item_master_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/item_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/item_master/widget/item_master_form_fields.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/widget/attribute_selector.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/widget/variants_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -77,8 +81,9 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   String _imNumber = '';
   bool _isSubmitting = false;
   bool _isVariantEnabled = false;
-  late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
   final List<String> _taxCodes = [];
+  List<Map<String, Attribute>> _variants = [];
+  late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
 
   void _updateValidity() => _formKey.updateValidity(
     currentValidity: _isFormValid,
@@ -243,37 +248,42 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           children: [_buildTaxModeSelector()],
         ),
 
-        SwitchListTile(
+        /// Warehouse + Sub-location + Bin address
+        FormGroupCard(
+          isExpanded: false,
+          title: '7.Warehouse + Sub-location + Bin',
+          subTitle:
+              '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
+          children: [/*Widget here*/],
+        ),
+
+        CustomSwitchTile(
+          dense: false,
           title: Text(
             'Enable Variants',
             style: TextStyle(fontWeight: FontWeight.w500),
           ),
-          subtitle: Text(
-            'Create multiple versions of this item using attributes like size or color.',
-          ),
-          value: _isVariantEnabled,
+          subtitle:
+              'Create multiple versions of this $_itemType using attributes like size or color.',
+          isSelected: _isVariantEnabled,
           onChanged: (val) => setState(() => _isVariantEnabled = val),
         ),
 
         /// Attributes & Variants
         if (_isVariantEnabled) ...{
-          FormGroupCard(
-            isExpanded: false,
-            title: '7.Attributes & Variants',
-            subTitle:
-                '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
-            children: [/*Widget here*/],
+          AttributePanel(
+            generatedVariants: (v) {
+              setState(() => _variants = v);
+            },
+            actionBuilder: context.elevatedButton(
+              'Preview Variants',
+              onPressed: () => context.showVariantPreview(
+                itemCode: "TS-001",
+                variants: _variants,
+              ),
+            ),
           ),
         },
-
-        /// Warehouse + Sub-location + Bin address
-        FormGroupCard(
-          isExpanded: false,
-          title: '8.Warehouse + Sub-location + Bin',
-          subTitle:
-              '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
-          children: [/*Widget here*/],
-        ),
 
         const SizedBox(height: 20),
         Text(

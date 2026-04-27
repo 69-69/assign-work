@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class CustomSwitchTile extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
+  final bool dense;
   final dynamic title;
-  final String subtitle;
+  final dynamic subtitle;
   final bool isSelected;
   final EdgeInsetsGeometry? padding;
 
@@ -15,21 +16,26 @@ class CustomSwitchTile extends StatelessWidget {
     required this.isSelected,
     required this.onChanged,
     this.padding,
+    this.dense = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
-      dense: true,
+      dense: dense,
       contentPadding: padding,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      title: title is Widget ? title:Text(
-        title,
-        style: context.textTheme.bodySmall?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(subtitle, style: context.textTheme.bodySmall),
+      title: title is Widget
+          ? title
+          : Text(
+              title,
+              style: context.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+      subtitle: subtitle is Widget
+          ? subtitle
+          : Text(subtitle, style: context.textTheme.bodySmall),
       value: isSelected,
       onChanged: onChanged,
     );

@@ -9,6 +9,7 @@ class FormGroupCard extends StatefulWidget {
   final String helperText;
   final bool isExpanded;
   final Color? bgColor;
+  final double? runSpacing;
   final double? cardElevation;
   final Color? textColor;
   final List<Widget> children;
@@ -23,6 +24,7 @@ class FormGroupCard extends StatefulWidget {
     super.key,
     this.formKey,
     this.bgColor,
+    this.runSpacing,
     this.cardElevation,
     this.textColor,
     this.title = '',
@@ -127,7 +129,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
               maintainSize: false,
               // Prevent layout jump
               child: Wrap(
-                runSpacing: 14.0,
+                runSpacing: widget.runSpacing ?? 10.0,
                 direction: _scrollDirection,
                 children: _children,
               ),
