@@ -43,8 +43,8 @@ abstract class RouteNames {
   static const liveChatSupport = 'live_chat_support_app';
   static const tenantChat = 'tenant_chat_screen';
 
-  /// ───────────────────────── 📄 User Guide/Manual ─────────────────────────
-  static const userGuideApp = 'user_guide_app';
+  /// ───────────────────────── 📄 App-Training/Manual ─────────────────────────
+  static const appTraining = 'app_training_app';
   static const howToConfigApp = 'how_to_config_app';
   static const howToRenewLicense = 'how_to_renew_license';
 

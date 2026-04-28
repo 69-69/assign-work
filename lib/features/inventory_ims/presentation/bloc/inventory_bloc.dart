@@ -49,24 +49,24 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshInventories<T>>(_onRefreshInventories);
-    on<GetInventories<T>>(_onGetInventories);
-    on<GetInventoryById<T>>(_onGetInventoryById);
-    on<GetInventoriesByIds<T>>(_onGetInventoriesByIds);
-    on<GetInventoriesWithSameId<T>>(_onGetInventoriesWithSameId);
-    on<SearchInventory<T>>(_onSearchInventory);
-    on<AddInventory<T>>(_onAddInventory);
-    on<AddInventory<List<T>>>(_onAddInventories);
-    on<UpdateInventory>(_onUpdateInventory);
-    on<DeleteInventory<String>>(_onDeleteInventory);
-    on<DeleteInventory<List<String>>>(_onDeleteInventories);
+    on<RefreshInventories<T>>(_onRefresh);
+    on<GetInventories<T>>(_onGet);
+    on<GetInventoryById<T>>(_onGetById);
+    on<GetInventoriesByIds<T>>(_onGetByIds);
+    on<GetInventoriesWithSameId<T>>(_onGetWithSameId);
+    on<SearchInventory<T>>(_onSearch);
+    on<AddInventory<T>>(_onAdd);
+    on<AddInventory<List<T>>>(_onAddMany);
+    on<UpdateInventory>(_onUpdate);
+    on<DeleteInventory<String>>(_onDelete);
+    on<DeleteInventory<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_InventoriesLoaded<T>>(_onInventoryLoaded);
-    on<_InventoryLoaded<T>>(_onSingleInventoryLoaded);
-    on<_InventoryLoadError>(_onInventoryLoadError);
+    on<_InventoriesLoaded<T>>(_onLoaded);
+    on<_InventoryLoaded<T>>(_onSingleLoaded);
+    on<_InventoryLoadError>(_onLoadError);
   }
 
-  Future<void> _onRefreshInventories(
+  Future<void> _onRefresh(
     RefreshInventories<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -88,8 +88,8 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  /// Load All Data Function [_onGetInventories]
-  Future<void> _onGetInventories(
+  /// Load All Data Function [_onGet]
+  Future<void> _onGet(
     GetInventories<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -113,7 +113,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onGetInventoriesByIds(
+  Future<void> _onGetByIds(
     GetInventoriesByIds<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -135,7 +135,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onGetInventoryById(
+  Future<void> _onGetById(
     GetInventoryById<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -158,7 +158,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onGetInventoriesWithSameId(
+  Future<void> _onGetWithSameId(
     GetInventoriesWithSameId<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -181,7 +181,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onSearchInventory(
+  Future<void> _onSearch(
     SearchInventory<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -204,7 +204,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onAddInventory(
+  Future<void> _onAdd(
     AddInventory<T> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -223,7 +223,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onAddInventories(
+  Future<void> _onAddMany(
     AddInventory<List<T>> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -245,7 +245,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateInventory(
+  Future<void> _onUpdate(
     UpdateInventory event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -272,7 +272,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onDeleteInventory(
+  Future<void> _onDelete(
     DeleteInventory<String> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -291,7 +291,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     }
   }
 
-  Future<void> _onDeleteInventories(
+  Future<void> _onDeleteMany(
     DeleteInventory<List<String>> event,
     Emitter<InventoryState<T>> emit,
   ) async {
@@ -322,14 +322,14 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     emit(InventoryLoaded<T>(event.shortID));
   }
 
-  void _onInventoryLoaded(
+  void _onLoaded(
     _InventoriesLoaded<T> event,
     Emitter<InventoryState<T>> emit,
   ) {
     emit(InventoriesLoaded<T>(event.data));
   }
 
-  void _onSingleInventoryLoaded(
+  void _onSingleLoaded(
     _InventoryLoaded<T> event,
     Emitter<InventoryState<T>> emit,
   ) {
@@ -341,7 +341,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
   /// This method saves/logs the encountered error to the `centralized error cache`
   /// for diagnostics and emits an [InventoryError] state to notify listeners
   /// of the failure.
-  void _onInventoryLoadError(
+  void _onLoadError(
     _InventoryLoadError event,
     Emitter<InventoryState<T>> emit,
   ) {

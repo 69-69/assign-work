@@ -9,6 +9,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'procurement_event.dart';
+
 part 'procurement_state.dart';
 
 /// ProcurementBloc
@@ -51,25 +52,25 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshProcurements<T>>(_onRefreshProcurements);
-    on<GetProcurements<T>>(_onGetProcurements);
-    on<GetProcurementById<T>>(_onGetProcurementById);
-    on<GetProcurementsByIds<T>>(_onGetProcurementsByIds);
-    on<GetProcurementsWithSameId<T>>(_onGetProcurementsWithSameId);
-    on<SearchProcurement<T>>(_onSearchProcurement);
-    on<AddProcurement<T>>(_onAddProcurement);
-    on<AddProcurement<List<T>>>(_onAddProcurements);
-    on<UpdateProcurement>(_onUpdateProcurement);
+    on<RefreshProcurements<T>>(_onRefresh);
+    on<GetProcurements<T>>(_onGet);
+    on<GetProcurementById<T>>(_onGetById);
+    on<GetProcurementsByIds<T>>(_onGetByIds);
+    on<GetProcurementsWithSameId<T>>(_onGetWithSameId);
+    on<SearchProcurement<T>>(_onSearch);
+    on<AddProcurement<T>>(_onAdd);
+    on<AddProcurement<List<T>>>(_onAddMany);
+    on<UpdateProcurement>(_onUpdate);
     on<AuditProcurement>(_onAuditLog);
-    on<DeleteProcurement<String>>(_onDeleteProcurement);
-    on<DeleteProcurement<List<String>>>(_onDeleteProcurements);
+    on<DeleteProcurement<String>>(_onDelete);
+    on<DeleteProcurement<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_ProcurementsLoaded<T>>(_onProcurementLoaded);
-    on<_ProcurementLoaded<T>>(_onSingleProcurementLoaded);
-    on<_ProcurementLoadError>(_onProcurementLoadError);
+    on<_ProcurementsLoaded<T>>(_onLoaded);
+    on<_ProcurementLoaded<T>>(_onSingleLoaded);
+    on<_ProcurementLoadError>(_onLoadError);
   }
 
-  Future<void> _onRefreshProcurements(
+  Future<void> _onRefresh(
     RefreshProcurements<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -91,8 +92,8 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  /// Load All Data Function [_onGetProcurements]
-  Future<void> _onGetProcurements(
+  /// Load All Data Function [_onGet]
+  Future<void> _onGet(
     GetProcurements<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -135,7 +136,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetProcurementsByIds(
+  Future<void> _onGetByIds(
     GetProcurementsByIds<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -157,7 +158,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetProcurementById(
+  Future<void> _onGetById(
     GetProcurementById<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -180,7 +181,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onGetProcurementsWithSameId(
+  Future<void> _onGetWithSameId(
     GetProcurementsWithSameId<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -203,7 +204,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onSearchProcurement(
+  Future<void> _onSearch(
     SearchProcurement<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -226,7 +227,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onAddProcurement(
+  Future<void> _onAdd(
     AddProcurement<T> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -245,7 +246,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onAddProcurements(
+  Future<void> _onAddMany(
     AddProcurement<List<T>> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -267,7 +268,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateProcurement(
+  Future<void> _onUpdate(
     UpdateProcurement event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -315,7 +316,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onDeleteProcurement(
+  Future<void> _onDelete(
     DeleteProcurement<String> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -334,7 +335,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     }
   }
 
-  Future<void> _onDeleteProcurements(
+  Future<void> _onDeleteMany(
     DeleteProcurement<List<String>> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
@@ -365,21 +366,21 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     emit(ProcurementLoaded<T>(event.shortID));
   }
 
-  void _onProcurementLoaded(
+  void _onLoaded(
     _ProcurementsLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementsLoaded<T>(event.data));
   }
 
-  void _onSingleProcurementLoaded(
+  void _onSingleLoaded(
     _ProcurementLoaded<T> event,
     Emitter<ProcurementState<T>> emit,
   ) {
     emit(ProcurementLoaded<T>(event.data));
   }
 
-  void _onProcurementLoadError(
+  void _onLoadError(
     _ProcurementLoadError event,
     Emitter<ProcurementState<T>> emit,
   ) {

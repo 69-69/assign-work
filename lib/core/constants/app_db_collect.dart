@@ -97,8 +97,8 @@ const liveChatSupportDBColPath = 'live_chat_support_db';
 
 // Associate agents with their clients
 const agentClientsDBColPath = 'agents_clients_mapping_db';
-// User guides/manuals and documentation
-const userGuideDBColPath = 'user_guide_db';
+// App-Training/manuals and documentation
+const appTrainingDBColPath = 'app_training_db';
 // Employee accounts
 const employeesDBColPath = 'employee_account_db';
 // Tracking employees auth sessions
@@ -189,7 +189,7 @@ const erpCacheBoxes = [
   posOrdersDBColPath,
 
   // Support & guides
-  userGuideDBColPath,
+  appTrainingDBColPath,
   liveChatSupportDBColPath,
 
   // Agent / client mapping

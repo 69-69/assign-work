@@ -52,25 +52,25 @@ class SalesDistributionBloc<T>
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshSalesDistributions<T>>(_onRefreshSalesDistributions);
-    on<GetSalesDistributions<T>>(_onGetSalesDistributions);
-    on<GetSalesDistributionById<T>>(_onGetSalesDistributionById);
-    on<GetSalesDistributionsByIds<T>>(_onGetSalesDistributionsByIds);
-    on<GetSalesDistributionsWithSameId<T>>(_onGetSalesDistributionsWithSameId);
-    on<SearchSalesDistribution<T>>(_onSearchSalesDistribution);
-    on<AddSalesDistribution<T>>(_onAddSalesDistribution);
-    on<AddSalesDistribution<List<T>>>(_onAddSalesDistributions);
-    on<UpdateSalesDistribution>(_onUpdateSalesDistribution);
+    on<RefreshSalesDistributions<T>>(_onRefresh);
+    on<GetSalesDistributions<T>>(_onGet);
+    on<GetSalesDistributionById<T>>(_onGetById);
+    on<GetSalesDistributionsByIds<T>>(_onGetByIds);
+    on<GetSalesDistributionsWithSameId<T>>(_onGetWithSameId);
+    on<SearchSalesDistribution<T>>(_onSearch);
+    on<AddSalesDistribution<T>>(_onAdd);
+    on<AddSalesDistribution<List<T>>>(_onAddMany);
+    on<UpdateSalesDistribution>(_onUpdate);
     on<AuditSalesDistribution>(_onAuditLog);
-    on<DeleteSalesDistribution<String>>(_onDeleteSalesDistribution);
-    on<DeleteSalesDistribution<List<String>>>(_onDeleteSalesDistributions);
+    on<DeleteSalesDistribution<String>>(_onDelete);
+    on<DeleteSalesDistribution<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_SalesDistributionsLoaded<T>>(_onSalesDistributionLoaded);
-    on<_SalesDistributionLoaded<T>>(_onSingleSalesDistributionLoaded);
-    on<_SalesDistributionLoadError>(_onSalesDistributionLoadError);
+    on<_SalesDistributionsLoaded<T>>(_onSalesLoaded);
+    on<_SalesDistributionLoaded<T>>(_onSingleLoaded);
+    on<_SalesDistributionLoadError>(_onLoadError);
   }
 
-  Future<void> _onRefreshSalesDistributions(
+  Future<void> _onRefresh(
     RefreshSalesDistributions<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -94,8 +94,8 @@ class SalesDistributionBloc<T>
     }
   }
 
-  /// Load All Data Function [_onGetSalesDistributions]
-  Future<void> _onGetSalesDistributions(
+  /// Load All Data Function [_onGet]
+  Future<void> _onGet(
     GetSalesDistributions<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -122,7 +122,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetSalesDistributionsByIds(
+  Future<void> _onGetByIds(
     GetSalesDistributionsByIds<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -148,7 +148,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetSalesDistributionById(
+  Future<void> _onGetById(
     GetSalesDistributionById<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -175,7 +175,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onGetSalesDistributionsWithSameId(
+  Future<void> _onGetWithSameId(
     GetSalesDistributionsWithSameId<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -202,7 +202,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onSearchSalesDistribution(
+  Future<void> _onSearch(
     SearchSalesDistribution<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -227,7 +227,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onAddSalesDistribution(
+  Future<void> _onAdd(
     AddSalesDistribution<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -250,7 +250,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onAddSalesDistributions(
+  Future<void> _onAddMany(
     AddSalesDistribution<List<T>> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -272,7 +272,7 @@ class SalesDistributionBloc<T>
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateSalesDistribution(
+  Future<void> _onUpdate(
     UpdateSalesDistribution event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -316,7 +316,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onDeleteSalesDistribution(
+  Future<void> _onDelete(
     DeleteSalesDistribution<String> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -335,7 +335,7 @@ class SalesDistributionBloc<T>
     }
   }
 
-  Future<void> _onDeleteSalesDistributions(
+  Future<void> _onDeleteMany(
     DeleteSalesDistribution<List<String>> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
@@ -363,21 +363,21 @@ class SalesDistributionBloc<T>
     emit(SalesDistributionLoaded<T>(event.shortID));
   }
 
-  void _onSalesDistributionLoaded(
+  void _onSalesLoaded(
     _SalesDistributionsLoaded<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) {
     emit(SalesDistributionsLoaded<T>(event.data));
   }
 
-  void _onSingleSalesDistributionLoaded(
+  void _onSingleLoaded(
     _SalesDistributionLoaded<T> event,
     Emitter<SalesDistributionState<T>> emit,
   ) {
     emit(SalesDistributionLoaded<T>(event.data));
   }
 
-  void _onSalesDistributionLoadError(
+  void _onLoadError(
     _SalesDistributionLoadError event,
     Emitter<SalesDistributionState<T>> emit,
   ) {

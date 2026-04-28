@@ -16,7 +16,7 @@ import 'package:assign_erp/features/system_admin/data/models/permission_model.da
 import 'package:assign_erp/features/system_admin/data/models/permission_tab_content_model.dart';
 import 'package:assign_erp/features/system_admin/data/permission/setup_permission.dart';
 import 'package:assign_erp/features/trouble_shooting/data/permission/trouble_shoot_permission.dart';
-import 'package:assign_erp/features/user_guide/data/permission/user_guide_permission.dart';
+import 'package:assign_erp/features/app_training/data/permission/app_training_permission.dart';
 import 'package:flutter/material.dart';
 
 final _tabContent = [
@@ -69,11 +69,11 @@ final _tabContent = [
     permissions: agentPermissions,
   ),
   PermissionTabContent<SubscriptionLicenses>(
-    label: 'User Guide',
+    label: 'App Training',
     icon: Icons.menu_book,
     accessEnum: SubscriptionLicenses.paidTraining,
-    displayName: tManualDisplayName,
-    permissions: tManualPermission,
+    displayName: appTrainingTitle,
+    permissions: allAppTrainingPermission,
     highRiskPermissions: highRiskPermissions,
   ),
   PermissionTabContent<SubscriptionLicenses>(

@@ -89,9 +89,9 @@ extension LicenseTiles on BuildContext {
       },
       {
         'hasSplit': true,
-        'label': MainModuleId.guide.getLabel,
-        'icon': MainModuleId.guide.getIcon,
-        'route': RouteNames.userGuideApp,
+        'label': MainModuleId.training.getLabel,
+        'icon': MainModuleId.training.getIcon,
+        'route': RouteNames.appTraining,
         'param': {},
         'access': _getName(SubscriptionLicenses.paidTraining),
         'description':

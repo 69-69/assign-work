@@ -19,4 +19,4 @@ export 'package:cloud_firestore/cloud_firestore.dart';
 export 'package:flutter_bloc/flutter_bloc.dart';
 
 export 'pos_system/presentation/bloc/index.dart';
-export 'user_guide/presentation/bloc/index.dart';
+export 'app_training/presentation/bloc/index.dart';

@@ -47,23 +47,23 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   }
 
   Future<void> _initialize() async {
-    on<RefreshTenants<T>>(_onRefreshTenants);
-    on<LoadTenants<T>>(_onLoadTenants);
-    on<LoadTenantById<T>>(_onLoadTenantById);
-    on<UpdateTenant>(_onUpdateTenant);
-    on<OverrideTenant>(_onOverrideTenant);
+    on<RefreshTenants<T>>(_onRefresh);
+    on<LoadTenants<T>>(_onLoad);
+    on<LoadTenantById<T>>(_onLoadById);
+    on<UpdateTenant>(_onUpdate);
+    on<OverrideTenant>(_onOverride);
     on<RevokeAuthorizedDeviceId>(_onRevokeAuthorizedDeviceIds);
-    on<DeleteTenant<String>>(_onDeleteTenant);
-    on<DeleteTenant<List<String>>>(_onDeleteMultiTenants);
-    on<_TenantsLoaded<T>>(_onTenantsLoaded);
-    on<_TenantLoaded<T>>(_onTenantLoaded);
-    on<_TenantError<T>>(_onTenantError);
-    on<AddSubscription<T>>(_onAddSubscription);
-    on<SearchSubscriptions<T>>(_onSearchSubscription);
-    on<_SubscriptionError<T>>(_onSubscriptionError);
+    on<DeleteTenant<String>>(_onDelete);
+    on<DeleteTenant<List<String>>>(_onDeleteMany);
+    on<_TenantsLoaded<T>>(_onManyLoaded);
+    on<_TenantLoaded<T>>(_onLoaded);
+    on<_TenantError<T>>(_onError);
+    on<AddSubscription<T>>(_onAddSub);
+    on<SearchSubscriptions<T>>(_onSearchSub);
+    on<_SubscriptionError<T>>(_onSubError);
   }
 
-  Future<void> _onRefreshTenants(
+  Future<void> _onRefresh(
     RefreshTenants<T> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -84,7 +84,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onSearchSubscription(
+  Future<void> _onSearchSub(
     SearchSubscriptions<T> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -107,7 +107,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onAddSubscription(
+  Future<void> _onAddSub(
     AddSubscription<T> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -126,8 +126,8 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  /// Load All Data Function [_onLoadTenants]
-  Future<void> _onLoadTenants(
+  /// Load All Data Function [_onLoad]
+  Future<void> _onLoad(
     LoadTenants<T> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -145,7 +145,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onLoadTenantById(
+  Future<void> _onLoadById(
     LoadTenantById<T> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -166,7 +166,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateTenant(
+  Future<void> _onUpdate(
     UpdateTenant event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -194,7 +194,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onOverrideTenant(
+  Future<void> _onOverride(
     OverrideTenant event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -247,7 +247,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onDeleteTenant(
+  Future<void> _onDelete(
     DeleteTenant<String> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -266,7 +266,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  Future<void> _onDeleteMultiTenants(
+  Future<void> _onDeleteMany(
     DeleteTenant<List<String>> event,
     Emitter<TenantState<T>> emit,
   ) async {
@@ -285,11 +285,11 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     }
   }
 
-  void _onTenantsLoaded(_TenantsLoaded<T> event, Emitter<TenantState<T>> emit) {
+  void _onManyLoaded(_TenantsLoaded<T> event, Emitter<TenantState<T>> emit) {
     emit(TenantsLoaded<T>(event.data));
   }
 
-  void _onTenantLoaded(_TenantLoaded<T> event, Emitter<TenantState<T>> emit) {
+  void _onLoaded(_TenantLoaded<T> event, Emitter<TenantState<T>> emit) {
     emit(TenantLoaded<T>(event.data));
   }
 
@@ -298,7 +298,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   /// This method saves/logs the encountered error to the `centralized error cache`
   /// for diagnostics and emits an [TenantError] state to notify listeners
   /// of the failure.
-  void _onTenantError(_TenantError<T> event, Emitter<TenantState<T>> emit) {
+  void _onError(_TenantError<T> event, Emitter<TenantState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'tenant_bloc');
     emit(TenantError<T>(event.error));
@@ -309,7 +309,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
   /// This method saves/logs the encountered error to the `centralized error cache`
   /// for diagnostics and emits an [SubscriptionError] state to notify listeners
   /// of the failure.
-  void _onSubscriptionError(
+  void _onSubError(
     _SubscriptionError<T> event,
     Emitter<TenantState<T>> emit,
   ) {

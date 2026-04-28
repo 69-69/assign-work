@@ -57,7 +57,7 @@ const stockManagementAppTitle = 'stock management';
 const customerAppTitle = 'customer - crm';
 const systemAdminAppTitle = 'System Administration';
 const storeSwitcherAppTitle = 'switch store branch';
-const userGuideAppTitle = 'user guide';
+const appTrainingAppTitle = 'app training';
 
 /// MANAGEMENT SUB-SCREENS TITLES
 const masterDataScreenTitle = 'master data';
@@ -102,7 +102,7 @@ const whBinStorageScreenTitle = 'WH Bin Storage';
 const customersScreenTitle = 'customer management';
 const posSalesScreenTitle = 'p.o.s - sales';
 const posOrdersScreenTitle = 'p.o.s - orders';
-const guideToScreenTitle = 'Guide to...';
+const trainingToScreenTitle = 'Training';
 
 const borderRadius = 15.0;
 const kAppBarHeight = 80.0;

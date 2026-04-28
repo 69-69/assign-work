@@ -46,11 +46,11 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
   }
 
   Future<void> _initialize() async {
-    on<RefreshClients<T>>(_onRefreshClients);
-    on<LoadClients<T>>(_onLoadClients);
-    on<_ClientsLoaded<T>>(_onClientsLoaded);
-    on<_ClientLoaded<T>>(_onClientLoaded);
-    on<_AgentError>(_onAgentError);
+    on<RefreshClients<T>>(_onRefresh);
+    on<LoadClients<T>>(_onLoad);
+    on<_ClientsLoaded<T>>(_onManyLoaded);
+    on<_ClientLoaded<T>>(_onLoaded);
+    on<_AgentError>(_onError);
   }
 
   /*Future<void> _onRefreshClients(
@@ -77,7 +77,7 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
     }
   }*/
 
-  Future<void> _onRefreshClients(
+  Future<void> _onRefresh(
     RefreshClients<T> event,
     Emitter<AgentState<T>> emit,
   ) async {
@@ -97,8 +97,8 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
     }
   }
 
-  /// Load All Data Function [_onLoadClients]
-  Future<void> _onLoadClients(
+  /// Load All Data Function [_onLoad]
+  Future<void> _onLoad(
     LoadClients<T> event,
     Emitter<AgentState<T>> emit,
   ) async {
@@ -116,15 +116,15 @@ class AgentBloc<T> extends Bloc<AgentEvent, AgentState<T>> {
     }
   }
 
-  void _onClientsLoaded(_ClientsLoaded<T> event, Emitter<AgentState<T>> emit) {
+  void _onManyLoaded(_ClientsLoaded<T> event, Emitter<AgentState<T>> emit) {
     emit(ClientsLoaded<T>(event.data));
   }
 
-  void _onClientLoaded(_ClientLoaded<T> event, Emitter<AgentState<T>> emit) {
+  void _onLoaded(_ClientLoaded<T> event, Emitter<AgentState<T>> emit) {
     emit(ClientLoaded<T>(event.data));
   }
 
-  void _onAgentError(_AgentError event, Emitter<AgentState<T>> emit) {
+  void _onError(_AgentError event, Emitter<AgentState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'Agent_bloc');
     emit(AgentError<T>(event.error));

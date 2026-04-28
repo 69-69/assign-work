@@ -65,6 +65,7 @@ class App extends StatelessWidget {
       _bloc<WarehouseBloc>(() => WarehouseBloc(firestore: _fireStore)),
       _bloc<WHLocationBloc>(() => WHLocationBloc(firestore: _fireStore)),
       _bloc<WHBinBloc>(() => WHBinBloc(firestore: _fireStore)),
+      _bloc<DepartmentBloc>(() => DepartmentBloc(firestore: _fireStore)),
 
       /// @TODO: Old Inventory Bloc - Remove (POS needs refactoring before Removing this)
       _bloc<OrderBloc>(() => OrderBloc(firestore: _fireStore)),
@@ -96,9 +97,8 @@ class App extends StatelessWidget {
       _bloc<ChatBloc>(() => ChatBloc(firestore: _fireStore)),
       _bloc<AllTenantsBloc>(() => AllTenantsBloc(firestore: _fireStore)),
       _bloc<SubscriptionBloc>(() => SubscriptionBloc(firestore: _fireStore)),
-      // Software User Guide BlocProvider
+      // Software App-Training BlocProvider
       _bloc<HowToBloc>(() => HowToBloc(firestore: _fireStore)),
-      _bloc<DepartmentBloc>(() => DepartmentBloc(firestore: _fireStore)),
     ];
 
     // https://bloclibrary.dev/tutorials/flutter-login/

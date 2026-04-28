@@ -8,12 +8,14 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'setup_event.dart';
+
 part 'setup_state.dart';
 
 /// SetupBloc
 ///
 class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   final SetupRepository _setupRepository;
+
   // final FirebaseFirestore _firestore;
   final String collectionPath;
 
@@ -51,25 +53,25 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshSetups<T>>(_onRefreshSetups);
-    on<GetSetups<T>>(_onGetSetups);
-    on<GetSetupById<T>>(_onGetSetupById);
-    on<GetSetupsByIds<T>>(_onGetSetupsByIds);
-    on<GetSetupsWithSameId<T>>(_onGetSetupsWithSameId);
-    on<SearchSetup<T>>(_onSearchSetup);
-    on<AddSetup<T>>(_onAddSetup);
-    on<AddSetup<List<T>>>(_onAddSetups);
-    on<UpdateSetup>(_onUpdateSetup);
-    on<OverrideSetup>(_onOverrideSetup);
-    on<DeleteSetup<String>>(_onDeleteSetup);
-    on<DeleteSetup<List<String>>>(_onDeleteSetups);
+    on<RefreshSetups<T>>(_onRefresh);
+    on<GetSetups<T>>(_onGet);
+    on<GetSetupById<T>>(_onGetById);
+    on<GetSetupsByIds<T>>(_onGetByIds);
+    on<GetSetupsWithSameId<T>>(_onGetWithSameId);
+    on<SearchSetup<T>>(_onSearch);
+    on<AddSetup<T>>(_onAdd);
+    on<AddSetup<List<T>>>(_onAddMany);
+    on<UpdateSetup>(_onUpdate);
+    on<OverrideSetup>(_onOverride);
+    on<DeleteSetup<String>>(_onDelete);
+    on<DeleteSetup<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_SetupsLoaded<T>>(_onSetupsLoaded);
-    on<_SetupLoaded<T>>(_onSetupLoaded);
-    on<_SetupLoadError>(_onSetupLoadError);
+    on<_SetupsLoaded<T>>(_onManyLoaded);
+    on<_SetupLoaded<T>>(_onLoaded);
+    on<_SetupLoadError>(_onLoadError);
   }
 
-  Future<void> _onRefreshSetups(
+  Future<void> _onRefresh(
     RefreshSetups<T> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -91,11 +93,8 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  /// Load All Data Function [_onGetSetups]
-  Future<void> _onGetSetups(
-    GetSetups<T> event,
-    Emitter<SetupState<T>> emit,
-  ) async {
+  /// Load All Data Function [_onGet]
+  Future<void> _onGet(GetSetups<T> event, Emitter<SetupState<T>> emit) async {
     emit(LoadingSetup<T>());
 
     try {
@@ -130,7 +129,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onGetSetupsByIds(
+  Future<void> _onGetByIds(
     GetSetupsByIds<T> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -152,7 +151,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onGetSetupById(
+  Future<void> _onGetById(
     GetSetupById<T> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -175,7 +174,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onGetSetupsWithSameId(
+  Future<void> _onGetWithSameId(
     GetSetupsWithSameId<T> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -198,7 +197,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onSearchSetup(
+  Future<void> _onSearch(
     SearchSetup<T> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -221,10 +220,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onAddSetup(
-    AddSetup<T> event,
-    Emitter<SetupState<T>> emit,
-  ) async {
+  Future<void> _onAdd(AddSetup<T> event, Emitter<SetupState<T>> emit) async {
     try {
       // Add data to Firestore and update local storage
       await _setupRepository.createData(toCache(event.data));
@@ -240,7 +236,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onAddSetups(
+  Future<void> _onAddMany(
     AddSetup<List<T>> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -262,10 +258,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateSetup(
-    UpdateSetup event,
-    Emitter<SetupState<T>> emit,
-  ) async {
+  Future<void> _onUpdate(UpdateSetup event, Emitter<SetupState<T>> emit) async {
     try {
       final isPartialUpdate = event.mapData?.isNotEmpty ?? false;
       final data = isPartialUpdate
@@ -290,7 +283,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onOverrideSetup(
+  Future<void> _onOverride(
     OverrideSetup event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -310,7 +303,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onDeleteSetup(
+  Future<void> _onDelete(
     DeleteSetup<String> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -329,7 +322,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     }
   }
 
-  Future<void> _onDeleteSetups(
+  Future<void> _onDeleteMany(
     DeleteSetup<List<String>> event,
     Emitter<SetupState<T>> emit,
   ) async {
@@ -356,11 +349,11 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     emit(SetupLoaded<T>(event.shortID));
   }
 
-  void _onSetupsLoaded(_SetupsLoaded<T> event, Emitter<SetupState<T>> emit) {
+  void _onManyLoaded(_SetupsLoaded<T> event, Emitter<SetupState<T>> emit) {
     emit(SetupsLoaded<T>(event.data));
   }
 
-  void _onSetupLoaded(_SetupLoaded<T> event, Emitter<SetupState<T>> emit) {
+  void _onLoaded(_SetupLoaded<T> event, Emitter<SetupState<T>> emit) {
     emit(SetupLoaded<T>(event.data));
   }
 
@@ -369,7 +362,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
   /// This method saves/logs the encountered error to the `centralized error cache`
   /// for diagnostics and emits an [SetupError] state to notify listeners
   /// of the failure.
-  void _onSetupLoadError(_SetupLoadError event, Emitter<SetupState<T>> emit) {
+  void _onLoadError(_SetupLoadError event, Emitter<SetupState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'setup_bloc');
     emit(SetupError<T>(event.error));

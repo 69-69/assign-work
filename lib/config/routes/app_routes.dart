@@ -18,7 +18,7 @@ import 'package:assign_erp/features/sales_distribution/presentation/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/index.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/variants_master_screen.dart';
 import 'package:assign_erp/features/trouble_shooting/presentation/index.dart';
-import 'package:assign_erp/features/user_guide/presentation/index.dart';
+import 'package:assign_erp/features/app_training/presentation/index.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -586,10 +586,10 @@ GoRoute _agentRoute() {
   );
 }
 
-/// User User Guide App
-GoRoute _userGuideRoute() {
-  // Sub routes for User Guide
-  final List<StaticRouteConfig> userGuideRoutes = [
+/// User App-Training App
+GoRoute _appTrainingRoute() {
+  // Sub routes for App-Training
+  final List<StaticRouteConfig> appTrainingRoutes = [
     (
       name: RouteNames.howToConfigApp,
       openTab: false,
@@ -603,11 +603,11 @@ GoRoute _userGuideRoute() {
   ];
 
   return GoRoute(
-    name: RouteNames.userGuideApp,
-    path: RouteNames.userGuideApp,
+    name: RouteNames.appTraining,
+    path: RouteNames.appTraining,
     pageBuilder: (context, state) =>
-        _animateTransition(state, const UserGuideApp()),
-    routes: _mapStaticRoutes(userGuideRoutes),
+        _animateTransition(state, const AppTraining()),
+    routes: _mapStaticRoutes(appTrainingRoutes),
   );
 }
 
@@ -670,7 +670,7 @@ List<RouteBase> appRouterConfig = <RouteBase>[
           _customerRoute(),
           _posRoute(),
           _salesDistributionRoute(),
-          _userGuideRoute(),
+          _appTrainingRoute(),
           _liveSupportRoute(),
           _agentRoute(),
           _troubleShootRoute(),

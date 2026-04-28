@@ -7,7 +7,7 @@ enum MainModuleId {
   invent,
   system,
   trouble,
-  guide,
+  training,
   sales,
   support,
   procure,
@@ -25,7 +25,7 @@ const Map<MainModuleId, ({String label, IconData icon})> mainModules = {
     icon: Icons.admin_panel_settings,
   ),
   MainModuleId.trouble: (label: 'Troubleshoot', icon: Icons.troubleshoot),
-  MainModuleId.guide: (label: 'User . Guide', icon: Icons.library_books),
+  MainModuleId.training: (label: 'App . Training', icon: Icons.library_books),
   MainModuleId.sales: (
     label: 'Sales & Distribution',
     icon: Icons.local_shipping,

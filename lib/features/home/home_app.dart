@@ -175,7 +175,7 @@ class _Button extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ElevatedButton.icon(
-          onPressed: () => context.goNamed(RouteNames.userGuide),
+          onPressed: () => context.goNamed(RouteNames.appTraining),
           icon: const Icon(Icons.how_to_reg),
           label: Text(
             'guide to'.toUppercaseAllLetter,

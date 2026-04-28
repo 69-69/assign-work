@@ -49,24 +49,24 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshCustomers<T>>(_onRefreshCustomers);
-    on<GetCustomers<T>>(_onGetCustomers);
-    on<GetCustomerById<T>>(_onGetCustomerById);
-    on<GetCustomersByIds<T>>(_onGetCustomersByIds);
-    on<GetCustomersWithSameId<T>>(_onGetCustomersWithSameId);
-    on<SearchCustomers<T>>(_onSearchCustomers);
-    on<AddCustomer<T>>(_onAddCustomer);
-    on<AddCustomer<List<T>>>(_onAddCustomers);
-    on<UpdateCustomer>(_onUpdateCustomer);
-    on<DeleteCustomer<String>>(_onDeleteCustomer);
-    on<DeleteCustomer<List<String>>>(_onDeleteCustomers);
+    on<RefreshCustomers<T>>(_onRefresh);
+    on<GetCustomers<T>>(_onGet);
+    on<GetCustomerById<T>>(_onGetById);
+    on<GetCustomersByIds<T>>(_onGetByIds);
+    on<GetCustomersWithSameId<T>>(_onGetWithSameId);
+    on<SearchCustomers<T>>(_onSearch);
+    on<AddCustomer<T>>(_onAdd);
+    on<AddCustomer<List<T>>>(_onAddMany);
+    on<UpdateCustomer>(_onUpdate);
+    on<DeleteCustomer<String>>(_onDelete);
+    on<DeleteCustomer<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_CustomersLoaded<T>>(_onCustomersLoaded);
-    on<_CustomerLoaded<T>>(_onCustomerLoaded);
-    on<_CustomerError>(_onCustomerError);
+    on<_CustomersLoaded<T>>(_onManyLoaded);
+    on<_CustomerLoaded<T>>(_onLoaded);
+    on<_CustomerError>(_onError);
   }
 
-  Future<void> _onRefreshCustomers(
+  Future<void> _onRefresh(
     RefreshCustomers<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -88,8 +88,8 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  /// Load All Data Function [_onGetCustomers]
-  Future<void> _onGetCustomers(
+  /// Load All Data Function [_onGet]
+  Future<void> _onGet(
     GetCustomers<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -148,7 +148,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     });
   }*/
 
-  Future<void> _onGetCustomersByIds(
+  Future<void> _onGetByIds(
     GetCustomersByIds<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -170,7 +170,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onGetCustomerById(
+  Future<void> _onGetById(
     GetCustomerById<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -193,7 +193,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onGetCustomersWithSameId(
+  Future<void> _onGetWithSameId(
     GetCustomersWithSameId<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -216,7 +216,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onSearchCustomers(
+  Future<void> _onSearch(
     SearchCustomers<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -239,7 +239,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onAddCustomer(
+  Future<void> _onAdd(
     AddCustomer<T> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -258,7 +258,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onAddCustomers(
+  Future<void> _onAddMany(
     AddCustomer<List<T>> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -280,7 +280,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdateCustomer(
+  Future<void> _onUpdate(
     UpdateCustomer event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -307,7 +307,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onDeleteCustomer(
+  Future<void> _onDelete(
     DeleteCustomer<String> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -326,7 +326,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     }
   }
 
-  Future<void> _onDeleteCustomers(
+  Future<void> _onDeleteMany(
     DeleteCustomer<List<String>> event,
     Emitter<CustomerState<T>> emit,
   ) async {
@@ -357,21 +357,21 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     emit(CustomerLoaded<T>(event.shortID));
   }
 
-  void _onCustomersLoaded(
+  void _onManyLoaded(
     _CustomersLoaded<T> event,
     Emitter<CustomerState<T>> emit,
   ) {
     emit(CustomersLoaded<T>(event.data));
   }
 
-  void _onCustomerLoaded(
+  void _onLoaded(
     _CustomerLoaded<T> event,
     Emitter<CustomerState<T>> emit,
   ) {
     emit(CustomerLoaded<T>(event.data));
   }
 
-  void _onCustomerError(_CustomerError event, Emitter<CustomerState<T>> emit) {
+  void _onError(_CustomerError event, Emitter<CustomerState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'customer_bloc');
     emit(CustomerError<T>(event.error));

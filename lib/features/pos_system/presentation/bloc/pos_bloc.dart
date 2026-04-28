@@ -51,24 +51,24 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
 
   Future<void> _initialize() async {
     // on<GetShortIDEvent<T>>(_onGetShortID);
-    on<RefreshPOSs<T>>(_onRefreshPOSs);
+    on<RefreshPOSs<T>>(_onRefresh);
     on<GetPOSs<T>>(_onGetPOS);
-    on<GetPOSById<T>>(_onGetPOSById);
-    on<GetPOSsByIds<T>>(_onGetPOSsByIds);
-    on<GetPOSsWithSameId<T>>(_onGetPOSsWithSameId);
-    on<SearchPOS<T>>(_onSearchPOS);
-    on<AddPOS<T>>(_onAddPOS);
-    on<AddPOS<List<T>>>(_onAddPOSs);
-    on<UpdatePOS>(_onUpdatePOS);
-    on<DeletePOS<String>>(_onDeletePOS);
-    on<DeletePOS<List<String>>>(_onDeletePOSs);
+    on<GetPOSById<T>>(_onGetById);
+    on<GetPOSsByIds<T>>(_onGetByIds);
+    on<GetPOSsWithSameId<T>>(_onGetWithSameId);
+    on<SearchPOS<T>>(_onSearch);
+    on<AddPOS<T>>(_onAdd);
+    on<AddPOS<List<T>>>(_onAddMany);
+    on<UpdatePOS>(_onUpdate);
+    on<DeletePOS<String>>(_onDelete);
+    on<DeletePOS<List<String>>>(_onDeleteMany);
     on<_ShortIDLoaded<T>>(_onShortUIDLoaded);
-    on<_POSLoaded<T>>(_onPOSLoaded);
-    on<_SinglePOSLoaded<T>>(_onSinglePOSLoaded);
-    on<_POSLoadError>(_onPOSLoadError);
+    on<_POSLoaded<T>>(_onLoaded);
+    on<_SinglePOSLoaded<T>>(_onSingleLoaded);
+    on<_POSLoadError>(_onLoadError);
   }
 
-  Future<void> _onRefreshPOSs(
+  Future<void> _onRefresh(
     RefreshPOSs<T> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -132,7 +132,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onGetPOSsByIds(
+  Future<void> _onGetByIds(
     GetPOSsByIds<T> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -154,7 +154,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onGetPOSById(
+  Future<void> _onGetById(
     GetPOSById<T> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -177,7 +177,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onGetPOSsWithSameId(
+  Future<void> _onGetWithSameId(
     GetPOSsWithSameId<T> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -200,7 +200,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onSearchPOS(
+  Future<void> _onSearch(
     SearchPOS<T> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -223,7 +223,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onAddPOS(AddPOS<T> event, Emitter<POSState<T>> emit) async {
+  Future<void> _onAdd(AddPOS<T> event, Emitter<POSState<T>> emit) async {
     try {
       // Add data to Firestore and update local storage
       await _posRepository.createData(toCache(event.data));
@@ -239,7 +239,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onAddPOSs(
+  Future<void> _onAddMany(
     AddPOS<List<T>> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -261,7 +261,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
   }
 
   /// Note:: use Generic or Map data update
-  Future<void> _onUpdatePOS(UpdatePOS event, Emitter<POSState<T>> emit) async {
+  Future<void> _onUpdate(UpdatePOS event, Emitter<POSState<T>> emit) async {
     try {
       final isPartialUpdate = event.mapData?.isNotEmpty ?? false;
       final data = isPartialUpdate
@@ -285,7 +285,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onDeletePOS(
+  Future<void> _onDelete(
     DeletePOS<String> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -304,7 +304,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     }
   }
 
-  Future<void> _onDeletePOSs(
+  Future<void> _onDeleteMany(
     DeletePOS<List<String>> event,
     Emitter<POSState<T>> emit,
   ) async {
@@ -332,18 +332,18 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     emit(POSLoaded<T>(event.shortID));
   }
 
-  void _onPOSLoaded(_POSLoaded<T> event, Emitter<POSState<T>> emit) {
+  void _onLoaded(_POSLoaded<T> event, Emitter<POSState<T>> emit) {
     emit(POSsLoaded<T>(event.data));
   }
 
-  void _onSinglePOSLoaded(
+  void _onSingleLoaded(
     _SinglePOSLoaded<T> event,
     Emitter<POSState<T>> emit,
   ) {
     emit(POSLoaded<T>(event.data));
   }
 
-  void _onPOSLoadError(_POSLoadError event, Emitter<POSState<T>> emit) {
+  void _onLoadError(_POSLoadError event, Emitter<POSState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'pos_bloc');
     emit(POSError<T>(event.error));

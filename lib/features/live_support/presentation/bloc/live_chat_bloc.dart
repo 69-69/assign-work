@@ -49,14 +49,14 @@ class LiveChatBloc<T> extends Bloc<LiveChatEvent, LiveChatState<T>> {
   }
 
   Future<void> _initialize() async {
-    on<LoadChatMessagesById<T>>(_onLoadChatMessagesById);
-    on<AddChat<T>>(_onSendMessage);
-    on<_ChatsLoaded<T>>(_onChatsLoaded);
-    on<_ChatLoaded<T>>(_onChatLoaded);
-    on<_LiveChatError>(_onChatLoadError);
+    on<LoadChatMessagesById<T>>(_onLoadById);
+    on<AddChat<T>>(_onSend);
+    on<_ChatsLoaded<T>>(_onManyLoaded);
+    on<_ChatLoaded<T>>(_onLoaded);
+    on<_LiveChatError>(_onLoadError);
   }
 
-  Future<void> _onLoadChatMessagesById(
+  Future<void> _onLoadById(
     LoadChatMessagesById<T> event,
     Emitter<LiveChatState<T>> emit,
   ) async {
@@ -84,7 +84,7 @@ class LiveChatBloc<T> extends Bloc<LiveChatEvent, LiveChatState<T>> {
     }
   }
 
-  Future<void> _onSendMessage(
+  Future<void> _onSend(
     AddChat<T> event,
     Emitter<LiveChatState<T>> emit,
   ) async {
@@ -105,15 +105,15 @@ class LiveChatBloc<T> extends Bloc<LiveChatEvent, LiveChatState<T>> {
     }
   }
 
-  void _onChatsLoaded(_ChatsLoaded<T> event, Emitter<LiveChatState<T>> emit) {
+  void _onManyLoaded(_ChatsLoaded<T> event, Emitter<LiveChatState<T>> emit) {
     emit(ChatsLoaded<T>(event.data));
   }
 
-  void _onChatLoaded(_ChatLoaded<T> event, Emitter<LiveChatState<T>> emit) {
+  void _onLoaded(_ChatLoaded<T> event, Emitter<LiveChatState<T>> emit) {
     emit(ChatLoaded<T>(event.data));
   }
 
-  void _onChatLoadError(_LiveChatError event, Emitter<LiveChatState<T>> emit) {
+  void _onLoadError(_LiveChatError event, Emitter<LiveChatState<T>> emit) {
     final errorLogCache = ErrorLogCache();
     errorLogCache.setError(error: event.error, fileName: 'LiveSupport_bloc');
     emit(LiveChatError<T>(event.error));
