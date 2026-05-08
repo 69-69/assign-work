@@ -26,7 +26,7 @@ extension CreateStoreBranches<T> on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       title:
-          '${serverStore == null ? 'New Store Branches' : 'Edit ${serverStore.name.toTitle}'} ',
+          '${serverStore == null ? 'New Store (Branch)' : 'Edit ${serverStore.name.toTitle}'} ',
       body: _AddStoreBranchForm(
         serverStore: serverStore,
         existingStoreNumbers: existingStoreNumbers,

@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/extensions/price_list_types.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';

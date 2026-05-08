@@ -1,7 +1,10 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
+import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_attributes.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:flutter/material.dart';
@@ -43,11 +46,8 @@ class _AttributePanelState extends State<AttributePanel> {
     final group = Attribute.groupByType(attrs);
 
     setState(() => _groupedAttrs = group);
-    _initSelection();
-  }
 
-  // Initialize selection from grouped data
-  void _initSelection() {
+    // Initialize selection from grouped data
     if (_groupedAttrs.isNullOrEmpty) return;
     _selectedAttributes = {};
 
@@ -76,6 +76,16 @@ class _AttributePanelState extends State<AttributePanel> {
           widget.subTitle ??
           '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
       children: [
+        if (_groupedAttrs.isNullOrEmpty) ...{
+          Center(
+            child: context.iconButton(
+              Icons.refresh,
+              bgColor: kGrayBlueColor,
+              tooltip: 'Click to reload',
+              onPressed: () async => await _getAttributes(),
+            ),
+          ),
+        },
         ?widget.actionBuilder,
         ...AttributeSelector(
           context: context,

@@ -17,7 +17,7 @@ class CompanyScreen extends StatelessWidget {
       indicatorWeight: 1.0,
       tabs: [
         CustomTabModel(label: 'Company', icon: Icons.home_work),
-        CustomTabModel(label: 'Store Branches', icon: Icons.store),
+        CustomTabModel(label: 'Store - Branches', icon: Icons.store),
         CustomTabModel(label: 'Departments', icon: Icons.groups),
         CustomTabModel(label: 'PDFs / Print Setup', icon: Icons.print),
       ],
