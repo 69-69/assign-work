@@ -1,7 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/features/index.dart';
 import 'package:flutter/material.dart';
 
 class StockAdjustmentScreen extends StatelessWidget {

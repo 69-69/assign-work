@@ -353,7 +353,7 @@ class _Title extends StatelessWidget {
         maxLines: 1,
         style: context.textTheme.titleMedium?.copyWith(
           fontSize: 10,
-          color: kLightBlueColor,
+          color: kGrayBlueColor,
           overflow: TextOverflow.fade,
         ),
         // textScaler: TextScaler.linear(context.textScaleFactor),

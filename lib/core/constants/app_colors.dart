@@ -27,6 +27,7 @@ const kModelColor = Color(0x33000000);
 const kDarkTextColor = Colors.black;
 const kDefaultPadding = 20.0;
 const kBorderRadius = 25.0;
+const k2BorderRadius = 10.0;
 /*color: Color(0x33000000),
   darkColor: Color(0x7A000000),*/
 // const kTitleTextColor = Color(0xFF30384D);

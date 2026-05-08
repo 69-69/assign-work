@@ -5,16 +5,17 @@ import 'package:flutter/material.dart';
 
 class FormGroupCard extends StatefulWidget {
   final String title;
-  final String subTitle;
-  final String helperText;
-  final bool isExpanded;
   final Color? bgColor;
+  final String subTitle;
+  final bool isExpanded;
+  final Color? textColor;
+  final String helperText;
   final double? runSpacing;
   final double? cardElevation;
-  final Color? textColor;
   final List<Widget> children;
   final Axis? scrollDirection;
   final bool showCollapseButton;
+  final ValueChanged<bool>? onToggle;
   final GlobalKey<FormState>? formKey;
   final CrossAxisAlignment? crossAlignment;
   final EdgeInsetsGeometry? contentMargin;
@@ -37,6 +38,7 @@ class FormGroupCard extends StatefulWidget {
     this.isExpanded = true,
     required this.children,
     this.showCollapseButton = true,
+    this.onToggle,
   });
 
   @override
@@ -44,6 +46,9 @@ class FormGroupCard extends StatefulWidget {
 }
 
 class _FormGroupCardState extends State<FormGroupCard> {
+  Color? _bgColor;
+  double _currentElevation = 0.4;
+
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
 
@@ -52,6 +57,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
   String get _title => widget.title;
 
   String get _subTitle => widget.subTitle;
+
   String get _helperText => widget.helperText;
 
   // Generate a unique key for each card based on the title
@@ -61,7 +67,8 @@ class _FormGroupCardState extends State<FormGroupCard> {
 
   Color? get _textColor => widget.textColor;
 
-  Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+  // Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+
   double? get _cardElevation => widget.cardElevation;
 
   Axis get _scrollDirection => widget.scrollDirection ?? Axis.horizontal;
@@ -77,6 +84,8 @@ class _FormGroupCardState extends State<FormGroupCard> {
   EdgeInsetsGeometry get _contentMargin =>
       widget.contentMargin ?? const EdgeInsets.symmetric(vertical: 8);
 
+  BorderRadius get _borderRadius => BorderRadius.circular(k2BorderRadius);
+
   @override
   void initState() {
     super.initState();
@@ -85,13 +94,19 @@ class _FormGroupCardState extends State<FormGroupCard> {
   }
 
   // Toggle visibility based on the card title
+  void toggleCardVisibility2(String title) {
+    setState(
+      () => cardVisibility[title] = !(cardVisibility[title] ?? _isExpanded),
+    );
+  }
   void toggleCardVisibility(String title) {
-    setState(() {
-      cardVisibility[title] = !(cardVisibility[title] ?? _isExpanded);
-    });
+    final newValue = !(cardVisibility[title] ?? _isExpanded);
+
+    setState(() => cardVisibility[title] = newValue);
+
+    widget.onToggle?.call(newValue);
   }
 
-  // 1340826115
   (String?, String?) get _getTitleInfo {
     if (_title.isEmpty) return ('', '');
 
@@ -108,9 +123,28 @@ class _FormGroupCardState extends State<FormGroupCard> {
 
   @override
   Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() {
+        _currentElevation = 6;
+        _bgColor = widget.bgColor ?? context.onSecondaryColor;
+      }),
+      onExit: (_) => setState(() {
+        _currentElevation = 0.4;
+        _bgColor = null;
+      }),
+      child: _buildBody(context),
+    );
+  }
+
+  Card _buildBody(BuildContext context) {
     return Card(
-      elevation: _cardElevation,
-      color: _bgColor, // context.scaffoldBgColor
+      elevation: _cardElevation ?? _currentElevation,
+      color: _bgColor,
+      // context.scaffoldBgColor
+      shape: RoundedRectangleBorder(
+        borderRadius: _borderRadius,
+        side: BorderSide(color: kLightBlueColor.toAlpha(0.3), width: 1),
+      ),
       margin: _contentMargin,
       child: Padding(
         padding: _contentPadding,
@@ -159,7 +193,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
     return _showCollapseButton
         ? InkWell(
             onTap: () => toggleCardVisibility(_collapseKey),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: _borderRadius,
             child: header,
           )
         : header;
@@ -247,8 +281,11 @@ class FormGroupTabView extends StatefulWidget {
 
 class _FormGroupTabViewState extends State<FormGroupTabView> {
   bool _isGridView = false;
+
   List<Map<String, dynamic>> get _tabsData => widget.contents;
+
   Widget? get _header => widget.header;
+
   List<Widget>? get _footers => widget.footers;
 
   @override

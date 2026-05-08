@@ -70,9 +70,9 @@ class Attribute extends Equatable {
 
   static String _getGroup(int priority) {
     return switch (priority) {
-      >= 0 && <= 4 => 'Core',
-      >= 5 && <= 9 => 'Secondary',
-      >= 10 && <= 14 => 'Technical',
+      >= 0 && <= 5 => 'Core',
+      >= 6 && <= 10 => 'Secondary',
+      >= 11 && <= 15 => 'Technical',
       _ => 'Misc',
     };
   }

@@ -28,7 +28,7 @@ extension CreateVariants<T> on BuildContext {
       isDetailMode: true,
       title: serverVariant != null
           ? 'Edit ${serverVariant.type}'
-          : 'Create Variant(s)',
+          : 'Explore Variants',
       body: _AddAttributeForm(
         serverAttribute: serverVariant,
         groupedAttrs: groupedAttrs,
@@ -161,6 +161,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
           children: [
             VariantsPreview(variants: _variants, itemCode: "TS-001"),
             AttributePanel(
+              isExpanded: true,
               generatedVariants: (v) {
                 setState(() => _variants = v);
               },
@@ -168,14 +169,13 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
           ],
         ),
 
-        context.confirmableActionButton(
-          isDisabled:
-              _isSubmitting || _variants.isEmpty || _variants.first.isEmpty,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Variant')
-              : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
-        ),
+        if(!_isServerNull)
+          context.confirmableActionButton(
+            isDisabled:
+                _isSubmitting || _variants.isEmpty || _variants.first.isEmpty,
+            label: _isSubmitting ? 'Updating...' : null,
+            onPressed: _onSubmit,
+          ),
       ],
     );
   }

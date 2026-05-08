@@ -52,7 +52,7 @@ class _ListVariantsState extends State<ListVariants> {
           SetupsLoaded<Variant>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Variant',
+                    'Explore Variants',
                     onPressed: () async {
                       await _getAttributes(
                         attributes: (grouped) async =>

@@ -179,7 +179,8 @@ class _CustomDraggableBottomSheetState
       // prevent DraggableScrollableSheet errors: min shouldn't exceed max
       if (value > _maxChildSize) return;
 
-      setState(() => _initialSize = value);
+      final v = value < 0.33 ? 0.33 : value;
+      setState(() => _initialSize = v);
 
       // Optional: re-run after a short delay if the content might still change
       // This is useful if images or async widgets are loading

@@ -14,16 +14,27 @@ typedef AttributeChanged =
     });
 
 class AttributePanel extends StatefulWidget {
+  final String? title;
+  final bool? isExpanded;
+  final String? subTitle;
   final Widget? actionBuilder;
   final Function(List<Map<String, Attribute>> variants)? generatedVariants;
 
-  const AttributePanel({super.key, this.generatedVariants, this.actionBuilder});
+  const AttributePanel({
+    super.key,
+    this.title,
+    this.subTitle,
+    this.isExpanded,
+    this.actionBuilder,
+    this.generatedVariants,
+  });
 
   @override
   State<AttributePanel> createState() => _AttributePanelState();
 }
 
 class _AttributePanelState extends State<AttributePanel> {
+  bool? get _isExpanded => widget.isExpanded;
   Map<String, List<Attribute>>? _groupedAttrs;
   Map<String, Map<Attribute, bool>> _selectedAttributes = {};
 
@@ -55,13 +66,26 @@ class _AttributePanelState extends State<AttributePanel> {
 
   @override
   Widget build(BuildContext context) {
-    return AttributeSelector(
-      selectedAttrs: _selectedAttributes,
-      actionBuilder: widget.actionBuilder,
-      onChanged: ({checked, required key, required name}) {
-        _selectedAttributes[name]![key] = checked ?? false;
-        _generateFromSelection();
-      },
+    return FormGroupCard(
+      runSpacing: 8,
+      isExpanded: _isExpanded ?? true,
+      showCollapseButton: _isExpanded != true,
+      title: widget.title ?? 'Attribute Set',
+      contentMargin: EdgeInsets.symmetric(vertical: 10),
+      subTitle:
+          widget.subTitle ??
+          '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
+      children: [
+        ?widget.actionBuilder,
+        ...AttributeSelector(
+          context: context,
+          selectedAttrs: _selectedAttributes,
+          onChanged: ({checked, required key, required name}) {
+            _selectedAttributes[name]![key] = checked ?? false;
+            _generateFromSelection();
+          },
+        ).buildChildren,
+      ],
     );
   }
 
@@ -110,38 +134,18 @@ class _AttributePanelState extends State<AttributePanel> {
   }
 }
 
-class AttributeSelector extends StatelessWidget {
-  final Widget? actionBuilder;
-  final String? title, subTitle;
+class AttributeSelector {
+  final BuildContext context;
   final AttributeChanged? onChanged;
-
-  // final List<Map<String, Attribute>>? variants;
   final Map<String, Map<Attribute, bool>> selectedAttrs;
 
   const AttributeSelector({
-    super.key,
-    this.title,
-    this.subTitle,
+    required this.context,
     required this.onChanged,
     required this.selectedAttrs,
-    this.actionBuilder,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    return FormGroupCard(
-      runSpacing: 8,
-      title: title ?? 'Attribute Set',
-      showCollapseButton: false,
-      contentMargin: EdgeInsets.symmetric(vertical: 10),
-      subTitle:
-          subTitle ??
-          '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
-      children: [?actionBuilder, ..._buildChildren(context)],
-    );
-  }
-
-  List<FormGroupCard> _buildChildren(BuildContext context) {
+  List<FormGroupCard> get buildChildren {
     final entries = selectedAttrs.entries.toList();
 
     return List.generate(entries.length, (index) {

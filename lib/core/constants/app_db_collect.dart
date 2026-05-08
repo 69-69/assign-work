@@ -51,6 +51,8 @@ const rolesDBColPath = 'roles_db';
 
 /// Master-Data
 const itemMasterDBColPath = 'item_master_data';
+const priceListMasterDBColPath = 'price_list_master_data';
+const priceListEntryDBColPath = 'price_list_entry_data';
 // Warehouse Facilities (Represents a physical storage place)
 const warehouseDBColPath = 'warehouse_sites_master_data';
 // Functional Area / Sub divisions/location/levels within the warehouse
@@ -169,6 +171,8 @@ const erpCacheBoxes = [
 
   // Inventory / Sales / Procurement
   itemMasterDBColPath,
+  priceListMasterDBColPath,
+  priceListEntryDBColPath,
   warehouseDBColPath,
   whStorageLocationDBColPath,
   whBinStorageDBColPath,

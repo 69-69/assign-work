@@ -3,6 +3,7 @@ import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/variant_attr_ext.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
@@ -71,24 +72,32 @@ class VariantTable extends StatelessWidget {
     required this.itemCode,
   });
 
-
   void _onSubmit() {
-      final variantsToSave = Variant.buildVariants(
-        itemCode: "TS-001",
-        variants: variants.map((v) => v.toCodeMap()).toList(),
-      );
-      prettyPrint('variants-To-Save', variantsToSave);
+    final variantsToSave = Variant.buildVariants(
+      itemCode: "TS-001",
+      variants: variants.map((v) => v.toCodeMap()).toList(),
+    );
+    prettyPrint('variants-To-Save', variantsToSave);
 
-      // _bloc.add(AddSetup<List<Variant>>(data: variantsToSave));
-      return;
-    }
+    // _bloc.add(AddSetup<List<Variant>>(data: variantsToSave));
+    return;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final keyList = variants.first.keys.toList()
+    final firstVariant = variants.firstOrNull;
+    if (firstVariant == null) {
+      return const Center(child: Text('No variants available'));
+    }
+
+    final keyList = firstVariant.keys.toList()
       ..sortByComparable((e) => attributePriorities[e] ?? 999);
 
-    final columnLabels = [...keyList.map((k) => k.toTitle), 'SKU'];
+    final columnLabels = [
+      ...keyList.map((k) => k.toTitle),
+      'SKU',
+      'Price',
+    ];
 
     return SortableHistoryTable<Map<String, Attribute>>(
       columnLabels: columnLabels,
@@ -99,6 +108,29 @@ class VariantTable extends StatelessWidget {
         final cells = <DataCell>[
           ...keyList.map((k) => DataCell(Text(entry[k]?.value.toTitle ?? ""))),
           DataCell(Text(sku.toUpperAll)),
+
+          DataCell(
+            context.elevatedButton(
+              'Set Price',
+              onPressed: () {
+                // This will trigger Price List Entry bottomSheet
+              },
+            ),
+          ),
+          /*SizedBox(
+              width: 100,
+              child: TextFormField(
+                initialValue: '0',
+                decoration: const InputDecoration(
+                  hintText: 'Price',
+                  isDense: true,
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  // save/update variant price
+                },
+              ),
+            ),*/
         ];
 
         return DataRow(cells: cells);

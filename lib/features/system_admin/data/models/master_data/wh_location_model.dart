@@ -57,8 +57,7 @@ class WHLocation extends Equatable {
 
   final String id; // PK
   final String warehouseCode; // FK to Warehouse.code
-  final String
-  codeRanges; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
+  final String codeRanges; // Sub-Location code ranges (e.g, A01, A02, ...., A20)
   final String storeNumber; // FK CompanyStore.storeNumber
   /// [description] To create a custom sub-location, else fallback to type.getName
   final String? description;

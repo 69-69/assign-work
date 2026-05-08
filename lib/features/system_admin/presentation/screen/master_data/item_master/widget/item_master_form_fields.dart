@@ -218,7 +218,7 @@ class ItemMasterFormFields {
     FieldGroupConfig(
       key: 'standardCost',
       label: 'Standard Cost',
-      helperText: 'Cost per unit of measure',
+      helperText: 'Cost per unit of measure (base price)',
       type: TextInputType.number,
       validator: (_) => null,
     ),

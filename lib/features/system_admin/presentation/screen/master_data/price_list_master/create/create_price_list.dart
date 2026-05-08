@@ -9,45 +9,46 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/attribute_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/price_list_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/widget/variants_master_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/widget/price_master_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateAttributes<T> on BuildContext {
-  Future<void> openAddAttribute({Attribute? serverAttribute}) =>
+extension CreatePriceMaster<T> on BuildContext {
+  Future<void> openAddPriceList({PriceMaster? serverPriceList}) =>
       openBottomSheet(
         isExpand: false,
         child: BottomSheetScaffold(
-          title: serverAttribute != null
-              ? 'Edit ${serverAttribute.type}'.toTitle
-              : 'Create Attribute(s)',
-          body: _AddAttributeForm(serverAttribute: serverAttribute),
+          title: serverPriceList != null
+              ? 'Edit ${serverPriceList.type}'.toTitle
+              : 'New Price List',
+          body: _AddPriceListForm(serverPriceList: serverPriceList),
         ),
       );
 }
 
-class _AddAttributeForm extends StatefulWidget {
-  final Attribute? serverAttribute;
+class _AddPriceListForm extends StatefulWidget {
+  final PriceMaster? serverPriceList;
 
-  const _AddAttributeForm({this.serverAttribute});
+  const _AddPriceListForm({this.serverPriceList});
 
   @override
-  State<_AddAttributeForm> createState() => _AddAttributeFormState();
+  State<_AddPriceListForm> createState() => _AddPriceListFormState();
 }
 
-class _AddAttributeFormState extends State<_AddAttributeForm> {
+class _AddPriceListFormState extends State<_AddPriceListForm> {
   bool _isSubmitting = false;
-  final List<Attribute> _attributes = [];
+  final List<PriceMaster> _prices = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
-  Attribute? get _serverAttribute => widget.serverAttribute;
+  PriceMaster? get _serverPriceMaster => widget.serverPriceList;
 
-  bool get _isServerNull => _serverAttribute == null;
+  bool get _isServerNull => _serverPriceMaster == null;
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -68,13 +69,13 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
     setState(() => _isSubmitting = true);
 
     // Case 1: Update existing Attribute
-    if (_isFormValid && (_serverAttribute?.isNotEmpty ?? false)) {
+    if (_isFormValid && (_serverPriceMaster?.isNotEmpty ?? false)) {
       _updatedAttribute();
       return;
     }
 
     // Case 2: Form validation or empty Attribute
-    if (!_isFormValid && _attributes.isNullOrEmpty) {
+    if (!_isFormValid && _prices.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -84,40 +85,34 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    if (!_isServerNull) ..._serverAttribute!.history,
+    if (!_isServerNull) ..._serverPriceMaster!.history,
     AuditLog(action: action, actionBy: _employeeName),
   ];
 
   void _newAttributes() {
-    final newAttributes = _attributes
-        .map(
-          (e) => e.copyWith(
-            storeNumber: _employeeStore,
-            createdBy: _employeeName,
-            history: history(),
-          ),
-        )
+    final newPrices = _prices
+        .map((e) => e.copyWith(storeNumber: _employeeStore, history: history()))
         .toList();
-    _bloc.add(AddSetup<List<Attribute>>(data: newAttributes));
+    _bloc.add(AddSetup<List<PriceMaster>>(data: newPrices));
   }
 
   void _updatedAttribute() {
-    final updated = _attributes.first.copyWith(
-      id: _serverAttribute!.id,
-      type: _serverAttribute!.type,
-      value: _serverAttribute!.value,
-      updatedBy: _employeeName,
+    final updated = _prices.first.copyWith(
+      id: _serverPriceMaster!.id,
+      type: _serverPriceMaster!.type,
+      name: _serverPriceMaster!.name,
+      currencyCode: _serverPriceMaster!.currencyCode,
       history: history(AuditAction.updated),
     );
-    _bloc.add(UpdateSetup<Attribute>(documentId: updated.id, data: updated));
+    _bloc.add(UpdateSetup<PriceMaster>(documentId: updated.id, data: updated));
   }
 
-  // load existing Attributes
-  void _loadExistingAttributes() {
-    if (_serverAttribute != null) {
-      _attributes
+  // load existing PriceMaster
+  void _loadExistingPrices() {
+    if (_serverPriceMaster != null) {
+      _prices
         ..clear()
-        ..add(_serverAttribute!);
+        ..add(_serverPriceMaster!);
     }
   }
 
@@ -128,7 +123,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         _formResetKey = UniqueKey();
         _isSubmitting = false;
         _isFormValid = false;
-        _attributes.clear();
+        _prices.clear();
       });
     }
   }
@@ -141,13 +136,13 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
     setState(() => _isSubmitting = false);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<Attribute> state) {
-    final note = _isServerNull ? 'Attribute created' : 'Changes saved';
+  void _handleBlocState(BuildContext cxt, SetupState<PriceMaster> state) {
+    final note = _isServerNull ? 'Price List created' : 'Changes saved';
     switch (state) {
-      case SetupAdded<Attribute>(message: var msg):
-      case SetupUpdated<Attribute>(message: var msg):
+      case SetupAdded<PriceMaster>(message: var msg):
+      case SetupUpdated<PriceMaster>(message: var msg):
         _showAlert(msg ?? note);
-      case SetupError<Attribute>():
+      case SetupError<PriceMaster>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -156,12 +151,12 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   @override
   void initState() {
     super.initState();
-    _loadExistingAttributes();
+    _loadExistingPrices();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AttributeBloc, SetupState<Attribute>>(
+    return BlocListener<PriceMasterBloc, SetupState<PriceMaster>>(
       listener: _handleBlocState,
       child: Form(
         key: _formKey,
@@ -176,20 +171,20 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
-          title: 'Attribute properties',
+          title: 'Price Master',
           helperText: '\nTap the + button to add multiple entries',
           children: [
             DynamicTextFields(
               showButton: true,
-              fieldsConfig: VariantsMasterFormInputs.attributeFields,
-              initialData: [?_serverAttribute?.toMap()],
+              fieldsConfig: PriceMasterFormInputs.priceListFields,
+              initialData: [?_serverPriceMaster?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
                 // if (_isFormValid) setState(() {});
 
                 // Create a new line item
-                _attributes
+                _prices
                   ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Attribute.fromMap(e)));
+                  ..addAll(data.map((e) => PriceMaster.fromMap(e)));
 
                 _updateValidity();
               },
@@ -199,7 +194,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Attribute')
+              ? (_isSubmitting ? 'Creating...' : 'Create Price List')
               : (_isSubmitting ? 'Updating...' : null),
           onPressed: _onSubmit,
         ),
@@ -636,7 +631,6 @@ That’s where this becomes a complete ERP flow.
 
 * */
 
-
 /*
 * That table is **not** your Item Master and **not** your Attributes table.
 
@@ -752,8 +746,6 @@ If you want, I can show you how to connect this exact table to:
 
 That’s the next step where many ERP designs go wrong.
 */
-
-
 
 /*Close—but not quite. You don’t need the **SKU from the Item Master**, you need a **base item code (or parent SKU)** from the Item Master to *build* the variant SKUs.
 

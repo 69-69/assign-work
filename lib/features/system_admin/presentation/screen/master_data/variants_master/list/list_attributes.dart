@@ -17,8 +17,8 @@ class ListAttributes extends StatelessWidget {
       length: 2,
       isScrollable: true,
       tabs: [
-        CustomTabModel(label: 'Attribute Types', icon: Icons.copy_all),
-        CustomTabModel(label: 'Attribute Values', icon: Icons.tune),
+        CustomTabModel(label: 'Groups & Types', icon: Icons.copy_all),
+        CustomTabModel(label: 'Values', icon: Icons.tune),
       ],
       children: [
         AttributeTypes(),

@@ -11,7 +11,6 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/form/custom_switch_tile.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
@@ -80,7 +79,6 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   // Basic fields
   String _imNumber = '';
   bool _isSubmitting = false;
-  bool _isVariantEnabled = false;
   final List<String> _taxCodes = [];
   List<Map<String, Attribute>> _variants = [];
   late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
@@ -251,31 +249,24 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         /// Warehouse + Sub-location + Bin address
         FormGroupCard(
           isExpanded: false,
-          title: '7.Warehouse + Sub-location + Bin',
+          title: '7.Warehouse + Bins & Stock',
           subTitle:
               '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
           children: [/*Widget here*/],
         ),
 
-        CustomSwitchTile(
-          dense: false,
-          title: Text(
-            'Enable Variants',
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
-          subtitle:
-              'Create multiple versions of this $_itemType using attributes like size or color.',
-          isSelected: _isVariantEnabled,
-          onChanged: (val) => setState(() => _isVariantEnabled = val),
-        ),
-
         /// Attributes & Variants
-        if (_isVariantEnabled) ...{
-          AttributePanel(
-            generatedVariants: (v) {
-              setState(() => _variants = v);
-            },
-            actionBuilder: context.elevatedButton(
+        AttributePanel(
+          isExpanded: false,
+          title: '8.Attributes & Variants',
+          subTitle:
+          '\nCreate multiple versions of this $_itemType using attributes like size or color.',
+          generatedVariants: (v) {
+            setState(() => _variants = v);
+          },
+          actionBuilder: Align(
+            alignment: Alignment.topRight,
+            child: context.elevatedButton(
               'Preview Variants',
               onPressed: () => context.showVariantPreview(
                 itemCode: "TS-001",
@@ -283,7 +274,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
               ),
             ),
           ),
-        },
+        ),
 
         const SizedBox(height: 20),
         Text(

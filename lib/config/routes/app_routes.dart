@@ -209,6 +209,11 @@ GoRoute _masterDataRoute() {
       screen: ({openTab}) => const WHBinScreen(),
     ),
     (
+      name: RouteNames.priceListMaster,
+      openTab: false,
+      screen: ({openTab}) => const PriceListMasterScreen(),
+    ),
+    (
       name: RouteNames.currencyMaster,
       openTab: false,
       screen: ({openTab}) => const CurrencyMasterScreen(),

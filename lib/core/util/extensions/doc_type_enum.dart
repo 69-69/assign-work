@@ -15,6 +15,8 @@ enum DocType {
   customer,
   pOrder,
   itemMaster,
+  priceListMaster,
+  priceListEntry,
   warehouse,
   whLocation,
   whBin,

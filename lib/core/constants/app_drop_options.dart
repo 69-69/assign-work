@@ -372,27 +372,28 @@ const attributePriorities = {
   'Color': 2,
   'Size': 3,
   'Style': 4,
+  'Brand': 5,
 
   // Secondary attributes
-  'Material': 5,
-  'Pattern': 6,
-  'Flavor': 7,
-  'Edition': 8,
-  'Collection': 9,
+  'Material': 6,
+  'Pattern': 7,
+  'Flavor': 8,
+  'Edition': 9,
+  'Collection': 10,
 
   // Technical / optional
-  'Weight': 10,
-  'Dimension': 11,
-  'Volume': 12,
-  'Configuration': 13,
-  'Compatibility': 14,
+  'Weight': 11,
+  'Dimension': 12,
+  'Volume': 13,
+  'Configuration': 14,
+  'Compatibility': 15,
 
   // Misc
-  'Season': 15,
-  'Condition': 16,
-  'Grade': 17,
-  'Packaging': 18,
-  'Group': 19,
+  'Season': 16,
+  'Condition': 17,
+  'Grade': 18,
+  'Packaging': 19,
+  'Group': 20,
 };
 
 /// Variant Attribute Types

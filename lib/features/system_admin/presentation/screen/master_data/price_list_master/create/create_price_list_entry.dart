@@ -17,22 +17,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension CreateAttributes<T> on BuildContext {
-  Future<void> openAddAttribute({Attribute? serverAttribute}) =>
+  Future<void> openAddAttribute({Attribute? serverPriceEntry}) =>
       openBottomSheet(
         isExpand: false,
         child: BottomSheetScaffold(
-          title: serverAttribute != null
-              ? 'Edit ${serverAttribute.type}'.toTitle
+          title: serverPriceEntry != null
+              ? 'Edit ${serverPriceEntry.type}'.toTitle
               : 'Create Attribute(s)',
-          body: _AddAttributeForm(serverAttribute: serverAttribute),
+          body: _AddAttributeForm(serverPriceEntry: serverPriceEntry),
         ),
       );
 }
 
 class _AddAttributeForm extends StatefulWidget {
-  final Attribute? serverAttribute;
+  final Attribute? serverPriceEntry;
 
-  const _AddAttributeForm({this.serverAttribute});
+  const _AddAttributeForm({this.serverPriceEntry});
 
   @override
   State<_AddAttributeForm> createState() => _AddAttributeFormState();
@@ -45,7 +45,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   final _formKey = GlobalKey<FormState>();
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
-  Attribute? get _serverAttribute => widget.serverAttribute;
+  Attribute? get _serverAttribute => widget.serverPriceEntry;
 
   bool get _isServerNull => _serverAttribute == null;
 
@@ -176,8 +176,8 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
-          title: 'Attribute properties',
-          helperText: '\nTap the + button to add multiple entries',
+          title: 'Variant Attributes',
+          helperText: '\nSeparate multiple values with comma (e.g.: red, blue)',
           children: [
             DynamicTextFields(
               showButton: true,
