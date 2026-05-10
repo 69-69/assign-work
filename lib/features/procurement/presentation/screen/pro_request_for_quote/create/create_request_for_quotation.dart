@@ -53,7 +53,7 @@ extension RFQFormExtensions on BuildContext {
         isExpand: false,
         child: BottomSheetScaffold(
           initialSize: 0.94,
-          title: 'Create Request For Quote',
+          title: 'New Request For Quote',
           body: _CreateRFQForm(initialPRData: data, lineItemType: type),
         ),
       );

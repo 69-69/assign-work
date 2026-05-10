@@ -4,7 +4,6 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_attributes.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:flutter/material.dart';

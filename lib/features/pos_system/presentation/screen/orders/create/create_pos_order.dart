@@ -27,7 +27,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddPOSOrderForm on BuildContext {
   Future<void> openAddPOSOrder({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: BottomSheetScaffold(title: 'Create Order', body: _AddOrderForm()),
+    child: BottomSheetScaffold(title: 'New Order', body: _AddOrderForm()),
   );
 }
 

@@ -52,7 +52,7 @@ extension POFormExtensions on BuildContext {
         isExpand: false,
         child: BottomSheetScaffold(
           initialSize: 0.94,
-          title: 'Create Purchase Order',
+          title: 'New Purchase Order',
           body: _CreatePOForm(initialRFQData: data, lineItemType: type),
         ),
       );

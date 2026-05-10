@@ -1,13 +1,15 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
+import 'package:assign_erp/core/widgets/prerequisite_view.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_attributes.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/variant_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/variant_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/create/create_variants.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/create/explore_variants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,13 +36,9 @@ class _ListVariantsState extends State<ListVariants> {
   Widget build(BuildContext context) {
     return BlocProvider<VariantBloc>(
       create: (context) =>
-      VariantBloc(firestore: FirebaseFirestore.instance)
+          VariantBloc(firestore: FirebaseFirestore.instance)
             ..add(GetSetups<Variant>()),
-      child: CustomScaffold(
-        noAppBar: true,
-        body: _buildBody(),
-        bottomNavigationBar: const SizedBox.shrink(),
-      ),
+      child: _buildBody(),
     );
   }
 
@@ -51,19 +49,19 @@ class _ListVariantsState extends State<ListVariants> {
           LoadingSetup<Variant>() => context.loader,
           SetupsLoaded<Variant>(data: var results) =>
             results.isEmpty
-                ? context.buildAddButton(
-                    'Explore Variants',
-                    onPressed: () async {
+                ? PrerequisiteView(
+                    title:
+                        'No variants generated!\nCreate attributes with values before exploring variants.',
+                    actionLabel: 'Explore Variants',
+                    onAction: () async {
                       await _getAttributes(
-                        attributes: (grouped) async =>
-                            await context.openAddVariant(groupedAttrs: grouped),
+                        attributes: (grouped) async => await context
+                            .openExploreVariant(groupedAttrs: grouped),
                       );
                     },
                   )
                 : _buildCard(context, results),
-          SetupError<Variant>(error: final error) => context.buildError(
-            error,
-          ),
+          SetupError<Variant>(error: final error) => context.buildError(error),
           _ => const SizedBox.shrink(),
         };
       },
@@ -88,7 +86,7 @@ class _ListVariantsState extends State<ListVariants> {
       onPrimary: () async {
         await _getAttributes(
           attributes: (grouped) async =>
-              await context.openAddVariant(groupedAttrs: grouped),
+              await context.openExploreVariant(groupedAttrs: grouped),
         );
       },
       onRefresh: () =>

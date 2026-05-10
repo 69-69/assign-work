@@ -23,7 +23,7 @@ extension CreateTrainingForm<T> on BuildContext {
     child: BottomSheetScaffold(
       title: serverGuide != null
           ? 'Edit ${serverGuide.category} Training'
-          : 'Create App Training',
+          : 'New Training',
       isDetailMode: true,
       secondaryWidget: _deleteButton(serverGuide?.id),
       body: _AppTrainingForm(serverGuide: serverGuide),

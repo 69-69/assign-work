@@ -26,7 +26,7 @@ extension AddOrderPurchaseForm on BuildContext {
   Future<void> openAddPurchaseOrders({Widget? header}) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create Purchase Order',
+      title: 'New Purchase Order',
       body: _AddPurchaseOrdersBody(),
     ),
   );

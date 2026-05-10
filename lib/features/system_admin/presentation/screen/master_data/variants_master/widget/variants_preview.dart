@@ -1,9 +1,8 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/variant_attr_ext.dart';
-import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
-import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/block_quote.dart';
@@ -11,6 +10,7 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/variant_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/create/create_price_entry.dart';
 import 'package:flutter/material.dart';
 
 extension VariantPreviewExt on BuildContext {
@@ -18,10 +18,12 @@ extension VariantPreviewExt on BuildContext {
     required String itemCode,
     required List<Map<String, Attribute>> variants,
   }) async => await openBottomSheet(
-    isExpand: false,
+    // isExpand: false,
     showZoomIcon: false,
-    constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
+    barrierColor: kTransparentColor,
+    // constraints: BoxConstraints(maxWidth: dynamicWidth(0.5)),
     child: BottomSheetScaffold(
+      isShadow: true,
       title: 'Preview Variants',
       isDetailMode: true,
       initialSize: 0.6,
@@ -74,7 +76,7 @@ class VariantTable extends StatelessWidget {
 
   void _onSubmit() {
     final variantsToSave = Variant.buildVariants(
-      itemCode: "TS-001",
+      itemCode: itemCode,
       variants: variants.map((v) => v.toCodeMap()).toList(),
     );
     prettyPrint('variants-To-Save', variantsToSave);
@@ -93,11 +95,7 @@ class VariantTable extends StatelessWidget {
     final keyList = firstVariant.keys.toList()
       ..sortByComparable((e) => attributePriorities[e] ?? 999);
 
-    final columnLabels = [
-      ...keyList.map((k) => k.toTitle),
-      'SKU',
-      'Price',
-    ];
+    final columnLabels = ['Price', ...keyList.map((k) => k.toTitle), 'SKU'];
 
     return SortableHistoryTable<Map<String, Attribute>>(
       columnLabels: columnLabels,
@@ -106,31 +104,12 @@ class VariantTable extends StatelessWidget {
         final sku = Variant.buildVariantSKU(itemCode, entry.toCodeMap());
 
         final cells = <DataCell>[
-          ...keyList.map((k) => DataCell(Text(entry[k]?.value.toTitle ?? ""))),
-          DataCell(Text(sku.toUpperAll)),
-
           DataCell(
-            context.elevatedButton(
-              'Set Price',
-              onPressed: () {
-                // This will trigger Price List Entry bottomSheet
-              },
-            ),
+            Chip(label: Text('Set Price'), padding: EdgeInsets.zero),
+            onTap: () async => await context.openAddPriceEntry(variantSku: sku),
           ),
-          /*SizedBox(
-              width: 100,
-              child: TextFormField(
-                initialValue: '0',
-                decoration: const InputDecoration(
-                  hintText: 'Price',
-                  isDense: true,
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  // save/update variant price
-                },
-              ),
-            ),*/
+          ...keyList.map((k) => DataCell(Text(entry[k]?.value.toTitle ?? ''))),
+          DataCell(Text(sku.toUpperAll)),
         ];
 
         return DataRow(cells: cells);

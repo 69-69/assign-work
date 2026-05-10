@@ -36,7 +36,7 @@ extension WHBinExtensions on BuildContext {
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: serverItem?.description.toTitle ?? 'Bin Location Master',
+      title: serverItem?.description.toTitle ?? 'New Bin Location',
       subtitle: 'Rack-Aisle-Shelf-Position',
       body: _CreateWHBinForm(
         serverItem: serverItem,

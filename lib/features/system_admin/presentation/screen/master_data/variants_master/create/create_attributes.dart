@@ -23,7 +23,7 @@ extension CreateAttributes<T> on BuildContext {
         child: BottomSheetScaffold(
           title: serverAttribute != null
               ? 'Edit ${serverAttribute.type}'.toTitle
-              : 'Create Attribute(s)',
+              : 'New Attribute(s)',
           body: _AddAttributeForm(serverAttribute: serverAttribute),
         ),
       );

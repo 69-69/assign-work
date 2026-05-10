@@ -24,6 +24,7 @@ extension ShowBottomSheet<T> on BuildContext {
   Future<T?> openBottomSheet({
     required Widget child,
     bool isExpand = true,
+    Color? barrierColor,
     bool showZoomIcon = true,
     BoxConstraints? constraints,
   }) {
@@ -35,14 +36,15 @@ extension ShowBottomSheet<T> on BuildContext {
     return showModalBottomSheet(
       context: this,
       isScrollControlled: true,
+      barrierColor: barrierColor,
       backgroundColor: kTransparentColor,
       constraints: constraints ?? BoxConstraints(maxWidth: screenWidth),
 
       // isDismissible: false,
-      // ❗ disables tap outside dismiss
+      // disables tap outside dismiss
       enableDrag: false,
 
-      // ❗ disables swipe-down dismiss
+      // disables swipe-down dismiss
       builder: (context) => MediaQuery(
         data: MediaQuery.of(context),
         child: _buildZoom(zoomLevel, child, showZoomIcon: showZoomIcon),
@@ -62,12 +64,13 @@ extension ShowBottomSheet<T> on BuildContext {
       builder: (context, value, child) {
         return Container(
           padding: EdgeInsets.zero,
-          margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+          margin: const EdgeInsets.symmetric(horizontal: 10),
           constraints: BoxConstraints(
             maxWidth: screenWidth * (isSmall ? 1 : value),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: 10,
             children: [
               if (!isSmall && showZoomIcon)
                 _buildZoomIcon(value, context, zoomLevel),
@@ -86,52 +89,57 @@ extension ShowBottomSheet<T> on BuildContext {
     BuildContext context,
     ValueNotifier<double> zoomLevel,
   ) {
-    return IconButton(
-      tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
-      style: IconButton.styleFrom(
-        padding: EdgeInsets.zero,
-        shape: ContinuousRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor).toAlpha(
-          0.4,
-        ),
-      ),
-      icon:
-          Icon(
-            semanticLabel: 'zoom',
-            color: context.surfaceColor,
-            value > 1.0 ? Icons.zoom_out_map : Icons.zoom_in_map,
-          ).addNeumorphism(
-            topShadowColor: kDangerColor,
-            offset: const Offset(1, 1),
+    return Padding(
+      padding: const EdgeInsets.only(top: 10.0),
+      child: IconButton(
+        tooltip: value > 1.0 ? 'Zoom Out' : 'Zoom In',
+        style: IconButton.styleFrom(
+          padding: EdgeInsets.zero,
+          shape: ContinuousRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
           ),
-      onPressed: () => zoomLevel.value = value > 1.0 ? 0.5 : 1.2,
+          backgroundColor: (value > 1.0 ? kDangerColor : kGrayBlueColor)
+              .toAlpha(0.4),
+        ),
+        icon:
+            Icon(
+              semanticLabel: 'zoom',
+              color: context.surfaceColor,
+              value > 1.0 ? Icons.zoom_out_map : Icons.zoom_in_map,
+            ).addNeumorphism(
+              topShadowColor: kDangerColor,
+              offset: const Offset(1, 1),
+            ),
+        onPressed: () => zoomLevel.value = value > 1.0 ? 0.5 : 1.2,
+      ),
     );
   }
 }
 
 class CustomDraggableBottomSheet extends StatefulWidget {
-  final double? initialChildSize, maxChildSize;
   final Widget child;
+  final bool isShadow;
   final Widget? header;
+  final bool isScrollable;
   final Function()? onPress;
   final EdgeInsets? padding;
-  final bool isScrollable;
   final Color? sheetBgColor;
   final bool confirmOnClose; // Confirm on accidental close of bottom sheet
+  final double? maxChildSize;
+  final double? initialChildSize;
 
   const CustomDraggableBottomSheet({
     super.key,
     required this.child,
-    this.confirmOnClose = true,
     this.onPress,
     this.padding,
-    this.isScrollable = true,
-    this.initialChildSize,
-    this.maxChildSize,
     this.header,
+    this.maxChildSize,
     this.sheetBgColor,
+    this.initialChildSize,
+    this.isShadow = false,
+    this.isScrollable = true,
+    this.confirmOnClose = true,
   });
 
   @override
@@ -141,12 +149,20 @@ class CustomDraggableBottomSheet extends StatefulWidget {
 
 class _CustomDraggableBottomSheetState
     extends State<CustomDraggableBottomSheet> {
-  final GlobalKey _contentKey = GlobalKey();
-  bool _isClosing = false;
-  double? _initialSize;
   double? _lastExtent;
+  double? _initialSize;
+  bool _isClosing = false;
+  final GlobalKey _contentKey = GlobalKey();
 
   double get _maxChildSize => widget.maxChildSize ?? 0.8;
+
+  Border? get _bordered =>
+      widget.isShadow ? Border.all(width: 2, color: kModelColor) : null;
+
+  // BoxShadow(color: Colors.black.toAlpha(0.3), blurRadius: kBorderRadius),
+  List<BoxShadow>? get _boxShadow => widget.isShadow
+      ? [BoxShadow(color: kModelColor, blurRadius: 15)]
+      : null;
 
   @override
   void initState() {
@@ -286,6 +302,8 @@ class _CustomDraggableBottomSheetState
       decoration: BoxDecoration(
         // color: const Color.fromRGBO(0, 0, 0, 0.001),
         color: widget.sheetBgColor ?? context.ofTheme.cardColor,
+        border: _bordered,
+        boxShadow: _boxShadow,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16.00)),
       ),
       child: Column(

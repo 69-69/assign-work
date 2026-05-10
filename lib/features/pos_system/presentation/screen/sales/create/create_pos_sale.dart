@@ -17,7 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddPOSSaleForm<T> on BuildContext {
   Future<void> openAddPOSSales({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: BottomSheetScaffold(title: 'Add Sale', body: _AddSalesForm()),
+    child: BottomSheetScaffold(title: 'New Sales', body: _AddSalesForm()),
   );
 }
 

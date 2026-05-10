@@ -47,7 +47,7 @@ class FormGroupCard extends StatefulWidget {
 
 class _FormGroupCardState extends State<FormGroupCard> {
   Color? _bgColor;
-  double _currentElevation = 0.4;
+  double _currentElevation = 1;
 
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
@@ -129,7 +129,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
         _bgColor = widget.bgColor ?? context.onSecondaryColor;
       }),
       onExit: (_) => setState(() {
-        _currentElevation = 0.4;
+        _currentElevation = 1;
         _bgColor = null;
       }),
       child: _buildBody(context),
@@ -143,7 +143,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
       // context.scaffoldBgColor
       shape: RoundedRectangleBorder(
         borderRadius: _borderRadius,
-        side: BorderSide(color: kLightBlueColor.toAlpha(0.3), width: 1),
+        side: BorderSide(color: kLightBlueColor.toAlpha(0.4), width: 1),
       ),
       margin: _contentMargin,
       child: Padding(

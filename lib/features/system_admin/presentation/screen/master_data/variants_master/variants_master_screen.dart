@@ -29,14 +29,6 @@ class VariantsMasterScreen extends StatelessWidget {
       children: [
         ListAttributes(),
         ListVariants(),
-        /*Center(
-          child: Text(
-            'Variants: ex: [Color: red, Size: M, Material: Cotton]\n'
-            'These are not Variants, but Product Fields: [Model: 2023, Brand: Nike, Type: Sport, Gender: Men, Age: 20-30,]',
-            style: context.textTheme.titleLarge,
-            textAlign: TextAlign.center,
-          ),
-        ),*/
       ],
     );
   }

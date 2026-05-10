@@ -18,7 +18,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddItemForm on BuildContext {
   Future<void> openAddItem() => openBottomSheet(
     isExpand: false,
-    child: BottomSheetScaffold(title: 'Add New Item', body: _AddItemForm()),
+    child: BottomSheetScaffold(title: 'New Item', body: _AddItemForm()),
   );
 }
 

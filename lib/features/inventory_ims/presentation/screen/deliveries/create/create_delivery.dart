@@ -21,7 +21,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddDelivery on BuildContext {
   Future<void> openAddDelivery({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: BottomSheetScaffold(title: 'Add Delivery', body: _AddDeliveryBody()),
+    child: BottomSheetScaffold(title: 'New Delivery', body: _AddDeliveryBody()),
   );
 }
 

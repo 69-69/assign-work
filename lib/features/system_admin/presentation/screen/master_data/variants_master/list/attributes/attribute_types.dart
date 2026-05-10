@@ -58,7 +58,7 @@ class _AttributeTypesState extends State<AttributeTypes> {
     _recomputeChanges();
   }
 
-  /// ✅ Single source of truth for change detection
+  /// Single source of truth for change detection
   void _recomputeChanges() {
     final currentUnchecked = _attributeNames
         .where((c) => !_selectedAttrNames.contains(c))

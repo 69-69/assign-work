@@ -36,7 +36,7 @@ extension IMFormExtensions on BuildContext {
       onBackPress: onBackPress,
       title: serverItem != null
           ? serverItem.name.toTitle
-          : 'Create Item Master',
+          : 'New Item Master',
       body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
     ),
   );
@@ -269,7 +269,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
             child: context.elevatedButton(
               'Preview Variants',
               onPressed: () => context.showVariantPreview(
-                itemCode: "TS-001",
+                itemCode: _imNumber,
                 variants: _variants,
               ),
             ),

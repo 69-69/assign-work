@@ -37,7 +37,7 @@ extension SalesQuoteFormExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       onBackPress: onBackPress,
-      title: 'Create Sales Quotation',
+      title: 'New Sales Quotation',
       body: _CreateSQForm(lineItemType: type),
     ),
   );

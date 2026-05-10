@@ -149,7 +149,7 @@ class _ChangeEmployeePasscodeScreenState
   Widget _leftColumnPane() {
     return LeftColumnPane(
       companyLogo: companyLogo,
-      title: 'Create Employee Passcode',
+      title: 'New Employee Passcode',
       subtitle:
           "You signed in using a temporary employee passcode. Please create a new, secure employee passcode for your account!",
       children: [

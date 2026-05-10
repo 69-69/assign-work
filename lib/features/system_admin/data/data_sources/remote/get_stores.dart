@@ -4,17 +4,17 @@ import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.da
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GetStores {
-  static final storeBloc = CompanyStoresBloc(
+  static final _storeBloc = CompanyStoresBloc(
     firestore: FirebaseFirestore.instance,
   );
 
   static Future<List<CompanyStore>> load() async {
     // Load all data initially to pass to the search delegate
-    storeBloc.add(GetSetups<CompanyStore>());
+    _storeBloc.add(GetSetups<CompanyStore>());
 
     // Ensure to wait for the data to be loaded
     final allData =
-        await storeBloc.stream.firstWhere(
+        await _storeBloc.stream.firstWhere(
               (state) => state is SetupsLoaded<CompanyStore>,
             )
             as SetupsLoaded<CompanyStore>;
@@ -26,7 +26,7 @@ class GetStores {
   /// @Return: `List<CompanyStores>`
   static Future<List<CompanyStore>> byAnyTerm(term) async {
     // Load all data initially to pass to the search delegate
-    storeBloc.add(
+    _storeBloc.add(
       SearchSetup<CompanyStore>(
         primaryField: 'name',
         optionalField: 'storeNumber',
@@ -38,7 +38,7 @@ class GetStores {
 
     // Ensure to wait for the data to be loaded
     final allData =
-        await storeBloc.stream.firstWhere(
+        await _storeBloc.stream.firstWhere(
               (state) => state is SetupsLoaded<CompanyStore>,
             )
             as SetupsLoaded<CompanyStore>;

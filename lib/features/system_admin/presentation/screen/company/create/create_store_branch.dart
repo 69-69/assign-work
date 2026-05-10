@@ -97,6 +97,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
           ),
         )
         .toList();
+
     _bloc.add(AddSetup<List<CompanyStore>>(data: newStores));
   }
 

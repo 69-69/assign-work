@@ -9,18 +9,18 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ListPriceMaster extends StatefulWidget {
-  const ListPriceMaster({super.key});
+class PriceLists extends StatefulWidget {
+  const PriceLists({super.key});
 
   @override
-  State<ListPriceMaster> createState() => _ListPriceMasterState();
+  State<PriceLists> createState() => _PriceListsState();
 }
 
-class _ListPriceMasterState extends State<ListPriceMaster> {
+class _PriceListsState extends State<PriceLists> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
 
-  PriceMasterBloc get _bloc => context.read<PriceMasterBloc>();
+  PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
 
   void _isDeleting(bool status) {
     setState(() => _inProgress = status);
@@ -31,12 +31,12 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
     context.showAlertOverlay(msg);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<PriceMaster> state) {
+  void _handleBlocState(BuildContext cxt, SetupState<PriceListMaster> state) {
     switch (state) {
-      case SetupDeleted<PriceMaster>(message: var msg):
+      case SetupDeleted<PriceListMaster>(message: var msg):
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
-      case SetupError<PriceMaster>():
+      case SetupError<PriceListMaster>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -44,25 +44,28 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PriceMasterBloc, SetupState<PriceMaster>>(
-      listener: _handleBlocState,
-      child: _buildBody(),
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocListener<PriceListMasterBloc, SetupState<PriceListMaster>>(
+        listener: _handleBlocState,
+        child: _buildBody(),
+      ),
     );
   }
 
-  BlocBuilder<PriceMasterBloc, SetupState<PriceMaster>> _buildBody() {
-    return BlocBuilder<PriceMasterBloc, SetupState<PriceMaster>>(
+  BlocBuilder<PriceListMasterBloc, SetupState<PriceListMaster>> _buildBody() {
+    return BlocBuilder<PriceListMasterBloc, SetupState<PriceListMaster>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingSetup<PriceMaster>() => context.loader,
-          SetupsLoaded<PriceMaster>(data: var results) =>
+          LoadingSetup<PriceListMaster>() => context.loader,
+          SetupsLoaded<PriceListMaster>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
                     'Create Price List',
                     onPressed: () => _openPriceMasterForm(context),
                   )
                 : _buildCard(context, results),
-          SetupError<PriceMaster>(error: final error) => context.buildError(
+          SetupError<PriceListMaster>(error: final error) => context.buildError(
             error,
           ),
           _ => const SizedBox.shrink(),
@@ -71,14 +74,14 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
     );
   }
 
-  Widget _buildCard(BuildContext c, List<PriceMaster> masters) {
+  Widget _buildCard(BuildContext c, List<PriceListMaster> masters) {
     return DynamicDataTable(
       omitAtIndex: 0,
-      maskAtIndex: 1,
+      // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
-      headers: PriceMaster.dataTableHeader,
+      headers: PriceListMaster.dataTableHeader,
       rows: masters.map((d) => d.itemAsList).toList(),
-      template: PriceMaster.templateHeader,
+      template: PriceListMaster.templateHeader,
       selectedRowKeys: _selectedIds,
       onChecked: _onChecked,
       onAllChecked: _onAllChecked,
@@ -87,14 +90,14 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
     );
   }
 
-  Widget _buildToolbar(List<PriceMaster> masters) {
+  Widget _buildToolbar(List<PriceListMaster> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
       primaryLabel: 'Create Price List',
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       refreshLabel: 'Refresh Master Data',
       onPrimary: () => _openPriceMasterForm(context),
-      onRefresh: () => _bloc.add(RefreshSetups<PriceMaster>()),
+      onRefresh: () => _bloc.add(RefreshSetups<PriceListMaster>()),
       onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
@@ -107,15 +110,15 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
     );
   }
 
-  Future<void> _onEditTap(List<PriceMaster> masters, String id) async {
-    final master = PriceMaster.findById(masters, id);
+  Future<void> _onEditTap(List<PriceListMaster> masters, String id) async {
+    final master = PriceListMaster.findById(masters, id);
     if (master == null) return;
 
-    // await context.openPriceListMasterForm(serverItem: master);
+    await _openPriceMasterForm(context, serverItem: master);
   }
 
-  Future<void> _onDeleteTap(List<PriceMaster> masters, String id) async {
-    final master = PriceMaster.findById(masters, id);
+  Future<void> _onDeleteTap(List<PriceListMaster> masters, String id) async {
+    final master = PriceListMaster.findById(masters, id);
     if (master == null) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
@@ -126,7 +129,7 @@ class _ListPriceMasterState extends State<ListPriceMaster> {
 
   Future<void> _openPriceMasterForm(
     BuildContext cxt, {
-    PriceMaster? serverItem,
+    PriceListMaster? serverItem,
   }) async => await cxt.openAddPriceList(serverPriceList: serverItem);
 
   _onChecked(bool? isChecked, checkedRow) {

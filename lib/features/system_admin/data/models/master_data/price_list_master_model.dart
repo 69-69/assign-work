@@ -5,7 +5,6 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 
-
 /*
 The **Price List is usually created independently**, but the **Price List Entries are created during or after Item Master variant generation**.
 
@@ -240,7 +239,7 @@ This gives maximum flexibility later.
 
 */
 
-class PriceMaster extends Equatable {
+class PriceListMaster extends Equatable {
   final String id;
   final String storeNumber;
   final String name; // Wholesale, Retail, VIP Customers, etc
@@ -250,10 +249,10 @@ class PriceMaster extends Equatable {
   final DateTime? validUntil;
   final bool taxInclusive;
 
-  /// 7. Audit history (candidate for extraction)
+  /// Audit history
   final List<AuditLog> history;
 
-  const PriceMaster({
+  const PriceListMaster({
     this.id = '',
     required this.storeNumber,
     required this.name,
@@ -265,8 +264,8 @@ class PriceMaster extends Equatable {
     this.history = const [],
   });
 
-  factory PriceMaster.fromMap(Map<String, dynamic> map, {String? id}) {
-    return PriceMaster(
+  factory PriceListMaster.fromMap(Map<String, dynamic> map, {String? id}) {
+    return PriceListMaster(
       id: id ?? map['id'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       name: map['name'] ?? '',
@@ -291,11 +290,15 @@ class PriceMaster extends Equatable {
 
   String get getType => type.getName;
 
+  String get getValidFrom => validFrom.dateOnly;
+
+  String get getValidUntil => validUntil.dateOnly;
+
   /// Convert Model to toFirestore / toJson Function [toMap]
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap([bool formatDate = false]) {
     var newMap = _mapTemp();
-    newMap['validFrom'] = validFrom?.toISOString;
-    newMap['validUntil'] = validUntil?.toISOString;
+    newMap['validFrom'] = formatDate ? getValidFrom : validFrom?.toISOString;
+    newMap['validUntil'] = formatDate ? getValidUntil : validUntil?.toISOString;
 
     return newMap;
   }
@@ -303,21 +306,22 @@ class PriceMaster extends Equatable {
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
     var newMap = _mapTemp();
+
     newMap['validFrom'] = validFrom?.toMilliseconds;
     newMap['validUntil'] = validUntil?.toMilliseconds;
 
     return {'id': id, 'data': newMap};
   }
 
-  /// [empty] Empty ItemMaster object.
-  static final PriceMaster empty = PriceMaster(
+  /// [empty] Empty PriceListMaster object.
+  static final PriceListMaster empty = PriceListMaster(
     storeNumber: '',
     name: '',
     currencyCode: '',
   );
 
-  /// [isEmpty] Checks if the ItemMaster is empty.
-  bool get isEmpty => identical(this, PriceMaster.empty);
+  /// [isEmpty] Checks if the PriceListMaster is empty.
+  bool get isEmpty => identical(this, PriceListMaster.empty);
 
   bool get isNotEmpty => !isEmpty;
 
@@ -325,26 +329,26 @@ class PriceMaster extends Equatable {
   bool filterByAny(String filter) => itemAsList.filterAny(filter);
 
   /// [findById] Find PriceList by ID.
-  static PriceMaster? findById(List<PriceMaster> items, String id) =>
+  static PriceListMaster? findById(List<PriceListMaster> items, String id) =>
       items.firstWhereOrNull((i) => i.id == id);
 
   static List<String> get dataTableHeader => const [
     'ID',
-    'Name',
+    'Price List',
     'Type',
-    'currency',
-    'From',
-    'To',
-    'Status',
+    'Currency',
     'Taxed',
+    'Valid From',
+    'Valid Until',
   ];
 
   /// ToList for Price List [itemAsList]
   List<String> get itemAsList => [
     id,
-    name,
-    getType,
-    currencyCode,
+    name.toTitle,
+    getType.toSentence,
+    currencyCode.toUpperAll,
+    taxInclusive ? 'Yes' : 'No',
     validFrom.toStandardDT,
     validUntil.toStandardDT,
   ];
@@ -352,20 +356,22 @@ class PriceMaster extends Equatable {
   /// For Bulk Upload/Saving template
   static Map<String, dynamic> get templateHeader => empty.toMap();
 
-  PriceMaster copyWith({
+  PriceListMaster copyWith({
     String? storeNumber,
     String? id,
     String? name,
+    bool? taxInclusive,
     PriceListType? type,
     String? currencyCode,
     DateTime? validFrom,
     DateTime? validUntil,
     List<AuditLog>? history,
-  }) => PriceMaster(
+  }) => PriceListMaster(
     storeNumber: storeNumber ?? this.storeNumber,
     id: id ?? this.id,
     name: name ?? this.name,
     type: type ?? this.type,
+    taxInclusive: taxInclusive ?? this.taxInclusive,
     currencyCode: currencyCode ?? this.currencyCode,
     validFrom: validFrom ?? this.validFrom,
     validUntil: validUntil ?? this.validUntil,
@@ -384,9 +390,7 @@ class PriceMaster extends Equatable {
   ];
 }
 
-class PriceEntry {
-  static get _today => DateTime.now();
-
+class PriceListEntry {
   final String id;
 
   /// FK -> PriceList.id
@@ -399,71 +403,105 @@ class PriceEntry {
   final double sellingPrice;
 
   /// Minimum quantity for this pricing tier
-  final double? minQuantity;
+  final int? minQuantity;
 
   /// Additional discount percentage
   final double discountPercent;
 
-  final String createdBy;
-  final String? updatedBy;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  /// Audit history
+  final List<AuditLog> history;
 
-  PriceEntry({
+  PriceListEntry({
     required this.id,
     required this.priceListId,
     required this.variantSku,
     required this.sellingPrice,
     this.minQuantity,
     this.discountPercent = 0.0,
-    required this.createdBy,
-    this.updatedBy,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) : createdAt = createdAt ?? _today,
-       updatedAt = updatedAt ?? _today;
+    this.history = const [],
+  });
 
-  factory PriceEntry.fromMap(Map<String, dynamic> map, {String? id}) {
-    return PriceEntry(
+  factory PriceListEntry.fromMap(Map<String, dynamic> map, {String? id}) {
+    return PriceListEntry(
       id: id ?? map['id'] ?? '',
-      priceListId: map['priceListId'],
-      variantSku: map['variantSku'],
-      sellingPrice: (map['sellingPrice'] as num).toDouble(),
-
-      minQuantity: (map['minQuantity'] as num?)?.toDouble(),
-
-      discountPercent: (map['discountPercent'] as num?)?.toDouble() ?? 0,
-      createdBy: map['createdBy'],
-      updatedBy: map['updatedBy'],
-      createdAt: toDateTimeFn(map['createdAt']),
-      updatedAt: toDateTimeFn(map['updatedAt']),
+      priceListId: map['priceListId'] ?? '',
+      variantSku: map['variantSku'] ?? '',
+      sellingPrice: '${map['sellingPrice']}'.asDouble,
+      minQuantity: '${map['minQuantity']}'.asInt,
+      discountPercent: '${map['discountPercent']}'.asDouble,
+      history: AuditLog.auditLogs(map['history']),
     );
   }
 
-  Map<String, dynamic> _mapTemp() => {
+  /// Convert Model to toFirestore / toJson Function [toMap]
+  Map<String, dynamic> toMap() => {
     'id': id,
     'priceListId': priceListId,
     'variantSku': variantSku,
     'sellingPrice': sellingPrice,
     'minQuantity': minQuantity,
     'discountPercent': discountPercent,
+    'history': history.map((e) => e.toMap()).toList(),
   };
-
-  /// Convert Model to toFirestore / toJson Function [toMap]
-  Map<String, dynamic> toMap() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.toISOString;
-    newMap['updatedAt'] = updatedAt.toISOString;
-
-    return newMap;
-  }
 
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.toMilliseconds;
-    newMap['updatedAt'] = updatedAt.toMilliseconds;
-
+    var newMap = toMap();
     return {'id': id, 'data': newMap};
   }
+
+  /// [empty] Empty PriceListEntry object.
+  static final PriceListEntry empty = PriceListEntry(
+    id: '',
+    priceListId: '',
+    variantSku: '',
+    sellingPrice: 0,
+  );
+
+  /// [isEmpty] Checks if the PriceListMaster is empty.
+  bool get isEmpty => identical(this, PriceListMaster.empty);
+
+  bool get isNotEmpty => !isEmpty;
+
+  /// Filter/search
+  bool filterByAny(String filter) => itemAsList.filterAny(filter);
+
+  /// [findById] Find PriceList Entry by ID.
+  static PriceListEntry? findById(List<PriceListEntry> items, String id) =>
+      items.firstWhereOrNull((i) => i.id == id);
+
+  static List<String> get dataTableHeader => const [
+    'ID',
+    'SKU',
+    'Price',
+    'Min Qty',
+    'Discount %',
+  ];
+
+  /// ToList for Price Entry [itemAsList]
+  List<String> get itemAsList => [
+    id,
+    variantSku,
+    sellingPrice.toCurrency.toString(),
+    minQuantity?.toString() ?? '0',
+    discountPercent.toPercent.toString(),
+  ];
+
+  static Map<String, dynamic> get templateHeader => empty.toMap();
+
+  PriceListEntry copyWith({
+    String? id,
+    String? priceListId,
+    String? variantSku,
+    double? sellingPrice,
+    int? minQuantity,
+    double? discountPercent,
+    List<AuditLog>? history,
+  }) => PriceListEntry(
+    id: id ?? this.id,
+    history: history ?? this.history,
+    priceListId: priceListId ?? this.priceListId,
+    variantSku: variantSku ?? this.variantSku,
+    sellingPrice: sellingPrice ?? this.sellingPrice,
+  );
 }

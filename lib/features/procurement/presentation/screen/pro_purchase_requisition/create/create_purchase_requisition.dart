@@ -31,7 +31,7 @@ extension CreatePurchaseRequisitionForm on BuildContext {
   }) => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create Purchase Requisition',
+      title: 'New Purchase Requisition',
       onBackPress: onBackPress,
       body: _PurchaseRequisiteForm(
         lineType: lineType,

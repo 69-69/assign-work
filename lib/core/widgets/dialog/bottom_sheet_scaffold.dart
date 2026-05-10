@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class BottomSheetScaffold extends StatelessWidget {
   final Widget body;
   final dynamic title;
+  final bool isShadow;
   final dynamic btnText;
   final String? tooltip;
   final dynamic subtitle;
@@ -35,6 +36,7 @@ class BottomSheetScaffold extends StatelessWidget {
     this.onPrint,
     this.secondaryWidget,
     this.onBackPress,
+    this.isShadow = false,
   });
 
   @override
@@ -42,6 +44,7 @@ class BottomSheetScaffold extends StatelessWidget {
     final size = isDetailMode ? 0.92 : 0.98;
 
     return CustomDraggableBottomSheet(
+      isShadow: isShadow,
       confirmOnClose: confirmOnClose,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       initialChildSize: initialSize ?? size,

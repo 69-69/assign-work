@@ -22,7 +22,7 @@ extension CreateCategory<T> on BuildContext {
     child: BottomSheetScaffold(
       title: serverAttribute != null
           ? 'Edit ${serverAttribute.name}'
-          : 'Create Category',
+          : 'New Category',
       body: _AddCategoryForm(serverCategory: serverAttribute),
     ),
   );

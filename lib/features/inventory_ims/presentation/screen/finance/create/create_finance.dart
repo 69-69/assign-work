@@ -28,7 +28,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension AddFinanceForm on BuildContext {
   Future<void> openAddFinance({Widget? header}) => openBottomSheet(
     isExpand: false,
-    child: BottomSheetScaffold(title: 'Create Order', body: _AddFinanceBody()),
+    child: BottomSheetScaffold(title: 'New Order', body: _AddFinanceBody()),
   );
 }
 

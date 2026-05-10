@@ -247,12 +247,12 @@ extension ScreenHelper on BuildContext {
   Center buildError(String error) => Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 10,
       children: [
         Text(
           'Oops! Something went wrong...\n[ $error ]',
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 10),
         outlinedButton('Go Back', onPressed: () => Navigator.pop(this)),
       ],
     ),

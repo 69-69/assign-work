@@ -19,7 +19,7 @@ extension CreateNewRole<T> on BuildContext {
   Future<void> openCreateNewRole() => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create New Role',
+      title: 'New Role',
       body: _CreateNewRoleForm(),
     ),
   );

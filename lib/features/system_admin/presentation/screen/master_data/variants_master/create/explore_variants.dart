@@ -17,8 +17,8 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateVariants<T> on BuildContext {
-  Future<void> openAddVariant({
+extension ExploreVariants<T> on BuildContext {
+  Future<void> openExploreVariant({
     Attribute? serverVariant,
     Map<String, List<Attribute>>? groupedAttrs,
   }) => openBottomSheet(
@@ -28,7 +28,7 @@ extension CreateVariants<T> on BuildContext {
       isDetailMode: true,
       title: serverVariant != null
           ? 'Edit ${serverVariant.type}'
-          : 'Explore Variants',
+          : 'Variants Playground',
       body: _AddAttributeForm(
         serverAttribute: serverVariant,
         groupedAttrs: groupedAttrs,
@@ -48,6 +48,7 @@ class _AddAttributeForm extends StatefulWidget {
 }
 
 class _AddAttributeFormState extends State<_AddAttributeForm> {
+  final _demoItemCode= "DEMO-001";
   bool _isSubmitting = false;
   final List<Attribute> _attributes = [];
 
@@ -159,7 +160,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         AdaptiveLayout(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            VariantsPreview(variants: _variants, itemCode: "TS-001"),
+            VariantsPreview(variants: _variants, itemCode: _demoItemCode),
             AttributePanel(
               isExpanded: true,
               generatedVariants: (v) {

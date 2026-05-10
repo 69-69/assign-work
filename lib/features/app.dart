@@ -59,7 +59,7 @@ class App extends StatelessWidget {
       _bloc<InboundReceivingBloc>(() => InboundReceivingBloc(firestore: _fireStore)),
       _bloc<PickingShipmentsBloc>(() => PickingShipmentsBloc(firestore: _fireStore)),
 
-      _bloc<PriceMasterBloc>(() => PriceMasterBloc(firestore: _fireStore)),
+      _bloc<PriceListMasterBloc>(() => PriceListMasterBloc(firestore: _fireStore)),
       _bloc<PriceListEntryBloc>(() => PriceListEntryBloc(firestore: _fireStore)),
       _bloc<AttributeBloc>(() => AttributeBloc(firestore: _fireStore)),
       _bloc<VariantBloc>(() => VariantBloc(firestore: _fireStore)),

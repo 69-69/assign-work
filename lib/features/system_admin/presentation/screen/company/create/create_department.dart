@@ -24,7 +24,7 @@ extension CreateDepartment<T> on BuildContext {
     child: BottomSheetScaffold(
       title: serverDepart != null
           ? 'Edit ${serverDepart.name}'
-          : 'Create Department',
+          : 'New Department',
       body: _AddDepartmentForm(
         serverDepart: serverDepart,
         existingCodes: existingCodes,
@@ -114,11 +114,13 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
   ];
 
   void _resetForm() {
-    setState(() {
+    if (mounted) {
+      setState(() {
       _formKey.currentState?.reset();
       _formResetKey = UniqueKey(); // 💥 full rebuild
       _departments.clear();
     });
+    }
   }
 
   void _showAlert(String msg) {

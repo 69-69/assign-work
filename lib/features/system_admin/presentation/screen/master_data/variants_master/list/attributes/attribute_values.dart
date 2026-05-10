@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
-import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
@@ -22,13 +21,9 @@ class _AttributeValuesState extends State<AttributeValues> {
   Widget build(BuildContext context) {
     return BlocProvider<AttributeBloc>(
       create: (context) =>
-      AttributeBloc(firestore: FirebaseFirestore.instance)
+          AttributeBloc(firestore: FirebaseFirestore.instance)
             ..add(GetSetups<Attribute>()),
-      child: CustomScaffold(
-        noAppBar: true,
-        body: _buildBody(),
-        bottomNavigationBar: const SizedBox.shrink(),
-      ),
+      child: _buildBody(),
     );
   }
 
@@ -44,7 +39,9 @@ class _AttributeValuesState extends State<AttributeValues> {
                     onPressed: () => context.openAddAttribute(),
                   )
                 : _buildCard(context, results),
-          SetupError<Attribute>(error: final error) => context.buildError(error),
+          SetupError<Attribute>(error: final error) => context.buildError(
+            error,
+          ),
           _ => const SizedBox.shrink(),
         };
       },

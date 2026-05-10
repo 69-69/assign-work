@@ -20,7 +20,7 @@ extension AddSuppliers on BuildContext {
       openBottomSheet(
         isExpand: false,
         child: BottomSheetScaffold(
-          title: 'Add Supplier',
+          title: 'New Supplier',
           body: _AddSuppliersForm(existingCodes: existingCodes),
         ),
       );

@@ -18,7 +18,7 @@ extension CreateNewSubscription<T> on BuildContext {
   Future<void> openCreateNewSubscription() => openBottomSheet(
     isExpand: false,
     child: BottomSheetScaffold(
-      title: 'Create Subscription',
+      title: 'New Subscription',
       subtitle:
           'NOTE: Subscriptions are specific to each workspaces.\nNot shared or generic!',
       subTitleColor: kDangerColor,
