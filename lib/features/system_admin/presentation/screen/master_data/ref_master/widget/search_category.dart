@@ -49,7 +49,7 @@ class _SearchCategoryState extends State<SearchCategory> {
       asyncItems: (String filter, loadProps) async => await _loadCategories(),
       filterFn: (category, filter) =>
           _filterCategory(filter, category, context),
-      itemAsString: (category) => category.itemAsString,
+      getDisplayText: (category) => category.itemAsString,
       onChanged: (category) => widget.onChanged(category!.id, category.name),
       validator: (category) => category == null ? 'Category is required' : null,
     );

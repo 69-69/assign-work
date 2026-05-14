@@ -161,7 +161,7 @@ class _AutoApplyTaxOnDropdownState extends State<AutoApplyTaxOnDropdown> {
       labelText: 'Auto apply tax on...',
       asyncItems: (String filter, loadProps) async => _loadTaxContexts(filter),
       filterFn: _filterTaxContexts,
-      itemAsString: (TaxContext t) => t.getName.toSeparate.toTitle,
+      getDisplayText: (TaxContext t) => t.getName.toSeparate.toTitle,
       onMultiChanged: (List<TaxContext> t) {
         setState(() => _taxContexts = List.from(t));
         widget.onMultiChanged.call(t); // notify parent

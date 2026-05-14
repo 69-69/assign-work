@@ -10,6 +10,7 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 
 class PriceMasterFormInputs {
+
   static List<FieldGroupConfig> get priceListFields => [
     FieldGroupConfig(
       key: 'type',

@@ -15,12 +15,13 @@ enum FieldWidgetType {
 
 class DynamicTextFields extends StatefulWidget {
   final String? title;
+  final bool showButton;
+  final Color? textColor;
+  final List<String>? orText;
 
   /// [fullWidthKey] Use to specify the key for the full width field, else fallback to the last field
   final String? fullWidthKey;
-  final bool showButton;
   final int? fieldGroupsLimit;
-  final Color? textColor;
   final List<FieldGroupConfig> fieldsConfig;
   final List<Map<String, dynamic>>? initialData;
   final Function(List<Map<String, dynamic>>) onChanged;
@@ -41,6 +42,7 @@ class DynamicTextFields extends StatefulWidget {
     this.textColor,
     this.onCount,
     this.title,
+    this.orText,
   });
 
   @override
@@ -67,6 +69,8 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
   Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
 
   bool _canAddMoreGroups = true;
+
+  List<String>? get _orTexts => widget.orText;
 
   @override
   void initState() {
@@ -117,8 +121,9 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     int index,
   ) {
     if (groupIndex < _fieldGroups.length - 1) {
-      final ranColor = randomBgColors[index];
       final i = index + 1;
+      final ranColor = randomBgColors[index];
+      final orText = _orTexts?[index] ?? 'Form Group $i';
 
       return [
         ...widgets,
@@ -126,12 +131,12 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           margin: EdgeInsets.zero,
           blockColor: ranColor,
           child: Tooltip(
-            message: 'Form Group $i'.toSentence,
+            message: orText.toSentence,
             child: HorizontalDivider(
               thickness: 2,
               isORSeparator: true,
               txtColor: ranColor,
-              orText: 'Form Group $i',
+              orText: orText,
             ),
           ),
         ),
@@ -551,7 +556,6 @@ class FieldGroup {
     }
   }
 }
-
 
 /*Iterable<Widget> _buildFieldGroups2() {
     return _fieldGroups.asMap().entries.expand((entry) {

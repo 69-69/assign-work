@@ -84,7 +84,7 @@ class _UOMMultiDropdownState extends State<UOMMultiDropdown> {
       labelText: _labelText,
       asyncItems: (String filter, loadProps) async => _loadUOMs(filter),
       filterFn: _filterUOMs,
-      itemAsString: (String uom) => uom.toTitle,
+      getDisplayText: (String uom) => uom.toTitle,
       onMultiChanged: (List<String> units) {
         setState(() => _selectedUOMs = List.from(units));
         widget.onMultiChanged.call(units); // notify parent

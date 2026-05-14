@@ -64,7 +64,7 @@ class _SearchWHSubLocationsState extends State<SearchWHSubLocations> {
       asyncItems: (String filter, loadProps) async =>
           await _loadWHLocations(filter: filter),
       filterFn: (loc, filter) => _filterWHLocation(filter, loc),
-      itemAsString: (loc) => loc.description.toTitle,
+      getDisplayText: (loc) => loc.description.toTitle,
       onChanged: (loc) => widget.onChanged(
         loc!.id,
         loc.warehouseCode,

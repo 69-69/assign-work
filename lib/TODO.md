@@ -1,8 +1,7 @@
 # @TODO - PriceList, Payment Method & Type
 
 ## @Continue Tomorrow (Next Sprint)
-    - Save variants into DB
-    - Resolve it issue with sacing Price-Entry
+    - Resolve it issue Price-Entry edit field
 
     ## Linking Item Master with
         - Attributes & Variant master

@@ -182,7 +182,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   final IconData? trailingIcon;
   final Function(T?)? onChanged;
   final Function(List<T>)? onMultiChanged;
-  final Function(T)? itemAsString;
+  final Function(T)? getDisplayText;
   final String? Function(T?)? validator;
   final String? Function(List<T>?)? validatorMulti;
   final Function(T, String) filterFn;
@@ -200,7 +200,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
     required this.labelText,
     required this.filterFn,
     this.helperText,
-    this.itemAsString,
+    this.getDisplayText,
     this.asyncItems,
     this.onChanged,
     this.onMultiChanged,
@@ -232,7 +232,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       items: _onFind,
       // FutureOr<List<T>> Function(String, LoadProps?)? items
       // Future<List<T>> Function(String)? items,
-      itemAsString: (T obj) => itemAsString!(obj),
+      itemAsString: (T obj) => getDisplayText!(obj),
       onChanged: (T? obj) => onChanged!(obj),
       suffixProps: _dropdownSuffixProps,
       decoratorProps: _dropDownDecoratorProps(helperText ?? ''),
@@ -260,7 +260,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
       items: _onFind,
       // FutureOr<List<T>> Function(String, LoadProps?)? items
       // Future<List<T>> Function(String)? items,
-      itemAsString: (T obj) => itemAsString!(obj),
+      itemAsString: (T obj) => getDisplayText!(obj),
       onChanged: (List<T> obj) => onMultiChanged!(obj),
       suffixProps: _dropdownSuffixProps,
       decoratorProps: _dropDownDecoratorProps(helperText ?? ''),

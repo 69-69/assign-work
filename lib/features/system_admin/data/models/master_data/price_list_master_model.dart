@@ -491,8 +491,8 @@ class PriceListEntry {
 
   PriceListEntry copyWith({
     String? id,
-    String? priceListId,
     String? variantSku,
+    String? priceListId,
     double? sellingPrice,
     int? minQuantity,
     double? discountPercent,
@@ -500,8 +500,10 @@ class PriceListEntry {
   }) => PriceListEntry(
     id: id ?? this.id,
     history: history ?? this.history,
-    priceListId: priceListId ?? this.priceListId,
     variantSku: variantSku ?? this.variantSku,
+    priceListId: priceListId ?? this.priceListId,
+    minQuantity: minQuantity ?? this.minQuantity,
     sellingPrice: sellingPrice ?? this.sellingPrice,
+    discountPercent: discountPercent ?? this.discountPercent,
   );
 }

@@ -56,7 +56,7 @@ class _SearchSubscriptionState extends State<SearchSubscription> {
       asyncItems: (String filter, loadProps) async =>
           await _loadSubscriptions(filter: filter),
       filterFn: (bin, filter) => _filterSub(filter, bin),
-      itemAsString: (bin) => bin.itemAsString,
+      getDisplayText: (bin) => bin.itemAsString,
       onChanged: (sub) => widget.onChanged(sub),
       validator: (bin) => bin == null ? _labelText : null,
     );

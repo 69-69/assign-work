@@ -1,6 +1,4 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
-import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/prerequisite_view.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -51,7 +49,7 @@ class _ListVariantsState extends State<ListVariants> {
             results.isEmpty
                 ? PrerequisiteView(
                     title:
-                        'No variants generated!\nCreate attributes with values before exploring variants.',
+                        'No variants available!\nCreate attributes with values before exploring variants.',
                     actionLabel: 'Explore Variants',
                     onAction: () async {
                       await _getAttributes(
@@ -80,7 +78,8 @@ class _ListVariantsState extends State<ListVariants> {
 
   _buildToolbar(List<Variant> variants) {
     return ListToolbarButtons(
-      primaryLabel: 'Add Variant',
+      primaryLabel: 'Explore',
+      primaryIcon: Icons.wb_sunny,
       refreshLabel: 'Refresh Variants',
       dataLength: variants.length,
       onPrimary: () async {

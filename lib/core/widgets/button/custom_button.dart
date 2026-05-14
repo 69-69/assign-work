@@ -36,7 +36,7 @@ extension Custombutton on BuildContext {
 
     final cancelBtn = outlinedButton(
       'Cancel',
-      onPressed: (){
+      onPressed: () {
         onCancel?.call();
         onCancelCallback?.call(true);
       },

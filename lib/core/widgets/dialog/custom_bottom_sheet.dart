@@ -64,7 +64,7 @@ extension ShowBottomSheet<T> on BuildContext {
       builder: (context, value, child) {
         return Container(
           padding: EdgeInsets.zero,
-          margin: const EdgeInsets.symmetric(horizontal: 10),
+          margin: EdgeInsets.zero,
           constraints: BoxConstraints(
             maxWidth: screenWidth * (isSmall ? 1 : value),
           ),

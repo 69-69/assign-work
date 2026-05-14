@@ -58,7 +58,7 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
       asyncItems: (String filter, loadProps) async =>
           await _loadDepartments(filter: filter),
       filterFn: (depart, filter) => _filterDepartment(filter, depart),
-      itemAsString: (depart) => depart.itemAsString,
+      getDisplayText: (depart) => depart.itemAsString,
       onChanged: (depart) =>
           widget.onChanged(depart!.id, depart.code, depart.name),
       validator: (depart) => depart == null ? _labelText : null,

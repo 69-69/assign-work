@@ -35,7 +35,7 @@ class SearchStoreBranches extends StatelessWidget {
         var term = filter.isEmpty ? (initialValue ?? '') : filter;
         return store.filterByAny(term);
       },
-      itemAsString: (store) => store.itemAsString,
+      getDisplayText: (store) => store.itemAsString,
       onChanged: (store) => onChanged(store!.storeNumber, store.name),
       validator: (store) => store == null ? 'Required Store branch' : null,
     );

@@ -1,17 +1,22 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/constants/app_drop_options.dart';
+import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/variant_attr_ext.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
-import 'package:assign_erp/core/widgets/layout/block_quote.dart';
-import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
+import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/variant_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/variant_bloc.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/create/create_price_entry.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 extension VariantPreviewExt on BuildContext {
   Future showVariantPreview({
@@ -32,39 +37,7 @@ extension VariantPreviewExt on BuildContext {
   );
 }
 
-class VariantsPreview extends StatelessWidget {
-  final String itemCode;
-  final List<Map<String, Attribute>> variants;
-
-  const VariantsPreview({
-    super.key,
-    required this.variants,
-    required this.itemCode,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return FormGroupCard(
-      title: 'Preview Variants',
-      subTitle:
-          '\nAutomatically generated combinations based on your selections.',
-      showCollapseButton: false,
-      children: [_buildBody()],
-    );
-  }
-
-  StatelessWidget _buildBody() {
-    if (variants.isEmpty) {
-      return BlockQuote(
-        child: Text('Select attributes to preview generated variants here.'),
-      );
-    }
-
-    return VariantTable(variants: variants, itemCode: itemCode);
-  }
-}
-
-class VariantTable extends StatelessWidget {
+class VariantTable extends StatefulWidget {
   final String itemCode;
   final List<Map<String, Attribute>> variants;
 
@@ -74,50 +47,156 @@ class VariantTable extends StatelessWidget {
     required this.itemCode,
   });
 
-  void _onSubmit() {
-    final variantsToSave = Variant.buildVariants(
-      itemCode: itemCode,
-      variants: variants.map((v) => v.toCodeMap()).toList(),
-    );
-    prettyPrint('variants-To-Save', variantsToSave);
+  @override
+  State<VariantTable> createState() => _VariantTableState();
+}
 
-    // _bloc.add(AddSetup<List<Variant>>(data: variantsToSave));
+class _VariantTableState extends State<VariantTable> {
+  Map<String, double> _sellingPrices = {};
+
+  VariantBloc get _bloc => context.read<VariantBloc>();
+
+  String get _employeeName => context.employee!.fullName;
+
+  List<Map<String, Attribute>> get _variants => widget.variants;
+
+  bool get _allPricesSet => _sellingPrices.length == _variants.length;
+
+  String get _missingCount {
+    final missing = _variants.where((e) {
+      final sku = _buildSku(e);
+      return !_sellingPrices.containsKey(sku);
+    }).length;
+
+    return missing == 0 ? '' : ' ($missing missing prices)';
+  }
+
+  // ---------------------------
+  // CORE: SKU GENERATION
+  // ---------------------------
+  String _buildSku(Map<String, Attribute> entry) {
+    return Variant.buildSKU(widget.itemCode, entry.toCodeMap()).itemSKU;
+  }
+
+  // ---------------------------
+  // AUDIT HISTORY
+  // ---------------------------
+  List<AuditLog> history() => [
+    AuditLog(action: AuditAction.created, actionBy: _employeeName),
+  ];
+
+  // ---------------------------
+  // SAVE ALL VARIANTS
+  // ---------------------------
+  void _saveAllVariants() {
+    final variantsToSave = Variant.buildVariants(
+      itemCode: widget.itemCode,
+      variants: _variants.map((v) => v.toCodeMap()).toList(),
+    );
+    final newVariants = variantsToSave
+        .map((e) => e.copyWith(history: history()))
+        .toList();
+
+    _bloc.add(AddSetup<List<Variant>>(data: newVariants));
     return;
+  }
+
+  // ---------------------------
+  // ALERT
+  // ---------------------------
+  void _showAlert(String msg) =>
+      context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
+
+  void _handleBlocState(BuildContext cxt, SetupState<Variant> state) {
+    switch (state) {
+      case SetupAdded<Variant>(message: var msg):
+        _showAlert(msg ?? 'Variant successfully saved');
+
+      case SetupError<Variant>():
+        _showAlert('Something went wrong! Please try again');
+
+      case _:
+        break;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final firstVariant = variants.firstOrNull;
-    if (firstVariant == null) {
+    final first = _variants.firstOrNull;
+
+    if (first == null) {
       return const Center(child: Text('No variants available'));
     }
 
-    final keyList = firstVariant.keys.toList()
-      ..sortByComparable((e) => attributePriorities[e] ?? 999);
+    return BlocListener<VariantBloc, SetupState<Variant>>(
+      listener: _handleBlocState,
+      child: Column(
+        children: [
+          _buildTable(first),
 
-    final columnLabels = ['Price', ...keyList.map((k) => k.toTitle), 'SKU'];
-
-    return SortableHistoryTable<Map<String, Attribute>>(
-      columnLabels: columnLabels,
-      items: variants,
-      rowBuilder: (entry, index) {
-        final sku = Variant.buildVariantSKU(itemCode, entry.toCodeMap());
-
-        final cells = <DataCell>[
-          DataCell(
-            Chip(label: Text('Set Price'), padding: EdgeInsets.zero),
-            onTap: () async => await context.openAddPriceEntry(variantSku: sku),
+          context.confirmableActionButton(
+            isDisabled: !_allPricesSet,
+            label: 'Save All Variants$_missingCount',
+            onPressed: _allPricesSet ? _saveAllVariants : null,
           ),
-          ...keyList.map((k) => DataCell(Text(entry[k]?.value.toTitle ?? ''))),
-          DataCell(Text(sku.toUpperAll)),
-        ];
-
-        return DataRow(cells: cells);
-      },
+        ],
+      ),
     );
   }
 
-  /*return Column(
+  // ---------------------------
+  // TABLE
+  // ---------------------------
+  Widget _buildTable(Map<String, Attribute> first) {
+    final keyList = first.keys.toList()
+      ..sortByComparable((e) => attributePriorities[e] ?? 999);
+
+    final columnLabels = [
+      'Price',
+      'Item Code',
+      ...keyList.map((k) => k.toTitle),
+      'SKU',
+    ];
+    final allSkus = _variants.map(_buildSku).toSet().toList();
+
+    return SortableHistoryTable<Map<String, Attribute>>(
+      columnLabels: columnLabels,
+      items: _variants,
+      rowBuilder: (entry, index) {
+        final sku = _buildSku(entry);
+
+        return DataRow(
+          cells: [
+            DataCell(
+              Chip(label: Text(_sellingPrices[sku]?.toString() ?? 'Set Price')),
+              onTap: () async {
+                await context.openAddPriceEntry(
+                  variantSKUs: allSkus,
+                  onPriceCreated: ({required Map<String, double> prices}) {
+                    if (prices.isNotEmpty) {
+                      prettyPrint('label-price', allSkus);
+                      setState(() => _sellingPrices = prices);
+                    }
+                  },
+                );
+              },
+            ),
+            DataCell(Text(widget.itemCode.toUpperAll)),
+
+            ...keyList.map(
+              (k) => DataCell(Text(entry[k]?.value.toTitle ?? '')),
+            ),
+
+            DataCell(Text(sku.toUpperAll)),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/*
+return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DataTable(
@@ -141,5 +220,5 @@ class VariantTable extends StatelessWidget {
           }).toList(),
         ),
       ],
-    );*/
 }
+    );*/

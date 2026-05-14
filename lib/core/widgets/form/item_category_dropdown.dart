@@ -77,7 +77,7 @@ class _ItemCatMultiDropdownState extends State<ItemCatMultiDropdown> {
       labelText: _labelText,
       asyncItems: (String filter, loadProps) async => _loadCategories(filter),
       filterFn: _filterCategories,
-      itemAsString: (String cat) => cat.toTitle,
+      getDisplayText: (String cat) => cat.toTitle,
       onMultiChanged: (List<String> units) {
         setState(() => _selectedCategories = List.from(units));
         widget.onMultiChanged.call(units); // notify parent

@@ -80,7 +80,9 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   String _imNumber = '';
   bool _isSubmitting = false;
   final List<String> _taxCodes = [];
-  List<Map<String, Attribute>> _variants = [];
+  List<Map<String, Attribute>> _variants2 = [];
+  final ValueNotifier<List<Map<String, Attribute>>> _variants =
+  ValueNotifier([]);
   late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
 
   void _updateValidity() => _formKey.updateValidity(
@@ -258,21 +260,36 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         /// Attributes & Variants
         AttributePanel(
           isExpanded: false,
-          title: '8.Attributes & Variants',
+          title: '8. Attributes & Variants',
           subTitle:
           '\nCreate multiple versions of this $_itemType using attributes like size or color.',
           generatedVariants: (v) {
-            setState(() => _variants = v);
+            // setState(() => _variants = v);
+            _variants.value = v;
           },
           actionBuilder: Align(
             alignment: Alignment.topRight,
-            child: context.elevatedButton(
-              'Preview Variants',
+            child: ValueListenableBuilder<List<Map<String, Attribute>>>(
+              valueListenable: _variants,
+              builder: (_, variants, __) {
+                return context.elevatedButton(
+                  'Preview Variants',
+                  onPressed: variants.isEmpty
+                      ? null
+                      : () => context.showVariantPreview(
+                    itemCode: _imNumber,
+                    variants: variants,
+                  ),
+                );
+              },
+            ),
+            /*context.elevatedButton(
+              'Preview Variants (${_variants.length})',
               onPressed: () => context.showVariantPreview(
                 itemCode: _imNumber,
                 variants: _variants,
               ),
-            ),
+            ),*/
           ),
         ),
 

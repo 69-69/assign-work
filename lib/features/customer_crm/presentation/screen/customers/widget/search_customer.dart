@@ -26,8 +26,8 @@ class SearchCustomer extends StatefulWidget {
 }
 
 class _SearchCustomerState extends State<SearchCustomer> {
-  String? _initialValue;
   bool _isNotFound = false;
+  String? _initialValue;
   Customer? _customer;
 
   void _toggleManualEntry([bool value = true]) {
@@ -42,7 +42,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
   }
 
   Future _loadCustomers({String? filter}) async {
-    final filterBy = filter ?? widget.initialValue ?? '';
+    final filterBy = filter ?? _initialValue ?? '';
+
     // If filter contains wildCard/asterisk '*', load all customers
     // Else load customers that match the filter
     final customers = await (filterBy.contains('*')
@@ -72,8 +73,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
       helperText: 'Enter * for all customers, or type to search',
       asyncItems: (String filter, loadProps) async =>
           await _loadCustomers(filter: filter),
-      filterFn: (customer, filter) => _filterCustomer(filter, customer),
-      itemAsString: (customer) => customer.itemAsString,
+      filterFn: (customer, filter) => _filterCustomer(customer, filter),
+      getDisplayText: (customer) => customer.itemAsString,
       onChanged: (customer) =>
           widget.onChanged(customer!.customerId, customer.name),
       validator: (customer) => customer == null ? 'Select customer' : null,
@@ -87,7 +88,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
     );
   }
 
-  bool _filterCustomer(String filter, Customer customer) {
+  bool _filterCustomer(Customer customer, String filter) {
     // If filter contains wildCard/asterisk '*', load all, else load filtered
     if (filter == '*') return true;
 

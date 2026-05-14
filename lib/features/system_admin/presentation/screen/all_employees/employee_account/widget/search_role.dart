@@ -32,7 +32,7 @@ class SearchRole extends StatelessWidget {
         final term = filter.isEmpty ? (initialValue ?? '') : filter;
         return role.filterByAny(term);
       },
-      itemAsString: (role) => role.itemAsString,
+      getDisplayText: (role) => role.itemAsString,
       onChanged: (role) => onChanged(role!.id, role.name),
       validator: (role) => role == null ? 'Employee Role is required' : null,
     );

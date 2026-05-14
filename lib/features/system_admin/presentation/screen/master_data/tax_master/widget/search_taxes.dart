@@ -297,7 +297,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
       asyncItems: (String filter, loadProps) async =>
           await _loadTaxes(filter: filter),
       filterFn: _filterTax,
-      itemAsString: (Tax tax) => tax.itemAsString.toTitle,
+      getDisplayText: (Tax tax) => tax.itemAsString.toTitle,
       onMultiChanged: (List<Tax> taxes) {
         // Ensure _taxes is updated even if empty
         setState(() => _taxes = List<Tax>.from(taxes));

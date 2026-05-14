@@ -187,7 +187,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
               initialData: [?_serverTax?.toMap()],
               fieldsConfig: TaxFormInputs.taxRatesFields(_serverTax?.toMap()),
               onChanged: (List<Map<String, dynamic>> data) {
-                // if (_isValid) setState(() {});
+                if (data.isEmpty) return;
 
                 TaxFormInputs.updateListFromData<Tax>(
                   _taxList,

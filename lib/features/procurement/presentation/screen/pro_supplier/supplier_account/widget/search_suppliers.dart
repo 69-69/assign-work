@@ -82,7 +82,7 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
           await _loadSuppliers(filter: filter),
       filterFn: (supplier, filter) =>
           _filterSupplier(filter, supplier, context),
-      itemAsString: (supplier) => supplier.itemAsString,
+      getDisplayText: (supplier) => supplier.itemAsString,
       onChanged: (supplier) {
         setState(() => _selectedContactPersons = supplier?.contactPersons);
 

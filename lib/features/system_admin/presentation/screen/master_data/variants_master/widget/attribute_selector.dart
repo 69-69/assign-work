@@ -36,6 +36,7 @@ class AttributePanel extends StatefulWidget {
 }
 
 class _AttributePanelState extends State<AttributePanel> {
+  static const int maxVariants = 100;
   bool? get _isExpanded => widget.isExpanded;
   Map<String, List<Attribute>>? _groupedAttrs;
   Map<String, Map<Attribute, bool>> _selectedAttributes = {};
@@ -55,6 +56,14 @@ class _AttributePanelState extends State<AttributePanel> {
     });
 
     _generateFromSelection();
+  }
+
+  int _calculateVariantCount(Map<String, List<Attribute>> attributes) {
+    if (attributes.isEmpty) return 0;
+
+    return attributes.values
+        .map((e) => e.length)
+        .fold(1, (a, b) => a * b);
   }
 
   @override
@@ -80,7 +89,7 @@ class _AttributePanelState extends State<AttributePanel> {
             child: context.iconButton(
               Icons.refresh,
               bgColor: kGrayBlueColor,
-              tooltip: 'Click to reload',
+              tooltip: 'Click to reload attributes',
               onPressed: () async => await _getAttributes(),
             ),
           ),

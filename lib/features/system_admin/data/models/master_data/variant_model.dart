@@ -1,19 +1,6 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
-
-/*class ProductVariant {
-  final String id;
-  final String sku;
-  final String storeNumber;
-
-  // KEY: combination of attributes
-  final Map<String, String> attributes;
-  // Example: { "Color": "Red", "Size": "M" }
-
-  final DateTime createdAt;
-}*/
 
 /*Step 3: Display in table/list
 Example UI:
@@ -26,59 +13,40 @@ Blue  | L    | TS-001-B-L*/
 
 /// Variant
 class Variant extends Equatable {
-  static get _today => DateTime.now();
-
   final String id;
   final String sku; // TS-001-R-M
   final String itemCode; // TS-001 (parent)
   final Map<String, String> attributes; // {Color: Red, Size: M}
-  final String storeNumber; // FK CompanyStore.storeNumber
-  final String createdBy;
-  final DateTime createdAt;
-  final String updatedBy;
-  final DateTime updatedAt;
   final List<AuditLog> history;
 
-  Variant({
+  const Variant({
     this.id = '',
     required this.sku,
     required this.itemCode,
     required this.attributes,
-    required this.storeNumber,
-    required this.createdBy,
-    DateTime? createdAt,
-    this.updatedBy = '',
-    DateTime? updatedAt,
     List<AuditLog>? history,
-  }) : history = history ?? const [],
-       createdAt = createdAt ?? _today,
-       updatedAt = updatedAt ?? _today; // Set default itemCode
+  }) : history = history ?? const []; // Set default itemCode
 
   static List<Variant> buildVariants({
     required List<Map<String, String>> variants,
     required String itemCode,
   }) {
     return variants.map((variant) {
-      final sku = buildVariantSKU(itemCode, variant);
+      final sku = buildSKU(itemCode, variant).itemSKU;
 
-      return Variant(
-        sku: sku,
-        itemCode: itemCode,
-        attributes: variant,
-        storeNumber: '',
-        createdBy: '',
-      );
+      return Variant(sku: sku, itemCode: itemCode, attributes: variant);
     }).toList();
   }
 
-  static String buildVariantSKU(String itemCode, Map<String, String> variant) {
+  static ({String variantSKU, String itemSKU}) buildSKU(
+    String itemCode,
+    Map<String, String> variant,
+  ) {
     final sortedKeys = variant.keys.toList()..sort();
 
-    final suffix = sortedKeys
-        .map((k) => variant[k]!.toUpperAll)
-        .join('-');
+    final suffix = sortedKeys.map((k) => variant[k]!.toUpperAll).join('-');
 
-    return '$itemCode-$suffix';
+    return (itemSKU: '$itemCode-$suffix', variantSKU: suffix);
   }
 
   /// fromFirestore / fromJson Function [StoreLocation.fromMap]
@@ -88,41 +56,22 @@ class Variant extends Equatable {
       sku: map['sku'] ?? '',
       itemCode: map['itemCode'] ?? '',
       attributes: Map<String, String>.from(map['attributes'] ?? {}),
-      storeNumber: map['storeNumber'] ?? '',
-      createdBy: map['createdBy'] ?? '',
-      createdAt: toDateTimeFn(map['createdAt']),
-      updatedBy: map['updatedBy'] ?? '',
-      updatedAt: toDateTimeFn(map['updatedAt']),
       history: AuditLog.auditLogs(map['history']),
     );
   }
 
-  // map template
-  Map<String, dynamic> _mapTemp() => {
+  /// Convert Model to toFirestore / toJson Function [toMap]
+  Map<String, dynamic> toMap() => {
     'id': id,
     'sku': sku,
     'itemCode': itemCode,
     'attributes': attributes,
-    'storeNumber': storeNumber,
-    'createdBy': createdBy,
-    'updatedBy': updatedBy,
     'history': history.map((e) => e.toMap()).toList(),
   };
 
-  /// Convert Model to toFirestore / toJson Function [toMap]
-  Map<String, dynamic> toMap() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.toISOString;
-    newMap['updatedAt'] = updatedAt.toISOString;
-
-    return newMap;
-  }
-
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
-    var newMap = _mapTemp();
-    newMap['createdAt'] = createdAt.toMilliseconds;
-    newMap['updatedAt'] = updatedAt.toMilliseconds;
+    var newMap = toMap();
 
     return {'id': id, 'data': newMap};
   }
@@ -133,8 +82,6 @@ class Variant extends Equatable {
     sku: '',
     itemCode: '',
     attributes: const {},
-    createdBy: '',
-    storeNumber: '',
   );
 
   /// Returns true if this instance is the singleton [empty] Variant.
@@ -144,25 +91,15 @@ class Variant extends Equatable {
   bool get isNotEmpty => !isEmpty;
 
   /// Formatted to Standard-DateTime in String [getCreatedAt]
-  String get getCreatedAt => createdAt.toStandardDT;
+  // String get getCreatedAt => createdAt.toStandardDT;
 
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
-  String get getUpdatedAt => updatedAt.toStandardDT;
-
-  /// Current / Today's Products/Stocks
-  bool get isToday {
-    var dt = createdAt.toDateTime;
-
-    return dt.year == _today.year &&
-        dt.month == _today.month &&
-        dt.day == _today.day;
-  }
+  // String get getUpdatedAt => updatedAt.toStandardDT;
 
   String get itemAsString => sku.toTitle;
 
   /// Filter/Search
-  bool filterByAny(String filter) =>
-      {sku, itemCode, id, storeNumber}.filterAny(filter);
+  bool filterByAny(String filter) => {sku, itemCode, id}.filterAny(filter);
 
   /// [findVariantsById]
   static Iterable<Variant> findVariantsById(
@@ -176,11 +113,6 @@ class Variant extends Equatable {
     String? sku,
     String? itemCode,
     Map<String, String>? attributes,
-    String? storeNumber,
-    String? createdBy,
-    DateTime? createdAt,
-    String? updatedBy,
-    DateTime? updatedAt,
     List<AuditLog>? history,
   }) {
     return Variant(
@@ -188,48 +120,26 @@ class Variant extends Equatable {
       sku: sku ?? this.sku,
       itemCode: itemCode ?? this.itemCode,
       attributes: attributes ?? this.attributes,
-      storeNumber: storeNumber ?? this.storeNumber,
-      createdBy: createdBy ?? this.createdBy,
-      createdAt: createdAt ?? this.createdAt,
-      updatedBy: updatedBy ?? this.updatedBy,
-      updatedAt: updatedAt ?? this.updatedAt,
       history: history ?? this.history,
     );
   }
 
   @override
-  List<Object?> get props => [
-    id,
-    sku,
-    itemCode,
-    attributes,
-    storeNumber,
-    createdBy,
-    createdAt,
-    updatedBy,
-    updatedAt,
-    history,
-  ];
+  List<Object?> get props => [id, sku, itemCode, attributes, history];
 
   /// ToList for StoreLocation [itemAsList]
   List<String> get itemAsList => [
     id,
     sku.toUpperAll,
     itemCode.toTitle,
-    createdBy.toTitle,
-    getCreatedAt,
-    updatedBy.toTitle,
-    getUpdatedAt,
+    attributes.toString().toTitle,
   ];
 
   static List<String> get dataHeader => const [
     'ID',
     'SKU',
-    'Parent', // item/service Code
-    'Created By',
-    'Created At',
-    'Updated By',
-    'Updated At',
+    'Item Code', // item/service Code
+    'Attributes',
   ];
 }
 

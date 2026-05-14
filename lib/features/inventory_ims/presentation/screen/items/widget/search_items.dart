@@ -66,7 +66,7 @@ class _SearchItemsState extends State<SearchItems> {
     asyncItems: (String filter, loadProps) async =>
         await _loadItems(filter: filter),
     filterFn: (item, filter) => _filterItem(filter, item),
-    itemAsString: (Item item) => item.toString().toTitle,
+    getDisplayText: (Item item) => item.toString().toTitle,
     onChanged: (item) => widget.onChanged?.call(item),
     validator: (item) => item == null ? 'Select item' : null,
     onNoDataFound: () {

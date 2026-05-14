@@ -82,7 +82,7 @@ class _PriceEntriesState extends State<PriceEntries> {
   Widget _buildCard(BuildContext c, List<PriceListEntry> prices) {
     return DynamicDataTable(
       omitAtIndex: 0,
-      // maskAtIndex: 1,
+      maskAtIndex: 1,
       toolbar: _buildToolbar(prices),
       headers: PriceListEntry.dataTableHeader,
       rows: prices.map((d) => d.itemAsList).toList(),

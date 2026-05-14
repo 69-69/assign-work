@@ -1,6 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -21,38 +20,45 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 extension CreatePriceListEntry<T> on BuildContext {
   Future<void> openAddPriceEntry({
     PriceListEntry? serverPriceEntry,
-    String? variantSku,
+    List<String>? variantSKUs,
+    void Function({required Map<String, double> prices})? onPriceCreated,
   }) => openBottomSheet(
     isExpand: false,
     showZoomIcon: false,
     barrierColor: kTransparentColor,
     child: BottomSheetScaffold(
       isShadow: true,
-      title: 'Price Entry',
+      title: 'Selling Price Entry',
       body: _AddPriceEntryForm(
         serverPriceEntry: serverPriceEntry,
-        variantSku: variantSku,
+        onPriceCreated: onPriceCreated,
+        variantSKUs: variantSKUs,
       ),
     ),
   );
 }
 
 class _AddPriceEntryForm extends StatefulWidget {
-  final String? variantSku;
+  final List<String>? variantSKUs;
   final PriceListEntry? serverPriceEntry;
+  final void Function({required Map<String, double> prices})? onPriceCreated;
 
-  const _AddPriceEntryForm({this.serverPriceEntry, this.variantSku});
+  const _AddPriceEntryForm({
+    this.serverPriceEntry,
+    this.variantSKUs,
+    this.onPriceCreated,
+  });
 
   @override
   State<_AddPriceEntryForm> createState() => _AddPriceEntryFormState();
 }
 
 class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
+  bool _isFormValid = false; // _formKey.currentState?.validate() ??
   bool _isSubmitting = false;
-  final List<PriceListEntry> _entries = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
-  bool _isFormValid = false; // _formKey.currentState?.validate() ??
+  List<PriceListEntry> _priceEntries = [];
 
   PriceListEntry? get _serverPriceEntry => widget.serverPriceEntry;
 
@@ -63,7 +69,13 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
 
   String get _employeeName => _employee!.fullName;
 
-  String? get _variantSku => widget.variantSku ?? _serverPriceEntry?.variantSku;
+  String _missing = '';
+
+  List<String>? get _variantSKUs => widget.variantSKUs;
+
+  int get _totalSKUs => _variantSKUs?.length ?? 0;
+
+  bool get _isDisabled => _missing.isNotEmpty || _isSubmitting || !_isFormValid;
 
   PriceListEntryBloc get _bloc => context.read<PriceListEntryBloc>();
 
@@ -83,47 +95,52 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
     }
 
     // Case 2: Form validation or empty entries
-    if (!_isFormValid && _entries.isNullOrEmpty) {
+    if (!_isFormValid && _priceEntries.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
 
     // Case 3: Create new entries
-    _newPriceEntries();
+    _createNewPrices();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    if (!_isServerNull) ..._serverPriceEntry!.history,
+    ...?_serverPriceEntry?.history,
     AuditLog(action: action, actionBy: _employeeName),
   ];
 
-  void _newPriceEntries() {
-    final newPrices = _entries
-        .map((e) => e.copyWith(variantSku: _variantSku, history: history()))
-        .toList();
-    prettyPrint('label-newPrices', newPrices);
+  void _createNewPrices() {
+    _priceEntries = _priceEntries.indexed.map((entry) {
+      final (index, price) = entry;
 
-    // _bloc.add(AddSetup<List<PriceListEntry>>(data: newPrices));
+      return price.copyWith(
+        variantSku: _variantSKUs?.elementAtOrNull(index),
+        history: history(),
+      );
+    }).toList();
+
+    _bloc.add(AddSetup<List<PriceListEntry>>(data: _priceEntries));
   }
 
   void _updatedPriceEntry() {
-    final updated = _entries.first.copyWith(
+    /*sellingPrice: _serverPriceEntry?.sellingPrice,
+      minQuantity: _serverPriceEntry?.minQuantity,
+      discountPercent: _serverPriceEntry?.discountPercent,*/
+    final updated = _priceEntries.first.copyWith(
       id: _serverPriceEntry?.id,
       variantSku: _serverPriceEntry?.variantSku,
-      sellingPrice: _serverPriceEntry?.sellingPrice,
-      minQuantity: _serverPriceEntry?.minQuantity,
-      discountPercent: _serverPriceEntry?.discountPercent,
       history: history(AuditAction.updated),
     );
+
     _bloc.add(
       UpdateSetup<PriceListEntry>(documentId: updated.id, data: updated),
     );
   }
 
-  // load existing Price entries
-  void _loadExistingPrices() {
+  // load existing Price entry
+  void _loadExistingPriceEntry() {
     if (_serverPriceEntry != null) {
-      _entries
+      _priceEntries
         ..clear()
         ..add(_serverPriceEntry!);
     }
@@ -136,7 +153,7 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
         _formResetKey = UniqueKey();
         _isSubmitting = false;
         _isFormValid = false;
-        _entries.clear();
+        _priceEntries.clear();
       });
 
       if (_isServerNull) Navigator.pop(context);
@@ -145,25 +162,34 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
-    setState(() => _isSubmitting = false);
   }
 
   void _handleBlocState(BuildContext cxt, SetupState<PriceListEntry> state) {
-    final note = _isServerNull ? 'Price List created' : 'Changes saved';
+    final note = _isServerNull ? 'Price entry created' : 'Changes saved';
+
     switch (state) {
       case SetupAdded<PriceListEntry>(message: var msg):
       case SetupUpdated<PriceListEntry>(message: var msg):
+        if (state is SetupAdded) {
+          /// Upon creating selling price entry, trigger Saving Variants
+          final pricesMap = {
+            for (var entry in _priceEntries)
+              entry.variantSku: entry.sellingPrice,
+          };
+          widget.onPriceCreated?.call(prices: pricesMap);
+        }
         _showAlert(msg ?? note);
       case SetupError<PriceListEntry>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
+        setState(() => _isSubmitting = false);
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _loadExistingPrices();
+    _loadExistingPriceEntry();
   }
 
   @override
@@ -179,6 +205,9 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
   }
 
   Column _buildBody(BuildContext context) {
+    final isDemo =
+        _variantSKUs?.firstOrNull?.toLowerAll.startsWith('demo-') ?? false;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       spacing: 20,
@@ -186,18 +215,28 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
         FormGroupCard(
           title: 'Selling Price',
           subTitle:
-              '\nSet prices, quantity tiers, and discounts for variant (SKU: $_variantSku)',
+              '\nSet prices, quantity tiers, and discounts for selected items',
           showCollapseButton: false,
           children: [
             DynamicTextFields(
-              fieldsConfig: PriceMasterFormInputs.priceEntryFields,
+              title: 'Price',
+              showButton: true,
+              fieldGroupsLimit: _totalSKUs,
               initialData: [?_serverPriceEntry?.toMap()],
-              onChanged: (List<Map<String, dynamic>> data) {
-                _entries
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => PriceListEntry.fromMap(e)));
+              fieldsConfig: PriceMasterFormInputs.priceEntryFields,
+              orText: _variantSKUs?.map((sku) => 'SKU: $sku').toList(),
+              onCount: (int v) {
+                final count = _totalSKUs - v;
+                final msg = count > 0 ? ' ($count missing prices)' : '';
 
-                prettyPrint('label-data', _entries);
+                setState(() => _missing = msg);
+              },
+              onChanged: (List<Map<String, dynamic>> data) {
+                if (data.isEmpty) return;
+
+                _priceEntries
+                  ..clear() // Clear previous entries to prevent duplication
+                  ..addAll(data.map(PriceListEntry.fromMap));
 
                 _updateValidity();
               },
@@ -205,11 +244,11 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
           ],
         ),
 
-        if (!_variantSku!.startsWith('demo'))
+        if (!isDemo)
           context.confirmableActionButton(
-            isDisabled: _isSubmitting || !_isFormValid,
+            isDisabled: _isDisabled,
             label: _isServerNull
-                ? (_isSubmitting ? 'Setting...' : 'Set Price')
+                ? (_isSubmitting ? 'Setting...' : 'Set All Prices$_missing')
                 : (_isSubmitting ? 'Updating...' : null),
             onPressed: _onSubmit,
           ),

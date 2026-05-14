@@ -59,7 +59,7 @@ class _SearchEmployeesState extends State<SearchEmployees> {
       asyncItems: (String filter, loadProps) async =>
           await _loadEmployees(filter: filter),
       filterFn: (emp, filter) => _filterEmployee(filter, emp),
-      itemAsString: (emp) => emp.itemAsString,
+      getDisplayText: (emp) => emp.itemAsString,
       onChanged: (emp) =>
           widget.onChanged(emp!.employeeId, emp.fullName, emp.role),
       validator: (emp) => emp == null ? _labelText : null,
