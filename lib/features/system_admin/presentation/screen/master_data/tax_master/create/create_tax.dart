@@ -82,8 +82,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
     _createNewTaxes();
   }
 
-  // load existing Taxes
-  void _loadExistingTaxes() {
+  void _populateTaxForm() {
     if (_isEditing) {
       _taxList
         ..clear()
@@ -159,7 +158,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
   @override
   void initState() {
     super.initState();
-    _loadExistingTaxes();
+    _populateTaxForm();
   }
 
   @override

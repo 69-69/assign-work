@@ -1,8 +1,11 @@
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 
 extension AttributeMapperExt on Map<String, Attribute> {
-  Map<String, String> toCodeMap() {
-    return map((k, v) => MapEntry(k, v.code.isEmpty ? v.safeCode : v.code));
+  Map<String, String> toCodeMap({bool useValue = false}) {
+    return map((k, v) {
+      final val = useValue ? v.value : (v.code.isEmpty ? v.safeCode : v.code);
+      return MapEntry(k, val);
+    });
   }
 }
 

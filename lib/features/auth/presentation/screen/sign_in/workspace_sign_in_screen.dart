@@ -97,7 +97,7 @@ class WorkspaceSignInScreen extends StatelessWidget {
         const SizedBox(height: 20),
         const Flexible(child: PasswordInput(hidePlaceholder: true)),
         const SizedBox(height: 5),
-        Flexible(child: WorkspaceSignInButton(onPressed: (v) {})),
+        Flexible(child: WorkspaceSignInButton()),
       ],
     );
   }

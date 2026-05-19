@@ -9,45 +9,45 @@ import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/price_list_master_bloc.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/discount_group_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/discount_group_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/widget/price_master_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/discount_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreatePriceMaster<T> on BuildContext {
-  Future<void> openAddPriceList({PriceListMaster? serverPriceList}) =>
+extension CreateDiscountGroupMaster<T> on BuildContext {
+  Future<void> openAddDiscountGroup({DiscountGroup? serverDiscountGroup}) =>
       openBottomSheet(
         isExpand: false,
         child: BottomSheetScaffold(
-          title: serverPriceList != null
-              ? 'Edit ${serverPriceList.type}'.toTitle
-              : 'New Price List',
-          body: _AddPriceListForm(serverPriceList: serverPriceList),
+          title: serverDiscountGroup != null
+              ? 'Edit ${serverDiscountGroup.getTransactionType}'.toTitle
+              : 'New Discount Group',
+          body: _AddDiscountGroupForm(serverDiscountGroup: serverDiscountGroup),
         ),
       );
 }
 
-class _AddPriceListForm extends StatefulWidget {
-  final PriceListMaster? serverPriceList;
+class _AddDiscountGroupForm extends StatefulWidget {
+  final DiscountGroup? serverDiscountGroup;
 
-  const _AddPriceListForm({this.serverPriceList});
+  const _AddDiscountGroupForm({this.serverDiscountGroup});
 
   @override
-  State<_AddPriceListForm> createState() => _AddPriceListFormState();
+  State<_AddDiscountGroupForm> createState() => _AddDiscountGroupFormState();
 }
 
-class _AddPriceListFormState extends State<_AddPriceListForm> {
+class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
   bool _isSubmitting = false;
-  final List<PriceListMaster> _priceLists = [];
+  final List<DiscountGroup> _discountGroups = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
-  PriceListMaster? get _serverPriceList => widget.serverPriceList;
+  DiscountGroup? get _serverDiscountGroup => widget.serverDiscountGroup;
 
-  bool get _isServerNull => _serverPriceList == null;
+  bool get _isServerNull => _serverDiscountGroup == null;
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -56,7 +56,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
 
   String get _employeeStore => _employee!.storeNumber;
 
-  PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
+  DiscountGroupMasterBloc get _bloc => context.read<DiscountGroupMasterBloc>();
 
   void _updateValidity() => _formKey.updateValidity(
     currentValidity: _isFormValid,
@@ -67,52 +67,50 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Attribute
-    if (_isFormValid && (_serverPriceList?.isNotEmpty ?? false)) {
-      _updatedPriceList();
+    // Case 1: Update existing Discount Rule
+    if (_isFormValid && (_serverDiscountGroup?.isNotEmpty ?? false)) {
+      _updatedDiscountGroup();
       return;
     }
 
-    // Case 2: Form validation or empty priceList
-    if (!_isFormValid && _priceLists.isNullOrEmpty) {
+    // Case 2: Form validation or empty Discount Rule
+    if (!_isFormValid && _discountGroups.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
 
-    // Case 3: Create new Attributes
-    _newPriceLists();
+    // Case 3: Create new Discount Rule
+    _newDiscountGroup();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    if (!_isServerNull) ..._serverPriceList!.history,
+    if (!_isServerNull) ..._serverDiscountGroup!.history,
     AuditLog(action: action, actionBy: _employeeName),
   ];
 
-  void _newPriceLists() {
-    final newPrices = _priceLists
+  void _newDiscountGroup() {
+    final newDiscounts = _discountGroups
         .map((e) => e.copyWith(storeNumber: _employeeStore, history: history()))
         .toList();
 
-    _bloc.add(AddSetup<List<PriceListMaster>>(data: newPrices));
+    _bloc.add(AddSetup<List<DiscountGroup>>(data: newDiscounts));
   }
 
-  void _updatedPriceList() {
-    final updated = _priceLists.first.copyWith(
-      id: _serverPriceList!.id,
-      type: _serverPriceList!.type,
-      name: _serverPriceList!.name,
-      currencyCode: _serverPriceList!.currencyCode,
+  void _updatedDiscountGroup() {
+    final updated = _discountGroups.first.copyWith(
+      id: _serverDiscountGroup!.id,
       history: history(AuditAction.updated),
     );
-    _bloc.add(UpdateSetup<PriceListMaster>(documentId: updated.id, data: updated));
+    _bloc.add(
+      UpdateSetup<DiscountGroup>(documentId: updated.id, data: updated),
+    );
   }
 
-  // load existing PriceMaster
-  void _loadExistingPrices() {
-    if (_serverPriceList != null) {
-      _priceLists
+  void _populateDiscountGroupForm() {
+    if (!_isServerNull) {
+      _discountGroups
         ..clear()
-        ..add(_serverPriceList!);
+        ..add(_serverDiscountGroup!);
     }
   }
 
@@ -123,7 +121,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
         _formResetKey = UniqueKey();
         _isSubmitting = false;
         _isFormValid = false;
-        _priceLists.clear();
+        _discountGroups.clear();
       });
     }
   }
@@ -136,13 +134,13 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
     setState(() => _isSubmitting = false);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<PriceListMaster> state) {
-    final note = _isServerNull ? 'Price List created' : 'Changes saved';
+  void _handleBlocState(BuildContext cxt, SetupState<DiscountGroup> state) {
+    final note = _isServerNull ? 'Discount group created' : 'Changes saved';
     switch (state) {
-      case SetupAdded<PriceListMaster>(message: var msg):
-      case SetupUpdated<PriceListMaster>(message: var msg):
+      case SetupAdded<DiscountGroup>(message: var msg):
+      case SetupUpdated<DiscountGroup>(message: var msg):
         _showAlert(msg ?? note);
-      case SetupError<PriceListMaster>():
+      case SetupError<DiscountGroup>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -151,12 +149,12 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
   @override
   void initState() {
     super.initState();
-    _loadExistingPrices();
+    _populateDiscountGroupForm();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PriceListMasterBloc, SetupState<PriceListMaster>>(
+    return BlocListener<DiscountGroupMasterBloc, SetupState<DiscountGroup>>(
       listener: _handleBlocState,
       child: Form(
         key: _formKey,
@@ -172,17 +170,17 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
       spacing: 20,
       children: [
         FormGroupCard(
-          title: 'Price Master',
-          helperText: '\nTap the + button to add multiple entries',
+          title: 'Discount Group',
+          helperText: '\nTap the + button to add multiple groups',
           children: [
             DynamicTextFields(
               showButton: true,
-              fieldsConfig: PriceMasterFormInputs.priceListFields,
-              initialData: [?_serverPriceList?.toMap(true)],
+              fieldsConfig: DiscountFormInputs.discountGroupFields,
+              initialData: [?_serverDiscountGroup?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {
-                _priceLists
+                _discountGroups
                   ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => PriceListMaster.fromMap(e)));
+                  ..addAll(data.map(DiscountGroup.fromMap));
 
                 _updateValidity();
               },
@@ -193,7 +191,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Price List')
+              ? (_isSubmitting ? 'Creating...' : 'Create Discount Group')
               : (_isSubmitting ? 'Updating...' : null),
           onPressed: _onSubmit,
         ),

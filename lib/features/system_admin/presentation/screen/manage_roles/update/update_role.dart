@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -73,8 +72,6 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
   }
 
   void _updatedRole() {
-    prettyPrint('testing-6', 6);
-
     final updatedRole = _role.copyWith(
       name: _nameController.text,
       permissions: _assignedPermissions,
@@ -91,7 +88,8 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
   }
 
   void _showAlert(String msg) {
-    context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
+    if(!mounted) return;
+    context.showAlertOverlay(msg);
     setState(() => _isSubmitting = false);
   }
 
@@ -99,6 +97,7 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
     switch (state) {
       case SetupUpdated<Role>(message: var msg):
         _showAlert(msg ?? 'Changes saved');
+        Navigator.pop(cxt);
       case SetupError<Role>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action

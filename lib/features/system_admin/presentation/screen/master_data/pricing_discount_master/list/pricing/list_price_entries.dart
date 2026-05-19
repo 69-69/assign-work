@@ -7,7 +7,8 @@ import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/price_list_entry_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/create/create_price_entry.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/create/create_price_entry.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -23,7 +24,8 @@ class _PriceEntriesState extends State<PriceEntries> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
 
-  PriceListEntryBloc get _bloc => context.read<PriceListEntryBloc>();
+  late final PriceListEntryBloc _bloc;
+  // PriceListEntryBloc get _bloc => context.read<PriceListEntryBloc>();
 
   void _isDeleting(bool status) {
     setState(() => _inProgress = status);
@@ -43,6 +45,13 @@ class _PriceEntriesState extends State<PriceEntries> {
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = PriceListEntryBloc(firestore: FirebaseFirestore.instance)
+      ..add(GetSetups<PriceListEntry>());
   }
 
   @override

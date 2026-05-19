@@ -115,8 +115,8 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
     AuditLog(action: action, actionBy: _employeeId),
   ];
 
-  // load existing stores/branches
-  void _loadExisting() {
+  // auto fill stores/branches form
+  void _populateStoresForm() {
     if (_serverStore != null) {
       _storeList.clear();
       _storeList.add(_serverStore!);
@@ -149,7 +149,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   @override
   void initState() {
     super.initState();
-    _loadExisting();
+    _populateStoresForm();
   }
 
   @override

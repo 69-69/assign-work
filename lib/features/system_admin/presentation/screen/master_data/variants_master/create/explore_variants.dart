@@ -1,7 +1,7 @@
+import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
-import 'package:assign_erp/core/widgets/layout/block_quote.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/attribute_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/variants_master/widget/attribute_selector.dart';
@@ -9,7 +9,7 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 
 extension ExploreVariants<T> on BuildContext {
-  Future<void> openExploreVariant({
+  Future<void> openVariantPlayground({
     Map<String, List<Attribute>>? groupedAttrs,
   }) => openBottomSheet(
     isExpand: true,
@@ -17,6 +17,7 @@ extension ExploreVariants<T> on BuildContext {
     child: BottomSheetScaffold(
       isDetailMode: true,
       title: 'Variants Playground',
+      subtitle: '(Demo Mode)',
       body: _VariantsPlayground(groupedAttrs: groupedAttrs),
     ),
   );
@@ -56,17 +57,21 @@ class _VariantsPlaygroundState extends State<_VariantsPlayground> {
   }
 
   Widget _buildExploreVariants() {
-    if (_variants.isEmpty) {
-      return BlockQuote(
-        child: Text('Select attributes to preview generated variants here.'),
-      );
-    }
-
     return FormGroupCard(
       title: 'Preview Variants',
       subTitle: '\nAutomatically generated variants based on your selections.',
       showCollapseButton: false,
-      children: [VariantTable(variants: _variants, itemCode: _demoItemCode)],
+      children: [
+        _variants.isEmpty
+            ? Align(
+                alignment: Alignment.bottomCenter,
+                child: Text(
+                  'Select attributes to preview generated variants',
+                  style: TextStyle(color: kGrayBlueColor),
+                ),
+              )
+            : VariantTable(variants: _variants, itemCode: _demoItemCode),
+      ],
     );
   }
 }

@@ -579,21 +579,23 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
 
 // Workspace SignIn Button
 class WorkspaceSignInButton extends StatelessWidget {
-  const WorkspaceSignInButton({super.key, required this.onPressed});
+  const WorkspaceSignInButton({super.key, this.onPressed});
 
-  final Function(bool) onPressed;
+  final Function(bool)? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WorkspaceAuthBloc, WorkspaceAuthState>(
       builder: (context, state) {
+        final inProgress = state.status.isInProgress;
+
         return _buildButton(
           context,
-          isDisabled: !state.password.isValid,
-          inProgress: state.status.isInProgress,
+          isDisabled: !state.password.isValid || inProgress,
+          inProgress: inProgress,
           onPress: (state.email.isValid && state.password.isValid)
               ? () {
-                  onPressed.call(true);
+                  onPressed?.call(true);
                   context.read<WorkspaceAuthBloc>().add(SignInRequested());
                 }
               : null,

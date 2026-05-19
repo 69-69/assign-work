@@ -157,7 +157,7 @@ class _CustomDraggableBottomSheetState
   double get _maxChildSize => widget.maxChildSize ?? 0.8;
 
   Border? get _bordered =>
-      widget.isShadow ? Border.all(width: 2, color: kModelColor) : null;
+      widget.isShadow ? Border.all(width: 0.3, color: kModelColor) : null;
 
   // BoxShadow(color: Colors.black.toAlpha(0.3), blurRadius: kBorderRadius),
   List<BoxShadow>? get _boxShadow => widget.isShadow

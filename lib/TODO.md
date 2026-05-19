@@ -1,8 +1,6 @@
 # @TODO - PriceList, Payment Method & Type
 
 ## @Continue Tomorrow (Next Sprint)
-    - Resolve it issue Price-Entry edit field
-
     ## Linking Item Master with
         - Attributes & Variant master
         - Warehouse, Sub Location, Bin

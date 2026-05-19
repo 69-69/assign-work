@@ -8,51 +8,55 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/price_list_master_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/ref_master_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/pricing_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateCategory<T> on BuildContext {
-  Future<void> openAddCategory({Category? serverAttribute}) => openBottomSheet(
-    isExpand: false,
-    child: BottomSheetScaffold(
-      title: serverAttribute != null
-          ? 'Edit ${serverAttribute.name}'
-          : 'New Category',
-      body: _AddCategoryForm(serverCategory: serverAttribute),
-    ),
-  );
+extension CreatePriceMaster<T> on BuildContext {
+  Future<void> openAddPriceList({PriceListMaster? serverPriceList}) =>
+      openBottomSheet(
+        isExpand: false,
+        child: BottomSheetScaffold(
+          title: serverPriceList != null
+              ? 'Edit ${serverPriceList.type}'.toTitle
+              : 'New Price List',
+          body: _AddPriceListForm(serverPriceList: serverPriceList),
+        ),
+      );
 }
 
-class _AddCategoryForm extends StatefulWidget {
-  final Category? serverCategory;
+class _AddPriceListForm extends StatefulWidget {
+  final PriceListMaster? serverPriceList;
 
-  const _AddCategoryForm({this.serverCategory});
+  const _AddPriceListForm({this.serverPriceList});
 
   @override
-  State<_AddCategoryForm> createState() => _AddCategoryFormState();
+  State<_AddPriceListForm> createState() => _AddPriceListFormState();
 }
 
-class _AddCategoryFormState extends State<_AddCategoryForm> {
+class _AddPriceListFormState extends State<_AddPriceListForm> {
   bool _isSubmitting = false;
-  final List<Category> _categories = [];
+  final List<PriceListMaster> _priceLists = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
-  Category? get _serverCategory => widget.serverCategory;
-  bool get _isServerNull => _serverCategory == null;
+  PriceListMaster? get _serverPriceList => widget.serverPriceList;
+
+  bool get _isServerNull => _serverPriceList == null;
 
   // Current employee info
   Employee? get _employee => context.employee;
 
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
-  CategoryBloc get _bloc => context.read<CategoryBloc>();
+
+  PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
 
   void _updateValidity() => _formKey.updateValidity(
     currentValidity: _isFormValid,
@@ -63,55 +67,49 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Category
-    if (_isFormValid && (_serverCategory?.isNotEmpty ?? false)) {
-      _updatedCategory();
+    // Case 1: Update existing Attribute
+    if (_isFormValid && (_serverPriceList?.isNotEmpty ?? false)) {
+      _updatedPriceList();
       return;
     }
 
-    // Case 2: Form validation or empty Category
-    if (!_isFormValid && _categories.isNullOrEmpty) {
+    // Case 2: Form validation or empty priceList
+    if (!_isFormValid && _priceLists.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
 
-    // Case 3: Create new Categories
-    _newCategories();
+    // Case 3: Create new Attributes
+    _newPriceLists();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    if (!_isServerNull) ..._serverCategory!.history,
+    if (!_isServerNull) ..._serverPriceList!.history,
     AuditLog(action: action, actionBy: _employeeName),
   ];
 
-  void _newCategories() {
-    final newCats = _categories
-        .map(
-          (e) => e.copyWith(
-            storeNumber: _employeeStore,
-            createdBy: _employeeName,
-            history: history(),
-          ),
-        )
+  void _newPriceLists() {
+    final newPrices = _priceLists
+        .map((e) => e.copyWith(storeNumber: _employeeStore, history: history()))
         .toList();
-    _bloc.add(AddSetup<List<Category>>(data: newCats));
+
+    _bloc.add(AddSetup<List<PriceListMaster>>(data: newPrices));
   }
 
-  void _updatedCategory() {
-    final updated = _categories.first.copyWith(
-      id: _serverCategory!.id,
-      name: _serverCategory!.name,
-      updatedBy: _employeeName,
+  void _updatedPriceList() {
+    final updated = _priceLists.first.copyWith(
+      id: _serverPriceList!.id,
       history: history(AuditAction.updated),
     );
-    _bloc.add(UpdateSetup<Category>(documentId: updated.id, data: updated));
+    _bloc.add(UpdateSetup<PriceListMaster>(documentId: updated.id, data: updated));
   }
 
-  void _populateCategoryForm() {
-    if (_serverCategory != null) {
-      _categories
+  // load existing PriceMaster
+  void _populatePriceForm() {
+    if (!_isServerNull) {
+      _priceLists
         ..clear()
-        ..add(_serverCategory!);
+        ..add(_serverPriceList!);
     }
   }
 
@@ -121,6 +119,8 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
+        _isFormValid = false;
+        _priceLists.clear();
       });
     }
   }
@@ -133,13 +133,13 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     setState(() => _isSubmitting = false);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<Category> state) {
-    final note = _isServerNull ? 'Category created' : 'Changes saved';
+  void _handleBlocState(BuildContext cxt, SetupState<PriceListMaster> state) {
+    final note = _isServerNull ? 'Price List created' : 'Changes saved';
     switch (state) {
-      case SetupAdded<Category>(message: var msg):
-      case SetupUpdated<Category>(message: var msg):
+      case SetupAdded<PriceListMaster>(message: var msg):
+      case SetupUpdated<PriceListMaster>(message: var msg):
         _showAlert(msg ?? note);
-      case SetupError<Category>():
+      case SetupError<PriceListMaster>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -148,12 +148,12 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   @override
   void initState() {
     super.initState();
-    _populateCategoryForm();
+    _populatePriceForm();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CategoryBloc, SetupState<Category>>(
+    return BlocListener<PriceListMasterBloc, SetupState<PriceListMaster>>(
       listener: _handleBlocState,
       child: Form(
         key: _formKey,
@@ -166,35 +166,34 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   Column _buildBody(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 20,
       children: [
         FormGroupCard(
+          title: 'Price Master',
+          helperText: '\nTap the + button to add multiple entries',
           children: [
             DynamicTextFields(
               showButton: true,
-              title: 'Item Categories',
-              fieldsConfig: RefMasterFormInputs.categoryField,
-              initialData: [?_serverCategory?.toMap()],
+              fieldsConfig: PricingFormInputs.priceListFields,
+              initialData: [?_serverPriceList?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {
-                // if (_isFormValid) setState(() {});
-
-                // Create a new line item
-                _categories
+                _priceLists
                   ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Category.fromMap(e)));
+                  ..addAll(data.map(PriceListMaster.fromMap));
 
                 _updateValidity();
               },
             ),
           ],
         ),
+
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Category')
+              ? (_isSubmitting ? 'Creating...' : 'Create Price List')
               : (_isSubmitting ? 'Updating...' : null),
           onPressed: _onSubmit,
         ),
-        const SizedBox(height: 20.0),
       ],
     );
   }

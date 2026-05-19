@@ -46,15 +46,20 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
     widget.onSearchActiveChanged?.call(false);
   }
 
+  String normalizeSearch(String v) =>
+      v.toLowerAll.replaceAll(RegExp(r'[.\s_-]+'), '');
+
   // The search logic to filter tiles
   void _onSearchChanged(String query) {
     setState(() {
+      final normalizedQuery = normalizeSearch(query);
+
       filteredTiles = widget.tiles.where((tile) {
-        // Filter tiles by matching the query with either label or description
-        final label = tile.label.toLowerAll;
-        final desc = (tile.description ?? '').toLowerAll;
-        final searchQuery = query.toLowerAll;
-        return label.contains(searchQuery) || desc.contains(searchQuery);
+        final label = normalizeSearch(tile.label);
+        final desc = normalizeSearch(tile.description ?? '');
+
+        return label.contains(normalizedQuery) ||
+            desc.contains(normalizedQuery);
       }).toList();
     });
   }

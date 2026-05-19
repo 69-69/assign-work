@@ -61,6 +61,8 @@ class App extends StatelessWidget {
 
       _bloc<PriceListMasterBloc>(() => PriceListMasterBloc(firestore: _fireStore)),
       _bloc<PriceListEntryBloc>(() => PriceListEntryBloc(firestore: _fireStore)),
+      _bloc<DiscountGroupMasterBloc>(() => DiscountGroupMasterBloc(firestore: _fireStore)),
+      _bloc<DiscountRuleBloc>(() => DiscountRuleBloc(firestore: _fireStore)),
       _bloc<AttributeBloc>(() => AttributeBloc(firestore: _fireStore)),
       _bloc<VariantBloc>(() => VariantBloc(firestore: _fireStore)),
       _bloc<ItemMasterBloc>(() => ItemMasterBloc(firestore: _fireStore)),

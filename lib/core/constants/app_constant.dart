@@ -62,7 +62,7 @@ const appTrainingAppTitle = 'app training';
 /// MANAGEMENT SUB-SCREENS TITLES
 const masterDataScreenTitle = 'master data';
 const itemMasterScreenTitle = 'item master';
-const priceMasterScreenTitle = 'price list master';
+const priceMasterScreenTitle = 'price master';
 const taxMasterScreenTitle = 'tax master';
 const referenceMasterScreenTitle = 'reference master';
 const variantMasterScreenTitle = 'variant master';

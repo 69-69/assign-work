@@ -73,7 +73,7 @@ class ItemCategoryUtil {
 
     return [
       if (includeHeader)
-        '${isService ? 'Service:' : 'Material: Product'} Category',
+        '${isService ? 'Service:' : 'Material: Item'} Category',
       ...list.map((a) => a.toSeparate),
     ];
   }

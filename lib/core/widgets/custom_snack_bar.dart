@@ -181,6 +181,7 @@ extension SnackBarExt on BuildContext {
       'wrong',
       'not found',
       'enter',
+      'maximum allowed'
     ];
 
     return keywords.any(message.filterAny);

@@ -209,9 +209,9 @@ GoRoute _masterDataRoute() {
       screen: ({openTab}) => const WHBinScreen(),
     ),
     (
-      name: RouteNames.priceListMaster,
+      name: RouteNames.pricingDiscountMaster,
       openTab: false,
-      screen: ({openTab}) => const PriceListMasterScreen(),
+      screen: ({openTab}) => const PricingDiscountMasterScreen(),
     ),
     (
       name: RouteNames.currencyMaster,

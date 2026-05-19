@@ -48,7 +48,7 @@ class _SearchPriceListState extends State<SearchPriceList> {
   @override
   Widget build(BuildContext context) {
     return AsyncSearchDropdown<PriceListMaster>(
-      labelText: 'Price list...',
+      labelText: 'Price List',
       selectedItem: _priceList,
       helperText: 'Enter * for all list, or type to search',
       asyncItems: (String filter, loadProps) async =>

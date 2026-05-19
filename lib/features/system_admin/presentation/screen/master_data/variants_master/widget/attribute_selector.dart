@@ -2,6 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
+import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_attributes.dart';
@@ -61,9 +62,7 @@ class _AttributePanelState extends State<AttributePanel> {
   int _calculateVariantCount(Map<String, List<Attribute>> attributes) {
     if (attributes.isEmpty) return 0;
 
-    return attributes.values
-        .map((e) => e.length)
-        .fold(1, (a, b) => a * b);
+    return attributes.values.map((e) => e.length).fold(1, (a, b) => a * b);
   }
 
   @override
@@ -77,21 +76,20 @@ class _AttributePanelState extends State<AttributePanel> {
     return FormGroupCard(
       runSpacing: 8,
       isExpanded: _isExpanded ?? true,
-      showCollapseButton: _isExpanded != true,
       title: widget.title ?? 'Attribute Set',
+      showCollapseButton: _isExpanded != true,
       contentMargin: EdgeInsets.symmetric(vertical: 10),
       subTitle:
           widget.subTitle ??
           '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
       children: [
         if (_groupedAttrs.isNullOrEmpty) ...{
-          Center(
-            child: context.iconButton(
-              Icons.refresh,
-              bgColor: kGrayBlueColor,
-              tooltip: 'Click to reload attributes',
-              onPressed: () async => await _getAttributes(),
-            ),
+          Text('Click to reload...', style: TextStyle(color: kGrayBlueColor),),
+          context.iconButton(
+            Icons.refresh,
+            bgColor: kGrayBlueColor,
+            tooltip: 'Click to reload attributes',
+            onPressed: () async => await _getAttributes(),
           ),
         },
         ?widget.actionBuilder,
@@ -122,10 +120,27 @@ class _AttributePanelState extends State<AttributePanel> {
       }
     });
 
-    final variants = _generateCartesian(filtered);
+    // Calculate BEFORE generation
+    final generatedCount = _calculateVariantCount(filtered);
 
-    // setState(() => _variants = variants);
+    // Explosion protection
+    if (generatedCount > maxVariants) {
+      _showVariantLimitWarning(generatedCount);
+
+      // Clear variants to prevent further action
+      widget.generatedVariants?.call([]);
+      return;
+    }
+
+    final variants = _generateCartesian(filtered);
     widget.generatedVariants?.call(variants);
+  }
+
+  void _showVariantLimitWarning(int count) {
+    context.showAlertOverlay(
+      'Too many variants ($count). '
+      'Maximum allowed is $maxVariants.',
+    );
   }
 
   // Cartesian generator
@@ -211,38 +226,4 @@ class AttributeSelector {
       ),
     );
   }
-
-  /*Widget _buildBody2(BuildContext context) {
-    return Column(
-      children: selectedAttrs.entries.map((entry) {
-        final attributeName = entry.key;
-        final values = entry.value;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${attributeName.toTitle}:',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            ...values.entries.map((v) {
-              return CustomCheckboxTile(
-                title: Text(v.key.value.toTitle,
-                  overflow: TextOverflow.ellipsis,),
-                value: v.value,
-                onChanged: (bool? checked) {
-                  onChanged?.call(
-                    checked: checked,
-                    key: v.key,
-                    name: attributeName,
-                  );
-                },
-              );
-            }),
-          ],
-        );
-      }).toList(),
-    );
-  }*/
 }

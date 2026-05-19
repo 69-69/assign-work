@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/extensions/price_list_types.dart';
+import 'package:assign_erp/core/util/extensions/transaction_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:collection/collection.dart';
@@ -243,7 +243,7 @@ class PriceListMaster extends Equatable {
   final String id;
   final String storeNumber;
   final String name; // Wholesale, Retail, VIP Customers, etc
-  final PriceListType type; // determines if the lines are selling or purchase
+  final TransactionType type; // determines if the lines are selling or purchase
   final String currencyCode;
   final DateTime? validFrom;
   final DateTime? validUntil;
@@ -256,7 +256,7 @@ class PriceListMaster extends Equatable {
     this.id = '',
     required this.storeNumber,
     required this.name,
-    this.type = PriceListType.sales,
+    this.type = TransactionType.sales,
     required this.currencyCode,
     this.validFrom,
     this.validUntil,
@@ -269,7 +269,7 @@ class PriceListMaster extends Equatable {
       id: id ?? map['id'] ?? '',
       storeNumber: map['storeNumber'] ?? '',
       name: map['name'] ?? '',
-      type: PriceListUtil.fromString(map['type']),
+      type: TransactionTypeUtil.fromString(map['type']),
       currencyCode: map['currencyCode'] ?? '',
       validFrom: toDateTimeFn(map['validFrom']),
       validUntil: toDateTimeFn(map['validUntil'], isNullable: true),
@@ -282,13 +282,13 @@ class PriceListMaster extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'name': name,
-    'type': getType,
+    'type': getTransactionType,
     'currencyCode': currencyCode,
     'taxInclusive': taxInclusive,
     'history': history.map((e) => e.toMap()).toList(),
   };
 
-  String get getType => type.getName;
+  String get getTransactionType => type.getName;
 
   String get getValidFrom => validFrom.dateOnly;
 
@@ -346,7 +346,7 @@ class PriceListMaster extends Equatable {
   List<String> get itemAsList => [
     id,
     name.toTitle,
-    getType.toSentence,
+    getTransactionType.toTitle,
     currencyCode.toUpperAll,
     taxInclusive ? 'Yes' : 'No',
     validFrom.toStandardDT,
@@ -361,7 +361,7 @@ class PriceListMaster extends Equatable {
     String? id,
     String? name,
     bool? taxInclusive,
-    PriceListType? type,
+    TransactionType? type,
     String? currencyCode,
     DateTime? validFrom,
     DateTime? validUntil,
@@ -402,11 +402,9 @@ class PriceListEntry {
   /// Actual customer-facing selling price
   final double sellingPrice;
 
-  /// Minimum quantity for this pricing tier
-  final int? minQuantity;
-
-  /// Additional discount percentage
-  final double discountPercent;
+  /// Entry validity
+  final DateTime? validFrom;
+  final DateTime? validUntil;
 
   /// Audit history
   final List<AuditLog> history;
@@ -416,8 +414,8 @@ class PriceListEntry {
     required this.priceListId,
     required this.variantSku,
     required this.sellingPrice,
-    this.minQuantity,
-    this.discountPercent = 0.0,
+    this.validFrom,
+    this.validUntil,
     this.history = const [],
   });
 
@@ -427,26 +425,36 @@ class PriceListEntry {
       priceListId: map['priceListId'] ?? '',
       variantSku: map['variantSku'] ?? '',
       sellingPrice: '${map['sellingPrice']}'.asDouble,
-      minQuantity: '${map['minQuantity']}'.asInt,
-      discountPercent: '${map['discountPercent']}'.asDouble,
+      validFrom: toDateTimeFn(map['validFrom']),
+      validUntil: toDateTimeFn(map['validUntil'], isNullable: true),
       history: AuditLog.auditLogs(map['history']),
     );
   }
 
+  Map<String, dynamic> _mapTemp() => {
+      'id': id,
+      'priceListId': priceListId,
+      'variantSku': variantSku,
+      'sellingPrice': sellingPrice,
+      'history': history.map((e) => e.toMap()).toList(),
+    };
+
   /// Convert Model to toFirestore / toJson Function [toMap]
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'priceListId': priceListId,
-    'variantSku': variantSku,
-    'sellingPrice': sellingPrice,
-    'minQuantity': minQuantity,
-    'discountPercent': discountPercent,
-    'history': history.map((e) => e.toMap()).toList(),
-  };
+  Map<String, dynamic> toMap([bool formatDate = false]) {
+    var newMap = _mapTemp();
+    newMap['validFrom'] = formatDate ? getValidFrom : validFrom?.toISOString;
+    newMap['validUntil'] = formatDate ? getValidUntil : validUntil?.toISOString;
+
+    return newMap;
+  }
 
   /// toCache Function [toCache]
   Map<String, dynamic> toCache() {
-    var newMap = toMap();
+    var newMap = _mapTemp();
+
+    newMap['validFrom'] = validFrom?.toMilliseconds;
+    newMap['validUntil'] = validUntil?.toMilliseconds;
+
     return {'id': id, 'data': newMap};
   }
 
@@ -458,10 +466,14 @@ class PriceListEntry {
     sellingPrice: 0,
   );
 
-  /// [isEmpty] Checks if the PriceListMaster is empty.
-  bool get isEmpty => identical(this, PriceListMaster.empty);
+  /// [isEmpty] Checks if the PriceListEntry is empty.
+  bool get isEmpty => identical(this, PriceListEntry.empty);
 
   bool get isNotEmpty => !isEmpty;
+
+  String get getValidFrom => validFrom.dateOnly;
+
+  String get getValidUntil => validUntil.dateOnly;
 
   /// Filter/search
   bool filterByAny(String filter) => itemAsList.filterAny(filter);
@@ -474,17 +486,17 @@ class PriceListEntry {
     'ID',
     'SKU',
     'Price',
-    'Min Qty',
-    'Discount %',
+    'Valid From',
+    'Valid Until',
   ];
 
   /// ToList for Price Entry [itemAsList]
   List<String> get itemAsList => [
     id,
     variantSku,
-    sellingPrice.toCurrency.toString(),
-    minQuantity?.toString() ?? '0',
-    discountPercent.toPercent.toString(),
+    '${sellingPrice.toCurrency}',
+    getValidFrom,
+    getValidUntil
   ];
 
   static Map<String, dynamic> get templateHeader => empty.toMap();
@@ -494,16 +506,66 @@ class PriceListEntry {
     String? variantSku,
     String? priceListId,
     double? sellingPrice,
-    int? minQuantity,
-    double? discountPercent,
+    DateTime? validFrom,
+    DateTime? validUntil,
     List<AuditLog>? history,
   }) => PriceListEntry(
     id: id ?? this.id,
     history: history ?? this.history,
     variantSku: variantSku ?? this.variantSku,
     priceListId: priceListId ?? this.priceListId,
-    minQuantity: minQuantity ?? this.minQuantity,
     sellingPrice: sellingPrice ?? this.sellingPrice,
-    discountPercent: discountPercent ?? this.discountPercent,
+    validFrom: validFrom ?? this.validFrom,
+    validUntil: validUntil??this.validUntil,
   );
 }
+
+/*class PriceListEntry {
+  final String id;
+
+  /// FK -> PriceList.id
+  final String priceListId;
+
+  /// FK -> Variant.sku
+  final String variantSku;
+
+  /// Actual selling/base price
+  final double sellingPrice;
+
+  /// Quantity tier
+  final int? minQuantity;
+
+  /// Optional inline discount
+  final double discountPercent;
+
+  /// Entry validity
+  final DateTime? validFrom;
+  final DateTime? validUntil;
+
+  /// Priority
+  final int priority;
+
+  /// Active flag
+  final bool isActive;
+
+  /// Audit history
+  final List<AuditLog> history;
+
+  const PriceListEntry({
+    required this.id,
+    required this.priceListId,
+    required this.variantSku,
+    required this.sellingPrice,
+
+    this.minQuantity,
+    this.discountPercent = 0,
+
+    this.validFrom,
+    this.validUntil,
+
+    this.priority = 0,
+    this.isActive = true,
+
+    this.history = const [],
+  });
+}*/

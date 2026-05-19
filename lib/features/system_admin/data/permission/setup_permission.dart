@@ -11,7 +11,7 @@ enum SetupPermission {
   manageWarehouseMaster,
   manageWHLocationMaster,
   manageWHBinMaster,
-  managePriceListMaster,
+  managePriceMaster,
   manageCurrencyMaster,
   referenceMaster,
   manageVariants,
@@ -136,11 +136,11 @@ final List<AccessControl> _masterDataPermissions = [
 
 final List<AccessControl> _priceListMasterPermissions = [
   AccessControl(
-    module: "price list",
-    title: "Manage price list master",
+    module: "pricing",
+    title: "Manage pricing",
     description:
-        "Allow users to create, edit, and delete price list & discounts data.",
-    access: SetupPermission.managePriceListMaster,
+    "Allow users to create, edit, and delete price lists, pricing tiers, and discounts.",
+    access: SetupPermission.managePriceMaster,
   ),
 ];
 

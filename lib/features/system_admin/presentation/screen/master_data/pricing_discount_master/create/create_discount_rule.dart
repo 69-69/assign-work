@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/discount_type.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -8,51 +9,54 @@ import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
-import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/discount_group_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/discount_rule_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/ref_master_form_inputs.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/discount_form_inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-extension CreateCategory<T> on BuildContext {
-  Future<void> openAddCategory({Category? serverAttribute}) => openBottomSheet(
-    isExpand: false,
-    child: BottomSheetScaffold(
-      title: serverAttribute != null
-          ? 'Edit ${serverAttribute.name}'
-          : 'New Category',
-      body: _AddCategoryForm(serverCategory: serverAttribute),
-    ),
-  );
+extension CreateDiscountRule<T> on BuildContext {
+  Future<void> openAddDiscountRule({DiscountRule? serverRule}) =>
+      openBottomSheet(
+        isExpand: false,
+        child: BottomSheetScaffold(
+          title: serverRule != null
+              ? 'Edit ${serverRule.getDiscountType}'.toTitle
+              : 'New Discount Rule',
+          body: _AddDiscountRuleForm(serverRule: serverRule),
+        ),
+      );
 }
 
-class _AddCategoryForm extends StatefulWidget {
-  final Category? serverCategory;
+class _AddDiscountRuleForm extends StatefulWidget {
+  final DiscountRule? serverRule;
 
-  const _AddCategoryForm({this.serverCategory});
+  const _AddDiscountRuleForm({this.serverRule});
 
   @override
-  State<_AddCategoryForm> createState() => _AddCategoryFormState();
+  State<_AddDiscountRuleForm> createState() => _AddDiscountRuleFormState();
 }
 
-class _AddCategoryFormState extends State<_AddCategoryForm> {
+class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
   bool _isSubmitting = false;
-  final List<Category> _categories = [];
   Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
+  final List<DiscountRule> _discountRules = [];
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
+  DiscountType? _selectedDiscountType;
 
-  Category? get _serverCategory => widget.serverCategory;
-  bool get _isServerNull => _serverCategory == null;
+  DiscountRule? get _serverRule => widget.serverRule;
+
+  bool get _isServerNull => _serverRule == null;
 
   // Current employee info
   Employee? get _employee => context.employee;
 
   String get _employeeName => _employee!.fullName;
-  String get _employeeStore => _employee!.storeNumber;
-  CategoryBloc get _bloc => context.read<CategoryBloc>();
+
+  DiscountRuleBloc get _bloc => context.read<DiscountRuleBloc>();
 
   void _updateValidity() => _formKey.updateValidity(
     currentValidity: _isFormValid,
@@ -63,55 +67,48 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    // Case 1: Update existing Category
-    if (_isFormValid && (_serverCategory?.isNotEmpty ?? false)) {
-      _updatedCategory();
+    // Case 1: Update existing Attribute
+    if (_isFormValid && (_serverRule?.isNotEmpty ?? false)) {
+      _updatedDiscountRule();
       return;
     }
 
-    // Case 2: Form validation or empty Category
-    if (!_isFormValid && _categories.isNullOrEmpty) {
+    // Case 2: Form validation or empty Discount rule
+    if (!_isFormValid && _discountRules.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
 
-    // Case 3: Create new Categories
-    _newCategories();
+    // Case 3: Create new Discount Rule
+    _newDiscountRule();
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
-    if (!_isServerNull) ..._serverCategory!.history,
+    if (!_isServerNull) ..._serverRule!.history,
     AuditLog(action: action, actionBy: _employeeName),
   ];
 
-  void _newCategories() {
-    final newCats = _categories
-        .map(
-          (e) => e.copyWith(
-            storeNumber: _employeeStore,
-            createdBy: _employeeName,
-            history: history(),
-          ),
-        )
+  void _newDiscountRule() {
+    final newRules = _discountRules
+        .map((e) => e.copyWith(history: history()))
         .toList();
-    _bloc.add(AddSetup<List<Category>>(data: newCats));
+
+    _bloc.add(AddSetup<List<DiscountRule>>(data: newRules));
   }
 
-  void _updatedCategory() {
-    final updated = _categories.first.copyWith(
-      id: _serverCategory!.id,
-      name: _serverCategory!.name,
-      updatedBy: _employeeName,
+  void _updatedDiscountRule() {
+    final updated = _discountRules.first.copyWith(
+      id: _serverRule!.id,
       history: history(AuditAction.updated),
     );
-    _bloc.add(UpdateSetup<Category>(documentId: updated.id, data: updated));
+    _bloc.add(UpdateSetup<DiscountRule>(documentId: updated.id, data: updated));
   }
 
-  void _populateCategoryForm() {
-    if (_serverCategory != null) {
-      _categories
+  void _populateDiscountRuleForm() {
+    if (!_isServerNull) {
+      _discountRules
         ..clear()
-        ..add(_serverCategory!);
+        ..add(_serverRule!);
     }
   }
 
@@ -121,6 +118,8 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
+        _isFormValid = false;
+        _discountRules.clear();
       });
     }
   }
@@ -133,13 +132,13 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     setState(() => _isSubmitting = false);
   }
 
-  void _handleBlocState(BuildContext cxt, SetupState<Category> state) {
-    final note = _isServerNull ? 'Category created' : 'Changes saved';
+  void _handleBlocState(BuildContext cxt, SetupState<DiscountRule> state) {
+    final note = _isServerNull ? 'Discount rule created' : 'Changes saved';
     switch (state) {
-      case SetupAdded<Category>(message: var msg):
-      case SetupUpdated<Category>(message: var msg):
+      case SetupAdded<DiscountRule>(message: var msg):
+      case SetupUpdated<DiscountRule>(message: var msg):
         _showAlert(msg ?? note);
-      case SetupError<Category>():
+      case SetupError<DiscountRule>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -148,12 +147,12 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   @override
   void initState() {
     super.initState();
-    _populateCategoryForm();
+    _populateDiscountRuleForm();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CategoryBloc, SetupState<Category>>(
+    return BlocListener<DiscountRuleBloc, SetupState<DiscountRule>>(
       listener: _handleBlocState,
       child: Form(
         key: _formKey,
@@ -166,35 +165,40 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   Column _buildBody(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 20,
       children: [
         FormGroupCard(
+          title: 'Discount Rule',
+          helperText: '\nTap the + button to add multiple Rules',
           children: [
             DynamicTextFields(
               showButton: true,
-              title: 'Item Categories',
-              fieldsConfig: RefMasterFormInputs.categoryField,
-              initialData: [?_serverCategory?.toMap()],
+              fieldsConfig: DiscountFormInputs(
+                discountType: _selectedDiscountType,
+              ).discountRuleFields,
+              initialData: [?_serverRule?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {
-                // if (_isFormValid) setState(() {});
-
-                // Create a new line item
-                _categories
+                _discountRules
                   ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Category.fromMap(e)));
+                  ..addAll(data.map(DiscountRule.fromMap));
+                setState(
+                  () => _selectedDiscountType =
+                      _discountRules.firstOrNull?.discountType,
+                );
 
                 _updateValidity();
               },
             ),
           ],
         ),
+
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Category')
+              ? (_isSubmitting ? 'Creating...' : 'Create Discount Rule')
               : (_isSubmitting ? 'Updating...' : null),
           onPressed: _onSubmit,
         ),
-        const SizedBox(height: 20.0),
       ],
     );
   }

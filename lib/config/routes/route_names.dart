@@ -120,7 +120,7 @@ abstract class RouteNames {
   static const workflowMaster = 'workflow_master_screen';
   static const referenceMaster = 'reference_master_screen';
   static const variantsMaster = 'variants_master_screen';
-  static const priceListMaster = 'price_list_master_screen';
+  static const pricingDiscountMaster = 'pricing_discount_master_screen';
   static const currencyMaster = 'currency_master_screen';
   // static const uomMaster = 'uom_master_screen';
 

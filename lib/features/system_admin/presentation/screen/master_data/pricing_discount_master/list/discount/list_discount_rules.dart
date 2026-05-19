@@ -2,70 +2,78 @@ import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
-import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/price_list_master_bloc.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/discount_group_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/discount_rule_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/create/create_price_list.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/create/create_discount_rule.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class PriceLists extends StatefulWidget {
-  const PriceLists({super.key});
+class ListDiscountRules extends StatefulWidget {
+  const ListDiscountRules({super.key});
 
   @override
-  State<PriceLists> createState() => _PriceListsState();
+  State<ListDiscountRules> createState() => _ListDiscountRulesState();
 }
 
-class _PriceListsState extends State<PriceLists> {
+class _ListDiscountRulesState extends State<ListDiscountRules> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
 
-  PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
+  late final DiscountRuleBloc _bloc;
+
+  // DiscountRuleBloc get _bloc => context.read<DiscountRuleBloc>();
 
   void _isDeleting(bool status) {
     setState(() => _inProgress = status);
     if (!status) _selectedIds.clear(); // Clear selected items
   }
 
-  void _showAlert(String msg) {
-    context.showAlertOverlay(msg);
-  }
+  void _showAlert(String msg) => context.showAlertOverlay(msg);
 
-  void _handleBlocState(BuildContext cxt, SetupState<PriceListMaster> state) {
+  void _handleBlocState(BuildContext cxt, SetupState<DiscountRule> state) {
     switch (state) {
-      case SetupDeleted<PriceListMaster>(message: var msg):
+      case SetupDeleted<DiscountRule>(message: var msg):
         _showAlert(msg ?? 'Deleted successfully');
         _isDeleting(false);
-      case SetupError<PriceListMaster>():
+      case SetupError<DiscountRule>():
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    _bloc = DiscountRuleBloc(firestore: FirebaseFirestore.instance)
+      ..add(GetSetups<DiscountRule>());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _bloc,
-      child: BlocListener<PriceListMasterBloc, SetupState<PriceListMaster>>(
+      child: BlocListener<DiscountRuleBloc, SetupState<DiscountRule>>(
         listener: _handleBlocState,
         child: _buildBody(),
       ),
     );
   }
 
-  BlocBuilder<PriceListMasterBloc, SetupState<PriceListMaster>> _buildBody() {
-    return BlocBuilder<PriceListMasterBloc, SetupState<PriceListMaster>>(
+  BlocBuilder<DiscountRuleBloc, SetupState<DiscountRule>> _buildBody() {
+    return BlocBuilder<DiscountRuleBloc, SetupState<DiscountRule>>(
       builder: (context, state) {
         return switch (state) {
-          LoadingSetup<PriceListMaster>() => context.loader,
-          SetupsLoaded<PriceListMaster>(data: var results) =>
+          LoadingSetup<DiscountRule>() => context.loader,
+          SetupsLoaded<DiscountRule>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Price List',
-                    onPressed: () => _openPriceMasterForm(context),
+                    'Create Discount Rule',
+                    onPressed: () => _openDiscountRuleForm(context),
                   )
                 : _buildCard(context, results),
-          SetupError<PriceListMaster>(error: final error) => context.buildError(
+          SetupError<DiscountRule>(error: final error) => context.buildError(
             error,
           ),
           _ => const SizedBox.shrink(),
@@ -74,14 +82,14 @@ class _PriceListsState extends State<PriceLists> {
     );
   }
 
-  Widget _buildCard(BuildContext c, List<PriceListMaster> masters) {
+  Widget _buildCard(BuildContext c, List<DiscountRule> masters) {
     return DynamicDataTable(
       omitAtIndex: 0,
       // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
-      headers: PriceListMaster.dataTableHeader,
+      headers: DiscountRule.dataTableHeader,
       rows: masters.map((d) => d.itemAsList).toList(),
-      template: PriceListMaster.templateHeader,
+      template: DiscountRule.templateHeader,
       selectedRowKeys: _selectedIds,
       onChecked: _onChecked,
       onAllChecked: _onAllChecked,
@@ -90,14 +98,14 @@ class _PriceListsState extends State<PriceLists> {
     );
   }
 
-  Widget _buildToolbar(List<PriceListMaster> masters) {
+  Widget _buildToolbar(List<DiscountRule> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      primaryLabel: 'Create Price List',
+      primaryLabel: 'Create Discount Rule',
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
-      refreshLabel: 'Refresh Master Data',
-      onPrimary: () => _openPriceMasterForm(context),
-      onRefresh: () => _bloc.add(RefreshSetups<PriceListMaster>()),
+      refreshLabel: 'Refresh Discount Rules',
+      onPrimary: () => _openDiscountRuleForm(context),
+      onRefresh: () => _bloc.add(RefreshSetups<DiscountRule>()),
       onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
@@ -110,27 +118,27 @@ class _PriceListsState extends State<PriceLists> {
     );
   }
 
-  Future<void> _onEditTap(List<PriceListMaster> masters, String id) async {
-    final master = PriceListMaster.findById(masters, id);
-    if (master == null) return;
+  Future<void> _onEditTap(List<DiscountRule> rules, String id) async {
+    final rule = DiscountRule.findById(rules, id);
+    if (rule == null) return;
 
-    await _openPriceMasterForm(context, serverItem: master);
+    await _openDiscountRuleForm(context, serverItem: rule);
   }
 
-  Future<void> _onDeleteTap(List<PriceListMaster> masters, String id) async {
-    final master = PriceListMaster.findById(masters, id);
-    if (master == null) return;
+  Future<void> _onDeleteTap(List<DiscountRule> rules, String id) async {
+    final rule = DiscountRule.findById(rules, id);
+    if (rule == null) return;
 
     final isConfirmed = await context.confirmUserActionDialog();
     if (mounted && isConfirmed) {
-      _bloc.add(DeleteSetup<String>(documentId: master.id));
+      _bloc.add(DeleteSetup<String>(documentId: rule.id));
     }
   }
 
-  Future<void> _openPriceMasterForm(
+  Future<void> _openDiscountRuleForm(
     BuildContext cxt, {
-    PriceListMaster? serverItem,
-  }) async => await cxt.openAddPriceList(serverPriceList: serverItem);
+    DiscountRule? serverItem,
+  }) async => await cxt.openAddDiscountRule(serverRule: serverItem);
 
   _onChecked(bool? isChecked, checkedRow) {
     setState(() {

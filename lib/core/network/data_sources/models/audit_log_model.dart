@@ -12,6 +12,7 @@ enum AuditAction {
   unknown,
   draft,
   amended,
+  modified,
   pending,
   viewed,
   created,

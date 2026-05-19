@@ -24,7 +24,6 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
   bool _inProgress = false;
   final List<String> _selectedIds = [];
   late final CompanyStoresBloc _bloc;
-
   // CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
 
   void _isDeleting(bool status) {

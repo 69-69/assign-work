@@ -104,13 +104,13 @@ extension SetupTiles on dynamic {
       },
       {
         'hasSplit': true,
-        'label': 'Price List . master',
+        'label': 'Pricing & Discount master',
         'icon': Icons.price_change,
-        'route': RouteNames.priceListMaster,
+        'route': RouteNames.pricingDiscountMaster,
         'param': {},
-        'access': _getName(SetupPermission.managePriceListMaster),
+        'access': _getName(SetupPermission.managePriceMaster),
         'description':
-            'Define and manage price lists used across sales and procurement processes.',
+            'Configure and manage price lists, pricing rules, discount groups, and promotional pricing for sales and procurement.',
       },
       {
         'hasSplit': true,

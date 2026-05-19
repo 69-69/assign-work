@@ -14,7 +14,7 @@ import 'package:assign_erp/features/system_admin/data/models/master_data/attribu
 import 'package:assign_erp/features/system_admin/data/models/master_data/variant_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/variant_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/create/create_price_entry.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/create/create_price_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,15 +52,14 @@ class VariantTable extends StatefulWidget {
 }
 
 class _VariantTableState extends State<VariantTable> {
-  Map<String, double> _sellingPrices = {};
+  bool _isSubmitting = false;
+  String get _itemCode => widget.itemCode;
+  final Map<String, double> _sellingPrices = {};
+  String get _employeeName => context.employee!.fullName;
+  List<Map<String, Attribute>> get _variants => widget.variants;
+  bool get _allPricesSet => _sellingPrices.length == _variants.length;
 
   VariantBloc get _bloc => context.read<VariantBloc>();
-
-  String get _employeeName => context.employee!.fullName;
-
-  List<Map<String, Attribute>> get _variants => widget.variants;
-
-  bool get _allPricesSet => _sellingPrices.length == _variants.length;
 
   String get _missingCount {
     final missing = _variants.where((e) {
@@ -71,28 +70,20 @@ class _VariantTableState extends State<VariantTable> {
     return missing == 0 ? '' : ' ($missing missing prices)';
   }
 
-  // ---------------------------
-  // CORE: SKU GENERATION
-  // ---------------------------
   String _buildSku(Map<String, Attribute> entry) {
-    return Variant.buildSKU(widget.itemCode, entry.toCodeMap()).itemSKU;
+    return Variant.buildSKU(_itemCode, entry.toCodeMap()).itemSKU;
   }
 
-  // ---------------------------
-  // AUDIT HISTORY
-  // ---------------------------
-  List<AuditLog> history() => [
-    AuditLog(action: AuditAction.created, actionBy: _employeeName),
-  ];
-
-  // ---------------------------
-  // SAVE ALL VARIANTS
-  // ---------------------------
   void _saveAllVariants() {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
     final variantsToSave = Variant.buildVariants(
-      itemCode: widget.itemCode,
-      variants: _variants.map((v) => v.toCodeMap()).toList(),
+      itemCode: _itemCode,
+      variants: _variants,
     );
+    prettyPrint('label-variantsToSave', variantsToSave);
+
     final newVariants = variantsToSave
         .map((e) => e.copyWith(history: history()))
         .toList();
@@ -101,22 +92,30 @@ class _VariantTableState extends State<VariantTable> {
     return;
   }
 
-  // ---------------------------
-  // ALERT
-  // ---------------------------
+  List<AuditLog> history() => [
+    AuditLog(action: AuditAction.created, actionBy: _employeeName),
+  ];
+
   void _showAlert(String msg) =>
-      context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
+      context.showAlertOverlay(msg, onCallback: () => _resetForm());
 
   void _handleBlocState(BuildContext cxt, SetupState<Variant> state) {
     switch (state) {
       case SetupAdded<Variant>(message: var msg):
         _showAlert(msg ?? 'Variant successfully saved');
-
       case SetupError<Variant>():
         _showAlert('Something went wrong! Please try again');
+      case _: // no action
+    }
+  }
 
-      case _:
-        break;
+  void _resetForm() {
+    if (mounted) {
+      setState(() {
+        _isSubmitting = false;
+        _sellingPrices.clear();
+      });
+      Navigator.pop(context);
     }
   }
 
@@ -127,6 +126,7 @@ class _VariantTableState extends State<VariantTable> {
     if (first == null) {
       return const Center(child: Text('No variants available'));
     }
+    final isDemo = _itemCode.toLowerAll.startsWith('demo-');
 
     return BlocListener<VariantBloc, SetupState<Variant>>(
       listener: _handleBlocState,
@@ -134,19 +134,17 @@ class _VariantTableState extends State<VariantTable> {
         children: [
           _buildTable(first),
 
-          context.confirmableActionButton(
-            isDisabled: !_allPricesSet,
-            label: 'Save All Variants$_missingCount',
-            onPressed: _allPricesSet ? _saveAllVariants : null,
-          ),
+          if(!isDemo)
+            context.confirmableActionButton(
+              isDisabled: !_allPricesSet,
+              label: 'Save All Variants$_missingCount',
+              onPressed: _allPricesSet ? _saveAllVariants : null,
+            ),
         ],
       ),
     );
   }
 
-  // ---------------------------
-  // TABLE
-  // ---------------------------
   Widget _buildTable(Map<String, Attribute> first) {
     final keyList = first.keys.toList()
       ..sortByComparable((e) => attributePriorities[e] ?? 999);
@@ -164,24 +162,33 @@ class _VariantTableState extends State<VariantTable> {
       items: _variants,
       rowBuilder: (entry, index) {
         final sku = _buildSku(entry);
+        final price = _sellingPrices[sku]?.toString();
+        final isPriceNull = price == null;
 
         return DataRow(
           cells: [
             DataCell(
-              Chip(label: Text(_sellingPrices[sku]?.toString() ?? 'Set Price')),
-              onTap: () async {
-                await context.openAddPriceEntry(
-                  variantSKUs: allSkus,
-                  onPriceCreated: ({required Map<String, double> prices}) {
-                    if (prices.isNotEmpty) {
-                      prettyPrint('label-price', allSkus);
-                      setState(() => _sellingPrices = prices);
-                    }
-                  },
-                );
-              },
+              ActionChip(
+                label: Text(price ?? 'Set Price'),
+                tooltip: isPriceNull
+                    ? 'Set prices for all variants'
+                    : 'Edit this price',
+                avatar: isPriceNull ? null : const Icon(Icons.edit, size: 18),
+                onPressed: () async {
+                  await context.openAddPriceEntry(
+                    isChangePrice: !isPriceNull,
+                    variantSKUs: isPriceNull ? allSkus : [sku],
+                    onPriceCreated: ({required Map<String, double> prices}) {
+                      if (prices.isNotEmpty) {
+                        setState(() => _sellingPrices.addAll(prices));
+                      }
+                    },
+                  );
+                },
+              ),
             ),
-            DataCell(Text(widget.itemCode.toUpperAll)),
+
+            DataCell(Text(_itemCode.toUpperAll)),
 
             ...keyList.map(
               (k) => DataCell(Text(entry[k]?.value.toTitle ?? '')),

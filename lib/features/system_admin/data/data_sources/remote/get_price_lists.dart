@@ -29,7 +29,7 @@ class GetPriceList {
     _priceListBloc.add(
       SearchSetup<PriceListMaster>(
         primaryField: 'name',
-        secondaryField: 'type',
+        secondaryField: 'transactionType',
         optionalField: 'storeNumber',
         tertiaryField: 'validUntil',
         query: term,

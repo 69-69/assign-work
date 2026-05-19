@@ -54,7 +54,7 @@ class _ListVariantsState extends State<ListVariants> {
                     onAction: () async {
                       await _getAttributes(
                         attributes: (grouped) async => await context
-                            .openExploreVariant(groupedAttrs: grouped),
+                            .openVariantPlayground(groupedAttrs: grouped),
                       );
                     },
                   )
@@ -67,25 +67,27 @@ class _ListVariantsState extends State<ListVariants> {
   }
 
   Widget _buildCard(BuildContext c, List<Variant> variants) {
+    final keys = variants.first.attributes.keys.toList();
+
     return DynamicDataTable(
       omitAtIndex: 0,
-      headers: Variant.dataHeader,
+      headers: variants.first.dataHeader(keys),
       toolbar: _buildToolbar(variants),
-      rows: variants.map((cat) => cat.itemAsList).toList(),
+      rows: variants.map((v) => v.itemAsList(keys)).toList(),
       onDeleteTap: (row) async => _onDeleteTap(variants, row.first),
     );
   }
 
   _buildToolbar(List<Variant> variants) {
     return ListToolbarButtons(
-      primaryLabel: 'Explore',
-      primaryIcon: Icons.wb_sunny,
+      primaryLabel: 'Playground',
+      primaryIcon: Icons.science_outlined,
       refreshLabel: 'Refresh Variants',
       dataLength: variants.length,
       onPrimary: () async {
         await _getAttributes(
           attributes: (grouped) async =>
-              await context.openExploreVariant(groupedAttrs: grouped),
+              await context.openVariantPlayground(groupedAttrs: grouped),
         );
       },
       onRefresh: () =>

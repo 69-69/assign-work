@@ -252,10 +252,12 @@ class EmployeeSignInButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<EmployeeSignInBloc, EmployeeSignInState>(
       builder: (context, state) {
+        final inProgress = state.status.isInProgress;
+
         return _buildButton(
           context,
-          isDisabled: !state.isValid,
-          inProgress: state.status.isInProgress,
+          isDisabled: !state.isValid || inProgress,
+          inProgress: inProgress,
           onPress: (state.email.isValid && state.passcode.isValid)
               ? () => context.read<EmployeeSignInBloc>().add(
                   EmployeeSignInRequested(),

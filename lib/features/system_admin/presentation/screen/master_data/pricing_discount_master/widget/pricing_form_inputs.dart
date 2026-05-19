@@ -4,13 +4,14 @@ import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
-import 'package:assign_erp/core/widgets/form/price_list_type_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/transaction_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/price_list_master/widget/search_price_list.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_price_list.dart';
 import 'package:flutter/material.dart';
 
-class PriceMasterFormInputs {
+class PricingFormInputs {
 
+  ///Price List
   static List<FieldGroupConfig> get priceListFields => [
     FieldGroupConfig(
       key: 'type',
@@ -18,7 +19,8 @@ class PriceMasterFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return PriceListTypeDropdown(
+        return TransactionTypeDropdown(
+          label: 'Price List Type',
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
         );
@@ -77,6 +79,29 @@ class PriceMasterFormInputs {
     ...validityDateFields,
   ];
 
+  ///Price Rules/Entry
+  static List<FieldGroupConfig> get priceEntryFields => [
+    FieldGroupConfig(
+      key: 'priceListId',
+      label: 'Price List',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return SearchPriceList(
+          initialValue: initialData,
+          onChanged: (String id, String name) => onChanged(id),
+        );
+      },
+    ),
+
+    FieldGroupConfig(
+      key: 'sellingPrice',
+      label: 'Selling Price',
+      type: TextInputType.number,
+      helperText: 'Actual selling price for this item',
+    ),
+  ];
+
   /// Dates & Validity
   static List<FieldGroupConfig> get validityDateFields => [
     FieldGroupConfig(
@@ -118,44 +143,6 @@ class PriceMasterFormInputs {
           validator: (v) => v.isNullOrEmpty ? msg : null,
         );
       },
-    ),
-  ];
-
-  ///Price list Entry
-  static List<FieldGroupConfig> get priceEntryFields => [
-    FieldGroupConfig(
-      key: 'priceListId',
-      label: 'Price List',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return SearchPriceList(
-          initialValue: initialData,
-          onChanged: (String id, String name) => onChanged(id),
-        );
-      },
-    ),
-
-    FieldGroupConfig(
-      key: 'sellingPrice',
-      label: 'Selling Price',
-      type: TextInputType.number,
-      helperText: 'Actual selling price for this item',
-    ),
-
-    FieldGroupConfig(
-      key: 'minQuantity',
-      label: 'Minimum Quantity',
-      type: TextInputType.number,
-      helperText: 'Minimum quantity required for this price tier',
-    ),
-
-    FieldGroupConfig(
-      key: 'discountPercent',
-      label: 'Discount % (Optional)',
-      type: TextInputType.number,
-      helperText: 'Percentage discount applied to this price',
-      validator: (_) => null,
     ),
   ];
 }

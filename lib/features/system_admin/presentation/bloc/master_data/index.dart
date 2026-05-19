@@ -7,4 +7,6 @@ export 'attribute_bloc.dart';
 export 'variant_bloc.dart';
 export 'price_list_master_bloc.dart';
 export 'price_list_entry_bloc.dart';
+export 'discount_group_master_bloc.dart';
+export 'discount_rule_bloc.dart';
 

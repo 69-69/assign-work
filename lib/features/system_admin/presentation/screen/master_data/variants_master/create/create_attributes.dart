@@ -104,16 +104,13 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   void _updatedAttribute() {
     final updated = _attributes.first.copyWith(
       id: _serverAttribute!.id,
-      type: _serverAttribute!.type,
-      value: _serverAttribute!.value,
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
     _bloc.add(UpdateSetup<Attribute>(documentId: updated.id, data: updated));
   }
 
-  // load existing Attributes
-  void _loadExistingAttributes() {
+  void _populateAttributesForm() {
     if (_serverAttribute != null) {
       _attributes
         ..clear()
@@ -156,7 +153,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
   @override
   void initState() {
     super.initState();
-    _loadExistingAttributes();
+    _populateAttributesForm();
   }
 
   @override
@@ -180,7 +177,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
           helperText: '\nTap the + button to add multiple entries',
           children: [
             DynamicTextFields(
-              showButton: true,
+              showButton: _isServerNull,
               fieldsConfig: VariantsMasterFormInputs.attributeFields,
               initialData: [?_serverAttribute?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {
@@ -189,7 +186,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
                 // Create a new line item
                 _attributes
                   ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Attribute.fromMap(e)));
+                  ..addAll(data.map(Attribute.fromMap));
 
                 _updateValidity();
               },

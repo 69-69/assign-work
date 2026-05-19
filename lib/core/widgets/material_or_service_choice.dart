@@ -42,7 +42,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
       title: DialogTitle(
         title: 'Product or Service?',
         subtitle:
-            'Select whether this $_procureType is a Material (Product) or Service?',
+            'Select whether this $_procureType is a Material (Product) or Service (Labor)?',
       ),
       body: _buildBody(context),
       actions: [
@@ -83,7 +83,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
-                  material ? Icons.shopping_bag : Icons.work,
+                  material ? Icons.shopping_cart : Icons.work,
                   color: color,
                   size: 20,
                   semanticLabel: 'line item type: $type',
@@ -95,7 +95,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
                     style: TextStyle(color: color, fontWeight: FontWeight.bold),
                     children: [
                       TextSpan(
-                        text: material ? '\n(Product)' : '\n(Work)',
+                        text: material ? '\n(Product)' : '\n(Labor)',
                         style: TextStyle(fontWeight: FontWeight.normal),
                       ),
                     ],
