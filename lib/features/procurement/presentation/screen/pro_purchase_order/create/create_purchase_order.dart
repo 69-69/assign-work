@@ -342,7 +342,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
       initialData: [{}],
-      showButton: true,
+      isRepeatable: true,
       fieldsConfig: POFormInputs.addressFields,
       onChanged: (List<Map<String, dynamic>> data) {
         if (_isFormValid) setState(() {});
@@ -382,7 +382,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: !_isDisabled,
+      isRepeatable: !_isDisabled,
       fullWidthKey: 'description',
       fieldsConfig: POFormInputs.fields(
         _lineItemType ?? '',
@@ -446,7 +446,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DynamicTextFields _buildSupplier() {
     return DynamicTextFields(
       initialData: [{}],
-      showButton: false,
+      isRepeatable: false,
       fullWidthKey: 'supplierLinks',
       fieldsConfig: POFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {

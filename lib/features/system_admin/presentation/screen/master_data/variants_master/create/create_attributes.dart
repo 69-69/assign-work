@@ -177,7 +177,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
           helperText: '\nTap the + button to add multiple entries',
           children: [
             DynamicTextFields(
-              showButton: _isServerNull,
+              isRepeatable: _isServerNull,
               fieldsConfig: VariantsMasterFormInputs.attributeFields,
               initialData: [?_serverAttribute?.toMap()],
               onChanged: (List<Map<String, dynamic>> data) {

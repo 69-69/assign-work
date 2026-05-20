@@ -145,7 +145,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
           children: [
             DynamicTextFields(
               initialData: [{}],
-              showButton: true,
+              isRepeatable: true,
               fieldsConfig: _contactPersonFieldConfig,
               onChanged: (List<Map<String, dynamic>> data) {
                 if (isFormValid) setState(() {});

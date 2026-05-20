@@ -204,7 +204,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
   // Addresses (e.g., Office, Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       initialData: _serverInfo.addresses.map((e) => e.toMap()).toList(),
       fieldsConfig: CompanyFormInputs.addressFields(),
       onChanged: (List<Map<String, dynamic>> data) {

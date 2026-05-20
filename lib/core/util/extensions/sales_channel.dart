@@ -48,7 +48,7 @@ extension SalesChannelExtension on SalesChannel {
   /// [getName] Get the specific Enum Name (e.g. "material")
   String get getName => EnumUtil<SalesChannel>(this).getName;
 
-  /// Returns a user-friendly label (e.g. "material")
+  /// Returns a user-friendly label (e.g. "social media")
   String get getLabel => EnumUtil<SalesChannel>(this).getLabel;
 }
 

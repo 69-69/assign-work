@@ -15,7 +15,7 @@ enum FieldWidgetType {
 
 class DynamicTextFields extends StatefulWidget {
   final String? title;
-  final bool showButton;
+  final bool isRepeatable; // enable Add/Remove Controls
   final Color? textColor;
   final List<String>? orText;
 
@@ -32,7 +32,7 @@ class DynamicTextFields extends StatefulWidget {
 
   const DynamicTextFields({
     super.key,
-    this.showButton = false,
+    this.isRepeatable = false,
     this.fieldGroupsLimit,
     required this.fieldsConfig,
     required this.onChanged,
@@ -54,7 +54,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   String? get _title => widget.title;
 
-  bool get _showButton => widget.showButton;
+  bool get _isRepeatable => widget.isRepeatable;
 
   String? get _fullWidthKey => widget.fullWidthKey;
 
@@ -64,7 +64,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
 
   List<FieldGroupConfig> get _fieldsConfig => widget.fieldsConfig;
 
-  bool get _showSuffixCount => _showButton && _fieldGroupsLength > 1;
+  bool get _showSuffixCount => _isRepeatable && _fieldGroupsLength > 1;
 
   Future<dynamic> Function()? get _onLimitReached => widget.onLimitReached;
 
@@ -151,7 +151,20 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     final buffer = <Widget>[];
 
     for (final config in _fieldsConfig) {
+      /// Skip fields that are permanently hidden.
       if (config.isHidden) continue;
+
+      /// current row data
+      final currentData = group.getData(_fieldsConfig);
+      /*final currentData = {
+        ...group.getData(_fieldsConfig),
+        ...group.otherValues,
+      };*/
+      /// Whether the field should be rendered in the UI
+      /// based on the current form/group data.
+      final shouldRender = config.visibleWhen?.call(currentData) ?? true;
+
+      if (!shouldRender) continue;
 
       final widget = _buildFieldWidget(group, config, index);
 
@@ -225,8 +238,10 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           Expanded(
             child: config.customBuilder!(
               initialData: group.otherValues[config.key],
-              onChanged: (value) {
-                group.otherValues[config.key] = value;
+              onChanged: (v) {
+                if(mounted){
+                  setState(() => group.otherValues[config.key] = v);
+                }
                 _notifyParent();
               },
             ),
@@ -358,7 +373,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         if (_title != null) ...[
           Expanded(
             child: Text(
-              "${_title.toTitle} ${_showButton ? '[$_fieldGroupsLength]' : ''}",
+              "${_title.toTitle} ${_isRepeatable ? '[$_fieldGroupsLength]' : ''}",
               style: context.textTheme.titleMedium?.copyWith(
                 color:
                     widget.textColor ?? context.onPrimaryContainer.toAlpha(0.8),
@@ -367,7 +382,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
           ),
           const SizedBox(height: 10),
         ],
-        if (_showButton) ...[
+        if (_isRepeatable) ...[
           if (_fieldGroupsLength > 1) ...{
             context.iconButton(
               Icons.remove,
@@ -444,12 +459,18 @@ class FieldGroupConfig {
   final String label;
   final bool isTextArea;
   final int? minLines;
-  final bool isHidden;
   final String? helperText;
   final TextInputType type;
   final String? Function(String?)? validator;
   final InputDecoration? inputDecoration;
   final FieldWidgetType widgetType;
+  /// [isHidden] Whether the field is permanently hidden from the UI.
+  final bool isHidden;
+  /// Determines whether the field should be rendered
+  /// based on the current form/group data.
+  /// [visibleWhen]
+  /// Return `true` to show the field, or `false` to hide it.
+  final bool Function(Map<String, dynamic> data)? visibleWhen;
 
   /// Indicates that this field contains a nested list of key-value pairs
   /// (e.g., `[{ "key": "isAutoApply", "value": true }]`) in `otherValues`.
@@ -493,6 +514,7 @@ class FieldGroupConfig {
     this.maxHeight = 100,
     this.customBuilder,
     this.widgetType = FieldWidgetType.textField,
+    this.visibleWhen,
   });
 }
 
@@ -557,26 +579,3 @@ class FieldGroup {
   }
 }
 
-/*Iterable<Widget> _buildFieldGroups2() {
-    return _fieldGroups.asMap().entries.expand((entry) {
-      final index = entry.key + 1;
-      final group = entry.value;
-
-      // 1️⃣ Build widgets
-      // Create list of TextFields for this group
-      final fields = _fieldsConfig
-          .map(
-            (config) => config.isHidden
-                ? null
-                : _buildFieldWidget(group, config, index),
-          )
-          // 2️⃣ Remove nulls (hidden fields)
-          .where((e) => e != null)
-          .cast<Widget>()
-          .toList();
-
-      // 3️⃣ Apply pairing logic
-      // Return a single field if there's only one, otherwise group fields into pairs
-      return fields.length <= 1 ? fields : _groupByTwo(fields);
-    });
-  }*/

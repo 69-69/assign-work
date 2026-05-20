@@ -352,7 +352,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fieldsConfig: SQFormInputs.fields(
         _lineItemType ?? '',
         isHidden: _taxModeToApply != TaxMode.perLineTax,
@@ -405,7 +405,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
       initialData: [{}],
-      showButton: true,
+      isRepeatable: true,
       fieldGroupsLimit: 2,
       fieldsConfig: SQFormInputs.addressesFields,
       onChanged: (List<Map<String, dynamic>> data) {

@@ -287,7 +287,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   Widget _buildLineItems() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fullWidthKey: 'description',
       fieldsConfig: RFQFormInputs.fields(_lineItemType),
       initialData: _serverRFQ.lineItems.map((e) => e.toMap(true)).toList(),
@@ -306,7 +306,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   DynamicTextFields _buildSuppliers() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,
       initialData: _serverRFQ.supplierLinks

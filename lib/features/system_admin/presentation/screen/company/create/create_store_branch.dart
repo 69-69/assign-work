@@ -189,7 +189,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
       title: _serverStore?.name ?? 'Store Branch',
       fieldsConfig: CompanyFormInputs.addStoresFields,
       initialData: [?_serverStore?.toMap()],
-      showButton: canAdd.addMore || _serverStore != null,
+      isRepeatable: canAdd.addMore || _serverStore != null,
       fieldGroupsLimit: canAdd.maxAllowed,
       onLimitReached: () async => await context.showUpgradeDialog(),
       onChanged: (List<Map<String, dynamic>> data) {

@@ -1,5 +1,4 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
-import 'package:assign_erp/core/util/extensions/discount_type.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -23,7 +22,7 @@ extension CreateDiscountRule<T> on BuildContext {
         isExpand: false,
         child: BottomSheetScaffold(
           title: serverRule != null
-              ? 'Edit ${serverRule.getDiscountType}'.toTitle
+              ? 'Edit Rule'.toTitle
               : 'New Discount Rule',
           body: _AddDiscountRuleForm(serverRule: serverRule),
         ),
@@ -45,7 +44,6 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
   final _formKey = GlobalKey<FormState>();
   final List<DiscountRule> _discountRules = [];
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
-  DiscountType? _selectedDiscountType;
 
   DiscountRule? get _serverRule => widget.serverRule;
 
@@ -129,7 +127,6 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
       msg,
       onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
     );
-    setState(() => _isSubmitting = false);
   }
 
   void _handleBlocState(BuildContext cxt, SetupState<DiscountRule> state) {
@@ -172,19 +169,13 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
           helperText: '\nTap the + button to add multiple Rules',
           children: [
             DynamicTextFields(
-              showButton: true,
-              fieldsConfig: DiscountFormInputs(
-                discountType: _selectedDiscountType,
-              ).discountRuleFields,
+              isRepeatable: _isServerNull,
+              fieldsConfig: DiscountFormInputs.discountRuleFields,
               initialData: [?_serverRule?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {
                 _discountRules
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map(DiscountRule.fromMap));
-                setState(
-                  () => _selectedDiscountType =
-                      _discountRules.firstOrNull?.discountType,
-                );
 
                 _updateValidity();
               },

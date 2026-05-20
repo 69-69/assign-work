@@ -170,7 +170,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
         FormGroupCard(
           children: [
             DynamicTextFields(
-              showButton: true,
+              isRepeatable: true,
               title: 'Item Categories',
               fieldsConfig: RefMasterFormInputs.categoryField,
               initialData: [?_serverCategory?.toMap()],

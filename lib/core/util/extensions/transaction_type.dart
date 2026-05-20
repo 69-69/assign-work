@@ -8,6 +8,8 @@ enum TransactionType { sales, purchase }
 
 extension TransTypeExtension on TransactionType {
   String get getName => EnumUtil<TransactionType>(this).getName;
+  /// Returns a user-friendly label (e.g. "sales")
+  String get getLabel => EnumUtil<TransactionType>(this).getLabel;
 }
 
 

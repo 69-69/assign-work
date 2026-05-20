@@ -176,7 +176,7 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
 
   DynamicTextFields _buildForm() {
     return DynamicTextFields(
-      showButton: _isServerNull,
+      isRepeatable: _isServerNull,
       fieldsConfig: CompanyFormInputs.departmentsFields,
       initialData: [?_serverDepart?.toMap()],
       onChanged: (List<Map<String, dynamic>> data) {

@@ -330,7 +330,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: !_isDisabled,
+      isRepeatable: !_isDisabled,
       fullWidthKey: 'description',
       fieldsConfig: RFQFormInputs.fields(
         _lineItemType ?? '',
@@ -390,7 +390,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   DynamicTextFields _buildSuppliers() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       initialData: [{}],
       fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,

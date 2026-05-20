@@ -338,8 +338,8 @@ class PriceListMaster extends Equatable {
     'Type',
     'Currency',
     'Taxed',
-    'Valid From',
-    'Valid Until',
+    'Start Date',
+    'End Date',
   ];
 
   /// ToList for Price List [itemAsList]

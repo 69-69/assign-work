@@ -119,7 +119,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
               initialData: _serverSupplier.contactPersons
                   .map((e) => e.toMap())
                   .toList(),
-              showButton: true,
+              isRepeatable: true,
               fieldsConfig: _contactPersonFieldConfig,
               onChanged: (List<Map<String, dynamic>> data) {
                 if (isFormValid) setState(() {});

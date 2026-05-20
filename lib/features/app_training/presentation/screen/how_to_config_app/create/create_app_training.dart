@@ -185,7 +185,7 @@ class _AppTrainingFormState extends State<_AppTrainingForm> {
   DynamicTextFields _buildForm() {
     return DynamicTextFields(
       fullWidthKey: 'title',
-      showButton: _isServerNull,
+      isRepeatable: _isServerNull,
       initialData: [?_serverGuide?.toMap()],
       fieldsConfig: AppTrainingConfig.formFields,
       onChanged: (List<Map<String, dynamic>> data) {

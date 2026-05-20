@@ -256,7 +256,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
         : null;
 
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fullWidthKey: fwk,
       fieldsConfig: PRFormInputs.fields(lineItemType),
       initialData: _serverPR.lineItems.map((e) => e.toMap(true)).toList(),

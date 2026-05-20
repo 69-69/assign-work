@@ -130,7 +130,6 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
       msg,
       onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
     );
-    setState(() => _isSubmitting = false);
   }
 
   void _handleBlocState(BuildContext cxt, SetupState<PriceListMaster> state) {
@@ -173,7 +172,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
           helperText: '\nTap the + button to add multiple entries',
           children: [
             DynamicTextFields(
-              showButton: true,
+              isRepeatable: _isServerNull,
               fieldsConfig: PricingFormInputs.priceListFields,
               initialData: [?_serverPriceList?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {

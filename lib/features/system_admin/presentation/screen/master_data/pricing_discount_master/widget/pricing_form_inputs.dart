@@ -100,13 +100,15 @@ class PricingFormInputs {
       type: TextInputType.number,
       helperText: 'Actual selling price for this item',
     ),
+
+    ...validityDateFields,
   ];
 
   /// Dates & Validity
   static List<FieldGroupConfig> get validityDateFields => [
     FieldGroupConfig(
       key: 'validFrom',
-      label: 'Valid from',
+      label: 'Start date',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
@@ -126,7 +128,7 @@ class PricingFormInputs {
     ),
     FieldGroupConfig(
       key: 'validUntil',
-      label: 'Valid until',
+      label: 'End date',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {

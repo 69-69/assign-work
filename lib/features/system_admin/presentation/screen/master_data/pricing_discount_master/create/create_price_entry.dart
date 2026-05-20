@@ -268,9 +268,9 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
           children: [
             DynamicTextFields(
               title: 'Price',
-              showButton: _totalSKUs > 1,
+              isRepeatable: _totalSKUs > 1,
               fieldGroupsLimit: _totalSKUs,
-              initialData: [?_serverPriceEntry?.toMap()],
+              initialData: [?_serverPriceEntry?.toMap(true)],
               fieldsConfig: PricingFormInputs.priceEntryFields,
               orText: _variantSKUs?.map((sku) => 'SKU: $sku').toList(),
               onCount: (int v) {

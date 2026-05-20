@@ -5,21 +5,21 @@ import 'package:assign_erp/core/util/enum_util.dart';
 * print(status.label); // Output: purchase
 * */
 enum DiscountType {
-  percentage,
-  fixedAmount,
-  overridePrice,
-
-  buyXGetY,
-  quantityTier,
-  formula,
+  percentage, // Reduce by %
+  fixedAmount, // Reduce by fixed currency value
+  overridePrice, // Replace selling price completely
+  buyXGetY, // Buy X get Y / free quantity
+  quantityTier, // Quantity slab discount
+  formula, // Custom calculation logic
   couponCode,
   seasonal,
 }
 
 extension DiscountTypeExtension on DiscountType {
   String get getName => EnumUtil<DiscountType>(this).getName;
+  /// Returns a user-friendly label (e.g. "coupon code")
+  String get getLabel => EnumUtil<DiscountType>(this).getLabel;
 }
-
 
 class QuantityTier {
   final int minQty;
@@ -34,6 +34,8 @@ class QuantityTier {
 }
 
 class DiscountTypeUtil {
+  static bool isCoupon(String? v) =>
+      EnumUtil.isEqual(DiscountType.couponCode, v);
 
   /// [fromString] Converts String/Label to enum value.
   static DiscountType fromString(String? value) =>

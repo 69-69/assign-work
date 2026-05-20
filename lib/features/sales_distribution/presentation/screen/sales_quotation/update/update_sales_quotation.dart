@@ -346,7 +346,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fieldsConfig: SQFormInputs.fields(
         _lineItemType,
         isHidden: _taxModeToApply != TaxMode.perLineTax,
@@ -409,7 +409,7 @@ class _UpdateSalesQuoteState extends State<_UpdateSalesQuote> {
   // Addresses (e.g., Buyer Shipping & Billing Address)
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fieldGroupsLimit: 2,
       initialData: _serverQuote.addresses.map((e) => e.toMap()).toList(),
       fieldsConfig: SQFormInputs.addressesFields,

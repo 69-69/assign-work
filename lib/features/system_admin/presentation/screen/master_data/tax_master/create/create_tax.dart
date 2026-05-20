@@ -182,7 +182,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
           subTitle: '\n Add Tax Rates & Notes',
           children: [
             DynamicTextFields(
-              showButton: !_isEditing,
+              isRepeatable: !_isEditing,
               initialData: [?_serverTax?.toMap()],
               fieldsConfig: TaxFormInputs.taxRatesFields(_serverTax?.toMap()),
               onChanged: (List<Map<String, dynamic>> data) {

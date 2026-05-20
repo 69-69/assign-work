@@ -287,7 +287,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
       initialData: [{}],
-      showButton: true,
+      isRepeatable: true,
       fullWidthKey: 'description',
       fieldsConfig: PRFormInputs.fields(
         _lineItemType,

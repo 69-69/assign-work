@@ -22,7 +22,7 @@ extension CreateDiscountGroupMaster<T> on BuildContext {
         isExpand: false,
         child: BottomSheetScaffold(
           title: serverDiscountGroup != null
-              ? 'Edit ${serverDiscountGroup.getTransactionType}'.toTitle
+              ? 'Edit ${serverDiscountGroup.name}'.toTitle
               : 'New Discount Group',
           body: _AddDiscountGroupForm(serverDiscountGroup: serverDiscountGroup),
         ),
@@ -174,7 +174,7 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
           helperText: '\nTap the + button to add multiple groups',
           children: [
             DynamicTextFields(
-              showButton: true,
+              isRepeatable: _isServerNull,
               fieldsConfig: DiscountFormInputs.discountGroupFields,
               initialData: [?_serverDiscountGroup?.toMap(true)],
               onChanged: (List<Map<String, dynamic>> data) {

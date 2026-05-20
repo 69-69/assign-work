@@ -162,7 +162,6 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       msg,
       onCallback: () => _isServerNull ? _resetForm() : Navigator.pop(context),
     );
-    setState(() => _isSubmitting = false);
   }
 
   void _handleBlocState(BuildContext cxt, SetupState<ItemMaster> state) {

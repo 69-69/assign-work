@@ -190,7 +190,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
   // Addresses (e.g., Office, Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       initialData: [{}],
       fieldsConfig: CompanyFormInputs.addressFields(),
       onChanged: (List<Map<String, dynamic>> data) {

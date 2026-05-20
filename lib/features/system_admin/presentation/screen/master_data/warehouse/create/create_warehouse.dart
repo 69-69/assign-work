@@ -210,7 +210,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
   DynamicTextFields _buildWHBasic() {
     var item = _serverItem?.toMap();
     return DynamicTextFields(
-      showButton: _isServerNull,
+      isRepeatable: _isServerNull,
       initialData: [
         {...?item, ...?_serverItem?.address.toMap()},
       ],

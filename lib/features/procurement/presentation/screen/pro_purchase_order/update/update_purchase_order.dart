@@ -309,7 +309,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   // Addresses (e.g., Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fieldsConfig: POFormInputs.addressFields,
       initialData: _serverPO.addresses?.map((e) => e.toMap()).toList() ?? [{}],
       onChanged: (List<Map<String, dynamic>> data) {
@@ -357,7 +357,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   DynamicTextFields _buildLineItems() {
     return DynamicTextFields(
-      showButton: true,
+      isRepeatable: true,
       fullWidthKey: 'description',
       fieldsConfig: POFormInputs.fields(
         _lineItemType,
@@ -430,7 +430,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       initialData: [
         {'supplierLinks': supLink.toMap(), 'status': supLink.getStatus},
       ],
-      showButton: false,
+      isRepeatable: false,
       fullWidthKey: 'supplierLinks',
       fieldsConfig: POFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {

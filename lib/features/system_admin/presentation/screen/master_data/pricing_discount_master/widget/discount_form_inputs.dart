@@ -12,12 +12,6 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 
 class DiscountFormInputs {
-  final DiscountType? discountType;
-
-  const DiscountFormInputs({this.discountType});
-
-  bool get isCouponCode => discountType == DiscountType.couponCode;
-
   /// Discount Group
   static List<FieldGroupConfig> get discountGroupFields => [
     FieldGroupConfig(
@@ -51,7 +45,7 @@ class DiscountFormInputs {
   ];
 
   ///Discount Rule
-  List<FieldGroupConfig> get discountRuleFields => [
+  static List<FieldGroupConfig> get discountRuleFields => [
     FieldGroupConfig(
       key: 'discountType',
       label: 'Discount type',
@@ -129,31 +123,29 @@ class DiscountFormInputs {
       type: TextInputType.number,
       helperText: 'Discount amount, percentage, or override value',
     ),
-
-    if (isCouponCode) ...{
-      FieldGroupConfig(
-        key: 'couponCode',
-        label: 'Coupon Code',
-        type: TextInputType.text,
-        helperText: 'Coupon or promo code customers will use',
-        validator: (_) => null,
-      ),
-    },
-
     FieldGroupConfig(
       key: 'minQuantity',
       label: 'Minimum Quantity',
       type: TextInputType.number,
       helperText: 'Minimum quantity required before this discount applies',
     ),
+
     ...validityDateFields,
+
+    FieldGroupConfig(
+      key: 'couponCode',
+      label: 'Coupon Code',
+      type: TextInputType.none,
+      helperText: 'Coupon or promo code customers will use',
+      visibleWhen: (data) => DiscountTypeUtil.isCoupon(data['discountType']),
+    ),
   ];
 
   /// Dates & Validity
   static List<FieldGroupConfig> get validityDateFields => [
     FieldGroupConfig(
       key: 'validFrom',
-      label: 'Valid From',
+      label: 'Start date',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
@@ -174,7 +166,7 @@ class DiscountFormInputs {
 
     FieldGroupConfig(
       key: 'validUntil',
-      label: 'Valid Until',
+      label: 'End date',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
