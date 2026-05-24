@@ -17,6 +17,8 @@ class AttributeValues extends StatefulWidget {
 }
 
 class _AttributeValuesState extends State<AttributeValues> {
+  List<String> _selectedIds = [];
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AttributeBloc>(
@@ -49,20 +51,27 @@ class _AttributeValuesState extends State<AttributeValues> {
   }
 
   Widget _buildCard(BuildContext c, List<Attribute> attributes) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       headers: Attribute.dataHeader,
       toolbar: _buildToolbar(attributes),
-      rows: attributes.map((cat) => cat.itemAsList).toList(),
-      onEditTap: (row) async => _onEditTap(attributes, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(attributes, row.first),
+      rows: attributes.map(_toTableRow).toList(),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => _onEditTap(attributes, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(attributes, row.id),
     );
   }
+
+  TableRowData _toTableRow(Attribute e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<Attribute> attributes) {
     return ListToolbarButtons(
       primaryLabel: 'Add Attribute',
-      refreshLabel: 'Refresh Attributes',
+      refreshLabel: 'Refresh',
       dataLength: attributes.length,
       onPrimary: () => context.openAddAttribute(),
       onRefresh: () =>

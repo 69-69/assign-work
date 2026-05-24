@@ -34,6 +34,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
+
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
 
   void _isDeleting(bool status) {
@@ -91,24 +92,24 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     );
   }
 
-  ({List<List<String>> rows, List<List<String>>? childrenRow}) _filterQuotes(
+  ({List<TableRowData> rows, List<TableRowData>? childrenRow}) _filterQuotes(
     List<SalesQuotation> quotes,
   ) {
     if (_isApproved) {
       final todayQuotes = SalesQuotation.filterApprovedSQ(
         quotes,
-      ).map((o) => o.itemAsList).toList();
+      ).map(_toTableRow).toList();
 
       return (rows: todayQuotes, childrenRow: null);
     }
 
     final todayQuotes = SalesQuotation.filterSQByDate(
       quotes,
-    ).map((o) => o.itemAsList).toList();
+    ).map(_toTableRow).toList();
     final pastQuotes = SalesQuotation.filterSQByDate(
       quotes,
       isSameDay: false,
-    ).map((o) => o.itemAsList).toList();
+    ).map(_toTableRow).toList();
 
     return (rows: todayQuotes, childrenRow: pastQuotes);
   }
@@ -125,20 +126,22 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
       rows: filtered.rows,
       template: SalesQuotation.templateHeader,
       childrenRow: filtered.childrenRow,
-      onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
-      selectedRowKeyIndex: 0,
+      onViewDetailsTap: (row) async => _onViewDetails(quotes, row.id),
       selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids) {
+      onSelectionChanged: (ids, rows) {
         setState(() => _selectedIds = ids);
       },
       // onChecked: _onChecked,
       // onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onPrintSQ(quotes, row.first),
-      onEditTap: (row) async => await _onEditTap(quotes, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(quotes, row.first),
+      onOptButtonTap: (row) async => await _onPrintSQ(quotes, row.id),
+      onEditTap: (row) async => await _onEditTap(quotes, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(quotes, row.id),
     );
   }
+
+  TableRowData _toTableRow(SalesQuotation e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<SalesQuotation> quotes) {
     return ListToolbarButtons(
@@ -311,7 +314,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     await onQuoteProcessed(quoteWithTaxes, customer);
   }
 
-/*_onChecked(bool? isChecked, checkedRow) {
+  /*_onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
       if (isChecked == true) {
@@ -336,5 +339,4 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
       }
     });
   }*/
-
 }

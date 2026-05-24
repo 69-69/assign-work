@@ -18,6 +18,8 @@ class ListCustomers extends StatefulWidget {
 }
 
 class _ListCustomersState extends State<ListCustomers> {
+  List<String> _selectedIds = [];
+
   @override
   Widget build(BuildContext context) {
     return _buildBody();
@@ -51,17 +53,24 @@ class _ListCustomersState extends State<ListCustomers> {
       isSameDay: false,
     );
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Customer.dataTableHeader,
       toolbar: _buildToolbar(customers),
-      rows: todayCustomers.map((o) => o.itemAsList).toList(),
-      childrenRow: pastCustomers.map((o) => o.itemAsList).toList(),
-      onEditTap: (row) async => await _onEditTap(context, customers, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(customers, row.first),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      rows: todayCustomers.map(_toTableRow).toList(),
+      childrenRow: pastCustomers.map(_toTableRow).toList(),
+      onEditTap: (row) async => await _onEditTap(context, customers, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(customers, row.id),
     );
   }
+
+  TableRowData _toTableRow(Customer e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<Customer> customers) {
     return context.actionInfoButton(

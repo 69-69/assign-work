@@ -19,7 +19,7 @@ class PriceLists extends StatefulWidget {
 
 class _PriceListsState extends State<PriceLists> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
 
   late final PriceListMasterBloc _bloc;
   // PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
@@ -82,20 +82,24 @@ class _PriceListsState extends State<PriceLists> {
   }
 
   Widget _buildCard(BuildContext c, List<PriceListMaster> masters) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
       headers: PriceListMaster.dataTableHeader,
-      rows: masters.map((d) => d.itemAsList).toList(),
+      rows: masters.map(_toTableRow).toList(),
       template: PriceListMaster.templateHeader,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => await _onEditTap(masters, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(masters, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(masters, row.id),
     );
   }
+
+  TableRowData _toTableRow(PriceListMaster e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<PriceListMaster> masters) {
     return ListToolbarButtons(
@@ -139,6 +143,8 @@ class _PriceListsState extends State<PriceLists> {
     PriceListMaster? serverItem,
   }) async => await cxt.openAddPriceList(serverPriceList: serverItem);
 
+}
+/*
   _onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
@@ -163,5 +169,4 @@ class _PriceListsState extends State<PriceLists> {
         _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
       }
     });
-  }
-}
+  }*/

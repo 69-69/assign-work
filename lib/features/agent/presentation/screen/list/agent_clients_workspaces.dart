@@ -20,6 +20,8 @@ class AgentClientsWorkspaces extends StatefulWidget {
 }
 
 class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
+  List<String> _selectedIds = [];
+
   @override
   Widget build(BuildContext context) {
     return _buildBody();
@@ -32,12 +34,12 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
         return switch (state) {
           LoadingClients<AgentClient>() => context.loader,
           ClientsLoaded<AgentClient>(data: var results) =>
-            results.isNullOrEmpty
-                ? context.buildAddButton(
-                    'Setup New Workspace',
-                    onPressed: () => context.openCreateWorkspacePopUp(),
-                  )
-                : _buildCard(context, results),
+          results.isNullOrEmpty
+              ? context.buildAddButton(
+            'Setup New Workspace',
+            onPressed: () => context.openCreateWorkspacePopUp(),
+          )
+              : _buildCard(context, results),
           AgentError<AgentClient>(error: var error) => context.buildError(
             error,
           ),
@@ -48,8 +50,8 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
   }
 
   ({List<Workspace> expired, List<Workspace> unExpired}) _filterExpiry(
-    List<Workspace> workspaces,
-  ) {
+      List<Workspace> workspaces,
+      ) {
     final unExpired = Workspace.filterStatus(workspaces);
     final expired = Workspace.filterStatus(workspaces, expired: true);
 
@@ -64,26 +66,32 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
 
     final filters = _filterExpiry(workspaces);
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       headers: Workspace.dataTableHeader,
       toolbar: _buildToolbar(filters.unExpired),
-      rows: filters.unExpired.map((w) => w.itemAsList()).toList(),
-      childrenRow: filters.expired.map((w) => w.itemAsList()).toList(),
+      rows: filters.unExpired.map(_toTableRow).toList(),
+      childrenRow: filters.expired.map(_toTableRow).toList(),
       optButtonIcon: Icons.support_agent,
       optButtonLabel: 'Chat',
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
-        pathParameters: {'clientWorkspaceId': row.first},
+        pathParameters: {'clientWorkspaceId': row.id},
       ),
     );
   }
+  TableRowData _toTableRow(Workspace e) =>
+      TableRowData.fromList(e.id, e.itemAsList());
 
   _buildToolbar(List<Workspace> tenants) {
     return ListToolbarButtons(
       refreshLabel: 'Workspaces',
       dataLength: tenants.length,
-      primaryLabel: 'Setup New Workspace',
+      primaryLabel: 'New Workspace',
       onPrimary: () async => await context.openCreateWorkspacePopUp(),
       onRefresh: () =>
           context.read<AgentClientBloc>().add(RefreshClients<AgentClient>()),

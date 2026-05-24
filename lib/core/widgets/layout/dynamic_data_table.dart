@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
+import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_mode.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/size_config.dart';
@@ -695,6 +696,31 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 }
 
+extension TableRowMapper on List<String> {
+  TableRowData toTableRow(String id) {
+    return TableRowData(id: id, values: this);
+  }
+}
+
+typedef SelectionChanged =
+    void Function(
+      List<String> keys,
+      List<TableRowData> rows,
+      // STEVE List<List<String>> rows,
+    );
+
+class TableRowData {
+  final String id;
+  final List<String> values;
+
+  const TableRowData({required this.id, required this.values});
+
+  factory TableRowData.fromList(String id, List<String> values) =>
+      TableRowData(id: id, values: values);
+
+  Map<String, dynamic> toMap() => {'id': id, 'values': values};
+}
+
 /// Newly Best DynamicDataTable
 class DynamicDataTable2 extends StatefulWidget {
   final int? omitAtIndex;
@@ -714,31 +740,37 @@ class DynamicDataTable2 extends StatefulWidget {
   final Map<String, dynamic>? template;
 
   final List<String> headers;
-  final List<List<String>> rows;
-  final List<List<String>>? childrenRow;
 
-  final Function(String, List<String>)? onCellTap;
+  // STEVE final List<List<String>> rows;
+  final List<TableRowData> rows;
+
+  // STEVE final List<List<String>>? childrenRow;
+  final List<TableRowData>? childrenRow;
+
+  /*STEVE final Function(String, List<String>)? onCellTap;
   final Function(List<String>)? onOptButtonTap;
   final Function(List<String>)? onEditTap;
   final Function(List<String>)? onDeleteTap;
-  final Function(List<String>)? onViewDetailsTap;
+  final Function(List<String>)? onViewDetailsTap;*/
+  final Function(TableRowData)? onEditTap;
+  final Function(TableRowData)? onDeleteTap;
+  final Function(TableRowData)? onOptButtonTap;
+  final Function(String, TableRowData)? onCellTap;
+  final Function(TableRowData)? onViewDetailsTap;
+  final int? selectedRowKeyIndex;
 
-  /// REQUIRED
-  final int selectedRowKeyIndex;
-
-  /// REQUIRED
   final List<String> selectedRowKeys;
 
-  /// REQUIRED
-  final ValueChanged<List<String>> onSelectionChanged;
+  // final ValueChanged<List<String>>? onSelectionChanged;
+  final SelectionChanged? onSelectionChanged;
 
   const DynamicDataTable2({
     super.key,
     required this.headers,
     required this.rows,
-    required this.selectedRowKeyIndex,
     required this.selectedRowKeys,
-    required this.onSelectionChanged,
+    this.onSelectionChanged,
+    this.selectedRowKeyIndex,
     this.childrenRow,
     this.omitAtIndex,
     this.maskAtIndex,
@@ -776,26 +808,32 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
 
   int? get _maskAtIndex => widget.maskAtIndex;
 
-  List<List<String>> get _tableRows => widget.rows;
+  // STEVE List<List<String>> get _tableRows => widget.rows;
+  List<TableRowData> get _tableRows => widget.rows;
 
   List<String> get _tableHeaders => widget.headers;
 
-  List<List<String>> get _mergedRows => <List<String>>[
+  // List<List<String>> get _mergedRows => <List<String>>[
+  //   ..._tableRows,
+  //   ...(widget.childrenRow ?? []),
+  // ];
+  List<TableRowData> get _mergedRows => <TableRowData>[
     ..._tableRows,
     ...(widget.childrenRow ?? []),
   ];
 
-  int get _selectedRowKeyIndex => widget.selectedRowKeyIndex;
+  // int get _selectedRowKeyIndex => widget.selectedRowKeyIndex ?? 0;
 
   List<String> get _selectedRowKeys => widget.selectedRowKeys;
 
   int get _totalRows => _tableRows.length + (widget.childrenRow?.length ?? 0);
 
-  ValueChanged<List<String>> get _onSelectionChanged =>
-      widget.onSelectionChanged;
+  SelectionChanged get _onSelectionChanged =>
+      widget.onSelectionChanged ?? (_, _) {};
 
-  List<List<String>> get _finalFilteredAndSortedRows {
-    return _DataTableHelper.filterAndSort(
+  // STEVE List<List<String>> get _finalFilteredAndSortedRows {
+  List<TableRowData> get _finalFilteredAndSortedRows {
+    return _DataTableHelper2.filterAndSort(
       rows: _tableRows,
       query: _searchQuery,
       headers: _tableHeaders,
@@ -803,19 +841,22 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     );
   }
 
-  List<List<String>> get _filteredChildRows {
-    return _DataTableHelper.filterOnly(
+  // STEVE List<List<String>> get _filteredChildRows {
+  List<TableRowData> get _filteredChildRows {
+    return _DataTableHelper2.filterOnly(
       rows: widget.childrenRow ?? [],
       query: _searchQuery,
     );
   }
 
-  List<String>? get _activeSummaryRow {
+  // STEVE List<String>? get _activeSummaryRow {
+  TableRowData? get _activeSummaryRow {
     if (_selectedRowKeys.length != 1) return null;
 
     final key = _selectedRowKeys.first;
 
-    return _mergedRows.firstWhere((r) => r[_selectedRowKeyIndex] == key);
+    // STEVE return _mergedRows.firstWhere((r) => r[_selectedRowKeyIndex] == key);
+    return _mergedRows.firstWhere((r) => r.id == key);
   }
 
   int get _rowsPerPageHeight {
@@ -863,17 +904,25 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     super.dispose();
   }
 
-  bool _isRowChecked(List<String> row) {
+  /* STEVE bool _isRowChecked(List<String> row) {
     final rowKey = row[_selectedRowKeyIndex];
 
     return _selectedRowKeys.contains(rowKey);
+  }*/
+  bool _isRowChecked(TableRowData row) {
+    return _selectedRowKeys.contains(row.id);
   }
 
-  List<List<String>> _getSelectedRows() {
+  // STEVE List<List<String>> _getSelectedRows() {
+  //   return _mergedRows.where((row) {
+  //     final key = row[_selectedRowKeyIndex];
+  //
+  //     return _selectedRowKeys.contains(key);
+  //   }).toList();
+  // }
+  List<TableRowData> _getSelectedRows() {
     return _mergedRows.where((row) {
-      final key = row[_selectedRowKeyIndex];
-
-      return _selectedRowKeys.contains(key);
+      return _selectedRowKeys.contains(row.id);
     }).toList();
   }
 
@@ -881,13 +930,16 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     final isSelected = value ?? false;
 
     if (isSelected) {
-      final allKeys = _mergedRows
+      /* STEVE final allKeys = _mergedRows
           .map<String>((row) => row[_selectedRowKeyIndex])
-          .toList();
+          .toList();*/
+      final allKeys = _mergedRows.map<String>((row) => row.id).toList();
 
-      _onSelectionChanged(allKeys);
+      prettyPrint('label-allKeys', allKeys);
+
+      _onSelectionChanged(allKeys, _mergedRows);
     } else {
-      _onSelectionChanged([]);
+      _onSelectionChanged([], []);
     }
   }
 
@@ -913,7 +965,8 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     );
   }
 
-  Widget _buildSideSummary(BuildContext context, List<String> row) {
+  // STEVE List<String> row to TableRowData row
+  Widget _buildSideSummary(BuildContext context, TableRowData row) {
     return Container(
       height: context.screenHeight,
       width: context.screenWidth * 0.23,
@@ -929,26 +982,36 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
 
           for (int i = 0; i < _tableHeaders.length; i++)
             if (_maskAtIndex != i && _tableHeaders[i].toLowerAll != 'id')
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  _tableHeaders[i].toUpperAll,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: kGrayBlueColor,
-                  ),
-                ),
-                subtitle: Text(row[i].isEmpty ? 'None' : row[i].toTitle),
-              ),
+              _buildListTile(i, row),
         ],
       ),
     );
   }
 
+  ListTile _buildListTile(int i, TableRowData row) {
+    final value = row.values[i];
+
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        _tableHeaders[i].toUpperAll,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: kGrayBlueColor,
+        ),
+      ),
+
+      // STEVE subtitle: Text(row[i].isEmpty ? 'None' : row[i].toTitle),
+      subtitle: Text(value.isEmpty ? 'None' : value.toTitle),
+    );
+  }
+
   Widget _buildDataTableBody(
-    List<List<String>> filteredRows,
-    List<List<String>> filteredChildRows,
+    // STEVE List<List<String>> filteredRows,
+    // STEVE List<List<String>> filteredChildRows,
+    List<TableRowData> filteredRows,
+    List<TableRowData> filteredChildRows,
   ) {
     final rowsFiltered = [...filteredRows, ...filteredChildRows];
 
@@ -957,7 +1020,7 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
       children: [
         const SizedBox(height: 20),
 
-        _DataTableToolbar(
+        _DataTableToolbar2(
           headers: _tableHeaders,
           toolbar: widget.toolbar,
           toolbarAlignment: widget.toolbarAlignment,
@@ -979,7 +1042,8 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
 
   Widget _buildPaginatedDataTable(
     BuildContext cxt,
-    List<List<String>> rowsFiltered,
+    // STEVE List<List<String>> rowsFiltered,
+    List<TableRowData> rowsFiltered,
   ) {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: cxt.screenWidth),
@@ -1002,7 +1066,7 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
   }
 
   List<DataColumn> _tableColumns() {
-    return _DataTableHeader(
+    return _DataTableHeader2(
       context: context,
       maskAtIndex: _maskAtIndex,
       skipAtIndex: _skipAtIndex,
@@ -1055,27 +1119,49 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     );
   }
 
-  void _handleRowSelection(bool? selected, {required List<String> row}) {
+  /* STEVE void _handleRowSelection(bool? selected, {required List<String> row}) {
     final rowKey = row[_selectedRowKeyIndex];
 
     final updatedKeys = [..._selectedRowKeys];
+    final updatedRows = [..._getSelectedRows()];
 
     if (selected == true) {
       if (!updatedKeys.contains(rowKey)) {
         updatedKeys.add(rowKey);
+        updatedRows.add(row);
       }
     } else {
       updatedKeys.remove(rowKey);
+
+      updatedRows.removeWhere(
+            (r) => r[_selectedRowKeyIndex] == rowKey,
+      );
     }
 
-    /*setState(() {
-      _sideData = updatedKeys.length == 1 && selected == true ? row : [];
-    });*/
+    _onSelectionChanged(updatedKeys, updatedRows);
+  }*/
+  void _handleRowSelection(bool? selected, {required TableRowData row}) {
+    final rowKey = row.id;
 
-    _onSelectionChanged(updatedKeys);
+    final updatedKeys = [..._selectedRowKeys];
+    final updatedRows = [..._getSelectedRows()];
+
+    if (selected == true) {
+      if (!updatedKeys.contains(rowKey)) {
+        updatedKeys.add(rowKey);
+        updatedRows.add(row);
+      }
+    } else {
+      updatedKeys.remove(rowKey);
+
+      updatedRows.removeWhere((r) => r.id == rowKey);
+    }
+
+    _onSelectionChanged(updatedKeys, updatedRows);
   }
 
-  DataCell _buildEachCheckBox(int index, List<String> row) {
+  // STEVE DataCell _buildEachCheckBox(int index, List<String> row) {
+  DataCell _buildEachCheckBox(int index, TableRowData row) {
     final isChecked = _isRowChecked(row);
 
     return DataCell(
@@ -1089,7 +1175,8 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     );
   }
 
-  List<DataCell> _buildRowCells(int index, List<String> row) {
+  // STEVE List<DataCell> _buildRowCells(int index, List<String> row) {
+  List<DataCell> _buildRowCells(int index, TableRowData row) {
     final cells = <DataCell>[];
 
     cells.add(_buildEachCheckBox(index, row));
@@ -1098,7 +1185,8 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
       cells.add(
         DataCell(
           _MaskToggleButton(
-            value: row[_maskAtIndex!],
+            // STEVE value: row[_maskAtIndex!],
+            value: row.values[_maskAtIndex!],
             isToggle: (_visibleRowIdIndex == index || _allVisibleRowIds),
             onPressed: () => _toggleMask(index),
           ),
@@ -1111,17 +1199,23 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
       if (_skipAtIndex != null) _skipAtIndex!,
     };
 
-    final entries = _DataTableHeader.excludeAtIndex(row, indicesToExclude);
+    // STEVE final entries = _DataTableHeader.excludeAtIndex(row, indicesToExclude);
+    final entries = _DataTableHeader.excludeAtIndex(
+      row.values,
+      indicesToExclude,
+    );
 
     for (final entry in entries.toList().asMap().entries) {
       final colIndex = entry.key;
-      final cellValue = entry.value;
+      final cellValue =
+          entry.value; // STEVE final cellValue = row.values[index];
 
       cells.add(
         widget.onViewDetailsTap != null && colIndex == 0
             ? _CellActionButton(
                 tooltip: cellValue,
                 color: context.onSurfaceColor,
+                // STEVE onTap: () => widget.onViewDetailsTap?.call(row.values),
                 onTap: () => widget.onViewDetailsTap?.call(row),
               ).expand
             : DataCell(
@@ -1168,6 +1262,51 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
   }
 }
 
+/// [_DataTableSource] Data source for the PaginatedDataTable
+class _DataTableSource2 extends DataTableSource {
+  final BuildContext context;
+  final VoidCallback notifyParent;
+  final _DynamicDataTable2State parent;
+
+  // STEVE final List<List<String>> rowsFiltered;
+  final List<TableRowData> rowsFiltered;
+
+  _DataTableSource2({
+    required this.parent,
+    required this.context,
+    required this.rowsFiltered,
+    required this.notifyParent,
+  });
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= rowsFiltered.length) return null;
+
+    final row = rowsFiltered[index];
+    // STEVE final rowKey = row[parent._selectedRowKeyIndex];
+    final rowKey = row.id;
+    final isSelected = parent._selectedRowKeys.contains(rowKey);
+
+    return parent._buildDataRow(
+      isSelected,
+      onSelectChanged: (bool? selected) {
+        parent._handleRowSelection(selected, row: row);
+        notifyParent();
+      },
+      cells: parent._buildRowCells(index, row),
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => rowsFiltered.length;
+
+  @override
+  int get selectedRowCount => parent._selectedRowKeys.length;
+}
+
 class _DataTableHeader {
   final BuildContext context;
   final int? skipAtIndex;
@@ -1180,12 +1319,134 @@ class _DataTableHeader {
   final String? editLabel;
   final String? deleteLabel;
   final String? optButtonLabel;
+
   final Function(List<String>)? onEditTap;
   final Function(List<String>)? onDeleteTap;
   final Function(List<String>)? onOptButtonTap;
   final Function(bool?)? toggleAllSelection;
 
   const _DataTableHeader({
+    this.maskAtIndex,
+    this.skipAtIndex,
+    this.totalChecked,
+    required this.context,
+    required this.tableHeaders,
+    required this.allVisibleRowIds,
+    required this.optButtonLabel,
+    required this.editLabel,
+    required this.deleteLabel,
+    required this.onOptButtonTap,
+    required this.onEditTap,
+    required this.onDeleteTap,
+    required this.toggleMaskAll,
+    required this.toggleAllSelection,
+    required this.allSelectedStatus,
+  });
+
+  String get _totalChecked => (totalChecked ?? 0) > 0 ? '$totalChecked' : '';
+
+  /// Build DataTable Header
+  List<DataColumn> dataColumns() {
+    final indicesToExclude = <int>{
+      if (maskAtIndex != null) maskAtIndex!,
+      if (skipAtIndex != null) skipAtIndex!,
+    };
+
+    final columns = [
+      // Toggle All CheckBoxes
+      DataColumn(
+        tooltip: 'Select all',
+        label: Row(
+          children: [
+            _buildParentCheckbox(),
+            Text(_totalChecked, style: TextStyle(color: kWhiteColor)),
+          ],
+        ),
+      ),
+
+      if (maskAtIndex.hasValue) ...{_toggleMaskAll()},
+
+      // Skip the first header
+      ...excludeAtIndex(
+        tableHeaders,
+        indicesToExclude,
+      ).map((header) => _buildDataColumn(header)),
+
+      if (onOptButtonTap != null) ...{
+        _buildDataColumn(optButtonLabel ?? 'Other'),
+      },
+
+      if (onEditTap != null) ...{_buildDataColumn(editLabel ?? 'Edit')},
+
+      if (onDeleteTap != null) ...{_buildDataColumn(deleteLabel ?? 'Delete')},
+    ];
+    return columns;
+  }
+
+  // Toggle Multiple (mask/unmask) secrets in a  (e.g., IDs, any sensitive data)
+  DataColumn _toggleMaskAll() {
+    return DataColumn(
+      tooltip: 'Show ${tableHeaders[maskAtIndex!]}',
+      label: _MaskToggleButton(
+        isHeader: true,
+        value: tableHeaders[maskAtIndex!],
+        isToggle: allVisibleRowIds,
+        onPressed: toggleMaskAll,
+      ),
+    );
+  }
+
+  /// Excludes/Hides a value at a specific position from the UI but keeps it in the data layer or code.
+  static Iterable<String> excludeAtIndex(
+    List<String> list,
+    Set<int> indicesToExclude,
+  ) {
+    return list
+        .asMap()
+        .entries
+        .where((entry) => !indicesToExclude.contains(entry.key))
+        .map((entry) => entry.value);
+  }
+
+  /// Parent checkbox (Multiple check)
+  Checkbox _buildParentCheckbox() {
+    return Checkbox.adaptive(
+      value: allSelectedStatus,
+      side: const BorderSide(width: 3.0, color: kWhiteColor),
+      onChanged: toggleAllSelection,
+      semanticLabel: 'Check all rows',
+    );
+  }
+
+  /// Build Header Card
+  DataColumn _buildDataColumn(String title) => DataColumn(
+    tooltip: title,
+    label: Text(
+      title.toUpperAll,
+      style: context.textTheme.titleMedium?.copyWith(color: kWhiteColor),
+    ),
+  );
+}
+
+class _DataTableHeader2 {
+  final BuildContext context;
+  final int? skipAtIndex;
+  final int? maskAtIndex;
+  final int? totalChecked;
+  final bool allVisibleRowIds;
+  final bool allSelectedStatus;
+  final List<String> tableHeaders;
+  final VoidCallback toggleMaskAll;
+  final String? editLabel;
+  final String? deleteLabel;
+  final String? optButtonLabel;
+
+  final Function(TableRowData)? onEditTap;
+  final Function(TableRowData)? onDeleteTap;
+  final Function(TableRowData)? onOptButtonTap;
+  final Function(bool?)? toggleAllSelection;
+
+  const _DataTableHeader2({
     this.maskAtIndex,
     this.skipAtIndex,
     this.totalChecked,
@@ -1340,6 +1601,58 @@ class _DataTableToolbar extends StatelessWidget {
   }
 }
 
+class _DataTableToolbar2 extends StatelessWidget {
+  final Widget? toolbar;
+  final WrapAlignment toolbarAlignment;
+  final TextEditingController searchController;
+  final List<TableRowData> Function() onSelectedRows;
+
+  final List<String> headers;
+  final String? currentSort;
+  final Map<String, dynamic>? template;
+  final Function(String? col) onSortChanged;
+
+  const _DataTableToolbar2({
+    required this.toolbar,
+    required this.toolbarAlignment,
+    required this.searchController,
+    required this.headers,
+    required this.currentSort,
+    required this.onSortChanged,
+    required this.onSelectedRows,
+    this.template,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: toolbarAlignment,
+      children: [
+        // Any custom widget above table (e.g., export buttons)
+        _DataTableActionBar2(
+          headers: headers,
+          template: template,
+          toolbar: toolbar,
+          selectedRows: onSelectedRows,
+        ),
+
+        // Search TextField
+        _DataTableSearch(
+          controller: searchController,
+          onPressed: () => searchController.clear(),
+        ),
+
+        // Sort By Dropdown Button
+        _SortByDropdown(
+          headers: headers,
+          initialSelection: currentSort,
+          onSortChanged: onSortChanged,
+        ),
+      ],
+    );
+  }
+}
+
 /// [_DataTableSource] Data source for the PaginatedDataTable
 class _DataTableSource extends DataTableSource {
   final BuildContext context;
@@ -1387,48 +1700,6 @@ class _DataTableSource extends DataTableSource {
 
   @override
   int get selectedRowCount => parent._selectedRowsStatus.where((e) => e).length;
-}
-
-/// [_DataTableSource] Data source for the PaginatedDataTable
-class _DataTableSource2 extends DataTableSource {
-  final BuildContext context;
-  final VoidCallback notifyParent;
-  final _DynamicDataTable2State parent;
-  final List<List<String>> rowsFiltered;
-
-  _DataTableSource2({
-    required this.parent,
-    required this.context,
-    required this.rowsFiltered,
-    required this.notifyParent,
-  });
-
-  @override
-  DataRow? getRow(int index) {
-    if (index >= rowsFiltered.length) return null;
-
-    final row = rowsFiltered[index];
-    final rowKey = row[parent._selectedRowKeyIndex];
-    final isSelected = parent._selectedRowKeys.contains(rowKey);
-
-    return parent._buildDataRow(
-      isSelected,
-      onSelectChanged: (bool? selected) {
-        parent._handleRowSelection(selected, row: row);
-        notifyParent();
-      },
-      cells: parent._buildRowCells(index, row),
-    );
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => rowsFiltered.length;
-
-  @override
-  int get selectedRowCount => parent._selectedRowKeys.length;
 }
 
 /// [_DataTableHelper] for filtering and sorting
@@ -1492,6 +1763,78 @@ class _DataTableHelper {
   static DateTime _parseDate(String value) {
     final dateFormat = DateFormat("EEE, M/d/yyyy h:mm:ss a");
     return dateFormat.parse(value);
+  }
+}
+
+/// [_DataTableHelper] for filtering and sorting
+class _DataTableHelper2 {
+  static List<TableRowData> filterAndSort({
+    required List<TableRowData> rows,
+    required String query,
+    required List<String> headers,
+    String? sortBy,
+  }) {
+    final filtered = _filterRows(rows, query);
+
+    if (sortBy == null) {
+      return filtered;
+    }
+
+    final columnIndex = headers.indexOf(sortBy);
+
+    if (columnIndex == -1) {
+      return filtered;
+    }
+
+    filtered.sort((a, b) {
+      final valueA = a.values[columnIndex];
+      final valueB = b.values[columnIndex];
+
+      if (_isNumeric(valueA) && _isNumeric(valueB)) {
+        return double.parse(valueA).compareTo(double.parse(valueB));
+      }
+
+      if (_isValidDate(valueA) && _isValidDate(valueB)) {
+        return _parseDate(valueA).compareTo(_parseDate(valueB));
+      }
+
+      return valueA.compareTo(valueB);
+    });
+
+    return filtered;
+  }
+
+  static List<TableRowData> filterOnly({
+    required List<TableRowData> rows,
+    required String query,
+  }) {
+    return _filterRows(rows, query);
+  }
+
+  static List<TableRowData> _filterRows(List<TableRowData> rows, String query) {
+    if (query.trim().isEmpty) {
+      return List<TableRowData>.from(rows);
+    }
+
+    final lowerQuery = query.toLowerCase();
+
+    return rows.where((row) {
+      return row.values.any((cell) {
+        return cell.toLowerCase().contains(lowerQuery);
+      });
+    }).toList();
+  }
+
+  static bool _isNumeric(String value) {
+    return double.tryParse(value) != null;
+  }
+
+  static bool _isValidDate(String value) {
+    return DateTime.tryParse(value) != null;
+  }
+
+  static DateTime _parseDate(String value) {
+    return DateTime.parse(value);
   }
 }
 
@@ -1593,6 +1936,42 @@ class _DataTableActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final exportBtn = _ExportButton(
+      headers: headers,
+      template: template,
+      selectedRowsFunc: selectedRows,
+    );
+
+    return toolbar == null
+        ? exportBtn
+        : SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [?toolbar, exportBtn],
+            ),
+          );
+  }
+}
+
+class _DataTableActionBar2 extends StatelessWidget {
+  final Widget? toolbar;
+  final List<String> headers;
+  final Map<String, dynamic>? template;
+  final List<TableRowData> Function() selectedRows;
+
+  const _DataTableActionBar2({
+    required this.toolbar,
+    required this.headers,
+    required this.selectedRows,
+    this.template,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final exportBtn = _ExportButton2(
       headers: headers,
       template: template,
       selectedRowsFunc: selectedRows,
@@ -1739,6 +2118,140 @@ class _ExportButton extends StatelessWidget {
         return [
           for (int i = 0; i < headers.length; i++)
             if (headers[i].toLowerAll != 'id') row[i],
+        ];
+      }).toList();
+
+      if (exportMode == ExportMode.template) {
+        if (template == null) {
+          context.showAlertOverlay('Failed: Template is not available');
+          return;
+        }
+        headColumns = _extractHeaders(template!);
+        dataRows = [
+          headColumns.map((h) => 'Enter ${(h.toSeparate).toLowerAll}').toList(),
+        ];
+      } else {
+        // ExportMode.data
+        if (dataRows.isEmpty) {
+          context.showAlertOverlay('Failed: No data selected to export');
+          return;
+        }
+      }
+
+      await _createFile(exportType, headColumns, dataRows);
+      return;
+    }
+  }
+
+  Future<void> _createFile(
+    ExportType exportType,
+    List<String> headColumns,
+    List<List<String>> dataRows,
+  ) async {
+    await switch (exportType) {
+      ExportType.excel => FileDocManager.exportDataToExcel(
+        headers: headColumns,
+        data: dataRows,
+      ),
+      ExportType.pdf => FileDocManager.exportDataToPdf(
+        headers: headColumns,
+        data: dataRows,
+      ),
+      ExportType.csv => FileDocManager.exportDataToCsv(
+        headers: headColumns,
+        data: dataRows,
+      ),
+    };
+  }
+
+  // choice
+  Future<ExportMode?> _buildPreference(BuildContext context) async {
+    final choice = await context.confirmAction<dynamic>(
+      Text(
+        'Do you want to export data or download a template for bulk upload?',
+      ),
+      title: 'Document Choice',
+      onAcceptLabel: 'Export Data',
+      onRejectLabel: 'Download Template',
+      anyAction: 'Cancel',
+    );
+
+    if (choice == null) return null;
+
+    return choice ? ExportMode.data : ExportMode.template;
+  }
+
+  List<String> _extractHeaders(
+    Map<String, dynamic> map, {
+    bool isHuman = false,
+  }) {
+    // final map = (model as dynamic).toMap() as Map<String, dynamic>;
+    return map.keys.map((k) => isHuman ? k.toSeparate : k).toList();
+  }
+}
+
+class _ExportButton2 extends StatelessWidget {
+  final List<String> headers;
+  final Map<String, dynamic>? template;
+  final List<TableRowData> Function() selectedRowsFunc;
+
+  const _ExportButton2({
+    required this.headers,
+    required this.selectedRowsFunc,
+    this.template,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildPrintBtn(context);
+  }
+
+  Widget _buildPrintBtn(BuildContext context) {
+    final List<TableRowData> selectedRows = selectedRowsFunc();
+
+    return selectedRows.isEmpty
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: _toolbarButton(context, selectedRows),
+          );
+  }
+
+  Widget _toolbarButton(BuildContext context, List<TableRowData> selectedRows) {
+    return context.toolbarButton(
+      label: 'Export',
+      bgColor: kSuccessColor,
+      icon: Icons.file_download,
+      tooltip: 'Export data or download template (Excel, PDF, CSV)',
+      onPressed: () async => await _handleOnClick(context, selectedRows),
+    );
+  }
+
+  Future<void> _handleOnClick(
+    BuildContext context,
+    List<TableRowData> selectedRows,
+  ) async {
+    while (true) {
+      if (!context.mounted) return;
+
+      ExportMode? exportMode = await _buildPreference(context);
+      if (exportMode == null || !context.mounted) return;
+
+      final exportType = await context.openExportChoice(exportMode);
+
+      // If user cancels → restart flow
+      if (!context.mounted) return;
+      if (exportType == null) continue;
+
+      // Remove internal ID columns before exporting
+      List<String> headColumns = headers
+          .where((h) => h.toLowerAll != 'id')
+          .toList();
+      List<List<String>> dataRows = selectedRows.map((row) {
+        // Assume row order matches headers
+        return [
+          for (int i = 0; i < headers.length; i++)
+            if (headers[i].toLowerAll != 'id') row.values[i],
         ];
       }).toList();
 

@@ -111,18 +111,18 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     }
   }
 
-  ({List<List<String>> rows, List<List<String>>? childrenRow})
+  ({List<TableRowData> rows, List<List<String>>? childrenRow})
   _filterRequisitions(List<PurchaseRequisition> requisitions) {
     if (_isApproved) {
       final approvedPRs = PurchaseRequisition.filterApprovedPR(
         requisitions,
-      ).map((o) => o.itemAsList).toList();
+      ).map(_toTableRow).toList();
       return (rows: approvedPRs, childrenRow: null);
     }
 
     final otherPRs = PurchaseRequisition.filterOthers(
       requisitions,
-    ).map((o) => o.itemAsList).toList();
+    ).map(_toTableRow).toList();
 
     return (rows: otherPRs, childrenRow: null);
   }
@@ -139,20 +139,23 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       toolbar: _buildToolbar(requisitions),
       headers: PurchaseRequisition.dataTableHeader,
       rows: data.rows,
-      onViewDetailsTap: (row) async => _onViewDetails(requisitions, row.first),
+      onViewDetailsTap: (row) async => _onViewDetails(requisitions, row.id),
       selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids) {
+      onSelectionChanged: (ids, rows) {
         setState(() => _selectedIds = ids);
       },
       // onChecked: _onChecked,
       // onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onPrintPR(requisitions, row.first),
-      onEditTap: (row) async => await _onEditTap(requisitions, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(requisitions, row.first),
+      onOptButtonTap: (row) async => await _onPrintPR(requisitions, row.id),
+      onEditTap: (row) async => await _onEditTap(requisitions, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(requisitions, row.id),
     );
   }
+
+  TableRowData _toTableRow(PurchaseRequisition e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<PurchaseRequisition> requisitions) {
     return ListToolbarButtons(
@@ -293,7 +296,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     );
   }
 
-/*_onChecked(bool? isChecked, checkedRow) {
+  /*_onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
       if (isChecked == true) {
@@ -318,5 +321,4 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       }
     });
   }*/
-
 }

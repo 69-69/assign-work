@@ -88,17 +88,19 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
       // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
       headers: DiscountGroup.dataTableHeader,
-      rows: masters.map((d) => d.itemAsList).toList(),
+      rows: masters.map(_toTableRow).toList(),
       template: DiscountGroup.templateHeader,
-      selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids) {
+      onSelectionChanged: (ids, rows) {
         setState(() => _selectedIds = ids);
       },
-      onEditTap: (row) async => await _onEditTap(masters, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
+      onEditTap: (row) async => await _onEditTap(masters, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(masters, row.id),
     );
   }
+
+  TableRowData _toTableRow(DiscountGroup e) =>
+      TableRowData.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<DiscountGroup> masters) {
     return ListToolbarButtons(
