@@ -19,7 +19,7 @@ class ListDiscountGroups extends StatefulWidget {
 
 class _ListDiscountGroupsState extends State<ListDiscountGroups> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   late final DiscountGroupMasterBloc _bloc;
 
@@ -83,16 +83,18 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
   }
 
   Widget _buildCard(BuildContext c, List<DiscountGroup> masters) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
       headers: DiscountGroup.dataTableHeader,
       rows: masters.map((d) => d.itemAsList).toList(),
       template: DiscountGroup.templateHeader,
+      selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids) {
+        setState(() => _selectedIds = ids);
+      },
       onEditTap: (row) async => await _onEditTap(masters, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
     );
@@ -101,9 +103,9 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
   Widget _buildToolbar(List<DiscountGroup> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      primaryLabel: 'Create Discount Group',
+      primaryLabel: 'Create Group',
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
-      refreshLabel: 'Refresh Discount Groups',
+      refreshLabel: 'Refresh',
       onPrimary: () => _openDiscountGroupForm(context),
       onRefresh: () => _bloc.add(RefreshSetups<DiscountGroup>()),
       onDanger: _selectedIds.isNotEmpty
@@ -140,7 +142,7 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
     DiscountGroup? serverItem,
   }) async => await cxt.openAddDiscountGroup(serverDiscountGroup: serverItem);
 
-  _onChecked(bool? isChecked, checkedRow) {
+  /*_onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
       if (isChecked == true) {
@@ -164,5 +166,6 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
         _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
       }
     });
-  }
+  }*/
 }
+

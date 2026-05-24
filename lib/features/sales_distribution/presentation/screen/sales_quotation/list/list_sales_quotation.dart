@@ -31,7 +31,7 @@ class ListSalesQuotations extends StatefulWidget {
 
 class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
@@ -117,7 +117,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     // Filter for Quotations by date
     final filtered = _filterQuotes(quotes);
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 2,
       toolbar: _buildToolbar(quotes),
@@ -128,8 +128,11 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
       onViewDetailsTap: (row) async => _onViewDetails(quotes, row.first),
       selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids) {
+        setState(() => _selectedIds = ids);
+      },
+      // onChecked: _onChecked,
+      // onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintSQ(quotes, row.first),
       onEditTap: (row) async => await _onEditTap(quotes, row.first),
@@ -139,11 +142,11 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
 
   _buildToolbar(List<SalesQuotation> quotes) {
     return ListToolbarButtons(
-      refreshLabel: 'Refresh Quotes',
-      primaryLabel: 'Create Quote',
-      secondaryLabel: 'Edit Quote',
+      refreshLabel: 'Refresh',
+      primaryLabel: 'Create',
+      secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Quote',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       dataLength: quotes.length,
       onPrimary: () => _openCreateSQ(context),
       onRefresh: () => _bloc.add(RefreshSalesDistributions<SalesQuotation>()),
@@ -181,32 +184,6 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
         },
       );
     }
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 
   SalesQuotation? _getSQById(List<SalesQuotation> quotes, String id) {
@@ -333,4 +310,31 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     // Process quote with customer data
     await onQuoteProcessed(quoteWithTaxes, customer);
   }
+
+/*_onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
+  }*/
+
 }

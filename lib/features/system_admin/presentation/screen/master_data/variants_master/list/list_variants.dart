@@ -71,6 +71,7 @@ class _ListVariantsState extends State<ListVariants> {
 
     return DynamicDataTable(
       omitAtIndex: 0,
+      maskAtIndex: 1,
       headers: variants.first.dataHeader(keys),
       toolbar: _buildToolbar(variants),
       rows: variants.map((v) => v.itemAsList(keys)).toList(),

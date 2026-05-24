@@ -33,7 +33,7 @@ class ListPurchaseRequisitions extends StatefulWidget {
 
 class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
 
@@ -134,7 +134,7 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     // Filter for Purchase Requisitions by date
     final data = _filterRequisitions(requisitions);
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       toolbar: _buildToolbar(requisitions),
       headers: PurchaseRequisition.dataTableHeader,
@@ -142,8 +142,11 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       onViewDetailsTap: (row) async => _onViewDetails(requisitions, row.first),
       selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids) {
+        setState(() => _selectedIds = ids);
+      },
+      // onChecked: _onChecked,
+      // onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintPR(requisitions, row.first),
       onEditTap: (row) async => await _onEditTap(requisitions, row.first),
@@ -151,40 +154,14 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
     );
   }
 
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
-  }
-
   _buildToolbar(List<PurchaseRequisition> requisitions) {
     return ListToolbarButtons(
-      refreshLabel: 'Refresh PR',
-      primaryLabel: 'Create PR',
-      secondaryLabel: 'Edit PR',
+      refreshLabel: 'Refresh',
+      primaryLabel: 'Create',
+      secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
       dataLength: requisitions.length,
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete PR',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       onPrimary: () async => await _openCreatePR(context),
       onSecondary: _selectedIds.length == 1
           ? () async => _onEditTap(requisitions, _selectedIds.first)
@@ -315,4 +292,31 @@ class _ListPurchaseRequisitionsState extends State<ListPurchaseRequisitions> {
       ),
     );
   }
+
+/*_onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
+  }*/
+
 }

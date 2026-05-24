@@ -163,13 +163,16 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   Function(bool, List<bool>, List<List<String>>)? get _onAllChecked =>
       widget.onAllChecked;
 
-  int get totalRows => widget.rows.length + (widget.childrenRow?.length ?? 0);
+  int get _totalRows => _tableRows.length + (widget.childrenRow?.length ?? 0);
 
   Function(bool?, List<String>)? get _onChecked => widget.onChecked;
 
   int? get _skipAtIndex => widget.omitAtIndex;
 
   int? get _maskAtIndex => widget.maskAtIndex;
+
+  List<List<String>> get _tableRows => widget.rows;
+  List<String> _sideData = [];
 
   List<String> get _tableHeaders => widget.headers;
 
@@ -189,7 +192,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
       setState(() => _allVisibleRowIds = !_allVisibleRowIds);
 
   void _initializeSelectedRows() =>
-      _selectedRowsStatus = List<bool>.filled(totalRows, false);
+      _selectedRowsStatus = List<bool>.filled(_totalRows, false);
 
   void _toggleAllSelection(bool? value) {
     setState(() {
@@ -224,9 +227,9 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     int index = 0;
 
     // Iterate over regular rows
-    for (int i = 0; i < widget.rows.length; i++) {
+    for (int i = 0; i < _tableRows.length; i++) {
       if (index < _selectedRowsStatus.length && _selectedRowsStatus[index]) {
-        selectedRows.add(widget.rows[i]);
+        selectedRows.add(_tableRows[i]);
       }
       index++;
     }
@@ -244,7 +247,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 
   void _updateSelectedRowsForNewRowCount() {
-    if (_selectedRowsStatus.length != totalRows) {
+    if (_selectedRowsStatus.length != _totalRows) {
       // Adjust the size of _selectedRows to match the number of rows
       _initializeSelectedRows();
     }
@@ -260,7 +263,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
 
   List<List<String>> get _finalFilteredAndSortedRows {
     return _DataTableHelper.filterAndSort(
-      rows: widget.rows,
+      rows: _tableRows,
       query: _searchQuery,
       headers: _tableHeaders,
       sortBy: _currentSortColumn,
@@ -270,7 +273,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   // Calculates rows per page based on available height [_rowsPerPageHeight]
   int get _rowsPerPageHeight {
     final maxVisible = context
-        .getMaxVisibleHeight(itemCount: totalRows + 1, isRow: true)
+        .getMaxVisibleHeight(itemCount: _totalRows + 1, isRow: true)
         .toInt();
     return maxVisible;
     /* // Measure available height to determine rows per page
@@ -293,10 +296,10 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     // If using external selection, sync internal state with selectedRowKeys
     if (widget.selectedRowKeys != null && widget.selectedRowKeyIndex != null) {
       final keyIndex = widget.selectedRowKeyIndex!;
-      final newStatus = List<bool>.filled(totalRows, false);
+      final newStatus = List<bool>.filled(_totalRows, false);
 
       int i = 0;
-      for (final row in [...widget.rows, ...(widget.childrenRow ?? [])]) {
+      for (final row in [..._tableRows, ...(widget.childrenRow ?? [])]) {
         final key = (keyIndex >= 0 && keyIndex < row.length)
             ? row[keyIndex]
             : '';
@@ -304,9 +307,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         i++;
       }
 
-      setState(() {
-        _selectedRowsStatus = newStatus;
-      });
+      setState(() => _selectedRowsStatus = newStatus);
     }
   }
 
@@ -326,7 +327,53 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     // Get the filtered & sorted rows
     final filteredAndSortedRows = _finalFilteredAndSortedRows;
     return SingleChildScrollView(
-      child: _buildDataTableBody(filteredAndSortedRows, _filteredChildRows),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: _buildDataTableBody(
+              filteredAndSortedRows,
+              _filteredChildRows,
+            ),
+          ),
+
+          if (_sideData.isNotEmpty) _buildSideSummary(context),
+        ],
+      ),
+    );
+  }
+
+  Container _buildSideSummary(BuildContext context) {
+    return Container(
+      height: context.screenHeight,
+      width: context.screenWidth * 0.2,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: context.outlineColor.toAlpha(0.2), width: 2),
+        ),
+      ),
+      child: Wrap(
+        children: [
+          Text('Summary', style: context.textTheme.titleMedium),
+          for (int i = 0; i < _tableHeaders.length; i++)
+            if (_maskAtIndex != i && _tableHeaders[i].toLowerAll != 'id')
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _tableHeaders[i].toUpperAll,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: kGrayBlueColor,
+                  ),
+                ),
+                subtitle: Text(
+                  _sideData[i].isEmpty ? 'None' : _sideData[i].toTitle,
+                ),
+              ),
+        ],
+      ),
     );
   }
 
@@ -380,15 +427,15 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
           ),
           onPageChanged: (firstRowIndex) {
             final pageNumber = (firstRowIndex ~/ _rowsPerPageHeight) + 1;
-            final totalPages = (totalRows / _rowsPerPageHeight).ceil();
+            final totalPages = (_totalRows / _rowsPerPageHeight).ceil();
 
             final start = firstRowIndex + 1;
-            final end = (start + _rowsPerPageHeight - 1).clamp(1, totalRows);
+            final end = (start + _rowsPerPageHeight - 1).clamp(1, _totalRows);
 
             context.showCustomSnackBar(
               bgColor: kBgLightColor,
               textAlign: TextAlign.center,
-              'Page $pageNumber of $totalPages • Showing $start–$end of $totalRows Records',
+              'Page $pageNumber of $totalPages • Showing $start–$end of $_totalRows Records',
             );
           },
         ),
@@ -499,8 +546,9 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   );
 
   /// Placeholder for empty cell
-  _buildPlaceholder(BuildContext context) {
+  _buildPlaceholder() {
     final pColor = context.errorColor;
+
     return Tooltip(
       message: "Your update will replace this information.",
       decoration: const BoxDecoration(color: kDangerColor),
@@ -536,27 +584,28 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
         value: isChecked,
         side: BorderSide(width: 1.0, color: context.onSurfaceColor),
         onChanged: (bool? selected) {
-          // Update the selection status of the individual checkbox
-          setState(() => _selectedRowsStatus[index] = selected ?? false);
+          setState(() {
+            // checkbox state
+            _selectedRowsStatus[index] = selected ?? false;
 
-          // Count how many checkboxes are selected
-          int selectedCount = _selectedRowsStatus
-              .where((status) => status)
-              .length;
+            // selected count
+            final selectedCount = _selectedRowsStatus
+                .where((status) => status)
+                .length;
 
-          // If two or more checkboxes are selected, call the `onAllChecked` callback
-          if (selectedCount >= 2 && _onAllChecked != null) {
-            _onAllChecked!(
-              true, // or pass the actual "Select All" status if needed
-              _selectedRowsStatus,
-              _getSelectedRows(),
-            );
-          }
+            // show side panel ONLY when exactly one row selected
+            _sideData = selectedCount == 1 && selected == true ? row : [];
 
-          // Notify the individual checkbox selection change if the callback is provided
-          if (_onChecked != null) {
-            _onChecked!(selected, row);
-          }
+            // multiple selection callback
+            if (selectedCount >= 2 && _onAllChecked != null) {
+              _onAllChecked!(true, _selectedRowsStatus, _getSelectedRows());
+            }
+
+            // single row callback
+            if (_onChecked != null) {
+              _onChecked!(selected, row);
+            }
+          });
         },
       ),
     );
@@ -601,7 +650,7 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
               ).expand
             : DataCell(
                 cellValue.isEmpty
-                    ? _buildPlaceholder(context)
+                    ? _buildPlaceholder()
                     : context.copyPasteText(str: cellValue),
                 onTap: () {
                   widget.onCellTap?.call(cellValue, row);
@@ -633,6 +682,479 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
     }
 
     // Delete button
+    if (widget.onDeleteTap != null) {
+      cells.add(
+        _CellActionButton(
+          tooltip: widget.deleteLabel,
+          onTap: () => widget.onDeleteTap!(row),
+        ).delete,
+      );
+    }
+
+    return cells;
+  }
+}
+
+/// Newly Best DynamicDataTable
+class DynamicDataTable2 extends StatefulWidget {
+  final int? omitAtIndex;
+  final int? maskAtIndex;
+
+  final Widget? toolbar;
+  final WrapAlignment toolbarAlignment;
+
+  final IconData? editIcon;
+  final IconData? deleteIcon;
+  final IconData? optButtonIcon;
+
+  final String? editLabel;
+  final String? optButtonLabel;
+  final String? deleteLabel;
+
+  final Map<String, dynamic>? template;
+
+  final List<String> headers;
+  final List<List<String>> rows;
+  final List<List<String>>? childrenRow;
+
+  final Function(String, List<String>)? onCellTap;
+  final Function(List<String>)? onOptButtonTap;
+  final Function(List<String>)? onEditTap;
+  final Function(List<String>)? onDeleteTap;
+  final Function(List<String>)? onViewDetailsTap;
+
+  /// REQUIRED
+  final int selectedRowKeyIndex;
+
+  /// REQUIRED
+  final List<String> selectedRowKeys;
+
+  /// REQUIRED
+  final ValueChanged<List<String>> onSelectionChanged;
+
+  const DynamicDataTable2({
+    super.key,
+    required this.headers,
+    required this.rows,
+    required this.selectedRowKeyIndex,
+    required this.selectedRowKeys,
+    required this.onSelectionChanged,
+    this.childrenRow,
+    this.omitAtIndex,
+    this.maskAtIndex,
+    this.toolbar,
+    this.editIcon,
+    this.deleteIcon,
+    this.optButtonIcon,
+    this.editLabel,
+    this.deleteLabel,
+    this.optButtonLabel,
+    this.onCellTap,
+    this.onEditTap,
+    this.onDeleteTap,
+    this.onViewDetailsTap,
+    this.onOptButtonTap,
+    this.toolbarAlignment = WrapAlignment.start,
+    this.template,
+  });
+
+  @override
+  State<DynamicDataTable2> createState() => _DynamicDataTable2State();
+}
+
+class _DynamicDataTable2State extends State<DynamicDataTable2> {
+  final ScrollController _horScrollController = ScrollController();
+  final ScrollController _verScrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+
+  int? _visibleRowIdIndex;
+  String _searchQuery = '';
+  String? _currentSortColumn;
+  bool _allVisibleRowIds = false;
+
+  int? get _skipAtIndex => widget.omitAtIndex;
+
+  int? get _maskAtIndex => widget.maskAtIndex;
+
+  List<List<String>> get _tableRows => widget.rows;
+
+  List<String> get _tableHeaders => widget.headers;
+
+  List<List<String>> get _mergedRows => <List<String>>[
+    ..._tableRows,
+    ...(widget.childrenRow ?? []),
+  ];
+
+  int get _selectedRowKeyIndex => widget.selectedRowKeyIndex;
+
+  List<String> get _selectedRowKeys => widget.selectedRowKeys;
+
+  int get _totalRows => _tableRows.length + (widget.childrenRow?.length ?? 0);
+
+  ValueChanged<List<String>> get _onSelectionChanged =>
+      widget.onSelectionChanged;
+
+  List<List<String>> get _finalFilteredAndSortedRows {
+    return _DataTableHelper.filterAndSort(
+      rows: _tableRows,
+      query: _searchQuery,
+      headers: _tableHeaders,
+      sortBy: _currentSortColumn,
+    );
+  }
+
+  List<List<String>> get _filteredChildRows {
+    return _DataTableHelper.filterOnly(
+      rows: widget.childrenRow ?? [],
+      query: _searchQuery,
+    );
+  }
+
+  List<String>? get _activeSummaryRow {
+    if (_selectedRowKeys.length != 1) return null;
+
+    final key = _selectedRowKeys.first;
+
+    return _mergedRows.firstWhere((r) => r[_selectedRowKeyIndex] == key);
+  }
+
+  int get _rowsPerPageHeight {
+    final maxVisible = context
+        .getMaxVisibleHeight(itemCount: _totalRows + 1, isRow: true)
+        .toInt();
+
+    return maxVisible;
+  }
+
+  void _toggleMask(int index) {
+    setState(() {
+      if (_visibleRowIdIndex == index) {
+        _visibleRowIdIndex = null;
+      } else {
+        _visibleRowIdIndex = index;
+      }
+    });
+  }
+
+  void _toggleMaskAll() {
+    setState(() {
+      _allVisibleRowIds = !_allVisibleRowIds;
+    });
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _horScrollController.dispose();
+    _verScrollController.dispose();
+    super.dispose();
+  }
+
+  bool _isRowChecked(List<String> row) {
+    final rowKey = row[_selectedRowKeyIndex];
+
+    return _selectedRowKeys.contains(rowKey);
+  }
+
+  List<List<String>> _getSelectedRows() {
+    return _mergedRows.where((row) {
+      final key = row[_selectedRowKeyIndex];
+
+      return _selectedRowKeys.contains(key);
+    }).toList();
+  }
+
+  void _toggleAllSelection(bool? value) {
+    final isSelected = value ?? false;
+
+    if (isSelected) {
+      final allKeys = _mergedRows
+          .map<String>((row) => row[_selectedRowKeyIndex])
+          .toList();
+
+      _onSelectionChanged(allKeys);
+    } else {
+      _onSelectionChanged([]);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredAndSortedRows = _finalFilteredAndSortedRows;
+
+    return SingleChildScrollView(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(
+            child: _buildDataTableBody(
+              filteredAndSortedRows,
+              _filteredChildRows,
+            ),
+          ),
+
+          if (_activeSummaryRow.hasValue)
+            _buildSideSummary(context, _activeSummaryRow!),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSideSummary(BuildContext context, List<String> row) {
+    return Container(
+      height: context.screenHeight,
+      width: context.screenWidth * 0.23,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(color: context.outlineColor.toAlpha(0.2), width: 2),
+        ),
+      ),
+      child: Wrap(
+        children: [
+          Text('SUMMARY', style: context.textTheme.titleMedium),
+
+          for (int i = 0; i < _tableHeaders.length; i++)
+            if (_maskAtIndex != i && _tableHeaders[i].toLowerAll != 'id')
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _tableHeaders[i].toUpperAll,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: kGrayBlueColor,
+                  ),
+                ),
+                subtitle: Text(row[i].isEmpty ? 'None' : row[i].toTitle),
+              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataTableBody(
+    List<List<String>> filteredRows,
+    List<List<String>> filteredChildRows,
+  ) {
+    final rowsFiltered = [...filteredRows, ...filteredChildRows];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 20),
+
+        _DataTableToolbar(
+          headers: _tableHeaders,
+          toolbar: widget.toolbar,
+          toolbarAlignment: widget.toolbarAlignment,
+          searchController: _searchController,
+          currentSort: _currentSortColumn,
+          template: widget.template,
+          onSortChanged: (column) {
+            setState(() {
+              _currentSortColumn = column;
+            });
+          },
+          onSelectedRows: _getSelectedRows,
+        ),
+
+        _buildPaginatedDataTable(context, rowsFiltered),
+      ],
+    );
+  }
+
+  Widget _buildPaginatedDataTable(
+    BuildContext cxt,
+    List<List<String>> rowsFiltered,
+  ) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: cxt.screenWidth),
+      child: IntrinsicWidth(
+        child: PaginatedDataTable(
+          showCheckboxColumn: false,
+          rowsPerPage: _rowsPerPageHeight,
+          showFirstLastButtons: true,
+          headingRowColor: const WidgetStatePropertyAll(kGrayBlueColor),
+          columns: _tableColumns(),
+          source: _DataTableSource2(
+            context: cxt,
+            parent: this,
+            rowsFiltered: rowsFiltered,
+            notifyParent: () => setState(() {}),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<DataColumn> _tableColumns() {
+    return _DataTableHeader(
+      context: context,
+      maskAtIndex: _maskAtIndex,
+      skipAtIndex: _skipAtIndex,
+      tableHeaders: _tableHeaders,
+      allVisibleRowIds: _allVisibleRowIds,
+
+      allSelectedStatus: _selectedRowKeys.length == _totalRows,
+
+      editLabel: widget.editLabel,
+      deleteLabel: widget.deleteLabel,
+      optButtonLabel: widget.optButtonLabel,
+
+      onEditTap: widget.onEditTap,
+      onDeleteTap: widget.onDeleteTap,
+      onOptButtonTap: widget.onOptButtonTap,
+
+      toggleMaskAll: _toggleMaskAll,
+      toggleAllSelection: _toggleAllSelection,
+
+      totalChecked: _selectedRowKeys.length,
+    ).dataColumns();
+  }
+
+  DataRow _buildDataRow(
+    bool selected, {
+    required List<DataCell> cells,
+    void Function(bool?)? onSelectChanged,
+    WidgetStateProperty<Color?>? color,
+  }) {
+    return DataRow(
+      cells: cells,
+      color: color,
+      selected: selected,
+      onSelectChanged: onSelectChanged,
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    final pColor = context.errorColor;
+
+    return Tooltip(
+      message: "Your update will replace this information.",
+      decoration: const BoxDecoration(color: kDangerColor),
+      child: Placeholder(
+        strokeWidth: 0.2,
+        fallbackHeight: 0.0,
+        color: pColor,
+        child: Text('Awaiting Update', style: TextStyle(color: pColor)),
+      ),
+    );
+  }
+
+  void _handleRowSelection(bool? selected, {required List<String> row}) {
+    final rowKey = row[_selectedRowKeyIndex];
+
+    final updatedKeys = [..._selectedRowKeys];
+
+    if (selected == true) {
+      if (!updatedKeys.contains(rowKey)) {
+        updatedKeys.add(rowKey);
+      }
+    } else {
+      updatedKeys.remove(rowKey);
+    }
+
+    /*setState(() {
+      _sideData = updatedKeys.length == 1 && selected == true ? row : [];
+    });*/
+
+    _onSelectionChanged(updatedKeys);
+  }
+
+  DataCell _buildEachCheckBox(int index, List<String> row) {
+    final isChecked = _isRowChecked(row);
+
+    return DataCell(
+      Checkbox.adaptive(
+        value: isChecked,
+        side: BorderSide(width: 1.0, color: context.onSurfaceColor),
+        onChanged: (bool? selected) {
+          _handleRowSelection(selected, row: row);
+        },
+      ),
+    );
+  }
+
+  List<DataCell> _buildRowCells(int index, List<String> row) {
+    final cells = <DataCell>[];
+
+    cells.add(_buildEachCheckBox(index, row));
+
+    if (_maskAtIndex != null) {
+      cells.add(
+        DataCell(
+          _MaskToggleButton(
+            value: row[_maskAtIndex!],
+            isToggle: (_visibleRowIdIndex == index || _allVisibleRowIds),
+            onPressed: () => _toggleMask(index),
+          ),
+        ),
+      );
+    }
+
+    final indicesToExclude = <int>{
+      if (_maskAtIndex != null) _maskAtIndex!,
+      if (_skipAtIndex != null) _skipAtIndex!,
+    };
+
+    final entries = _DataTableHeader.excludeAtIndex(row, indicesToExclude);
+
+    for (final entry in entries.toList().asMap().entries) {
+      final colIndex = entry.key;
+      final cellValue = entry.value;
+
+      cells.add(
+        widget.onViewDetailsTap != null && colIndex == 0
+            ? _CellActionButton(
+                tooltip: cellValue,
+                color: context.onSurfaceColor,
+                onTap: () => widget.onViewDetailsTap?.call(row),
+              ).expand
+            : DataCell(
+                cellValue.isEmpty
+                    ? _buildPlaceholder()
+                    : context.copyPasteText(str: cellValue),
+                onTap: () {
+                  widget.onCellTap?.call(cellValue, row);
+                },
+              ),
+      );
+    }
+
+    if (widget.onOptButtonTap != null) {
+      cells.add(
+        _CellActionButton(
+          icon: widget.optButtonIcon,
+          tooltip: widget.optButtonLabel,
+          onTap: () => widget.onOptButtonTap!(row),
+          color: kWarningColor,
+        ).option,
+      );
+    }
+
+    if (widget.onEditTap != null) {
+      cells.add(
+        _CellActionButton(
+          tooltip: widget.editLabel,
+          onTap: () => widget.onEditTap!(row),
+        ).edit,
+      );
+    }
+
     if (widget.onDeleteTap != null) {
       cells.add(
         _CellActionButton(
@@ -865,6 +1387,48 @@ class _DataTableSource extends DataTableSource {
 
   @override
   int get selectedRowCount => parent._selectedRowsStatus.where((e) => e).length;
+}
+
+/// [_DataTableSource] Data source for the PaginatedDataTable
+class _DataTableSource2 extends DataTableSource {
+  final BuildContext context;
+  final VoidCallback notifyParent;
+  final _DynamicDataTable2State parent;
+  final List<List<String>> rowsFiltered;
+
+  _DataTableSource2({
+    required this.parent,
+    required this.context,
+    required this.rowsFiltered,
+    required this.notifyParent,
+  });
+
+  @override
+  DataRow? getRow(int index) {
+    if (index >= rowsFiltered.length) return null;
+
+    final row = rowsFiltered[index];
+    final rowKey = row[parent._selectedRowKeyIndex];
+    final isSelected = parent._selectedRowKeys.contains(rowKey);
+
+    return parent._buildDataRow(
+      isSelected,
+      onSelectChanged: (bool? selected) {
+        parent._handleRowSelection(selected, row: row);
+        notifyParent();
+      },
+      cells: parent._buildRowCells(index, row),
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => rowsFiltered.length;
+
+  @override
+  int get selectedRowCount => parent._selectedRowKeys.length;
 }
 
 /// [_DataTableHelper] for filtering and sorting
@@ -1167,12 +1731,14 @@ class _ExportButton extends StatelessWidget {
       if (exportType == null) continue;
 
       // Remove internal ID columns before exporting
-      List<String> headColumns = headers.where((h) => h.toLowerAll != 'id').toList();
+      List<String> headColumns = headers
+          .where((h) => h.toLowerAll != 'id')
+          .toList();
       List<List<String>> dataRows = selectedRows.map((row) {
         // Assume row order matches headers
         return [
           for (int i = 0; i < headers.length; i++)
-            if (headers[i].toLowerAll != 'id') row[i]
+            if (headers[i].toLowerAll != 'id') row[i],
         ];
       }).toList();
 
@@ -1293,3 +1859,63 @@ class _CellActionButton {
 
   get option => _dataCell(_iconButton(ic: Icons.print));
 }
+
+/* Right Side Dialog
+  void openRightSheet() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Right Sheet",
+      barrierColor: kTransparentColor,
+      transitionDuration: const Duration(milliseconds: 300),
+
+      pageBuilder: (_, __, ___) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + kAppBarHeight,
+            ),
+            child: Material(
+              color: Colors.white,
+              elevation: 8,
+              child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Right Panel",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 20),
+
+                        Text("Your content here"),
+                      ],
+                    ),
+                  ),
+              ),
+            ),
+          ),
+        );
+      },
+
+      transitionBuilder: (_, animation, __, child) {
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(animation);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
+  }*/

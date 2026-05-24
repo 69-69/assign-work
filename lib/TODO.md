@@ -1,9 +1,9 @@
-# @TODO - PriceList, Payment Method & Type
+# @TODO - Link Discount & Discount
 
 ## @Continue Tomorrow (Next Sprint)
     ## Linking Item Master with
-        - Attributes & Variant master
-        - Warehouse, Sub Location, Bin
+        - Discount
+        - Discount, Sub Location, Bin
     > NOTE: watch item master link to warehouse on YouTube.com
     > REF Doc: lib/features/system_admin/presentation/setup_tiles.dart
 

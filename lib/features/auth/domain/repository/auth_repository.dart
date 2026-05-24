@@ -172,7 +172,7 @@ class AuthRepository extends FirestoreRepository {
       if (doc == null) {
         return Failure(
           message:
-              '$errorPrefix:Organization\'s email is not associated with any existing workspace.',
+              '$errorPrefix:Email is not associated with any existing workspace.',
         );
       }
 

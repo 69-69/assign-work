@@ -141,6 +141,8 @@ class _CustomTabState extends State<CustomTab>
     // Ensure the current tab is always loaded
     // loadedTabs.add(_tabController.index.clamp(0, _length - 1).toInt());
     final isExpanded = context.isMobile ? false : _isNavRailExpanded;
+    final isScrollable = widget.isScrollable;
+    final bgColor = widget.bgColor;
 
     return DefaultTabController(
       length: _length,
@@ -149,8 +151,8 @@ class _CustomTabState extends State<CustomTab>
       child: widget.isVertical
           ? _VerticalTabBars(
               tabs: _tabsList,
-              bgColor: widget.bgColor,
-              isScrollable: widget.isScrollable,
+              bgColor: bgColor,
+              isScrollable: isScrollable,
               showScrollUpButton: widget.showScrollUpButton,
               isNavRailExpanded: isExpanded,
               onDestinationSelected: (i) {
@@ -163,14 +165,14 @@ class _CustomTabState extends State<CustomTab>
             )
           : _HorizontalTabBars(
               tabs: _tabsList,
+              bgColor: bgColor,
               contentHeight: widget.contentHeight,
               useDynamicHeight: widget.useDynamicHeight,
-              bgColor: widget.bgColor,
               indicatorWeight: widget.indicatorWeight,
               tabController: _tabController,
               hideIcon: widget.hideIcon,
               padding: widget.padding,
-              isScrollable: widget.isScrollable,
+              isScrollable: isScrollable,
               content: _buildTabBarView(),
               handleTabTap: _handleTabTap,
             ),

@@ -102,6 +102,7 @@ extension UniversalIsNullOrEmpty on Object? {
     }
   }
 
+  /// hasValue = !isNullOrEmpty
   bool get hasValue => !isNullOrEmpty;
 }
 

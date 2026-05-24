@@ -19,7 +19,7 @@ class ListDiscountRules extends StatefulWidget {
 
 class _ListDiscountRulesState extends State<ListDiscountRules> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   late final DiscountRuleBloc _bloc;
 
@@ -83,16 +83,18 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
   }
 
   Widget _buildCard(BuildContext c, List<DiscountRule> masters) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       // maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
       headers: DiscountRule.dataTableHeader,
       rows: masters.map((d) => d.itemAsList).toList(),
       template: DiscountRule.templateHeader,
+      selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids) {
+        setState(() => _selectedIds = ids);
+      },
       onEditTap: (row) async => await _onEditTap(masters, row.first),
       onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
     );
@@ -101,9 +103,9 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
   Widget _buildToolbar(List<DiscountRule> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      primaryLabel: 'Create Discount Rule',
+      primaryLabel: 'Create',
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
-      refreshLabel: 'Refresh Discount Rules',
+      refreshLabel: 'Refresh',
       onPrimary: () => _openDiscountRuleForm(context),
       onRefresh: () => _bloc.add(RefreshSetups<DiscountRule>()),
       onDanger: _selectedIds.isNotEmpty
@@ -140,7 +142,7 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
     DiscountRule? serverItem,
   }) async => await cxt.openAddDiscountRule(serverRule: serverItem);
 
-  _onChecked(bool? isChecked, checkedRow) {
+  /*_onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
       if (isChecked == true) {
@@ -164,5 +166,5 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
         _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
       }
     });
-  }
+  }*/
 }
