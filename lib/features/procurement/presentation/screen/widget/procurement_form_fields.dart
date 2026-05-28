@@ -3,7 +3,7 @@ import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
-import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/all_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/supplier_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -101,13 +101,15 @@ class ProcurementFormFields {
         // suffixText: '= $ghanaCedis $discountAmount',
       ),
     ),
+    /// @TODO - remove and replace with remote categories
     FieldGroupConfig(
       key: 'category',
       label: 'Item Group (e.g. Office Supplies, IT)',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return ItemCategoryDropdown(
+        return CategoryDropdown(
+          isService: false,
           isDisabled: isDisabled,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
@@ -224,13 +226,14 @@ class ProcurementFormFields {
       isDisabled: isDisabled,
       helperText: 'Max allowed quantity, e.g. 100',
     ),
+    /// @TODO - remove and replace with remote categories
     FieldGroupConfig(
       key: 'category',
       label: 'Service Group (e.g. labor, maintenance service)',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return ItemCategoryDropdown(
+        return CategoryDropdown(
           isService: true,
           label: 'Service Category',
           initialValue: initialData,

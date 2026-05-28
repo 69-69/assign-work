@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -56,7 +57,7 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
 
   List<String>? get _existingStoreNumbers => widget.existingStoreNumbers;
 
-  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
+  bool _isFormValid = false; // _formKey.currentState?.validate() ?? false;
 
   Employee? get _employee => context.employee;
 
@@ -65,6 +66,11 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
   String get _employeeId => _employee!.employeeId;
 
   CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _onSubmit() {
     if (_isSubmitting) return;
@@ -140,7 +146,9 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
       case SetupAdded<CompanyStore>(message: var msg):
       case SetupUpdated<CompanyStore>(message: var msg):
         _showAlert(msg ?? note);
+        setState(() => _isSubmitting = false);
       case SetupError<CompanyStore>():
+        setState(() => _isSubmitting = false);
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
@@ -170,10 +178,10 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
       children: [
         FormGroupCard(children: [_buildStoresFields()]),
         context.confirmableActionButton(
+          isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Branch')
               : (_isSubmitting ? 'Updating...' : null),
-          isDisabled: _isSubmitting,
           onPressed: _onSubmit,
         ),
         const SizedBox(height: 20.0),
@@ -193,12 +201,12 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
       fieldGroupsLimit: canAdd.maxAllowed,
       onLimitReached: () async => await context.showUpgradeDialog(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Create a new line item
         _storeList
           ..clear() // Clear previous entries to prevent duplication
           ..addAll(data.map((e) => CompanyStore.fromMap(e)));
+
+        _syncValidity();
       },
     );
   }

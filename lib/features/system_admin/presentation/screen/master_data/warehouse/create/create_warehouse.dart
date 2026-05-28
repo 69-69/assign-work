@@ -72,7 +72,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
   bool _isSubmitting = false;
   late Warehouse _warehouseData = widget.serverItem ?? Warehouse.empty;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -251,7 +251,7 @@ class _CreateWarehouseFormState extends State<_CreateWarehouseForm> {
           ),
         );
 
-        _updateValidity();
+        _syncValidity();
       },
     );
   }

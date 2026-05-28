@@ -20,9 +20,7 @@ class ListRoles extends StatefulWidget {
 }
 
 class _ListRolesState extends State<ListRoles> {
-  bool? _isChecked;
-  Role? _selectedRole;
-
+  List<String> _selectedIds = [];
   RoleBloc get _bloc => context.read<RoleBloc>();
 
   void _showAlert(String msg) {
@@ -37,6 +35,12 @@ class _ListRolesState extends State<ListRoles> {
         _showAlert('Something went wrong! Please, try again');
       case _: // no action
     }
+  }
+
+  Role? _selectedRole(List<Role> roles) {
+    if (_selectedIds.length != 1) return null;
+
+    return _findRole(roles, id: _selectedIds.first);
   }
 
   @override
@@ -55,7 +59,7 @@ class _ListRolesState extends State<ListRoles> {
           SetupsLoaded<Role>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Role',
+                    'New Role',
                     onPressed: () => context.openCreateNewRole(),
                   )
                 : _buildCard(context, results),
@@ -67,24 +71,31 @@ class _ListRolesState extends State<ListRoles> {
   }
 
   Widget _buildCard(BuildContext c, List<Role> roles) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Role.dataTableHeader,
       toolbar: _buildToolbar(roles),
       toolbarAlignment: WrapAlignment.start,
-      rows: roles.map((d) => d.itemAsList).toList(),
-      onEditTap: (List<String> row) async => _onEditTap(roles, row.first),
-      onDeleteTap: (List<String> row) async => _onDeleteTap(roles, row.first),
-      onChecked: (bool? isChecked, List<String> row) =>
-          _onChecked(roles, row.first, isChecked),
+      rows: roles.map(_toTableRow).toList(),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => _onEditTap(roles, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(roles, row.id),
     );
   }
 
-  _buildToolbar(List<Role> roles) {
+  DataTableRow _toTableRow(Role e) => DataTableRow.fromList(e.id, e.itemAsList);
+
+  Widget _buildToolbar(List<Role> roles) {
+    final role = _selectedRole(roles);
+    final isOne = role != null;
+
     return ListToolbarButtons(
-      primaryLabel: 'Create Role',
-      refreshLabel: 'Refresh Roles',
+      primaryLabel: 'New Role',
+      refreshLabel: 'Refresh',
       dataLength: roles.length,
       tertiaryIcon: Icons.security,
       secondaryLabel: 'Edit Role',
@@ -93,28 +104,12 @@ class _ListRolesState extends State<ListRoles> {
       tertiaryTooltip: 'Assign new permissions to role',
       onPrimary: () => context.openCreateNewRole(),
       onRefresh: () => _bloc.add(RefreshSetups<Role>()),
-      onSecondary: _isChecked == true
-          ? () async => _onEditTap(roles, _selectedRole?.id ?? '')
-          : null,
-      onTertiary: _isChecked == true
-          ? () async =>
-                // Assign role & permission to the selected user
-                _onEditTap(roles, _selectedRole?.id ?? '', isAssignRole: true)
+      onSecondary: isOne ? () async => _onEditTap(roles, role.id) : null,
+      onTertiary: isOne
+          // Assign role & permission to the selected user
+          ? () async => _onEditTap(roles, role.id, isAssignRole: true)
           : null,
     );
-  }
-
-  // Handle onChecked orders
-  void _onChecked(List<Role> roles, String id, bool? isChecked) async {
-    final role = _findRole(id: id, roles);
-
-    setState(() {
-      _isChecked = isChecked;
-
-      if (_isChecked == true) {
-        _selectedRole = role;
-      }
-    });
   }
 
   Role? _findRole(List<Role> roles, {required String id}) =>

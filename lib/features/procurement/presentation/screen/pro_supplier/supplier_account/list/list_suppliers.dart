@@ -18,10 +18,7 @@ class ListSuppliers extends StatefulWidget {
 }
 
 class _ListSuppliersState extends State<ListSuppliers> {
-  // final storeBloc = SupplierBloc(firestore: FirebaseFirestore.instance);
-  // List to group Requisitions for printout
-  final List<String> _selectedIds = [];
-
+  List<String> _selectedIds = [];
   SupplierBloc get _bloc => context.read<SupplierBloc>();
 
   @override
@@ -33,7 +30,7 @@ class _ListSuppliersState extends State<ListSuppliers> {
           ProcurementsLoaded<Supplier>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Add Supplier',
+                    'New Supplier',
                     onPressed: () => _openSupplierForm(),
                   )
                 : _buildBody(context, results),
@@ -47,55 +44,31 @@ class _ListSuppliersState extends State<ListSuppliers> {
   }
 
   Widget _buildBody(BuildContext c, List<Supplier> suppliers) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 2,
       headers: Supplier.dataHeader,
       toolbarAlignment: WrapAlignment.spaceBetween,
       toolbar: _buildToolbar(suppliers),
-      rows: suppliers.map((d) => d.itemAsList).toList(),
-      onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.first),
-      onEditTap: (row) async => _onEditTap(suppliers, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(suppliers, row.first),
-      selectedRowKeyIndex: 0,
+      rows: suppliers.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onViewDetailsTap: (row) async => _onViewDetails(suppliers, row.id),
+      onEditTap: (row) async => _onEditTap(suppliers, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(suppliers, row.id),
     );
   }
 
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
+  DataTableRow _toTableRow(Supplier e) => DataTableRow.fromList(e.id, e.itemAsList);
 
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
-  }
-
-  _buildToolbar(List<Supplier> suppliers) {
+  Widget _buildToolbar(List<Supplier> suppliers) {
     return ListToolbarButtons(
-      refreshLabel: 'Refresh Suppliers',
-      primaryLabel: 'Add Supplier',
-      dangerLabel: 'Delete Supplier',
-      secondaryLabel: 'Edit Supplier',
+      refreshLabel: 'Refresh',
+      primaryLabel: 'New Supplier',
+      dangerLabel: 'Delete',
+      secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
       dataLength: suppliers.length,
       onPrimary: () => _openSupplierForm(suppliers: suppliers),
@@ -157,3 +130,30 @@ class _ListSuppliersState extends State<ListSuppliers> {
     }
   }
 }
+
+/*
+  _onChecked(bool? isChecked, checkedRow) {
+    setState(() {
+      final id = checkedRow.first;
+      if (isChecked == true) {
+        if (!_selectedIds.contains(id)) _selectedIds.add(id);
+      } else {
+        // Remove item from the selected list if unchecked
+        _selectedIds.removeWhere((selectedId) => selectedId == id);
+      }
+    });
+  }
+
+  _onAllChecked(
+    bool isChecked,
+    List<bool> isAllChecked,
+    List<List<String>> checkedRows,
+  ) {
+    setState(() {
+      _selectedIds.clear();
+      // Add all selected rows, ensuring uniqueness using a Set
+      if (isChecked) {
+        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
+      }
+    });
+  }*/

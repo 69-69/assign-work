@@ -15,7 +15,7 @@ class ListDiscountScreen extends StatelessWidget {
   CustomTab _buildBody() {
     return CustomTab(
       length: 2,
-      isScrollable: true,
+      // isScrollable: true,
       tabs: [
         CustomTabModel(label: 'Discount Group', icon: Icons.discount),
         CustomTabModel(label: 'Discount Rules', icon: Icons.rule),

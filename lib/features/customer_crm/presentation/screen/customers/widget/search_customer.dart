@@ -66,8 +66,8 @@ class _SearchCustomerState extends State<SearchCustomer> {
         : _buildDropdown(context);
   }
 
-  AsyncSearchDropdown<Customer> _buildDropdown(BuildContext context) {
-    return AsyncSearchDropdown<Customer>(
+  AsyncDropdown<Customer> _buildDropdown(BuildContext context) {
+    return AsyncDropdown<Customer>(
       selectedItem: _customer,
       labelText: 'Select Customer...',
       helperText: 'Enter * for all customers, or type to search',

@@ -19,7 +19,7 @@ class ListDepartments extends StatefulWidget {
 
 class _ListDepartmentsState extends State<ListDepartments> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
   late final DepartmentBloc _bloc;
 
   // DepartmentBloc get _bloc => context.read<DepartmentBloc>();
@@ -66,7 +66,7 @@ class _ListDepartmentsState extends State<ListDepartments> {
           SetupsLoaded<Department>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Departments',
+                    'New Department',
                     onPressed: () => _openDepartmentForm(),
                   )
                 : _buildCard(context, results),
@@ -80,26 +80,29 @@ class _ListDepartmentsState extends State<ListDepartments> {
   }
 
   Widget _buildCard(BuildContext c, List<Department> departments) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Department.dataHeader,
       toolbar: _buildToolbar(departments),
-      rows: departments.map((d) => d.itemAsList).toList(),
-      onEditTap: (row) async => await _onEditTap(departments, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(departments, row.first),
+      rows: departments.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(departments, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(departments, row.id),
     );
   }
 
+  DataTableRow _toTableRow(Department e) => DataTableRow.fromList(e.id, e.itemAsList);
+
   Widget _buildToolbar(List<Department> departments) {
     return ListToolbarButtons(
-      primaryLabel: 'Create Departments',
-      refreshLabel: 'Refresh Departments',
-      secondaryLabel: 'Edit Department',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Department',
+      primaryLabel: 'New Department',
+      refreshLabel: 'Refresh',
+      secondaryLabel: 'Edit',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       secondaryIcon: Icons.edit,
       dataLength: departments.length,
       onPrimary: () => _openDepartmentForm(departments: departments),
@@ -148,31 +151,5 @@ class _ListDepartmentsState extends State<ListDepartments> {
     if (mounted && isConfirmed) {
       _bloc.add(DeleteSetup<String>(documentId: depart.id));
     }
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

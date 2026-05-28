@@ -160,6 +160,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
         ...group.getData(_fieldsConfig),
         ...group.otherValues,
       };*/
+
       /// Whether the field should be rendered in the UI
       /// based on the current form/group data.
       final shouldRender = config.visibleWhen?.call(currentData) ?? true;
@@ -239,10 +240,16 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
             child: config.customBuilder!(
               initialData: group.otherValues[config.key],
               onChanged: (v) {
-                if(mounted){
-                  setState(() => group.otherValues[config.key] = v);
-                }
+                // store dropdown/custom value
+                group.otherValues[config.key] = v;
+
+                // notify parent form
                 _notifyParent();
+
+                // rebuild safely after frame
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() {});
+                });
               },
             ),
           ),
@@ -464,8 +471,10 @@ class FieldGroupConfig {
   final String? Function(String?)? validator;
   final InputDecoration? inputDecoration;
   final FieldWidgetType widgetType;
+
   /// [isHidden] Whether the field is permanently hidden from the UI.
   final bool isHidden;
+
   /// Determines whether the field should be rendered
   /// based on the current form/group data.
   /// [visibleWhen]
@@ -578,4 +587,3 @@ class FieldGroup {
     }
   }
 }
-

@@ -52,7 +52,7 @@ class _SearchEmployeesState extends State<SearchEmployees> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<Employee>(
+    return AsyncDropdown<Employee>(
       selectedItem: _employee,
       labelText: _labelText,
       helperText: 'Enter * for all Employees, or type to search',

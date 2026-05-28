@@ -60,7 +60,7 @@ class _SearchItemsState extends State<SearchItems> {
         : _buildAppBarSearch(context);
   }
 
-  Widget _buildDropdown(BuildContext context) => AsyncSearchDropdown<Item>(
+  Widget _buildDropdown(BuildContext context) => AsyncDropdown<Item>(
     selectedItem: _item,
     labelText: 'Select Item...',
     asyncItems: (String filter, loadProps) async =>

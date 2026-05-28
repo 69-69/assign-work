@@ -236,16 +236,17 @@ class _TaxOptionsPanel extends StatelessWidget {
 
 /// Tax Multi Select Dropdown [TaxMultiSelectDropdown]
 class TaxMultiSelectDropdown extends StatefulWidget {
+
+  final String? label;
+  final List<String>? initialValues;
+  final Function(List<Tax>)? onMultiChanged;
+
   const TaxMultiSelectDropdown({
     super.key,
     this.label,
     this.initialValues,
     this.onMultiChanged,
   });
-
-  final String? label;
-  final List<String>? initialValues;
-  final Function(List<Tax>)? onMultiChanged;
 
   @override
   State<TaxMultiSelectDropdown> createState() => _TaxMultiSelectDropdownState();
@@ -288,7 +289,7 @@ class _TaxMultiSelectDropdownState extends State<TaxMultiSelectDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<Tax>(
+    return AsyncDropdown<Tax>(
       isMultiSelect: true,
       selectedMultiItems: _taxes,
       labelText: '$_labelText...',

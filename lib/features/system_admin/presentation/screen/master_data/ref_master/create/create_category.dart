@@ -45,16 +45,19 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   bool _isFormValid = false; // _formKey.currentState?.validate() ??
 
   Category? get _serverCategory => widget.serverCategory;
+
   bool get _isServerNull => _serverCategory == null;
 
   // Current employee info
   Employee? get _employee => context.employee;
 
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
+
   CategoryBloc get _bloc => context.read<CategoryBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -65,7 +68,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
 
     // Case 1: Update existing Category
     if (_isFormValid && (_serverCategory?.isNotEmpty ?? false)) {
-      _updatedCategory();
+      _updateExistingCategory();
       return;
     }
 
@@ -97,10 +100,9 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
     _bloc.add(AddSetup<List<Category>>(data: newCats));
   }
 
-  void _updatedCategory() {
+  void _updateExistingCategory() {
     final updated = _categories.first.copyWith(
       id: _serverCategory!.id,
-      name: _serverCategory!.name,
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
@@ -168,24 +170,10 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         FormGroupCard(
-          children: [
-            DynamicTextFields(
-              isRepeatable: true,
-              title: 'Item Categories',
-              fieldsConfig: RefMasterFormInputs.categoryField,
-              initialData: [?_serverCategory?.toMap()],
-              onChanged: (List<Map<String, dynamic>> data) {
-                // if (_isFormValid) setState(() {});
-
-                // Create a new line item
-                _categories
-                  ..clear() // Clear previous entries to prevent duplication
-                  ..addAll(data.map((e) => Category.fromMap(e)));
-
-                _updateValidity();
-              },
-            ),
-          ],
+          title: 'Item Categories',
+          subTitle:
+              '\nUsed across Sales, Inventory, Procurement, and Warehouse modules',
+          children: [_isServerNull ? _newFields() : _updateFields()],
         ),
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
@@ -196,6 +184,42 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
         ),
         const SizedBox(height: 20.0),
       ],
+    );
+  }
+
+  DynamicTextFields _newFields() {
+    var initialMap = _serverCategory?.toMap();
+
+    return DynamicTextFields(
+      fieldsConfig: RefMasterFormInputs.categoryField(true),
+      initialData: [
+        if (initialMap != null)
+          {
+            ...initialMap,
+            'name': [initialMap['name']],
+          },
+      ],
+      onChanged: (data) {
+        _categories
+          ..clear()
+          ..addAll(RefMasterFormInputs.mapCategories(data));
+
+        _syncValidity();
+      },
+    );
+  }
+
+  DynamicTextFields _updateFields() {
+    return DynamicTextFields(
+      fieldsConfig: RefMasterFormInputs.categoryField(false),
+      initialData: [?_serverCategory?.toMap()],
+      onChanged: (data) {
+        _categories
+          ..clear()
+          ..addAll(data.map(Category.fromMap));
+
+        _syncValidity();
+      },
     );
   }
 }

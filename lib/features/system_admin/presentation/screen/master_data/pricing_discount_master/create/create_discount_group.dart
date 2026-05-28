@@ -58,7 +58,7 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
 
   DiscountGroupMasterBloc get _bloc => context.read<DiscountGroupMasterBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -69,7 +69,7 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
 
     // Case 1: Update existing Discount Rule
     if (_isFormValid && (_serverDiscountGroup?.isNotEmpty ?? false)) {
-      _updatedDiscountGroup();
+      _updateExistingGroup();
       return;
     }
 
@@ -96,7 +96,7 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
     _bloc.add(AddSetup<List<DiscountGroup>>(data: newDiscounts));
   }
 
-  void _updatedDiscountGroup() {
+  void _updateExistingGroup() {
     final updated = _discountGroups.first.copyWith(
       id: _serverDiscountGroup!.id,
       history: history(AuditAction.updated),
@@ -182,7 +182,7 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map(DiscountGroup.fromMap));
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],

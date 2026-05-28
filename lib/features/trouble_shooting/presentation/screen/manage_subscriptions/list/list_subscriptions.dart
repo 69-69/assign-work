@@ -17,9 +17,15 @@ class ListSubscriptions extends StatefulWidget {
 }
 
 class _ListSubscriptionsState extends State<ListSubscriptions> {
-  bool? _isChecked;
-  Subscription? _selectedSubscription;
+  List<String> _selectedIds = [];
+
   SubscriptionBloc get _bloc => context.read<SubscriptionBloc>();
+
+  Subscription? _selectedSubscription(List<Subscription> subscriptions) {
+    if (_selectedIds.length != 1) return null;
+
+    return _filterSub(id: _selectedIds.first, subscriptions);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,63 +55,52 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
   }
 
   Widget _buildCard(BuildContext context, List<Subscription> subscriptions) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       toolbar: _buildToolbar(context, subscriptions),
       headers: Subscription.dataTableHeader,
-      rows: subscriptions.map((d) => d.itemAsList).toList(),
-      onEditTap: (row) async => await _onEditTap(subscriptions, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(row.first),
-      onChecked: (bool? isChecked, List<String> row) =>
-          _onChecked(subscriptions, isChecked, row.first),
+      rows: subscriptions.map(_toTableRow).toList(),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(subscriptions, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(row.id),
     );
   }
 
-  _buildToolbar(BuildContext context, List<Subscription> subscriptions) {
+  DataTableRow _toTableRow(Subscription e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
+
+  Widget _buildToolbar(BuildContext context, List<Subscription> subscriptions) {
+    final subscription = _selectedSubscription(subscriptions);
+    final isOne = subscription != null;
+
     return ListToolbarButtons(
       secondaryIcon: Icons.edit,
       tertiaryIcon: Icons.vpn_key,
       dataLength: subscriptions.length,
       secondaryLabel: 'Edit Subscription',
       tertiaryLabel: 'Assign License',
-      primaryLabel: 'Create Subscription',
-      refreshLabel: 'Refresh Subscriptions',
+      primaryLabel: 'New Subscription',
+      refreshLabel: 'Refresh',
       tertiaryTooltip: 'Assign new licenses to subscription',
       onPrimary: () => context.openCreateNewSubscription(),
       onRefresh: () => _bloc.add(RefreshTenants<Subscription>()),
-      onSecondary: _isChecked == true
-          ? () async => _onEditTap(subscriptions, _selectedSubscription!.id)
+      onSecondary: isOne
+          ? () async => _onEditTap(subscriptions, subscription.id)
           : null,
-      onTertiary: _isChecked == true
+      onTertiary: isOne
           ? () async {
-              if (_selectedSubscription == null) return;
-
               /// Assign licenses to subscription
               await context.openUpdateSubscription(
                 isAssign: true,
-                subscription: _selectedSubscription!,
+                subscription: subscription,
               );
             }
           : null,
     );
-  }
-
-  // Handle onChecked orders
-  void _onChecked(
-    List<Subscription> subscriptions,
-    bool? isChecked,
-    String id,
-  ) async {
-    final subscription = _filterSub(id: id, subscriptions);
-
-    setState(() {
-      _isChecked = isChecked;
-
-      if (_isChecked == true) {
-        _selectedSubscription = subscription;
-      }
-    });
   }
 
   Future<void> _onEditTap(List<Subscription> subscriptions, String id) async {
@@ -122,14 +117,10 @@ class _ListSubscriptionsState extends State<ListSubscriptions> {
   }) => Subscription.findById(subscriptions, id);
 
   Future<void> _onDeleteTap(String id) async {
-    {
       final isConfirmed = await context.confirmUserActionDialog();
       if (mounted && isConfirmed) {
         // Delete subscription
         _bloc.add(DeleteTenant<String>(documentId: id));
-
-        // Navigator.pop(context);
       }
-    }
   }
 }

@@ -20,7 +20,7 @@ class CostingMethodDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final strList = CostingMethodUtil.toStringList();
     // If label is provided, replace it with the first in the list
-    if (label != null) strList[0] = label!;
+    if (label != null) strList.first = label!;
 
     return StaticDropdown<String>(
       key: key,

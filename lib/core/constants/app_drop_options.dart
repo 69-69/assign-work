@@ -1,6 +1,6 @@
 /// [businessTypeToIndustries] List of Business Types and their industries
 Map<String, List<String>> businessTypeToIndustries = {
-  'Select Business type': [],
+  'Business type': [],
   'Manufacturer': [
     'Automotive',
     'Pharmaceuticals / Life Sciences',

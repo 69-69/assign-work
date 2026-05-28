@@ -22,6 +22,7 @@ class PayTermsDropdown extends StatelessWidget {
       key: key,
       items: _payTerms,
       label: 'Payment terms',
+      invalidPrefixes: ['payment terms'],
       initialValue: _payTerms.firstWhereOrNull(
         (term) => term['id'] == initialValue,
       ),

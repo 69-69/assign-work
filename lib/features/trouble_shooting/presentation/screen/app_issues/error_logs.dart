@@ -14,7 +14,7 @@ class ErrorLogs extends StatefulWidget {
 
 class _ErrorLogsState extends State<ErrorLogs> {
   List<ErrorLog> _logs = [];
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
 
   @override
   void initState() {
@@ -32,22 +32,26 @@ class _ErrorLogsState extends State<ErrorLogs> {
   }
 
   Widget _buildCard(BuildContext context) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       maskAtIndex: 0,
       toolbar: _buildToolbar(),
       headers: ErrorLog.dataTableHeader,
-      rows: _logs.map((log) => log.itemAsList).toList(),
+      rows: _logs.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onDeleteTap: (row) async => await _onDeleteTap(row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onDeleteTap: (row) async => await _onDeleteTap(row.id),
     );
   }
 
+  DataTableRow _toTableRow(ErrorLog e) =>
+      DataTableRow.fromList(e.id ??'', e.itemAsList);
+
   Widget _buildToolbar() {
     return ListToolbarButtons(
-      refreshLabel: 'Refresh Logs',
-      dangerLabel: 'Delete Log',
+      refreshLabel: 'Refresh',
+      dangerLabel: 'Delete',
       dataLength: _logs.length,
       onRefresh: _refreshLogs,
       onDanger: _selectedIds.isNotEmpty
@@ -72,31 +76,5 @@ class _ErrorLogsState extends State<ErrorLogs> {
       await ErrorLogCache().clearById(id);
       _refreshLogs();
     }
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

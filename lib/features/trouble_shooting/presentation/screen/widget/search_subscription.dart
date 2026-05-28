@@ -49,7 +49,7 @@ class _SearchSubscriptionState extends State<SearchSubscription> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<Subscription>(
+    return AsyncDropdown<Subscription>(
       selectedItem: _subscription,
       labelText: _labelText,
       helperText: 'Enter * for all subscriptions, or type to search',

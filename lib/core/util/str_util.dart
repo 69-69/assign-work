@@ -6,11 +6,6 @@ import 'package:flutter/services.dart';
 
 enum UIDType { numeric, alphanumeric }
 
-/// Check if a MAP is empty or null [isNullEmpty]
-/*extension SanitizeMap on Map? {
-  bool get isNullEmpty => this == null || this!.isEmpty;
-}*/
-
 /// [cleaned] Returns a copy of the map, removing nulls, empty strings, and zero numbers
 extension MapCleanupExtensions on Map<String, dynamic> {
   Map<String, dynamic> get cleaned {

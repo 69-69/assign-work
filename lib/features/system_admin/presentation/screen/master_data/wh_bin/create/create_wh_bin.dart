@@ -88,7 +88,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
   get _finalBinLocCode =>
       [_warehouseCode, ..._binLocationCode.values].join('-').toUpperAll;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -293,7 +293,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
                 // _formResetKey = UniqueKey(); // rebuild fields
               });
 
-              _updateValidity();
+              _syncValidity();
             },
           ),
           if (_subLocations?.isNotEmpty == true) ...{
@@ -366,7 +366,7 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
           ),
         );
 
-        _updateValidity();
+        _syncValidity();
         /*if (_whBinData.isNotEmpty || _whBinData.type.isNullOrEmpty) {
           _generateWHBinCode(_whBinData.getType);
         }*/

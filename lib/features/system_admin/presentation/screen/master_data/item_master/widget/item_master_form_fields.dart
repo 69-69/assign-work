@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/form/costing_method_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
-import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/all_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
@@ -42,13 +42,14 @@ class ItemMasterFormFields {
     FieldGroupConfig(key: 'name', label: 'Name', type: TextInputType.text),
 
     /// 2. Classification
+    /// @TODO - remove and replace with remote categories
     FieldGroupConfig(
       key: 'category',
       label: '${itemType?.getLabel ?? 'Item'} Category',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return ItemCategoryDropdown(
+        return CategoryDropdown(
           isService: itemType?.isService ?? false,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
@@ -62,7 +63,7 @@ class ItemMasterFormFields {
       isTextArea: true,
       isAutoGrow: true,
       minLines: null,
-      validator: (_) => null,
+      // validator: (_) => null,
     ),
     /* FieldGroupConfig(
       key: 'itemType',
@@ -195,21 +196,21 @@ class ItemMasterFormFields {
       label: 'Reorder Point',
       helperText: 'Minimum stock level that triggers a reorder suggestion',
       type: TextInputType.number,
-      validator: (_) => null,
+      // validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'reorderQty',
       label: 'Reorder Quantity',
       helperText: 'Quantity to order when stock reaches the reorder point',
       type: TextInputType.number,
-      validator: (_) => null,
+      // validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'leadTimeDays',
       label: 'Lead time (days)',
       helperText: 'How long it takes to fulfill this item',
       type: TextInputType.number,
-      validator: (_) => null,
+      // validator: (_) => null,
     ),
   ];
 
@@ -220,7 +221,7 @@ class ItemMasterFormFields {
       label: 'Standard Cost',
       helperText: 'Cost per unit of measure (base price)',
       type: TextInputType.number,
-      validator: (_) => null,
+      // validator: (_) => null,
     ),
     FieldGroupConfig(
       key: 'costingMethod',

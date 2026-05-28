@@ -40,7 +40,7 @@ class _ListCategoriesState extends State<ListCategories> {
           SetupsLoaded<Category>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Category',
+                    'New Category',
                     onPressed: () => context.openAddCategory(),
                   )
                 : _buildCard(context, results),
@@ -52,20 +52,23 @@ class _ListCategoriesState extends State<ListCategories> {
   }
 
   Widget _buildCard(BuildContext c, List<Category> categories) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       headers: Category.dataHeader,
       toolbar: _buildToolbar(categories),
-      rows: categories.map((cat) => cat.itemAsList).toList(),
-      onEditTap: (row) async => _onEditTap(categories, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(categories, row.first),
+      rows: categories.map(_toTableRow).toList(),
+      onEditTap: (row) async => _onEditTap(categories, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(categories, row.id),
     );
   }
 
+  DataTableRow _toTableRow(Category e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
+
   _buildToolbar(List<Category> sales) {
     return ListToolbarButtons(
-      primaryLabel: 'Add Categories',
-      refreshLabel: 'Refresh Categories',
+      primaryLabel: 'New Category',
+      refreshLabel: 'Refresh',
       dataLength: sales.length,
       onPrimary: () => context.openAddCategory(),
       onRefresh: () =>

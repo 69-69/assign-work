@@ -19,7 +19,7 @@ class ListWHLocations extends StatefulWidget {
 
 class _ListWHLocationsState extends State<ListWHLocations> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   WHLocationBloc get _bloc => context.read<WHLocationBloc>();
 
@@ -73,26 +73,30 @@ class _ListWHLocationsState extends State<ListWHLocations> {
   }
 
   Widget _buildCard(BuildContext c, List<WHLocation> locations) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: WHLocation.dataTableHeader,
       toolbar: _buildToolbar(locations),
-      rows: locations.map((d) => d.itemAsList).toList(),
+      rows: locations.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => await _onEditTap(locations, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(locations, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(locations, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(locations, row.id),
     );
   }
+
+  DataTableRow _toTableRow(WHLocation e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<WHLocation> locations) {
     return ListToolbarButtons(
       dataLength: locations.length,
-      primaryLabel: 'Create Location',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Location',
-      refreshLabel: 'Refresh WH Locations',
+      primaryLabel: 'New Location',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
+      refreshLabel: 'Refresh',
       secondaryIcon: Icons.generating_tokens,
       secondaryLabel: 'Manage Sub-Locations',
       onPrimary: () => _openWarehouseForm(),
@@ -110,9 +114,7 @@ class _ListWHLocationsState extends State<ListWHLocations> {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 _isDeleting(true);
-                _bloc.add(
-                  DeleteSetup<List<String>>(documentId: _selectedIds),
-                );
+                _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
               }
             }
           : null,
@@ -138,31 +140,5 @@ class _ListWHLocationsState extends State<ListWHLocations> {
 
   Future<void> _openWarehouseForm({WHLocation? serverLoc}) async {
     await context.openWHLocationForm(serverItem: serverLoc);
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

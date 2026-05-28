@@ -35,6 +35,7 @@ class UOMDropdown extends StatelessWidget {
       key: key,
       enabled: enabled,
       label: strList.first,
+      invalidPrefixes:['Unit of Measure'],
       initialValue: initialValue,
       items: strList.where((u) => !_excludedUoms.contains(u)).toList(),
       getDisplayText: (uom) => uom.toTitle,
@@ -78,7 +79,7 @@ class _UOMMultiDropdownState extends State<UOMMultiDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<String>(
+    return AsyncDropdown<String>(
       isMultiSelect: true,
       selectedMultiItems: _selectedUOMs,
       labelText: _labelText,

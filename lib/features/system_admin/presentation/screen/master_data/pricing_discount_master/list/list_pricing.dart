@@ -14,7 +14,7 @@ class ListPricingScreen extends StatelessWidget {
   CustomTab _buildBody() {
     return CustomTab(
       length: 2,
-      isScrollable: true,
+      // isScrollable: true,
       tabs: [
         CustomTabModel(label: 'Price Lists', icon: Icons.list_alt),
         CustomTabModel(label: 'Price entries', icon: Icons.sell_outlined),

@@ -15,7 +15,7 @@ class ListAttributes extends StatelessWidget {
   CustomTab _buildBody(BuildContext context) {
     return CustomTab(
       length: 2,
-      isScrollable: true,
+      // isScrollable: true,
       tabs: [
         CustomTabModel(label: 'Groups & Types', icon: Icons.copy_all),
         CustomTabModel(label: 'Values', icon: Icons.tune),

@@ -98,8 +98,8 @@ class _PriceListsState extends State<PriceLists> {
     );
   }
 
-  TableRowData _toTableRow(PriceListMaster e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(PriceListMaster e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<PriceListMaster> masters) {
     return ListToolbarButtons(

@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/extensions/discount_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
@@ -7,8 +6,10 @@ import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/form/discount_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/transaction_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_discount_group.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_price_list.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/remote_category_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class DiscountFormInputs {
@@ -32,6 +33,7 @@ class DiscountFormInputs {
       type: TextInputType.text,
       helperText: 'E.g.: Promo, Holiday Sale, or VIP Discount',
     ),
+    ...discountScopeFields,
     ...validityDateFields,
     FieldGroupConfig(
       key: 'description',
@@ -43,6 +45,76 @@ class DiscountFormInputs {
       validator: (_) => null,
     ),
   ];
+
+  ///Discount Scope
+  static List<FieldGroupConfig> get discountScopeFields => [
+    FieldGroupConfig(
+      key: 'applyToAll',
+      label: 'General Discount',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        bool isChecked = initialData ?? false; // local state
+
+        return CustomCheckboxTile(
+          title: Text(
+            'Apply to all?',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text('Applies to all items, categories, and price lists'),
+          contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+          value: isChecked,
+          onChanged: (v) => onChanged(v ?? false), // notify parent
+        );
+      },
+    ),
+
+    FieldGroupConfig(
+      key: 'priceListId',
+      label: 'Price List',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return SearchPriceList(
+          initialValue: initialData,
+          onChanged: (String id, String name) => onChanged(id),
+        );
+      },
+    ),
+
+    FieldGroupConfig(
+      key: 'itemIds',
+      label: 'Items',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      visibleWhen: (data) => _isVisible(data),
+      customBuilder: ({required initialData, required onChanged}) {
+        return DiscountTypeDropdown(
+          label: 'Items',
+          initialValue: initialData,
+          onChanged: (String? selected) => onChanged(selected),
+        );
+      },
+    ),
+
+    FieldGroupConfig(
+      key: 'categoryId',
+      label: 'Categories',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      visibleWhen: (data) => _isVisible(data),
+      customBuilder: ({required initialData, required onChanged}) {
+        return RemoteCategoryDropdown(
+          isMultiSelect: true,
+          label: 'Categories',
+          initialValues: List<Category>.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
+    ),
+  ];
+
+  static bool _isVisible(Map<String, dynamic> data) => data['applyToAll'] == null || data['applyToAll'] == false;
 
   ///Discount Rule
   static List<FieldGroupConfig> get discountRuleFields => [
@@ -67,7 +139,19 @@ class DiscountFormInputs {
       customBuilder: ({required initialData, required onChanged}) {
         bool isChecked = initialData ?? false; // local state
 
-        return StatefulBuilder(
+        return CustomCheckboxTile(
+          title: Text(
+            'Allow Stacking',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text(
+            'Can this discount be combined with other active discounts?',
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+          value: isChecked,
+          onChanged: (v) => onChanged(v ?? false), // notify parent
+        );
+        /*return StatefulBuilder(
           builder: (context, setState) {
             return CustomCheckboxTile(
               title: Text(
@@ -87,7 +171,7 @@ class DiscountFormInputs {
               },
             );
           },
-        );
+        );*/
       },
     ),
 
@@ -105,24 +189,12 @@ class DiscountFormInputs {
     ),
 
     FieldGroupConfig(
-      key: 'priceListId',
-      label: 'Price List',
-      type: TextInputType.text,
-      widgetType: FieldWidgetType.custom,
-      customBuilder: ({required initialData, required onChanged}) {
-        return SearchPriceList(
-          initialValue: initialData,
-          onChanged: (String id, String name) => onChanged(id),
-        );
-      },
-    ),
-
-    FieldGroupConfig(
       key: 'discountValue',
       label: 'Discount',
       type: TextInputType.number,
       helperText: 'Discount amount, percentage, or override value',
     ),
+
     FieldGroupConfig(
       key: 'minQuantity',
       label: 'Minimum Quantity',

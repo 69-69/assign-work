@@ -18,7 +18,7 @@ class ListWHBins extends StatefulWidget {
 
 class _ListWHBinsState extends State<ListWHBins> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
 
   WHBinBloc get _bloc => context.read<WHBinBloc>();
 
@@ -62,9 +62,7 @@ class _ListWHBinsState extends State<ListWHBins> {
                     onPressed: () => _openWarehouseForm(),
                   )
                 : _buildCard(context, results),
-          SetupError<WHBin>(error: final error) => context.buildError(
-            error,
-          ),
+          SetupError<WHBin>(error: final error) => context.buildError(error),
           _ => const SizedBox.shrink(),
         };
       },
@@ -72,26 +70,30 @@ class _ListWHBinsState extends State<ListWHBins> {
   }
 
   Widget _buildCard(BuildContext c, List<WHBin> bins) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: WHBin.dataTableHeader,
       toolbar: _buildToolbar(bins),
-      rows: bins.map((d) => d.itemAsList).toList(),
+      rows: bins.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => await _onEditTap(bins, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(bins, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(bins, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(bins, row.id),
     );
   }
+
+  DataTableRow _toTableRow(WHBin e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<WHBin> bins) {
     return ListToolbarButtons(
       dataLength: bins.length,
-      primaryLabel: 'Create Bin',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Bin.',
-      refreshLabel: 'Refresh WH Bin',
+      primaryLabel: 'New Bin',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
+      refreshLabel: 'Refresh',
       onPrimary: () => _openWarehouseForm(bins: bins),
       onRefresh: () => _bloc.add(RefreshSetups<WHBin>()),
       onDanger: _selectedIds.isNotEmpty
@@ -99,9 +101,7 @@ class _ListWHBinsState extends State<ListWHBins> {
               final isConfirmed = await context.confirmUserActionDialog();
               if (mounted && isConfirmed) {
                 _isDeleting(true);
-                _bloc.add(
-                  DeleteSetup<List<String>>(documentId: _selectedIds),
-                );
+                _bloc.add(DeleteSetup<List<String>>(documentId: _selectedIds));
               }
             }
           : null,
@@ -131,31 +131,5 @@ class _ListWHBinsState extends State<ListWHBins> {
       serverItem: serverBin,
       existingCodes: existingCodes,
     );
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

@@ -51,7 +51,7 @@ class _SearchDepartmentsState extends State<SearchDepartments> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<Department>(
+    return AsyncDropdown<Department>(
       selectedItem: _department,
       labelText: _labelText,
       helperText: 'Enter * for all Departments, or type to search',

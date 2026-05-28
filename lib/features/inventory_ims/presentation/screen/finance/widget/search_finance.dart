@@ -45,8 +45,8 @@ class _SearchFinanceState extends State<SearchFinance> {
   }
 
   /// Dropdown field
-  AsyncSearchDropdown<Orders> _buildDropdownSearch(BuildContext context) =>
-      AsyncSearchDropdown<Orders>(
+  AsyncDropdown<Orders> _buildDropdownSearch(BuildContext context) =>
+      AsyncDropdown<Orders>(
         selectedItem: _order,
         labelText: 'Select Order...',
         asyncItems: (String filter, loadProps) async =>

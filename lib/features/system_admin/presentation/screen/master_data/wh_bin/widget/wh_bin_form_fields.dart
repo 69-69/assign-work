@@ -2,7 +2,7 @@ import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
-import 'package:assign_erp/core/widgets/form/item_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/all_category_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/layout/history_view.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
@@ -160,6 +160,7 @@ class WHBinFormFields {
         );
       },
     ),
+    /// @TODO - remove and replace with remote categories
     FieldGroupConfig(
       key: 'itemRestriction',
       label: 'Item Restriction',
@@ -167,7 +168,8 @@ class WHBinFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return ItemCatMultiDropdown(
+        return CategoryDropdown(
+          isService: false,
           label: 'Item Restriction',
           initialValues: List.from(initialData ?? []),
           onMultiChanged: onChanged,

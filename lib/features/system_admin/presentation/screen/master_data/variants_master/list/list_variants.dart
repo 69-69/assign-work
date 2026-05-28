@@ -69,21 +69,24 @@ class _ListVariantsState extends State<ListVariants> {
   Widget _buildCard(BuildContext c, List<Variant> variants) {
     final keys = variants.first.attributes.keys.toList();
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: variants.first.dataHeader(keys),
       toolbar: _buildToolbar(variants),
-      rows: variants.map((v) => v.itemAsList(keys)).toList(),
-      onDeleteTap: (row) async => _onDeleteTap(variants, row.first),
+      rows: variants.map((v)=>_toTableRow(v, keys)).toList(),
+      onDeleteTap: (row) async => _onDeleteTap(variants, row.id),
     );
   }
+
+  DataTableRow _toTableRow(Variant e, List<String> keys) =>
+      DataTableRow.fromList(e.id, e.itemAsList(keys));
 
   _buildToolbar(List<Variant> variants) {
     return ListToolbarButtons(
       primaryLabel: 'Playground',
       primaryIcon: Icons.science_outlined,
-      refreshLabel: 'Refresh Variants',
+      refreshLabel: 'Refresh',
       dataLength: variants.length,
       onPrimary: () async {
         await _getAttributes(

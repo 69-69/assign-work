@@ -17,7 +17,7 @@ class SearchStoreBranches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<CompanyStore>(
+    return AsyncDropdown<CompanyStore>(
       labelText: (initialValue ?? 'Assign Store branch...').toTitle,
       helperText: 'Enter * for all Stores, or type to search',
       asyncItems: (String filterBy, loadProps) async {

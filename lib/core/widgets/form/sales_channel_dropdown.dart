@@ -18,6 +18,7 @@ class SalesChannelDropdown extends StatelessWidget {
     return StaticDropdown<String>(
       key: key,
       label: 'Sales Channel',
+      invalidPrefixes: ['sales channel'],
       initialValue: initialValue,
       items: SalesChannelUtil.toStringList(),
       getDisplayText: (status) => status,

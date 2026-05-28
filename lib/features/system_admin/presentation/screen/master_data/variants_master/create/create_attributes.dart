@@ -58,7 +58,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
 
   AttributeBloc get _bloc => context.read<AttributeBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -188,7 +188,7 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map(Attribute.fromMap));
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],

@@ -47,7 +47,7 @@ class _SearchDiscountGroupState extends State<SearchDiscountGroup> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<DiscountGroup>(
+    return AsyncDropdown<DiscountGroup>(
       labelText: 'Discount Group',
       selectedItem: _discountGroup,
       helperText: 'Enter * for all list, or type to search',

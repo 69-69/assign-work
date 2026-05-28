@@ -163,7 +163,7 @@ class StaticDropdown<T> extends StatelessWidget {
   }
 }
 
-/// Form text field [AsyncSearchDropdown]
+/// Form text field [AsyncDropdown]
 /// MultiSelect / SingleSelect DropdownButtonFormField
 /// A searchable dropdown widget that supports asynchronous loading of items.
 ///
@@ -171,7 +171,7 @@ class StaticDropdown<T> extends StatelessWidget {
 /// or handle large lists with filtering support.
 ///
 /// Provides search, custom filter logic, validation, and no-data callbacks.
-class AsyncSearchDropdown<T> extends StatelessWidget {
+class AsyncDropdown<T> extends StatelessWidget {
   final bool enabled;
   final bool isAutoApply;
   final bool isMultiSelect;
@@ -192,7 +192,7 @@ class AsyncSearchDropdown<T> extends StatelessWidget {
   /// Characters that are not allowed in the selected value.
   final List<String>? invalidPrefixes;
 
-  const AsyncSearchDropdown({
+  const AsyncDropdown({
     super.key,
     this.enabled = true,
     this.isAutoApply = true,
@@ -340,6 +340,19 @@ String? _selectionValidator(
   String? errorMsg,
   List<String>? invalidPrefixes,
 }) {
+  /// Check if the selected dropdown value matches any placeholder/default items
+  invalidPrefixes ??= [
+    'select',
+    'type',
+    'method',
+    'group',
+    'mode',
+    'category',
+    'status',
+    'term',
+    '----',
+  ];
+
   final text = value?.toString().trim();
   final errMsg = errorMsg ?? 'Select ${label.replaceFirst('Select ', '')}';
 
@@ -349,9 +362,7 @@ String? _selectionValidator(
 
   final lowerText = text.toLowerCase();
 
-  if ((invalidPrefixes ?? ['select', 'type']).any(
-    (p) => lowerText.filterAny(p.toLowerAll),
-  )) {
+  if ((invalidPrefixes).any((p) => lowerText.filterAny(p.toLowerAll))) {
     return errMsg;
   }
 

@@ -13,7 +13,7 @@ class SearchRole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<Role>(
+    return AsyncDropdown<Role>(
       labelText: (initialValue ?? 'Assign Role...').toTitle,
       helperText: 'Enter * for all Roles, or type to search',
       asyncItems: (String filterBy, loadProps) async {

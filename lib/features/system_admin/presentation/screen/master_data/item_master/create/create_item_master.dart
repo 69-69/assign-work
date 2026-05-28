@@ -34,9 +34,7 @@ extension IMFormExtensions on BuildContext {
     isExpand: false,
     child: BottomSheetScaffold(
       onBackPress: onBackPress,
-      title: serverItem != null
-          ? serverItem.name.toTitle
-          : 'New Item Master',
+      title: serverItem != null ? serverItem.name.toTitle : 'New Item Master',
       body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
     ),
   );
@@ -83,7 +81,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   List<Map<String, Attribute>> _variants = [];
   late ItemMaster _itemMaster = widget.serverItem ?? ItemMaster.empty;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -96,12 +94,12 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
 
     // Case 1: Update existing ItemMaster
     if (isValid && isUpdate) {
-      _updatedItemMaster();
+      _updateExistingItemMaster();
       return;
     }
 
     // Case 2: Form validation or empty ItemMaster
-    if (!isValid && _itemMaster.isNullOrEmpty) {
+    if (!isValid /*&& _itemMaster.isNullOrEmpty*/ ) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -121,7 +119,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     _bloc.add(AddSetup<ItemMaster>(data: newData));
   }
 
-  void _updatedItemMaster() {
+  void _updateExistingItemMaster() {
     final updated = _itemMaster.copyWith(
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
@@ -130,6 +128,34 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     _bloc.add(
       UpdateSetup<ItemMaster>(documentId: _itemMaster.id, data: updated),
     );
+  }
+
+  void _syncItemMaster(ItemMaster i) {
+    _itemMaster = _itemMaster.copyWith(
+      // NameAndDesc
+      name: i.name,
+      itemType: i.itemType,
+      category: i.category,
+      description: i.description,
+      // baseUOM
+      baseUom: i.baseUom,
+      // UsageAndAvailability
+      isActive: i.isActive,
+      isSellable: i.isSellable,
+      isStockItem: i.isStockItem,
+      isPurchasable: i.isPurchasable,
+      // PlanningAndProcurement
+      reorderPoint: i.reorderPoint,
+      reorderQty: i.reorderQty,
+      leadTimeDays: i.leadTimeDays,
+      // Costing
+      standardCost: i.standardCost,
+      costingMethod: i.costingMethod,
+      // tax
+      taxCodes: _taxCodes,
+    );
+
+    _syncValidity();
   }
 
   void _resetForm() {
@@ -197,7 +223,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   Column _buildBody() {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
+      children: [
         ItemMasterFormFields.buildIMNumber(
           context,
           _imNumber,
@@ -255,21 +281,25 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         ),
 
         /// Attributes & Variants
-        AttributePanel(
-          isExpanded: false,
-          title: '8. Attributes & Variants',
-          subTitle:
-          '\nCreate multiple versions of this $_itemType using attributes like size or color.',
-          generatedVariants: (v) {
-            setState(() => _variants = v);
-          },
-          actionBuilder: Align(
-            alignment: Alignment.topRight,
-            child: context.elevatedButton(
-              'Preview Variants (${_variants.length})',
-              onPressed: () => context.showVariantPreview(
-                itemCode: _imNumber,
-                variants: _variants,
+        Visibility(
+          visible: _isFormValid,
+          maintainState: true,
+          child: AttributePanel(
+            isExpanded: false,
+            title: '8. Attributes & Variants',
+            subTitle:
+                '\nCreate multiple versions of this $_itemType using attributes like size or color.',
+            generatedVariants: (v) {
+              setState(() => _variants = v);
+            },
+            actionBuilder: Align(
+              alignment: Alignment.topRight,
+              child: context.elevatedButton(
+                'Preview Variants (${_variants.length})',
+                onPressed: () => context.showVariantPreview(
+                  itemCode: _imNumber,
+                  variants: _variants,
+                ),
               ),
             ),
           ),
@@ -280,14 +310,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
           'Needed & Optional Fields'
           'Optional / default warehouse fields (for ease of transactions):\n'
           'Default Warehouse\n'
-          'Default Storage Location (shelf, aisle, BIN)\n'
+          'Default Storage Location (shelf, aisle, BIN)\n',
         ),
 
         context.confirmableActionButton(
           onPressed: _onSubmit,
           isDisabled: _isSubmitting || !_isFormValid,
           label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Create Item')
+              ? (_isSubmitting ? 'Creating...' : 'Continue')
               : (_isSubmitting ? 'Updating...' : null),
         ),
 
@@ -303,17 +333,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       fieldsConfig: ItemMasterFormFields.nameAndDescFields(itemType: itemType),
       initialData: [_serverItem?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
-        // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
-
-        _itemMaster = _itemMaster.copyWith(
+        _syncItemMaster(i);
+        /*_itemMaster = _itemMaster.copyWith(
           name: i.name,
           itemType: i.itemType,
           category: i.category,
           description: i.description,
-        );
-
-        _updateValidity();
+        );*/
       },
     );
   }
@@ -326,8 +353,8 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       ],
       onChanged: (List<Map<String, dynamic>> data) async {
         final i = ItemMaster.fromMap(data.first);
-
-        _itemMaster = _itemMaster.copyWith(baseUom: i.baseUom);
+        _syncItemMaster(i);
+        // _itemMaster = _itemMaster.copyWith(baseUom: i.baseUom);
       },
     );
   }
@@ -342,13 +369,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       ),
       onChanged: (List<Map<String, dynamic>> data) async {
         final i = ItemMaster.fromMap(data.first);
+        _syncItemMaster(i);
 
-        _itemMaster = _itemMaster.copyWith(
+        /*_itemMaster = _itemMaster.copyWith(
           isActive: i.isActive,
           isSellable: i.isSellable,
           isStockItem: i.isStockItem,
           isPurchasable: i.isPurchasable,
-        );
+        );*/
       },
     );
   }
@@ -358,15 +386,14 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       fieldsConfig: ItemMasterFormFields.planningFields,
       initialData: [_serverItem?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
-        // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
+        _syncItemMaster(i);
 
-        // Add new item master
-        _itemMaster = _itemMaster.copyWith(
+        /*_itemMaster = _itemMaster.copyWith(
           reorderPoint: i.reorderPoint,
           reorderQty: i.reorderQty,
           leadTimeDays: i.leadTimeDays,
-        );
+        );*/
       },
     );
   }
@@ -378,14 +405,13 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         _serverItem?.pickKeys({'standardCost', 'costingMethod'}) ?? {},
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        // if (_isFormValid) setState(() {});
         final i = ItemMaster.fromMap(data.first);
+        _syncItemMaster(i);
 
-        // Add new item master
-        _itemMaster = _itemMaster.copyWith(
+        /*_itemMaster = _itemMaster.copyWith(
           standardCost: i.standardCost,
           costingMethod: i.costingMethod,
-        );
+        );*/
       },
     );
   }
@@ -397,6 +423,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
       defaultTaxMode: TaxMode.headerTax,
       selectedTaxMode: (TaxMode? mode) {
         prettyPrint('Selected-tax-mode', mode);
+        _syncValidity();
       },
     );
   }
@@ -702,7 +729,6 @@ If you want next step, I can help you:
 * auto-generate `_buildFields()` for each section
 * or convert this into a dynamic JSON-driven form system (very powerful for ERP builders)
 */
-
 
 /*Good direction—this is exactly how scalable ERP systems avoid hardcoding 14+ form sections per screen.
 

@@ -22,7 +22,7 @@ class ListStoreBranches extends StatefulWidget {
 
 class _ListStoreBranchesState extends State<ListStoreBranches> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
   late final CompanyStoresBloc _bloc;
   // CompanyStoresBloc get _bloc => context.read<CompanyStoresBloc>();
 
@@ -60,20 +60,6 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     );
   }
 
-  /*@override
-  Widget build2(BuildContext context) {
-    return BlocProvider<CompanyStoresBloc>(
-      create: (context) =>
-          CompanyStoresBloc(firestore: FirebaseFirestore.instance)
-            ..add(GetSetups<CompanyStore>()),
-      child: CustomScaffold(
-        noAppBar: true,
-        body: _buildBody(),
-        bottomNavigationBar: const SizedBox.shrink(),
-      ),
-    );
-  }*/
-
   BlocBuilder<CompanyStoresBloc, SetupState<CompanyStore>> _buildBody() {
     return BlocBuilder<CompanyStoresBloc, SetupState<CompanyStore>>(
       builder: (context, state) {
@@ -82,7 +68,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
           SetupsLoaded<CompanyStore>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Add Stores',
+                    'New Stores',
                     onPressed: () async => await _openStoreForm(),
                   )
                 : _buildCard(results),
@@ -96,20 +82,21 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
   }
 
   Widget _buildCard(List<CompanyStore> stores) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       headers: CompanyStore.dataTableHeader,
       toolbar: _buildToolbar(stores),
-      rows: stores.map((d) => d.itemAsList).toList(),
+      rows: stores.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => _onEditTap(stores, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(stores, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => _onEditTap(stores, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(stores, row.id),
       optButtonIcon: Icons.store,
       optButtonLabel: 'Switch',
       onOptButtonTap: (row) async {
-        final store = _findStoresById(stores, row.first);
+        final store = _findStoresById(stores, row.id);
         if (store == null) return;
 
         await context.onSwitchStore(store.storeNumber, location: store.address);
@@ -117,14 +104,16 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
     );
   }
 
+  DataTableRow _toTableRow(CompanyStore e) => DataTableRow.fromList(e.id, e.itemAsList);
+
   Widget _buildToolbar(List<CompanyStore> stores) {
     return ListToolbarButtons(
-      primaryLabel: 'Add Stores',
-      refreshLabel: 'Refresh Stores',
-      secondaryLabel: 'Edit Store',
+      primaryLabel: 'New Stores',
+      refreshLabel: 'Refresh',
+      secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
       dataLength: stores.length,
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Store',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       onPrimary: () async => await _openStoreForm(stores: stores),
       onRefresh: () => _bloc.add(RefreshSetups<CompanyStore>()),
       onSecondary: _selectedIds.length == 1
@@ -134,32 +123,6 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
           ? () async => await _onDeleteTap(stores, _selectedIds.first, true)
           : null,
     );
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 
   Future<void> _openStoreForm({
@@ -215,7 +178,7 @@ class _ListStoreBranchesState extends State<ListStoreBranches> {
   bool _guardPrimaryStore(CompanyStore store) {
     if (!store.canBeDeleted) {
       context.showAlertOverlay(
-        '[ ${store.name.toUpperAll} ] Store-Branch is associated with the business owner and cannot be deleted.',
+        '[ ${store.name.toUpperAll} ] Store is associated with the business owner and can\'t be deleted.',
         bgColor: kDangerColor,
       );
       return false;

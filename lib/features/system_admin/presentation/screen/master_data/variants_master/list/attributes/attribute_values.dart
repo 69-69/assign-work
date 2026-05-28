@@ -17,7 +17,6 @@ class AttributeValues extends StatefulWidget {
 }
 
 class _AttributeValuesState extends State<AttributeValues> {
-  List<String> _selectedIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -56,17 +55,13 @@ class _AttributeValuesState extends State<AttributeValues> {
       headers: Attribute.dataHeader,
       toolbar: _buildToolbar(attributes),
       rows: attributes.map(_toTableRow).toList(),
-      selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids, rows) {
-        setState(() => _selectedIds = ids);
-      },
       onEditTap: (row) async => _onEditTap(attributes, row.id),
       onDeleteTap: (row) async => _onDeleteTap(attributes, row.id),
     );
   }
 
-  TableRowData _toTableRow(Attribute e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(Attribute e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<Attribute> attributes) {
     return ListToolbarButtons(

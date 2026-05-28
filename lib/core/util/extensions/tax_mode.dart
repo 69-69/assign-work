@@ -15,6 +15,7 @@ extension TaxApplicationMode on TaxMode {
   String get getName => EnumUtil<TaxMode>(this).getName;
 
   bool get isPerLineTax => this == TaxMode.perLineTax;
+
   bool get isHeaderTax => this == TaxMode.headerTax;
 }
 
@@ -22,4 +23,7 @@ class TaxModeUtil {
   /// Get Tax Mode from String value [fromString].
   static TaxMode fromString(String mode) =>
       EnumUtil.fromString<TaxMode>(TaxMode.values, mode);
+
+  static List<String> codes(dynamic all) =>
+      List<String>.from(all ?? []).whereType<String>().toList();
 }

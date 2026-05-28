@@ -18,6 +18,7 @@ class SupplierStatusDropdown extends StatelessWidget {
     return StaticDropdown<String>(
       key: key,
       label: 'Supplier Status',
+      invalidPrefixes: ['supplier status'],
       initialValue: initialValue,
       items: SupplierLink.toStringList(),
       getDisplayText: (status) => status,

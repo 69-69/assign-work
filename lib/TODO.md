@@ -1,4 +1,7 @@
-# @TODO - Link Discount & Discount
+# @TODO 
+    - search for: /// @TODO - remove and replace with remote categories
+    - Remove Local Item Categores and replace with Remote ones
+    - Refactoring Discount Group FormFields
 
 ## @Continue Tomorrow (Next Sprint)
     ## Linking Item Master with

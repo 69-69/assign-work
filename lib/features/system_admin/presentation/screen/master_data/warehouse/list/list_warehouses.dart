@@ -18,7 +18,7 @@ class ListWarehouses extends StatefulWidget {
 
 class _ListWarehousesState extends State<ListWarehouses> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   WarehouseBloc get _bloc => context.read<WarehouseBloc>();
 
@@ -56,7 +56,7 @@ class _ListWarehousesState extends State<ListWarehouses> {
           SetupsLoaded<Warehouse>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Warehouse',
+                    'New Warehouse',
                     onPressed: () => _openWarehouseForm(),
                   )
                 : _buildCard(context, results),
@@ -70,26 +70,30 @@ class _ListWarehousesState extends State<ListWarehouses> {
   }
 
   Widget _buildCard(BuildContext c, List<Warehouse> warehouses) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Warehouse.dataTableHeader,
       toolbar: _buildToolbar(warehouses),
-      rows: warehouses.map((d) => d.itemAsList).toList(),
+      rows: warehouses.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => await _onEditTap(warehouses, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(warehouses, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(warehouses, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(warehouses, row.id),
     );
   }
+
+  DataTableRow _toTableRow(Warehouse e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<Warehouse> warehouses) {
     return ListToolbarButtons(
       dataLength: warehouses.length,
-      primaryLabel: 'Create Warehouse',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Warehouse',
-      refreshLabel: 'Refresh Warehouses',
+      primaryLabel: 'New Warehouse',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
+      refreshLabel: 'Refresh',
       onPrimary: () => _openWarehouseForm(warehouses: warehouses),
       onRefresh: () => _bloc.add(RefreshSetups<Warehouse>()),
       onDanger: _selectedIds.isNotEmpty
@@ -130,31 +134,5 @@ class _ListWarehousesState extends State<ListWarehouses> {
       serverItem: serverWare,
       existingCodes: existingCodes,
     );
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

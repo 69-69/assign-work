@@ -22,7 +22,7 @@ class ActivityLogsScreen extends StatefulWidget {
 
 class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
   late final ActivityLogBloc _bloc;
 
   void _isDeleting(bool status) {
@@ -83,22 +83,26 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   }
 
   Widget _buildCard(BuildContext cxt, List<ActivityLog> activities) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
-      headers: ActivityLog.dataTableHeader,
-      toolbar: _buildToolbar(context, activities),
-      rows: activities.map((d) => d.itemAsList()).toList(),
       optButtonLabel: 'View',
       optButtonIcon: Icons.explore_outlined,
-      onOptButtonTap: (row) async =>
-          _onViewAreasTap(cxt, activities, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(cxt, activities, row.first),
+      headers: ActivityLog.dataTableHeader,
+      rows: activities.map(_toTableRow).toList(),
+      toolbar: _buildToolbar(context, activities),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onOptButtonTap: (row) async =>
+          _onViewAreasTap(cxt, activities, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(cxt, activities, row.id),
     );
   }
+
+  DataTableRow _toTableRow(ActivityLog e) =>
+      DataTableRow.fromList(e.id, e.itemAsList());
 
   Widget _buildToolbar(BuildContext cxt, List<ActivityLog> activities) {
     final log = _selectedIds.length > 1 ? 'Activities' : 'Activity';
@@ -106,7 +110,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
     return ListToolbarButtons(
       dataLength: activities.length,
       dangerTooltip: 'Delete Selected $log',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete $log',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       onDanger: _selectedIds.isNotEmpty
           ? () async {
               final isConfirmed = await context.confirmUserActionDialog();
@@ -159,34 +163,9 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
       cxt.read<ActivityLogBloc>().add(DeleteSetup<String>(documentId: log.id));
     }
   }
+}
 
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
-  }
-
-  /*Widget _dataTable(ActivityLog log) {
+/*Widget _dataTable(ActivityLog log) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
@@ -217,4 +196,3 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
       label: Text(str, style: TextStyle(fontWeight: FontWeight.bold)),
     );
   }*/
-}

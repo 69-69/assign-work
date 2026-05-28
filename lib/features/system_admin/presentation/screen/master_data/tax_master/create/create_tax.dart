@@ -57,7 +57,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
   String get _employeeId => _employee!.employeeId;
   bool _isFormValid = false;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -194,7 +194,7 @@ class _AddTaxFormState extends State<_AddTaxForm> {
                   fromMap: (map, id) => Tax.fromMap(map),
                 );
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],

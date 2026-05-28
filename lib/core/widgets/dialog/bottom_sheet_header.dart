@@ -70,7 +70,16 @@ class DialogHeader extends StatelessWidget {
                 ),
           (btnText is Widget)
               ? btnText
-              : TextButton(
+              : context.iconButton(
+                  Icons.close,
+                  iconColor: kTextColor,
+                  bgColor: kTransparentColor,
+                  borderColor: kTransparentColor,
+                  // borderColor: kTextColor.toAlpha(0.1),
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.pop(context),
+                ),
+          /*TextButton(
                   onPressed: onCancel,
                   child: Text(
                     btnText,
@@ -82,7 +91,7 @@ class DialogHeader extends StatelessWidget {
                     ),
                     // textScaler: TextScaler.linear(context.textScaleFactor),
                   ),
-                ),
+                ),*/
         ],
       ),
     );

@@ -14,6 +14,18 @@ class DiscountGroup extends Equatable {
   final TransactionType transactionType;
   final String description;
 
+  /// Optional FK -> Item.ids
+  final List<String>? itemIds;
+
+  /// Optional FK -> Category.ids
+  final List<String>? categoryIds;
+
+  /// Optional FK -> PriceList.ids
+  final List<String>? priceListIds;
+
+  /// [applyToAll] Apply this discount to all selected `Transaction Type`
+  final bool applyToAll;
+
   /// Validity period
   final DateTime? validFrom;
   final DateTime? validUntil;
@@ -25,8 +37,12 @@ class DiscountGroup extends Equatable {
     this.id = '',
     required this.storeNumber,
     required this.name,
-    this.transactionType = TransactionType.sales,
+    this.itemIds,
+    this.categoryIds,
+    this.priceListIds,
     required this.description,
+    this.applyToAll = false,
+    this.transactionType = TransactionType.sales,
     this.validFrom,
     this.validUntil,
     this.history = const [],
@@ -39,6 +55,10 @@ class DiscountGroup extends Equatable {
       name: map['name'] ?? '',
       transactionType: TransactionTypeUtil.fromString(map['transactionType']),
       description: map['description'] ?? '',
+      applyToAll: map['applyToAll'] ?? false,
+      itemIds: (map['itemIds'] as List?)?.cast<String>(),
+      categoryIds: (map['categoryIds'] as List?)?.cast<String>(),
+      priceListIds: (map['priceListIds'] as List?)?.cast<String>(),
       validFrom: toDateTimeFn(map['validFrom']),
       validUntil: toDateTimeFn(map['validUntil'], isNullable: true),
       history: AuditLog.auditLogs(map['history']),
@@ -49,10 +69,15 @@ class DiscountGroup extends Equatable {
     'id': id,
     'storeNumber': storeNumber,
     'name': name,
+    'itemIds':itemIds,
+    'categoryIds':categoryIds,
+    'priceListIds':priceListIds,
     'transactionType': getTransactionType,
     'description': description,
     'history': history.map((e) => e.toMap()).toList(),
   };
+
+  bool get isGlobal => applyToAll;
 
   String get getTransactionType => transactionType.getName;
 
@@ -124,6 +149,10 @@ class DiscountGroup extends Equatable {
     String? name,
     TransactionType? transactionType,
     String? description,
+    List<String>? itemIds,
+    List<String>? categoryIds,
+    List<String>? priceListIds,
+    bool? applyToAll,
     DateTime? validFrom,
     DateTime? validUntil,
     List<AuditLog>? history,
@@ -131,8 +160,12 @@ class DiscountGroup extends Equatable {
     storeNumber: storeNumber ?? this.storeNumber,
     id: id ?? this.id,
     name: name ?? this.name,
-    transactionType: transactionType ?? this.transactionType,
     description: description ?? this.description,
+    applyToAll: applyToAll?? this.applyToAll,
+    itemIds: itemIds?? this.itemIds,
+    categoryIds: categoryIds?? this.categoryIds,
+    priceListIds: priceListIds?? this.priceListIds,
+    transactionType: transactionType ?? this.transactionType,
     validFrom: validFrom ?? this.validFrom,
     validUntil: validUntil ?? this.validUntil,
     history: history ?? this.history,
@@ -148,6 +181,10 @@ class DiscountGroup extends Equatable {
     validFrom,
     validUntil,
     history,
+    itemIds,
+    categoryIds,
+    priceListIds,
+    applyToAll,
   ];
 }
 
@@ -157,9 +194,6 @@ class DiscountRule {
 
   /// FK -> DiscountGroup.id
   final String discountGroupId;
-
-  /// Optional FK -> PriceList.id
-  final String? priceListId;
 
   /// Fixed or Percentage
   final DiscountType discountType;
@@ -183,7 +217,6 @@ class DiscountRule {
 
   DiscountRule({
     required this.id,
-    required this.priceListId,
     required this.discountGroupId,
     required this.discountValue,
     this.discountType = DiscountType.percentage,
@@ -199,7 +232,6 @@ class DiscountRule {
     return DiscountRule(
       id: id ?? map['id'] ?? '',
       isStackable: map['isStackable'] ?? false,
-      priceListId: map['priceListId'] ?? '',
       discountGroupId: map['discountGroupId'] ?? '',
       discountType: DiscountTypeUtil.fromString(map['discountType']),
       discountValue: '${map['discountValue']}'.asDouble,
@@ -214,7 +246,6 @@ class DiscountRule {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'isStackable': isStackable,
-    'priceListId': priceListId,
     'discountGroupId': discountGroupId,
     'discountType': getDiscountType,
     'discountValue': discountValue,
@@ -247,7 +278,6 @@ class DiscountRule {
   /// [empty] Empty DiscountRule object.
   static final DiscountRule empty = DiscountRule(
     id: '',
-    priceListId: '',
     discountGroupId: '',
     discountValue: 0,
   );
@@ -293,7 +323,6 @@ class DiscountRule {
     String? id,
     DiscountType? discountType,
     bool? isStackable,
-    String? priceListId,
     String? discountGroupId,
     double? discountValue,
     String? couponCode,
@@ -303,7 +332,6 @@ class DiscountRule {
     List<AuditLog>? history,
   }) => DiscountRule(
     id: id ?? this.id,
-    priceListId: priceListId ?? this.priceListId,
     discountGroupId: discountGroupId ?? this.discountGroupId,
     isStackable: isStackable ?? this.isStackable,
     discountType: discountType ?? this.discountType,
@@ -484,4 +512,3 @@ DiscountRule = Adjustment logic
 
 That separation is exactly how large ERP systems structure pricing engines.
 */
-

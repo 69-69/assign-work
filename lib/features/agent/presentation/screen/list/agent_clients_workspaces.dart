@@ -20,8 +20,6 @@ class AgentClientsWorkspaces extends StatefulWidget {
 }
 
 class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
-  List<String> _selectedIds = [];
-
   @override
   Widget build(BuildContext context) {
     return _buildBody();
@@ -74,18 +72,14 @@ class _AgentClientsWorkspacesState extends State<AgentClientsWorkspaces> {
       childrenRow: filters.expired.map(_toTableRow).toList(),
       optButtonIcon: Icons.support_agent,
       optButtonLabel: 'Chat',
-      selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids, rows) {
-        setState(() => _selectedIds = ids);
-      },
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
         pathParameters: {'clientWorkspaceId': row.id},
       ),
     );
   }
-  TableRowData _toTableRow(Workspace e) =>
-      TableRowData.fromList(e.id, e.itemAsList());
+  DataTableRow _toTableRow(Workspace e) =>
+      DataTableRow.fromList(e.id, e.itemAsList());
 
   _buildToolbar(List<Workspace> tenants) {
     return ListToolbarButtons(

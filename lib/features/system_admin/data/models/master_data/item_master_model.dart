@@ -226,7 +226,8 @@ class ItemMaster extends Equatable {
   final String category;
   final LineItemType itemType; // raw, material/product, service
   // final List<String> barcodes; // Optional multiple barcodes
-  // final List<String> taxCodes;
+  final List<String> taxCodes;
+
   // final List<String> barcodes;
   // final PriceList priceList;
   // final List<Variant> variants; // e.g., ["Size: L", "Color: Red", "Model": XYZ, ]
@@ -317,6 +318,7 @@ class ItemMaster extends Equatable {
     this.updatedBy = '',
     DateTime? updatedAt,
     this.history = const [],
+    this.taxCodes = const [],
   }) : createdAt = createdAt ?? _today,
        updatedAt = updatedAt ?? _today;
 
@@ -339,7 +341,10 @@ class ItemMaster extends Equatable {
       leadTimeDays: '${map['leadTimeDays']}'.asInt,
       standardCost: '${map['standardCost']}'.asDouble,
       costingMethod: CostingMethodUtil.fromString(map['costingMethod']),
-      taxMode: TaxModeUtil.fromString(map['taxMode'] ?? TaxMode.headerTax.getName),
+      taxMode: TaxModeUtil.fromString(
+        map['taxMode'] ?? TaxMode.headerTax.getName,
+      ),
+      taxCodes: TaxModeUtil.codes(map['taxCodes']),
       createdBy: map['createdBy'] ?? '',
       updatedBy: map['updatedBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
@@ -368,6 +373,7 @@ class ItemMaster extends Equatable {
     'standardCost': standardCost,
     'costingMethod': costingMethod.getName,
     'taxMode': getTaxName,
+    'taxCodes': taxCodes,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
     'history': history.map((e) => e.toMap()).toList(),
@@ -449,6 +455,7 @@ class ItemMaster extends Equatable {
     double? reorderQty,
     int? leadTimeDays,
     double? standardCost,
+    List<String>? taxCodes,
     CostingMethod? costingMethod,
     String? createdBy,
     DateTime? createdAt,
@@ -475,6 +482,7 @@ class ItemMaster extends Equatable {
     standardCost: standardCost ?? this.standardCost,
     costingMethod: costingMethod ?? this.costingMethod,
     taxMode: taxMode ?? this.taxMode,
+    taxCodes: taxCodes ?? this.taxCodes,
     createdBy: createdBy ?? this.createdBy,
     createdAt: createdAt ?? this.createdAt,
     updatedBy: updatedBy ?? this.updatedBy,
@@ -528,6 +536,7 @@ class ItemMaster extends Equatable {
     standardCost,
     costingMethod,
     taxMode,
+    taxCodes,
     createdBy,
     createdAt,
     updatedBy,

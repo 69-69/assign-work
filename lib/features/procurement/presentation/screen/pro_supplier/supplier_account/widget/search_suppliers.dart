@@ -73,8 +73,8 @@ class _SearchSuppliersState extends State<SearchSuppliers> {
   } // eclarson@smu.edu
 
   /// Suppliers [_buildSuppliersDropdown]
-  AsyncSearchDropdown<Supplier> _buildSuppliersDropdown(BuildContext context) {
-    return AsyncSearchDropdown<Supplier>(
+  AsyncDropdown<Supplier> _buildSuppliersDropdown(BuildContext context) {
+    return AsyncDropdown<Supplier>(
       selectedItem: _supplier,
       labelText: 'Select Supplier...',
       helperText: 'Enter * for all Suppliers, or type to search',

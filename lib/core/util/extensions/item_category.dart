@@ -65,7 +65,7 @@ class ItemCategoryUtil {
 
   /// [toStringList] Convert enum list to a list of strings (for dropdowns)
   static List<String> toStringList({
-    bool isService = false,
+    bool? isService,
     bool includeHeader = true,
   }) {
     List<ItemCategory> categories = _filterByType(isService);
@@ -73,7 +73,12 @@ class ItemCategoryUtil {
 
     return [
       if (includeHeader)
-        '${isService ? 'Service:' : 'Material: Item'} Category',
+        switch (isService) {
+          true => 'Service Category',
+          false => 'Material Category',
+          null => 'Category',
+        },
+
       ...list.map((a) => a.toSeparate),
     ];
   }
@@ -82,7 +87,15 @@ class ItemCategoryUtil {
   static List<ItemCategory> fromStringList(List<String>? values) =>
       values?.map(fromString).toList() ?? [];
 
-  static List<ItemCategory> _filterByType(bool isService) {
+  static List<ItemCategory> _filterByType(bool? isService) {
+    // NULL => return all categories except identifiers
+    if (isService == null) {
+      return ItemCategory.values.where((cat) {
+        return cat != ItemCategory.materialCategories &&
+            cat != ItemCategory.serviceCategories;
+      }).toList();
+    }
+
     final categories = <ItemCategory>[];
 
     bool add = false;
@@ -102,4 +115,5 @@ class ItemCategoryUtil {
     }
     return categories;
   }
+
 }

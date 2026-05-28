@@ -21,10 +21,14 @@ class ListTenantWorkspaces extends StatefulWidget {
 }
 
 class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
-  bool? _isChecked;
-  Workspace? _selectedWorkspace;
-
+  List<String> _selectedIds = [];
   AllTenantsBloc get _bloc => context.read<AllTenantsBloc>();
+
+  Workspace? _selectedWorkspace(List<Workspace> workspaces) {
+    if (_selectedIds.length != 1) return null;
+
+    return _findWorkspace(workspaces, _selectedIds.first);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +44,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
           TenantsLoaded<Workspace>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Setup New Workspace',
+                    'New Workspace',
                     onPressed: () => context.openCreateWorkspacePopUp(),
                   )
                 : _buildCard(context, results),
@@ -57,8 +61,7 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
     List<Workspace> expired,
     List<Workspace> unExpired,
     List<Workspace> unKnown,
-  })
-  _filterExpiry(List<Workspace> workspaces) {
+  })_filterExpiry(List<Workspace> workspaces) {
     final unExpired = Workspace.filterStatus(workspaces);
     final expired = Workspace.filterStatus(workspaces, expired: true);
     final unKnown = Workspace.filterUnknown(workspaces);
@@ -68,54 +71,62 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
 
   Widget _buildCard(BuildContext context, List<Workspace> workspaces) {
     final data = _filterExpiry(workspaces);
-    final expiredWorkspaces = data.expired.map((w) => w.itemAsList()).toList();
+    final expiredWorkspaces = data.expired.map(_toTableRow).toList();
 
     /// These are FAKE/UNKNOWN Tenant Workspaces
-    final unKnownWorkspaces = data.unKnown.map((w) => w.itemAsList()).toList();
+    final unKnownWorkspaces = data.unKnown.map(_toTableRow).toList();
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Workspace.dataTableHeader,
       toolbar: _buildToolbar(data.unExpired),
-      rows: data.unExpired.map((w) => w.itemAsList()).toList(),
+      rows: data.unExpired.map(_toTableRow).toList(),
       childrenRow: [...unKnownWorkspaces, ...expiredWorkspaces],
-      onEditTap: (row) async => await _onEditTap(workspaces, row.first),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(workspaces, row.id),
       onDeleteTap: (row) async =>
-          await _onDeleteTap(row.first, workspaceRole: row[1]),
-      onChecked: (bool? isChecked, List<String> row) =>
-          _onChecked(workspaces, row.first, isChecked),
+          await _onDeleteTap(row.id, workspaceRole: row.values[1]),
       optButtonIcon: Icons.support_agent,
       optButtonLabel: 'Chat',
       onOptButtonTap: (row) => context.goNamed(
         RouteNames.tenantChat,
-        pathParameters: {'clientWorkspaceId': row.first},
+        pathParameters: {'clientWorkspaceId': row.id},
       ),
     );
   }
 
-  _buildToolbar(List<Workspace> tenants) {
+  DataTableRow _toTableRow(Workspace e) =>
+      DataTableRow.fromList(e.id, e.itemAsList());
+
+  Widget _buildToolbar(List<Workspace> tenants) {
+    final workspace = _selectedWorkspace(tenants);
+    final isOne = workspace != null;
+
     return ListToolbarButtons(
       secondaryIcon: Icons.edit,
       dataLength: tenants.length,
       tertiaryIcon: Icons.vpn_key,
-      secondaryLabel: 'Edit',
+      secondaryLabel: 'Edit Access',
       refreshLabel: 'Refresh',
       primaryLabel: 'New Workspace',
       tertiaryLabel: 'Assign Subscription',
       tertiaryTooltip: 'Assign Workspace Subscription & License',
       onPrimary: () => context.openCreateWorkspacePopUp(),
       onRefresh: () => _bloc.add(RefreshTenants<Workspace>()),
-      onSecondary: _isChecked == true
-          ? () async => _onEditTap(tenants, _selectedWorkspace!.id)
+      onSecondary: isOne
+          ? () async => _onEditTap(tenants, workspace.id)
           : null,
-      onTertiary: _isChecked == true
+      onTertiary: isOne
           ? () async {
               await context.assignSubscriptionToWorkspaceDialog(
-                workspaceId: _selectedWorkspace!.id,
-                workspaceName: _selectedWorkspace?.name,
-                initialSub: _selectedWorkspace?.subscriptionId,
-                initialMaxDevices: _selectedWorkspace?.maxAllowedDevices,
+                workspaceId: workspace.id,
+                workspaceName: workspace.name,
+                initialSub: workspace.subscriptionId,
+                initialMaxDevices: workspace.maxAllowedDevices,
               );
             }
           : null,
@@ -132,23 +143,6 @@ class _ListTenantWorkspacesState extends State<ListTenantWorkspaces> {
 
   Workspace? _findWorkspace(List<Workspace> workspaces, String id) =>
       Workspace.filterById(workspaces, id);
-
-  // Handle onChecked orders
-  void _onChecked(
-    List<Workspace> workspaces,
-    String id,
-    bool? isChecked,
-  ) async {
-    final workspace = _findWorkspace(workspaces, id);
-
-    setState(() {
-      _isChecked = isChecked;
-
-      if (_isChecked == true) {
-        _selectedWorkspace = workspace;
-      }
-    });
-  }
 
   Future<void> _onDeleteTap(
     String workspaceId, {

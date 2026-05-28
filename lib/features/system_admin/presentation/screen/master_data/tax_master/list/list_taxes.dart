@@ -18,7 +18,8 @@ class ListTaxes extends StatefulWidget {
 
 class _ListTaxesState extends State<ListTaxes> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
+
   TaxBloc get _bloc => context.read<TaxBloc>();
 
   void _isDeleting(bool status) {
@@ -57,7 +58,7 @@ class _ListTaxesState extends State<ListTaxes> {
           SetupsLoaded<Tax>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Taxes',
+                    'New Tax',
                     onPressed: () => context.openAddTax(),
                   )
                 : _buildCard(context, results),
@@ -69,28 +70,31 @@ class _ListTaxesState extends State<ListTaxes> {
   }
 
   Widget _buildCard(BuildContext c, List<Tax> taxes) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       headers: Tax.dataTableHeader,
       template: Tax.templateHeader,
       toolbar: _buildToolbar(taxes),
-      rows: taxes.map((d) => d.itemAsList).toList(),
-      onEditTap: (row) async => await _onEditTap(taxes, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(taxes, row.first),
+      rows: taxes.map(_toTableRow).toList(),
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(taxes, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(taxes, row.id),
     );
   }
 
+  DataTableRow _toTableRow(Tax e) => DataTableRow.fromList(e.id, e.itemAsList);
+
   _buildToolbar(List<Tax> taxes) {
     return ListToolbarButtons(
-      primaryLabel: 'Add Taxes',
-      secondaryLabel: 'Edit Tax',
-      secondaryIcon: Icons.edit,
-      refreshLabel: 'Refresh Taxes',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Department',
       dataLength: taxes.length,
+      primaryLabel: 'New Tax',
+      secondaryLabel: 'Edit',
+      secondaryIcon: Icons.edit,
+      refreshLabel: 'Refresh',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       onPrimary: () => context.openAddTax(),
       onRefresh: () => _bloc.add(RefreshSetups<Tax>()),
       onSecondary: _selectedIds.length == 1
@@ -124,31 +128,5 @@ class _ListTaxesState extends State<ListTaxes> {
       /// Delete specific Tax
       _bloc.add(DeleteSetup<String>(documentId: tax.id));
     }
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

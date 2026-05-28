@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -10,7 +9,6 @@ import 'package:assign_erp/features/system_admin/presentation/screen/master_data
 import 'package:flutter/material.dart';
 
 class PricingFormInputs {
-
   ///Price List
   static List<FieldGroupConfig> get priceListFields => [
     FieldGroupConfig(
@@ -33,8 +31,17 @@ class PricingFormInputs {
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
         bool isChecked = initialData ?? false; // local state
-
-        return StatefulBuilder(
+        return CustomCheckboxTile(
+          title: Text(
+            'Tax Inclusive?',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text('Check if tax is already included in the price list'),
+          contentPadding: EdgeInsets.symmetric(horizontal: 6.0),
+          value: isChecked,
+          onChanged: (v) => onChanged(v ?? false), // notify parent
+        );
+        /*return StatefulBuilder(
           builder: (context, setState) {
             return CustomCheckboxTile(
               title: Text(
@@ -54,7 +61,7 @@ class PricingFormInputs {
               },
             );
           },
-        );
+        );*/
       },
     ),
     FieldGroupConfig(

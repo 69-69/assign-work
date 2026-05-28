@@ -155,7 +155,7 @@ class _AutoApplyTaxOnDropdownState extends State<AutoApplyTaxOnDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<TaxContext>(
+    return AsyncDropdown<TaxContext>(
       isMultiSelect: true,
       selectedMultiItems: _taxContexts,
       labelText: 'Auto apply tax on...',

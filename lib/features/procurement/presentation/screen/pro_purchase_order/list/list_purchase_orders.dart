@@ -33,7 +33,7 @@ class ListPurchaseOrders extends StatefulWidget {
 
 class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+  List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
 
@@ -82,7 +82,7 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
           ProcurementsLoaded<ProPurchaseOrder>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Purchase Order',
+                    'New Purchase Order',
                     onPressed: () async => await context.openPOForm(),
                   )
                 : _buildCard(context, results),
@@ -94,18 +94,18 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     );
   }
 
-  ({List<List<String>> rows, List<List<String>>? childrenRow})
+  ({List<DataTableRow> rows, List<DataTableRow>? childrenRow})
   _filterPurchaseOrders(List<ProPurchaseOrder> orders) {
     if (_isApproved) {
       final approvedPOs = ProPurchaseOrder.filterApprovedPOs(
         orders,
-      ).map((o) => o.itemAsList).toList();
+      ).map(_toTableRow).toList();
       return (rows: approvedPOs, childrenRow: null);
     }
 
     final otherPOs = ProPurchaseOrder.filterOthers(
       orders,
-    ).map((o) => o.itemAsList).toList();
+    ).map(_toTableRow).toList();
 
     return (rows: otherPOs, childrenRow: null);
   }
@@ -114,56 +114,34 @@ class _ListPurchaseOrdersState extends State<ListPurchaseOrders> {
     // Filter for Purchase orders by date
     final data = _filterPurchaseOrders(orders);
 
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       toolbar: _buildToolbar(orders),
       headers: ProPurchaseOrder.dataTableHeader,
       rows: data.rows,
-      onViewDetailsTap: (row) async => _onViewDetails(orders, row.first),
       selectedRowKeyIndex: 0,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
       optButtonLabel: 'Print',
-      onOptButtonTap: (row) async => await _onPrintPO(orders, row.first),
-      onEditTap: (row) async => await _onEditTap(orders, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(orders, row.first),
+      onOptButtonTap: (row) async => await _onPrintPO(orders, row.id),
+      onEditTap: (row) async => await _onEditTap(orders, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(orders, row.id),
+      onViewDetailsTap: (row) async => _onViewDetails(orders, row.id),
     );
   }
 
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
-  }
+  DataTableRow _toTableRow(ProPurchaseOrder e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<ProPurchaseOrder> orders) {
     return ListToolbarButtons(
-      primaryLabel: 'Create PO',
+      primaryLabel: 'New PO',
       dataLength: orders.length,
-      secondaryLabel: 'Edit PO',
+      secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete PO',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       refreshLabel: '${_isApproved ? 'Approved' : 'Purchase'} Orders',
       onPrimary: () async => await context.openPOForm(),
       onRefresh: () => _bloc.add(RefreshProcurements<ProPurchaseOrder>()),

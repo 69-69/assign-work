@@ -55,7 +55,7 @@ class _SearchWHSubLocationsState extends State<SearchWHSubLocations> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<WHLocation>(
+    return AsyncDropdown<WHLocation>(
       enabled: _isEnabled,
       selectedItem: _whLocation,
       labelText: _labelText,

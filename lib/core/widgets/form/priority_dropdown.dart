@@ -19,6 +19,7 @@ class PriorityDropdown extends StatelessWidget {
     return StaticDropdown<String>(
       key: key,
       label: 'priority',
+      invalidPrefixes: ['priority'],
       initialValue: initialValue,
       items: strList,
       getDisplayText: (priority) => priority,

@@ -19,10 +19,15 @@ class ListEmployees extends StatefulWidget {
 }
 
 class _ListEmployeesState extends State<ListEmployees> {
-  bool? _isChecked;
-  Employee? _selectedEmployee;
+  List<String> _selectedIds = [];
 
   EmployeeBloc get _bloc => context.read<EmployeeBloc>();
+
+  Employee? _selectedEmployee(List<Employee> employees) {
+    if (_selectedIds.length != 1) return null;
+
+    return _findEmployee(_selectedIds.first, employees);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,43 +54,39 @@ class _ListEmployeesState extends State<ListEmployees> {
   }
 
   Widget _buildCard(BuildContext c, List<Employee> employees) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       headers: Employee.dataTableHeader,
       toolbar: _buildToolbar(employees),
       toolbarAlignment: WrapAlignment.start,
-      rows: employees.map((d) => d.itemAsList).toList(),
-      onChecked: (bool? isChecked, row) =>
-          _onChecked(employees, row.first, isChecked),
-      onEditTap: (row) async => _onEditTap(employees, row.first),
-      onDeleteTap: (row) async => _onDeleteTap(employees, row.first),
+      rows: employees.map(_toTableRow).toList(),
+      selectedRowKeys: _selectedIds,
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => _onEditTap(employees, row.id),
+      onDeleteTap: (row) async => _onDeleteTap(employees, row.id),
       optButtonIcon: Icons.lock,
       optButtonLabel: 'Reset',
       onOptButtonTap: (row) async {
-        Employee employee = _findEmployee(row.first, employees);
+        Employee employee = _findEmployee(row.id, employees);
         await context.openForgotPasscode(employee: employee);
       },
     );
   }
 
-  // Handle onChecked employee
-  void _onChecked(List<Employee> employees, String id, bool? isChecked) async {
-    Employee employee = _findEmployee(id, employees);
-
-    setState(() {
-      _isChecked = isChecked;
-      if (_isChecked == true) {
-        _selectedEmployee = employee;
-      }
-    });
-  }
+  DataTableRow _toTableRow(Employee e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   // Executes the given action only if the selected employee can be reassigned.
   // If the employee cannot be reassigned (e.g., business owner or anchored to the main store branch),
   // an alert is shown instead.
-  Future<void> _openIfCanReassign(Future<void> Function() action) async {
-    if (_selectedEmployee?.canBeReassigned == true) {
+  Future<void> _openIfCanReassign(
+    Future<void> Function() action, {
+    Employee? employee,
+  }) async {
+    if (employee?.canBeReassigned == true) {
       await action();
     } else {
       context.showAlertOverlay(
@@ -96,11 +97,12 @@ class _ListEmployeesState extends State<ListEmployees> {
   }
 
   Widget _buildToolbar(List<Employee> employees) {
-    final isSelected = _isChecked == true;
+    final employee = _selectedEmployee(employees);
+    final isOne = employee != null;
 
     return ListToolbarButtons(
-      primaryLabel: 'Add Employee',
-      refreshLabel: 'Refresh Employees',
+      primaryLabel: 'New Employee',
+      refreshLabel: 'Refresh',
       dataLength: employees.length,
 
       warningLabel: 'Assign Store',
@@ -122,30 +124,33 @@ class _ListEmployeesState extends State<ListEmployees> {
       onPrimary: () => context.openCreateEmployee(),
       onRefresh: () => _bloc.add(RefreshSetups<Employee>()),
 
-      onPermanent: isSelected
+      onPermanent: isOne
           ? () => _openIfCanReassign(
+              employee: employee,
               () => context.openAssignEmployeeDepartmentDialog(
-                employeeId: _selectedEmployee!.id,
-                employeeName: _selectedEmployee?.fullName,
+                employeeId: employee.id,
+                employeeName: employee.fullName,
               ),
             )
           : null,
-      onSecondary: isSelected
-          ? () async => await _onEditTap(employees, _selectedEmployee!.id)
+      onSecondary: isOne
+          ? () async => await _onEditTap(employees, employee.id)
           : null,
-      onWarning: isSelected
+      onWarning: isOne
           ? () => _openIfCanReassign(
+              employee: employee,
               () => context.assignEmployeeToStoreBranchDialog(
-                employeeId: _selectedEmployee!.id,
-                employeeName: _selectedEmployee?.fullName,
+                employeeId: employee.id,
+                employeeName: employee.fullName,
               ),
             )
           : null,
-      onTertiary: isSelected
+      onTertiary: isOne
           ? () => _openIfCanReassign(
+              employee: employee,
               () => context.openAssignEmployeeRoleDialog(
-                employeeId: _selectedEmployee!.id,
-                employeeName: _selectedEmployee?.fullName,
+                employeeId: employee.id,
+                employeeName: employee.fullName,
               ),
             )
           : null,

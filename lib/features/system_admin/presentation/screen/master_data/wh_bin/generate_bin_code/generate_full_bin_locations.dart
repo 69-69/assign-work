@@ -82,7 +82,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
 
   Function? get _onCreateFullBinLocation => widget.onCreateFullBinLocation;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -253,7 +253,7 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         try {
           _fullBinLocationCodes = generateFullBinLocations(map, _subLocations);
           setState(() => _canGenerate = true);
-          _updateValidity();
+          _syncValidity();
         } catch (e) {
           // context.showAlertOverlay(e.toString()); // show validation error
         }

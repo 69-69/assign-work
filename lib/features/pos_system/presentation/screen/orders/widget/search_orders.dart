@@ -26,8 +26,8 @@ class SearchOrders extends StatelessWidget {
         : _buildAppbarSearch(context);
   }
 
-  AsyncSearchDropdown<Orders> _buildDropdownSearch(BuildContext context) =>
-      AsyncSearchDropdown<Orders>(
+  AsyncDropdown<Orders> _buildDropdownSearch(BuildContext context) =>
+      AsyncDropdown<Orders>(
         labelText: initialValue ?? 'Select Order...',
         asyncItems: (String filter, loadProps) async =>
             await GetOrders.byAnyTerm(filter),

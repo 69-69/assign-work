@@ -56,7 +56,7 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
 
   DiscountRuleBloc get _bloc => context.read<DiscountRuleBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -67,7 +67,7 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
 
     // Case 1: Update existing Attribute
     if (_isFormValid && (_serverRule?.isNotEmpty ?? false)) {
-      _updatedDiscountRule();
+      _updateExistingRule();
       return;
     }
 
@@ -94,7 +94,7 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
     _bloc.add(AddSetup<List<DiscountRule>>(data: newRules));
   }
 
-  void _updatedDiscountRule() {
+  void _updateExistingRule() {
     final updated = _discountRules.first.copyWith(
       id: _serverRule!.id,
       history: history(AuditAction.updated),
@@ -177,7 +177,7 @@ class _AddDiscountRuleFormState extends State<_AddDiscountRuleForm> {
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map(DiscountRule.fromMap));
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],

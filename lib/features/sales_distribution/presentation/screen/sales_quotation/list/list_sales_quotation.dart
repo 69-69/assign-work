@@ -92,7 +92,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     );
   }
 
-  ({List<TableRowData> rows, List<TableRowData>? childrenRow}) _filterQuotes(
+  ({List<DataTableRow> rows, List<DataTableRow>? childrenRow}) _filterQuotes(
     List<SalesQuotation> quotes,
   ) {
     if (_isApproved) {
@@ -115,7 +115,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   }
 
   Widget _buildCard(BuildContext context, List<SalesQuotation> quotes) {
-    // Filter for Quotations by date
+    // Filter Quotations by date
     final filtered = _filterQuotes(quotes);
 
     return DynamicDataTable2(
@@ -131,8 +131,6 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
       onSelectionChanged: (ids, rows) {
         setState(() => _selectedIds = ids);
       },
-      // onChecked: _onChecked,
-      // onAllChecked: _onAllChecked,
       optButtonLabel: 'Print',
       onOptButtonTap: (row) async => await _onPrintSQ(quotes, row.id),
       onEditTap: (row) async => await _onEditTap(quotes, row.id),
@@ -140,8 +138,8 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
     );
   }
 
-  TableRowData _toTableRow(SalesQuotation e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(SalesQuotation e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<SalesQuotation> quotes) {
     return ListToolbarButtons(

@@ -99,8 +99,8 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
     );
   }
 
-  TableRowData _toTableRow(DiscountGroup e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(DiscountGroup e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<DiscountGroup> masters) {
     return ListToolbarButtons(

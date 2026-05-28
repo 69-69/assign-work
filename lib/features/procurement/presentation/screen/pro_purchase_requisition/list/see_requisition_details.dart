@@ -62,7 +62,9 @@ extension PRDetails on BuildContext {
     return iconButton(
       Icons.history,
       iconColor: kPrimaryAccentColor,
-      bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      bgColor:kTransparentColor,
+      borderColor: kTransparentColor,
+      // bgColor: kPrimaryAccentColor.toAlpha(0.1),
       // borderColor: kPrimaryAccentColor.toAlpha(0.1),
       tooltip: 'View PR History',
       onPressed: () async => await _onOpenHistory(pr),

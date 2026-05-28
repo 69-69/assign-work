@@ -99,8 +99,8 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
     );
   }
 
-  TableRowData _toTableRow(DiscountRule e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(DiscountRule e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<DiscountRule> masters) {
     return ListToolbarButtons(
@@ -143,8 +143,9 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
     BuildContext cxt, {
     DiscountRule? serverItem,
   }) async => await cxt.openAddDiscountRule(serverRule: serverItem);
+}
 
-  /*_onChecked(bool? isChecked, checkedRow) {
+/*_onChecked(bool? isChecked, checkedRow) {
     setState(() {
       final id = checkedRow.first;
       if (isChecked == true) {
@@ -169,4 +170,3 @@ class _ListDiscountRulesState extends State<ListDiscountRules> {
       }
     });
   }*/
-}

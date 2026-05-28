@@ -20,7 +20,7 @@ class ListItemMaster extends StatefulWidget {
 
 class _ListItemMasterState extends State<ListItemMaster> {
   bool _inProgress = false;
-  final List<String> _selectedIds = [];
+   List<String> _selectedIds = [];
 
   ItemMasterBloc get _bloc => context.read<ItemMasterBloc>();
 
@@ -60,7 +60,7 @@ class _ListItemMasterState extends State<ListItemMaster> {
           SetupsLoaded<ItemMaster>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Item Master',
+                    'New Item Master',
                     onPressed: () => _openItemMasterForm(context),
                   )
                 : _buildCard(context, results),
@@ -74,27 +74,31 @@ class _ListItemMasterState extends State<ListItemMaster> {
   }
 
   Widget _buildCard(BuildContext c, List<ItemMaster> masters) {
-    return DynamicDataTable(
+    return DynamicDataTable2(
       omitAtIndex: 0,
       maskAtIndex: 1,
       toolbar: _buildToolbar(masters),
       headers: ItemMaster.dataTableHeader,
-      rows: masters.map((d) => d.itemAsList).toList(),
+      rows: masters.map(_toTableRow).toList(),
       template: ItemMaster.templateHeader,
       selectedRowKeys: _selectedIds,
-      onChecked: _onChecked,
-      onAllChecked: _onAllChecked,
-      onEditTap: (row) async => await _onEditTap(masters, row.first),
-      onDeleteTap: (row) async => await _onDeleteTap(masters, row.first),
+      onSelectionChanged: (ids, rows) {
+        setState(() => _selectedIds = ids);
+      },
+      onEditTap: (row) async => await _onEditTap(masters, row.id),
+      onDeleteTap: (row) async => await _onDeleteTap(masters, row.id),
     );
   }
+
+  DataTableRow _toTableRow(ItemMaster e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   Widget _buildToolbar(List<ItemMaster> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      primaryLabel: 'Create Item Master',
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete Item Master',
-      refreshLabel: 'Refresh Master Data',
+      primaryLabel: 'New Item Master',
+      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
+      refreshLabel: 'Refresh',
       onPrimary: () => _openItemMasterForm(context),
       onRefresh: () => _bloc.add(RefreshSetups<ItemMaster>()),
       onDanger: _selectedIds.isNotEmpty
@@ -144,31 +148,5 @@ class _ListItemMasterState extends State<ListItemMaster> {
         },
       );
     }
-  }
-
-  _onChecked(bool? isChecked, checkedRow) {
-    setState(() {
-      final id = checkedRow.first;
-      if (isChecked == true) {
-        if (!_selectedIds.contains(id)) _selectedIds.add(id);
-      } else {
-        // Remove item from the selected list if unchecked
-        _selectedIds.removeWhere((selectedId) => selectedId == id);
-      }
-    });
-  }
-
-  _onAllChecked(
-    bool isChecked,
-    List<bool> isAllChecked,
-    List<List<String>> checkedRows,
-  ) {
-    setState(() {
-      _selectedIds.clear();
-      // Add all selected rows, ensuring uniqueness using a Set
-      if (isChecked) {
-        _selectedIds.addAll(checkedRows.map((e) => e.first).toSet());
-      }
-    });
   }
 }

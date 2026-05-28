@@ -20,7 +20,7 @@ extension CreateNewSubscription<T> on BuildContext {
     child: BottomSheetScaffold(
       title: 'New Subscription',
       subtitle:
-          'NOTE: Subscriptions are specific to each workspaces.\nNot shared or generic!',
+          'NOTE: Subscriptions are specific to each workspace.\nNot shared or generic!',
       subTitleColor: kDangerColor,
       body: _CreateNewSubscriptionForm(),
     ),

@@ -18,7 +18,6 @@ class ListCustomers extends StatefulWidget {
 }
 
 class _ListCustomersState extends State<ListCustomers> {
-  List<String> _selectedIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +57,6 @@ class _ListCustomersState extends State<ListCustomers> {
       maskAtIndex: 1,
       headers: Customer.dataTableHeader,
       toolbar: _buildToolbar(customers),
-      selectedRowKeys: _selectedIds,
-      onSelectionChanged: (ids, rows) {
-        setState(() => _selectedIds = ids);
-      },
       rows: todayCustomers.map(_toTableRow).toList(),
       childrenRow: pastCustomers.map(_toTableRow).toList(),
       onEditTap: (row) async => await _onEditTap(context, customers, row.id),
@@ -69,8 +64,8 @@ class _ListCustomersState extends State<ListCustomers> {
     );
   }
 
-  TableRowData _toTableRow(Customer e) =>
-      TableRowData.fromList(e.id, e.itemAsList);
+  DataTableRow _toTableRow(Customer e) =>
+      DataTableRow.fromList(e.id, e.itemAsList);
 
   _buildToolbar(List<Customer> customers) {
     return context.actionInfoButton(

@@ -60,7 +60,9 @@ extension SalesQuoteDetails on BuildContext {
     return iconButton(
       Icons.history,
       iconColor: kPrimaryAccentColor,
-      bgColor: kPrimaryAccentColor.toAlpha(0.1),
+      bgColor:kTransparentColor,
+      borderColor: kTransparentColor,
+      // bgColor: kPrimaryAccentColor.toAlpha(0.1),
       // borderColor: kPrimaryAccentColor.toAlpha(0),
       tooltip: 'View Sales Quote History',
       onPressed: () async => await _onOpenHistory(salesQuote),

@@ -51,7 +51,7 @@ class _SearchWHBinState extends State<SearchWHBin> {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncSearchDropdown<WHBin>(
+    return AsyncDropdown<WHBin>(
       selectedItem: _whBin,
       labelText: _labelText,
       helperText: 'Enter * for all Bins, or type to search',

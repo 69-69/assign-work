@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/util/extensions/item_category.dart';
 import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -289,9 +290,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
         unitOfMeasure: UOMUtil.fromString(map['unitOfMeasure']),
         category: ItemCategoryUtil.fromString(map['category']),
         discountPercent: '${map['discountPercent']}'.asDouble,
-        taxCodes: List<String>.from(
-          map['taxCodes'] ?? [],
-        ).whereType<String>().toList(),
+        taxCodes: TaxModeUtil.codes(map['taxCodes']),
         taxAmount: '${map['taxAmount']}'.asDouble,
         taxPercent: '${map['taxPercent']}'.asDouble,
         taxNames: map['taxNames'] ?? '',
@@ -493,9 +492,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
         limitAmount: '${map['limitAmount']}'.asDouble,
         limitQuantity: '${map['limitQuantity']}'.asDouble,
         discountPercent: '${map['discountPercent']}'.asDouble,
-        taxCodes: List<String>.from(
-          map['taxCodes'] ?? [],
-        ).whereType<String>().toList(),
+        taxCodes: TaxModeUtil.codes(map['taxCodes']),
         taxAmount: '${map['taxAmount']}'.asDouble,
         taxPercent: '${map['taxPercent']}'.asDouble,
         taxNames: map['taxNames'] ?? '',

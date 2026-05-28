@@ -111,8 +111,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
   // Current employee info
   Employee? get _employee => context.employee;
+
   String get _employeeId => _employee!.employeeId;
+
   String get _employeeName => _employee!.fullName;
+
   String get _employeeStore => _employee!.storeNumber;
 
   ProPurchaseOrderBloc get _bloc => context.read<ProPurchaseOrderBloc>();

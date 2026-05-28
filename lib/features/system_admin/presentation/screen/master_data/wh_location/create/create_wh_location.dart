@@ -72,7 +72,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
   bool _isSubmitting = false;
   late WHLocation _whLocationData;
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -272,7 +272,7 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
         _isCustomType = locType.isDefineNew;
       });
     });
-    _updateValidity();
+    _syncValidity();
   }
 
   Widget _buildButtons() {

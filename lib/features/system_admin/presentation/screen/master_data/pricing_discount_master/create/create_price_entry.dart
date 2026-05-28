@@ -96,7 +96,7 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
 
   PriceListEntryBloc get _bloc => context.read<PriceListEntryBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -296,7 +296,7 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
                     }),
                   );*/
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],

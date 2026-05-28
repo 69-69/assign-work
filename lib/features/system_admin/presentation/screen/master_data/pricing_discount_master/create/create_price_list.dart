@@ -58,7 +58,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
 
   PriceListMasterBloc get _bloc => context.read<PriceListMasterBloc>();
 
-  void _updateValidity() => _formKey.updateValidity(
+  void _syncValidity() => _formKey.syncValidity(
     currentValidity: _isFormValid,
     onChanged: (v) => setState(() => _isFormValid = v),
   );
@@ -69,7 +69,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
 
     // Case 1: Update existing Attribute
     if (_isFormValid && (_serverPriceList?.isNotEmpty ?? false)) {
-      _updatedPriceList();
+      _updateExistingPriceList();
       return;
     }
 
@@ -96,7 +96,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
     _bloc.add(AddSetup<List<PriceListMaster>>(data: newPrices));
   }
 
-  void _updatedPriceList() {
+  void _updateExistingPriceList() {
     final updated = _priceLists.first.copyWith(
       id: _serverPriceList!.id,
       history: history(AuditAction.updated),
@@ -180,7 +180,7 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map(PriceListMaster.fromMap));
 
-                _updateValidity();
+                _syncValidity();
               },
             ),
           ],
