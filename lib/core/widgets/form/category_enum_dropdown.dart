@@ -7,8 +7,8 @@ import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:flutter/material.dart';
 
-/// For Creating New Category [CategoryDropdown]
-class CategoryDropdown extends StatefulWidget {
+/// [CategoryPicker] Local enum-based category picker (static data source).
+class CategoryPicker extends StatefulWidget {
   final bool isMultiSelect;
   final bool? isService;
   final bool isDisabled;
@@ -22,7 +22,7 @@ class CategoryDropdown extends StatefulWidget {
   final ValueChanged<String?>? onChanged;
   final ValueChanged<List<String>>? onMultiChanged;
 
-  const CategoryDropdown({
+  const CategoryPicker({
     super.key,
     this.isMultiSelect = false,
     this.isDisabled = false,
@@ -36,10 +36,10 @@ class CategoryDropdown extends StatefulWidget {
   });
 
   @override
-  State<CategoryDropdown> createState() => _CategoryDropdownState();
+  State<CategoryPicker> createState() => _CategoryPickerState();
 }
 
-class _CategoryDropdownState extends State<CategoryDropdown> {
+class _CategoryPickerState extends State<CategoryPicker> {
   bool _isNotFound = false;
   late List<String>? _selectedCategories;
 

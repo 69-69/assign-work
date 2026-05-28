@@ -2,7 +2,7 @@ import 'package:assign_erp/core/util/date_time_picker.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/procurement/presentation/screen/pro_supplier/supplier_account/widget/search_suppliers.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/remote_category_dropdown.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/category_dropdown.dart';
 import 'package:flutter/material.dart';
 
 /// Cost Price & Selling Price TextField [CostAndSellingPriceInput]
@@ -96,7 +96,7 @@ class DiscountPercentAndCategory extends StatelessWidget {
           keyboardType: TextInputType.number,
           validator: (v) => null,
         ),
-        CategoryDropdown(
+        CategoryPicker(
           initialValue: initialCategory,
           onChange: onCategoryChange,
         ),
@@ -415,14 +415,14 @@ class RemarksTextField extends StatelessWidget {
   }
 }
 
-/// Product Types [CategoryDropdown]
-class CategoryDropdown extends StatelessWidget {
+/// Product Types [CategoryPicker]
+class CategoryPicker extends StatelessWidget {
   final String? initialValue;
   final Function(String, String) onChange;
 
   // final ValueChanged onChange;
 
-  const CategoryDropdown({
+  const CategoryPicker({
     super.key,
     required this.onChange,
     this.initialValue,
@@ -430,7 +430,7 @@ class CategoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RemoteCategoryDropdown(
+    return CategoryDropdown(
       initialValue: initialValue,
       onChanged: (id, category) => onChange(id, category),
     );

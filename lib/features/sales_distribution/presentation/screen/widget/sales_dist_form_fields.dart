@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
-import 'package:assign_erp/core/widgets/form/all_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/category_enum_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/supplier_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';
@@ -94,7 +94,7 @@ class SalesDistFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return CategoryDropdown(
+        return CategoryPicker(
           isService: false,
           isDisabled: isDisabled,
           initialValue: initialData,
@@ -218,7 +218,7 @@ class SalesDistFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return CategoryDropdown(
+        return CategoryPicker(
           isService: true,
           label: 'Service Category',
           initialValue: initialData,

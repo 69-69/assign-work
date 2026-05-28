@@ -4,8 +4,8 @@ import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_ca
 import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:flutter/material.dart';
 
-/// Remote Categories [RemoteCategoryDropdown]
-class RemoteCategoryDropdown extends StatefulWidget {
+/// Remote Categories [CategoryDropdown]
+class CategoryDropdown extends StatefulWidget {
   final bool isMultiSelect;
 
   final String? label;
@@ -17,7 +17,7 @@ class RemoteCategoryDropdown extends StatefulWidget {
   final Function(String, String)? onChanged;
   final ValueChanged<List<Category>>? onMultiChanged;
 
-  const RemoteCategoryDropdown({
+  const CategoryDropdown({
     super.key,
     this.isMultiSelect = false,
     this.label,
@@ -29,10 +29,10 @@ class RemoteCategoryDropdown extends StatefulWidget {
   });
 
   @override
-  State<RemoteCategoryDropdown> createState() => _RemoteCategoryDropdownState();
+  State<CategoryDropdown> createState() => _CategoryDropdownState();
 }
 
-class _RemoteCategoryDropdownState extends State<RemoteCategoryDropdown> {
+class _CategoryDropdownState extends State<CategoryDropdown> {
   Category? _selectedCategory;
   List<Category>? _selectedCategories;
 

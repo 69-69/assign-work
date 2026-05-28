@@ -4,22 +4,22 @@ import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_di
 import 'package:assign_erp/features/system_admin/data/models/master_data/discount_group_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search Discount Group [SearchDiscountGroup]
-class SearchDiscountGroup extends StatefulWidget {
+/// Discount Group Dropdown [DiscountGroupDropdown]
+class DiscountGroupDropdown extends StatefulWidget {
   final String? initialValue;
   final Function(String, String) onChanged;
 
-  const SearchDiscountGroup({
+  const DiscountGroupDropdown({
     super.key,
     this.initialValue,
     required this.onChanged,
   });
 
   @override
-  State<SearchDiscountGroup> createState() => _SearchDiscountGroupState();
+  State<DiscountGroupDropdown> createState() => _DiscountGroupDropdownState();
 }
 
-class _SearchDiscountGroupState extends State<SearchDiscountGroup> {
+class _DiscountGroupDropdownState extends State<DiscountGroupDropdown> {
   DiscountGroup? _discountGroup;
   String? _initialValue;
 

@@ -5,8 +5,134 @@ import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_pr
 import 'package:assign_erp/features/system_admin/data/models/master_data/price_list_master_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search priceList [SearchPriceList]
-class SearchPriceList extends StatefulWidget {
+/// Search priceList [PriceListDropdown]
+class PriceListDropdown extends StatefulWidget {
+  final bool isMultiSelect;
+
+  final String? label;
+
+  final String? initialValue;
+  final List<String>? initialValues;
+
+  final Function(String, String)? onChanged;
+  final ValueChanged<List<PriceListMaster>>? onMultiChanged;
+
+  const PriceListDropdown({
+    super.key,
+    this.isMultiSelect = false,
+    this.label,
+    this.initialValue,
+    this.initialValues,
+    this.onChanged,
+    this.onMultiChanged,
+  });
+
+  @override
+  State<PriceListDropdown> createState() => _PriceListDropdownState();
+}
+
+class _PriceListDropdownState extends State<PriceListDropdown> {
+  PriceListMaster? _selected;
+  List<PriceListMaster>? _selectedList;
+
+  String get _label => widget.label ?? 'Price List';
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadInitial());
+  }
+
+  Future<void> _loadInitial() async {
+    if (widget.isMultiSelect) return;
+
+    final initial = widget.initialValue;
+    if (initial == null || initial.isEmpty) return;
+
+    final lists = await _fetchPriceLists(initial);
+
+    if (mounted && lists.isNotEmpty) {
+      setState(() => _selected = lists.first);
+    }
+  }
+
+  Future<List<PriceListMaster>> _fetchPriceLists(String filter) async {
+    if (filter.contains('*')) {
+      return await GetPriceList.load();
+    }
+
+    return await GetPriceList.byAnyTerm(filter);
+  }
+
+  bool _filter(PriceListMaster list, String filter) {
+    if (filter == '*') return true;
+
+    final term = filter.isEmpty ? (widget.initialValue ?? '') : filter;
+
+    return list.filterByAny(term);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AsyncDropdown<PriceListMaster>(
+      isMultiSelect: widget.isMultiSelect,
+
+      labelText: _label,
+
+      helperText: widget.isMultiSelect
+          ? 'Select one or more price lists'
+          : 'Select price list',
+
+      selectedItem: widget.isMultiSelect ? null : _selected,
+
+      selectedMultiItems: widget.isMultiSelect ? _selectedList : null,
+
+      asyncItems: (filter, _) async {
+        return _fetchPriceLists(filter);
+      },
+
+      filterFn: _filter,
+
+      getDisplayText: (list) => list.name.toTitle,
+
+      onChanged: (list) {
+        _selected = list;
+        widget.onChanged?.call(list!.id, list.name);
+      },
+
+      onMultiChanged: (values) {
+        setState(() {
+          _selectedList = List.from(values);
+        });
+
+        widget.onMultiChanged?.call(values);
+      },
+
+      validator: !widget.isMultiSelect
+          ? (value) => value == null ? 'Price list is required' : null
+          : null,
+
+      validatorMulti: widget.isMultiSelect
+          ? (values) => values.isNullOrEmpty ? 'Price list is required' : null
+          : null,
+
+      onNoDataFound: () {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _handleNoDataFound(context),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleNoDataFound(BuildContext context) async {
+    await context.confirmDone(
+      const Text('Enter * to load all price lists or refine your search.'),
+      title: 'Price list not found',
+    );
+  }
+}
+
+/*class SearchPriceList extends StatefulWidget {
   final String? initialValue;
   final Function(String, String) onChanged;
 
@@ -71,7 +197,6 @@ class _SearchPriceListState extends State<SearchPriceList> {
 }
 
 
-/// PriceList Multi Select Dropdown [PriceListMultiSelect]
 class PriceListMultiSelect extends StatefulWidget {
   const PriceListMultiSelect({
     super.key,
@@ -104,7 +229,7 @@ class _PriceListMultiSelectState extends State<PriceListMultiSelect> {
   Future<List<PriceListMaster>> _loadPriceLists({String? filter}) async {
     // Only use filter or initialValues if filter is non-empty
     final filterBy =
-    (filter?.isEmpty ?? true) && (_initialValues?.isEmpty ?? true)
+        (filter?.isEmpty ?? true) && (_initialValues?.isEmpty ?? true)
         ? '' // Use empty string if both filter and initialValues are empty
         : (filter?.isEmpty ?? true)
         ? (_initialValues?.join(' ') ?? '')
@@ -129,10 +254,9 @@ class _PriceListMultiSelectState extends State<PriceListMultiSelect> {
       isMultiSelect: true,
       selectedMultiItems: _priceLists,
       labelText: '$_labelText...',
-      helperText:
-      'If Price List is not listed, add from Price List Tab',
+      helperText: 'If Price List is not listed, add from Price List Tab',
       asyncItems: (String filter, loadProps) async =>
-      await _loadPriceLists(filter: filter),
+          await _loadPriceLists(filter: filter),
       filterFn: _filterList,
       getDisplayText: (PriceListMaster list) => list.name.toTitle,
       onMultiChanged: (List<PriceListMaster> lists) {
@@ -143,7 +267,7 @@ class _PriceListMultiSelectState extends State<PriceListMultiSelect> {
       validatorMulti: (lists) => lists.isNullOrEmpty ? _labelText : null,
       onNoDataFound: () {
         WidgetsBinding.instance.addPostFrameCallback(
-              (_) => _handleNoDataFound(context),
+          (_) => _handleNoDataFound(context),
         );
       },
     );
@@ -154,7 +278,7 @@ class _PriceListMultiSelectState extends State<PriceListMultiSelect> {
         ? '' // Use empty string if no filter and initial values are empty
         : filter.isEmpty
         ? (_initialValues?.join(' ') ??
-        '') // Join the list into a single string
+              '') // Join the list into a single string
         : filter;
     return list.filterByAny(term);
   }
@@ -168,4 +292,4 @@ class _PriceListMultiSelectState extends State<PriceListMultiSelect> {
     );
   }
 }
-
+*/

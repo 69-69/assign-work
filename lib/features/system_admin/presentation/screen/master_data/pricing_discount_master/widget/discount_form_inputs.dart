@@ -7,9 +7,9 @@ import 'package:assign_erp/core/widgets/form/discount_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/transaction_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_discount_group.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_price_list.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/remote_category_dropdown.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/discount_group_dropdown.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/price_list_dropdown.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/category_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class DiscountFormInputs {
@@ -75,7 +75,7 @@ class DiscountFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return SearchPriceList(
+        return PriceListDropdown(
           initialValue: initialData,
           onChanged: (String id, String name) => onChanged(id),
         );
@@ -104,7 +104,7 @@ class DiscountFormInputs {
       widgetType: FieldWidgetType.custom,
       visibleWhen: (data) => _isVisible(data),
       customBuilder: ({required initialData, required onChanged}) {
-        return RemoteCategoryDropdown(
+        return CategoryDropdown(
           isMultiSelect: true,
           label: 'Categories',
           initialValues: List<Category>.from(initialData ?? []),
@@ -181,7 +181,7 @@ class DiscountFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return SearchDiscountGroup(
+        return DiscountGroupDropdown(
           initialValue: initialData,
           onChanged: (String id, String name) => onChanged(id),
         );

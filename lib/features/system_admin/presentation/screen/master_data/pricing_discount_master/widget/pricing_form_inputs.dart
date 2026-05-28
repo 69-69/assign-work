@@ -5,7 +5,7 @@ import 'package:assign_erp/core/widgets/form/currency_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/custom_checkbox_tile.dart';
 import 'package:assign_erp/core/widgets/form/transaction_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/search_price_list.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/price_list_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class PricingFormInputs {
@@ -94,7 +94,7 @@ class PricingFormInputs {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return SearchPriceList(
+        return PriceListDropdown(
           initialValue: initialData,
           onChanged: (String id, String name) => onChanged(id),
         );

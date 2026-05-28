@@ -156,7 +156,7 @@ class _UpdateItemFormState extends State<_UpdateItemForm> {
       children: <Widget>[
         Text('Update Category', style: context.textTheme.titleLarge),
         const SizedBox(height: 10.0),
-        CategoryDropdown(
+        CategoryPicker(
           key: const Key('Update-Category'),
           initialValue: _product.category,
           onChange: (id, name) => _updateCategory(name),

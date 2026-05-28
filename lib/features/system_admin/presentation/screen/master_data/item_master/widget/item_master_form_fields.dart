@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/form/costing_method_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
-import 'package:assign_erp/core/widgets/form/all_category_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/category_enum_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
@@ -49,7 +49,7 @@ class ItemMasterFormFields {
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return CategoryDropdown(
+        return CategoryPicker(
           isService: itemType?.isService ?? false,
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
