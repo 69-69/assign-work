@@ -1,4 +1,3 @@
-import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
@@ -8,8 +7,8 @@ import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_bottom_sheet.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/layout/form_group_card.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
 import 'package:assign_erp/features/auth/presentation/guard/auth_guard.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
@@ -49,13 +48,11 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passcodeController = TextEditingController();
+
   bool get _isFormValid => _formKey.currentState?.validate() ?? false;
 
-  void _generateEmployeeId() async {
-    await DocType.employee.getShortUID(
-      onChanged: (s) => setState(() => _newEmployeeId = s),
-    );
-  }
+  Future<String> _generateEmployeeId() async =>
+      await DocType.employee.getShortUID;
 
   Employee get _employee => Employee(
     employeeId: _newEmployeeId,
@@ -139,25 +136,17 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
     );
   }
 
-  _buildEmployeeId() => Align(
-    alignment: Alignment.topLeft,
-    child: FittedBox(
-      child: context.actionInfoButton(
-        'Refresh Employee ID',
-        count: _newEmployeeId,
-        bgColor: kPrimaryColor,
-        isTotal: false,
-        onPressed: _generateEmployeeId,
-      ),
-    ),
-  );
-
   Column _buildBody(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildEmployeeId(),
+        AutoIDField(
+          label: 'Employee ID',
+          allowManualEntry: true,
+          onGenerate: () async => await _generateEmployeeId(),
+          onChanged: (id) => setState(() => _newEmployeeId = id),
+        ),
         FormGroupCard(
           title: 'Employee\'s Details',
           children: [
@@ -185,6 +174,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
           ],
         ),
         FormGroupCard(
+          isExpanded: false,
           title: 'Role & Permission',
           children: [
             StoreBranchesAndDepartment(
@@ -213,5 +203,4 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
       ],
     );
   }
-
 }

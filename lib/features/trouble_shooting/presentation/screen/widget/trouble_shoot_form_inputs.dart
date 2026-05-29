@@ -28,7 +28,7 @@ class SubscriptionNameAndFee extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomTextField(
-          enable: enable,
+          enabled: enable,
           label: 'Subscription name',
           onChanged: onNameChanged,
           controller: nameController,
@@ -60,7 +60,7 @@ class SubscriptionFee extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-      enable: enable,
+      enabled: enable,
       label: 'Subscription Fee',
       onChanged: onSubscribeFeeChanged,
       controller: subscribeFeeController,

@@ -295,7 +295,7 @@ class CustomerIdTextField extends StatelessWidget {
       alignment: Alignment.topRight,
       children: <Widget>[
         CustomTextField(
-          enable: enable,
+          enabled: enable,
           label: 'Customer ID',
           controller: controller,
           onChanged: onChanged,

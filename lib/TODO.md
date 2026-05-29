@@ -1,12 +1,10 @@
 # @TODO 
     - search for: /// @TODO - remove and replace with remote categories
     - Remove Local Item Categores and replace with Remote ones
-    - Refactoring Discount Group FormFields
 
 ## @Continue Tomorrow (Next Sprint)
     ## Linking Item Master with
-        - Discount
-        - Discount, Sub Location, Bin
+        - WH, Sub Location, Bin
     > NOTE: watch item master link to warehouse on YouTube.com
     > REF Doc: lib/features/system_admin/presentation/setup_tiles.dart
 

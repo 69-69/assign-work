@@ -324,7 +324,7 @@ class TotalAmountTextField extends StatelessWidget {
       alignment: Alignment.topRight,
       children: <Widget>[
         CustomTextField(
-          enable: enable,
+          enabled: enable,
           controller: controller,
           onChanged: onChanged,
           label: 'Total amount',

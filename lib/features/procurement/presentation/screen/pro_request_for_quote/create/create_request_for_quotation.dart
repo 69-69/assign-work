@@ -110,11 +110,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
 
   void _generateRFQNumber() async {
-    await DocType.rfq.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _rfqNumber = s);
-      },
-    );
+    final id = await DocType.rfq.getShortUID;
+    if (mounted) setState(() => _rfqNumber = id);
   }
 
   Future<void> _getDefaultShippingAddress() async {

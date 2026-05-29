@@ -51,28 +51,21 @@ extension GenerateUID on DocType {
     return allData.data.shortId;
   }
 
-  Future<String?> _generateAndHandleId({Function(String)? onChanged}) async {
+  Future<String> _generateAndHandleId() async {
     final newId = await _checkReturn();
 
-    if (newId.isNotEmpty) {
-      final prefix = getName.isNotEmpty
-          ? getName.substring(0, 3).toUpperAll
-          : '';
-      final formattedId = '$prefix-$newId';
-
-      if (onChanged != null) {
-        onChanged(formattedId);
-      } else {
-        return formattedId;
-      }
+    if (newId.isEmpty) {
+      throw Exception('Unable to generate ID');
     }
-    return null;
+
+    final prefix = getName.isNotEmpty
+        ? getName.substring(0, 3).toUpperCase()
+        : '';
+
+    return '$prefix-$newId';
   }
 
-  Future<String?> getShortStr() async => _generateAndHandleId();
-
-  Future<void> getShortUID({required Function(String) onChanged}) async =>
-      await _generateAndHandleId(onChanged: onChanged);
+  Future get getShortUID async => await _generateAndHandleId();
 }
 
 extension UniqueCodeExtension on String {
@@ -89,10 +82,10 @@ extension UniqueCodeExtension on String {
       // Extract numeric part from all existing codes, ignore prefixes
       final existingNumbers = existingCodes
           .map((c) {
-        // Split by '-' and take the last segment
-        final parts = c.split('-');
-        return int.tryParse(parts.last);
-      })
+            // Split by '-' and take the last segment
+            final parts = c.split('-');
+            return int.tryParse(parts.last);
+          })
           .where((n) => n != null)
           .cast<int>()
           .toList();

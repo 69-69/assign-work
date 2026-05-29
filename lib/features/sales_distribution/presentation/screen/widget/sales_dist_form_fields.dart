@@ -4,7 +4,7 @@ import 'package:assign_erp/core/util/extensions/line_item_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
-import 'package:assign_erp/core/widgets/form/category_enum_dropdown.dart';
+import 'package:assign_erp/core/widgets/form/category_picker.dart';
 import 'package:assign_erp/core/widgets/form/supplier_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/screen_helper.dart';

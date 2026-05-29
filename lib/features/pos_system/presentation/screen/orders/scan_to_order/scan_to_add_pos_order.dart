@@ -226,8 +226,12 @@ class _ScannedItemsState extends State<_ScannedItems> {
   }
 
   Future<void> _initializeOrderDetails() async {
-    _newOrderNumber = (await DocType.pOrder.getShortStr());
-    _customerId = (await DocType.customer.getShortStr());
+    final oid = await DocType.pOrder.getShortUID;
+    final cid = await DocType.customer.getShortUID;
+    setState(() {
+      _newOrderNumber = oid;
+      _customerId = cid;
+    });
   }
 
   void _updateOrder(int index, int quantity) {

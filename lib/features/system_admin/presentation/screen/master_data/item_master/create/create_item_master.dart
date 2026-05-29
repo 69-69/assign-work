@@ -171,11 +171,8 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   void _generateIMNumber() async {
-    await DocType.itemMaster.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _imNumber = s);
-      },
-    );
+    final id = await DocType.itemMaster.getShortUID;
+    if (mounted) setState(() => _imNumber = id);
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [

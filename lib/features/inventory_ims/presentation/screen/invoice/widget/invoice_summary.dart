@@ -52,9 +52,8 @@ class _InvoiceSummaryState extends State<InvoiceSummary> {
   ];
 
   void _generateInvoiceNumber() async {
-    await DocType.invoice.getShortUID(
-      onChanged: (s) => setState(() => _getInvoiceID = s),
-    );
+    final id = await DocType.invoice.getShortUID;
+    setState(() => _getInvoiceID = id);
   }
 
   @override

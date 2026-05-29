@@ -153,9 +153,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
             /// hence, generate new Customer-ID
             if (name.contains(autoID)) {
-              await DocType.customer.getShortUID(
-                onChanged: (s) => setState(() => _selectedCustomerId = s),
-              );
+              final id = await DocType.customer.getShortUID;
+              setState(() => _selectedCustomerId = id);
             } else {
               // Customer found...hence use his/her ID
               setState(() => _selectedCustomerId = id);

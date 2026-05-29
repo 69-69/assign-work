@@ -7,12 +7,17 @@ import 'package:assign_erp/core/widgets/form/discount_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/transaction_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/item_master_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/item_master/widget/item_master_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/discount_group_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/pricing_discount_master/widget/price_list_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/category_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class DiscountFormInputs {
+  static bool _isVisible(Map<String, dynamic> data) =>
+      data['applyToAll'] == null || data['applyToAll'] == false;
+
   /// Discount Group
   static List<FieldGroupConfig> get discountGroupFields => [
     FieldGroupConfig(
@@ -89,10 +94,10 @@ class DiscountFormInputs {
       widgetType: FieldWidgetType.custom,
       visibleWhen: (data) => _isVisible(data),
       customBuilder: ({required initialData, required onChanged}) {
-        return DiscountTypeDropdown(
+        return ItemMasterDropdown(
           label: 'Items',
-          initialValue: initialData,
-          onChanged: (String? selected) => onChanged(selected),
+          initialValues: List<ItemMaster>.from(initialData ?? []),
+          onMultiChanged: onChanged,
         );
       },
     ),
@@ -113,8 +118,6 @@ class DiscountFormInputs {
       },
     ),
   ];
-
-  static bool _isVisible(Map<String, dynamic> data) => data['applyToAll'] == null || data['applyToAll'] == false;
 
   ///Discount Rule
   static List<FieldGroupConfig> get discountRuleFields => [

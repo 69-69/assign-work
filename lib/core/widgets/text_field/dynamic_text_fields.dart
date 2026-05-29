@@ -294,7 +294,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
     return CustomTextField(
       isAutoGrow: config.isAutoGrow,
       maxHeight: config.maxHeight,
-      enable: !config.isDisabled,
+      enabled: !config.isDisabled,
       controller: group.controllers[key],
       keyboardType: inputType,
       onChanged: (_) => _notifyParent(),

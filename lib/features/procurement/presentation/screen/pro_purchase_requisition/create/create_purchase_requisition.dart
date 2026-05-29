@@ -102,11 +102,8 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   }
 
   void _generatePRNumber() async {
-    await DocType.prs.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _prNumber = s);
-      },
-    );
+    final id = await DocType.prs.getShortUID;
+    if (mounted) setState(() => _prNumber = id);
   }
 
   /// Construct PurchaseRequisite object

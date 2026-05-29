@@ -101,9 +101,8 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
   double _strToDouble(String s) => double.tryParse(s) ?? 0.0;
 
   void _generatePONumber() async {
-    await DocType.purchase.getShortUID(
-      onChanged: (s) => setState(() => _newPONumber = s),
-    );
+    final id = await DocType.purchase.getShortUID;
+    if (mounted) setState(() => _newPONumber = id);
   }
 
   PurchaseOrder get _orderData => PurchaseOrder(

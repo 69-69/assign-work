@@ -54,11 +54,8 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
       setState(() => _isEnabledCustomerId = !_isEnabledCustomerId);
 
   void _generateCustomerID() async {
-    await DocType.customer.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _customerId = s);
-      },
-    );
+    final id = await DocType.customer.getShortUID;
+    setState(() => _customerId = id);
   }
 
   void _onSubmit() {

@@ -120,7 +120,7 @@ class WhLocationFormFields {
       CustomTextField(
         key: key,
         label: label,
-        enable: enable,
+        enabled: enable,
         autofocus: enable,
         controller: controller,
         onChanged: onChanged,

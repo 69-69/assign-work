@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 /// Form text field [CustomTextField]
 ///
 class CustomTextField extends StatefulWidget {
-  final bool? enable;
+  final bool? readOnly;
+  final bool? enabled;
   final String? label;
   final int? maxLines;
   final int? minLines;
@@ -22,6 +23,7 @@ class CustomTextField extends StatefulWidget {
   final bool obscureText;
   final String? helperText;
   final String? initialValue;
+  final bool? canRequestFocus;
   final FocusNode? focusNode;
   final TextInputType keyboardType;
   final Iterable<String>? autofillHints;
@@ -36,7 +38,8 @@ class CustomTextField extends StatefulWidget {
     super.key,
     required this.keyboardType,
     this.label,
-    this.enable,
+    this.enabled,
+    this.readOnly,
     this.maxLines,
     this.minLines,
     this.focusNode,
@@ -49,6 +52,7 @@ class CustomTextField extends StatefulWidget {
     this.helperText,
     this.initialValue,
     this.autofillHints,
+    this.canRequestFocus,
     this.textInputAction,
     this.inputDecoration,
     this.maxHeight = 100,
@@ -63,10 +67,12 @@ class CustomTextField extends StatefulWidget {
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
-  late final TextEditingController _internalController;
-  late final TextEditingController _controller;
-  final ScrollController _scrollController = ScrollController();
   bool capsLockOn = false;
+  late final TextEditingController _controller;
+  bool get _readOnly => widget.readOnly ?? false;
+  late final TextEditingController _internalController;
+  bool get _canRequestFocus => widget.canRequestFocus ?? true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -155,7 +161,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
     return _StandardTextField(
       validator: valid,
-      enable: widget.enable,
+      enabled: widget.enabled,
+      readOnly: _readOnly,
       decoration: decoration,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -166,6 +173,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       textColor: widget.textColor,
       autofocus: widget.autofocus,
       obscureText: widget.obscureText,
+      canRequestFocus: _canRequestFocus,
       // initialValue: widget.initialValue,
       keyboardType: widget.keyboardType,
       autofillHints: widget.autofillHints,
@@ -183,7 +191,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
     return _LowercaseTextField(
       validator: valid,
-      enable: widget.enable,
+      enabled: widget.enabled,
+      readOnly: _readOnly,
       capsLockOn: capsLockOn,
       controller: _controller,
       maxLines: widget.maxLines,
@@ -194,6 +203,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       inputDecoration: decoration,
       autofocus: widget.autofocus,
       onChanged: widget.onChanged,
+      canRequestFocus: _canRequestFocus,
       onActionTriggered: _actionTriggered,
       textInputAction: widget.textInputAction,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -207,7 +217,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     var decoration =
         widget.inputDecoration ??
         InputDecoration(
-          filled: widget.enable == false,
+          filled: widget.enabled == false,
           fillColor: widget.fillColor ?? Colors.grey.shade300,
           labelText: '${widget.label} $helpText',
           // helperText: helperText,
@@ -249,13 +259,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
 }
 
 class _StandardTextField extends StatelessWidget {
-  final bool? enable;
+  final bool? enabled;
+  final bool readOnly;
   final int? minLines;
   final int? maxLines;
   final int? maxLength;
   final bool autofocus;
   final Color? textColor;
   final bool obscureText;
+  final bool canRequestFocus;
   final FocusNode? focusNode;
   final TextInputType keyboardType;
   final InputDecoration? decoration;
@@ -272,7 +284,8 @@ class _StandardTextField extends StatelessWidget {
 
   const _StandardTextField({
     required this.keyboardType,
-    this.enable,
+    this.enabled,
+    this.readOnly=false,
     this.maxLines,
     this.minLines,
     this.maxLength,
@@ -285,6 +298,7 @@ class _StandardTextField extends StatelessWidget {
     this.autofillHints,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.canRequestFocus = true,
     this.obscureText = false,
     this.autofocus = false,
     // this.initialValue,
@@ -299,29 +313,32 @@ class _StandardTextField extends StatelessWidget {
       autofocus: autofocus,
       controller: controller,
       // initialValue: initialValue,
-      focusNode: focusNode,
-      enabled: enable,
+      enabled: enabled,
+      readOnly: readOnly,
       maxLines: maxLines,
       minLines: minLines,
+      focusNode: focusNode,
       maxLength: maxLength,
-      keyboardType: keyboardType,
       obscureText: obscureText,
+      keyboardType: keyboardType,
       autofillHints: autofillHints,
-      onChanged: onChanged,
       textInputAction: textInputAction,
+      canRequestFocus:canRequestFocus,
       onFieldSubmitted: (v) => onFieldSubmitted?.call(v),
       style: TextStyle(
-        color: enable == false ? context.onSurfaceColor : textColor,
+        color: enabled == false ? context.onSurfaceColor : textColor,
         overflow: TextOverflow.ellipsis,
       ),
       decoration: decoration,
       validator: validator,
+      onChanged: onChanged,
     );
   }
 }
 
 class _LowercaseTextField extends StatelessWidget {
-  final bool? enable;
+  final bool? enabled;
+  final bool readOnly;
   final int? maxLines;
   final int? minLines;
   final bool autofocus;
@@ -329,6 +346,7 @@ class _LowercaseTextField extends StatelessWidget {
   final bool capsLockOn;
   final Color? textColor;
   final FocusNode? focusNode;
+  final bool canRequestFocus;
   final void Function(String)? onChanged;
   final InputDecoration? inputDecoration;
   final TextInputAction? textInputAction;
@@ -341,7 +359,8 @@ class _LowercaseTextField extends StatelessWidget {
   // final String? helperText;
 
   const _LowercaseTextField({
-    this.enable,
+    this.enabled,
+    this.readOnly=false,
     this.maxLines,
     this.minLines,
     this.maxLength,
@@ -356,6 +375,7 @@ class _LowercaseTextField extends StatelessWidget {
     this.onActionTriggered,
     this.autofocus = false,
     this.capsLockOn = false,
+    this.canRequestFocus = true,
     // this.labelText,
     // this.helperText,
     // this.initialValue,
@@ -374,15 +394,17 @@ class _LowercaseTextField extends StatelessWidget {
       autofocus: autofocus,
       // initialValue: initialValue,
       controller: _controller,
-      enabled: enable,
+      enabled: enabled,
+      readOnly: readOnly,
       focusNode: focusNode,
+      canRequestFocus:canRequestFocus,
       maxLines: maxLines,
       minLines: minLines,
       maxLength: maxLength,
       keyboardType: TextInputType.text,
       textInputAction: textInputAction,
       style: TextStyle(
-        color: enable == false ? context.onSurfaceColor : textColor,
+        color: enabled == false ? context.onSurfaceColor : textColor,
         overflow: TextOverflow.ellipsis,
       ),
       decoration: inputDecoration?.copyWith(

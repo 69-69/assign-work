@@ -125,9 +125,8 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
   double _strToDouble(String s) => s.asDouble;
 
   void _generateSONumber() async {
-    await DocType.order.getShortUID(
-      onChanged: (s) => setState(() => _newSONumber = s),
-    );
+    final id = await DocType.order.getShortUID;
+    setState(() => _newSONumber = id);
   }
 
   Orders get _orderData => Orders(
@@ -319,9 +318,8 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
             /// If customer doesn't exist, then fallback on 'Auto ID'.
             /// hence, generate new Customer-ID
             if (name.contains(autoID)) {
-              await DocType.customer.getShortUID(
-                onChanged: (s) => setState(() => _selectedCustomerId = s),
-              );
+              final id = await DocType.customer.getShortUID;
+              setState(() => _selectedCustomerId = id);
             } else {
               // Customer found...hence use his/her ID
               setState(() => _selectedCustomerId = id);

@@ -372,7 +372,7 @@ class OrderNumberTextField extends StatelessWidget {
       alignment: Alignment.topRight,
       children: <Widget>[
         CustomTextField(
-          enable: enable,
+          enabled: enable,
           label: 'Order Number',
           controller: controller,
           onChanged: onChanged,
@@ -409,7 +409,7 @@ class ItemIdTextField extends StatelessWidget {
       alignment: Alignment.topRight,
       children: <Widget>[
         CustomTextField(
-          enable: enable,
+          enabled: enable,
           label: 'Product ID',
           controller: controller,
           onChanged: onChanged,

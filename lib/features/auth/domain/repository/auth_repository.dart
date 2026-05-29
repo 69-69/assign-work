@@ -685,7 +685,7 @@ class AuthRepository extends FirestoreRepository {
     // Extract the document ID
 
     final byWho = await getEmployee();
-    final empId = (await DocType.employee.getShortStr());
+    final empId = (await DocType.employee.getShortUID);
 
     // Create an Employee instance with the document ID
     final employee = Employee(

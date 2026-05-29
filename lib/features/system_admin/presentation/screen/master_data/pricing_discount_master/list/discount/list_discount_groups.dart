@@ -105,7 +105,7 @@ class _ListDiscountGroupsState extends State<ListDiscountGroups> {
   Widget _buildToolbar(List<DiscountGroup> masters) {
     return ListToolbarButtons(
       dataLength: masters.length,
-      primaryLabel: 'Create Group',
+      primaryLabel: 'Create Discount',
       dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
       refreshLabel: 'Refresh',
       onPrimary: () => _openDiscountGroupForm(context),

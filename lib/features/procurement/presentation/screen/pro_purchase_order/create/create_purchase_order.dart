@@ -127,11 +127,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   }
 
   void _generatePONumber() async {
-    await DocType.pOrder.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _poNumber = s);
-      },
-    );
+    final id = await DocType.pOrder.getShortUID;
+    if (mounted) setState(() => _poNumber = id);
   }
 
   /// Construct ProPurchaseOrder object

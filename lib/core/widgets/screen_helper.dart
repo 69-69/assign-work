@@ -309,6 +309,7 @@ class RefreshButton extends StatefulWidget {
   const RefreshButton({
     super.key,
     this.bgColor,
+    this.iconColor,
     this.txtColor,
     this.callback,
     this.tooltip = 'refresh',
@@ -317,6 +318,7 @@ class RefreshButton extends StatefulWidget {
   final VoidCallback? callback;
   final String tooltip;
   final Color? bgColor;
+  final Color? iconColor;
   final Color? txtColor;
 
   @override
@@ -352,6 +354,7 @@ class _RefreshButtonState extends State<RefreshButton>
     return AnimatedSync(
       widget.tooltip,
       bgColor: widget.bgColor,
+      iconColor: widget.iconColor,
       txtColor: widget.txtColor,
       animation: rotateAnimation,
       callback: () async {
@@ -381,6 +384,7 @@ class AnimatedSync extends AnimatedWidget {
   final VoidCallback callback;
   final Animation<double> animation;
   final Color? bgColor;
+  final Color? iconColor;
   final Color? txtColor;
 
   const AnimatedSync(
@@ -389,6 +393,7 @@ class AnimatedSync extends AnimatedWidget {
     required this.animation,
     required this.callback,
     this.bgColor,
+    this.iconColor,
     this.txtColor,
   }) : super(listenable: animation);
 
@@ -407,7 +412,7 @@ class AnimatedSync extends AnimatedWidget {
           padding: EdgeInsets.zero,
           backgroundColor: bgColor ?? kDangerColor,
         ),
-        icon: Icon(Icons.sync, color: kWhiteColor, semanticLabel: tooltip),
+        icon: Icon(Icons.sync, color: iconColor ?? kWhiteColor, semanticLabel: tooltip),
         onPressed: () => callback(),
       ),
     );

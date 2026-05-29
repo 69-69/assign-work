@@ -89,11 +89,8 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
 
   void _generateSQNumber() async {
-    await DocType.sQuote.getShortUID(
-      onChanged: (s) {
-        if (mounted) setState(() => _quoteNumber = s);
-      },
-    );
+    final id = await DocType.sQuote.getShortUID;
+    if (mounted) setState(() => _quoteNumber = id);
   }
 
   /// Construct Sales Quote object
