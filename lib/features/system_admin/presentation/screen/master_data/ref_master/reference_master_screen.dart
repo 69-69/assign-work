@@ -23,7 +23,7 @@ class ReferenceMasterScreen extends StatelessWidget {
       isVertical: true,
       isScrollable: true,
       tabs: [
-        CustomTabModel(label: 'Item Category', icon: Icons.category),
+        CustomTabModel(label: 'Group/Category', icon: Icons.category),
         CustomTabModel(label: 'Units of Measure', icon: Icons.straighten),
       ],
       children: [

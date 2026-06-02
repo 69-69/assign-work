@@ -333,8 +333,8 @@ class _AddPurchaseOrdersBodyState extends State<_AddPurchaseOrdersBody> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: isMultipleOrders ? 'Create All POs' : 'Create PO',
-          onPressed: _onSubmit,
+          submitLabel: isMultipleOrders ? 'Create All POs' : 'Create PO',
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

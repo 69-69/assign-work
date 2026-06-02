@@ -325,19 +325,21 @@ class _HorizontalTabBars extends StatelessWidget {
           text: label,
           icon: hideIcon || t.icon == null
               ? null
-              : Tooltip(
-                  message: t.tooltip?.toTitle ?? label,
-                  child: Icon(
-                    t.icon,
-                    color: isActive ? kPrimaryLightColor : null,
-                  ),
-                ),
+              : Icon(t.icon, color: isActive ? kPrimaryLightColor : null),
           iconMargin: EdgeInsets.zero,
         );
       }).toList(),
       onTap: handleTabTap,
     );
   }
+
+  /*Tooltip(
+    message: t.tooltip?.toTitle ?? label,
+    child: Icon(
+      t.icon,
+      color: isActive ? kPrimaryLightColor : null,
+    ),
+  )*/
 }
 
 class _VerticalTabBars extends StatelessWidget {

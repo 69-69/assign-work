@@ -137,8 +137,9 @@ class _VariantTableState extends State<VariantTable> {
           if(!isDemo)
             context.confirmableActionButton(
               isDisabled: !_allPricesSet,
-              label: 'Save All Variants$_missingCount',
-              onPressed: _allPricesSet ? _saveAllVariants : null,
+              submitLabel: 'Save All Variants$_missingCount',
+              onDraft: (){},
+              onSubmit: _allPricesSet ? _saveAllVariants : null,
             ),
         ],
       ),

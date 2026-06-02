@@ -62,7 +62,7 @@ const appTrainingAppTitle = 'app training';
 /// MANAGEMENT SUB-SCREENS TITLES
 const masterDataScreenTitle = 'master data';
 const itemMasterScreenTitle = 'item master';
-const priceMasterScreenTitle = 'price master';
+const priceMasterScreenTitle = 'price & discount master';
 const taxMasterScreenTitle = 'tax master';
 const referenceMasterScreenTitle = 'reference master';
 const variantMasterScreenTitle = 'variant master';
@@ -105,6 +105,7 @@ const posSalesScreenTitle = 'p.o.s - sales';
 const posOrdersScreenTitle = 'p.o.s - orders';
 const trainingToScreenTitle = 'Training';
 
+const maxVariants =100;
 const borderRadius = 15.0;
 const kAppBarHeight = 80.0;
 const fMinutesDuration = Duration(minutes: 5);

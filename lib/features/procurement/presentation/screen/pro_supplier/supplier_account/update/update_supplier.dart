@@ -141,7 +141,7 @@ class _UpdateSupplierFormState extends State<_UpdateSupplierForm> {
           ],
         ),
 
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(onSubmit: _onSubmit),
         const SizedBox(height: 20.0),
       ],
     );

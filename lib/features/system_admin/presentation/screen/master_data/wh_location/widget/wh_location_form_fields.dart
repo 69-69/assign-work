@@ -124,7 +124,7 @@ class WhLocationFormFields {
         autofocus: enable,
         controller: controller,
         onChanged: onChanged,
-        keyboardType: TextInputType.text,
+        textInputType: TextInputType.text,
         inputDecoration:
             decoration ??
             InputDecoration(helperText: helperText, labelText: label),

@@ -93,7 +93,7 @@ class DiscountPercentAndCategory extends StatelessWidget {
           helperText: 'Optional',
           onChanged: onDiscountChanged,
           controller: discountController,
-          keyboardType: TextInputType.number,
+          textInputType: TextInputType.number,
           validator: (v) => null,
         ),
         CategoryPicker(
@@ -257,7 +257,7 @@ class NameTextField extends StatelessWidget {
       label: 'Name',
       onChanged: onChanged,
       controller: controller,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
     );
   }
 }
@@ -276,7 +276,7 @@ class CostPriceTextField extends StatelessWidget {
       helperText: 'Manufacturer Price',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -295,7 +295,7 @@ class SellingPriceTextField extends StatelessWidget {
       helperText: 'Unit Price',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -313,7 +313,7 @@ class InStockTextField extends StatelessWidget {
       label: 'In Stock',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -331,7 +331,7 @@ class BatchIdTextField extends StatelessWidget {
       label: 'Batch ID - Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       validator: (s) => null,
     );
   }
@@ -350,7 +350,7 @@ class SKUTextField extends StatelessWidget {
       label: 'SKU - Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       validator: (s) => null,
     );
   }
@@ -369,7 +369,7 @@ class QuantityTextField extends StatelessWidget {
       label: 'Quantity',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -388,7 +388,7 @@ class ManufacturerTextField extends StatelessWidget {
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       validator: (v) => null,
     );
   }
@@ -408,7 +408,7 @@ class RemarksTextField extends StatelessWidget {
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.multiline,
+      textInputType: TextInputType.multiline,
       maxLines: 4,
       validator: (s) => null,
     );

@@ -6,7 +6,7 @@ import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/features/system_admin/data/models/employee_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/create_acc/employee_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/department_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -73,7 +73,7 @@ class AssignEmployeeDepartment extends StatelessWidget {
       width: context.screenWidth,
       padding: EdgeInsets.only(bottom: context.bottomInsetPadding),
       child: AutofillGroup(
-        child: SearchDepartments(
+        child: DepartmentDropdown(
           onChanged: (id, code, department) {
             context.read<EmployeeBloc>().add(
               UpdateSetup<Employee>(

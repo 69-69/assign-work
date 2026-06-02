@@ -50,7 +50,7 @@ class _CategoryPickerState extends State<CategoryPicker> {
     isService: widget.isService,
   );
 
-  List<String> get _invalidPrefixes => ['Service', 'Material', 'Category name'];
+  List<String> get _invalidPrefixes => ['Category name'];
 
   @override
   void initState() {
@@ -87,7 +87,7 @@ class _CategoryPickerState extends State<CategoryPicker> {
         items: _allCategories,
         getDisplayText: (cat) => cat.toTitle,
         onChanged: (v) {
-          if (v.filterAny('unknown')) {
+          if (v.filterAny('unknown') || v.filterAny('category')) {
             _handleNoDataFound(context);
             return;
           }
@@ -116,7 +116,7 @@ class _CategoryPickerState extends State<CategoryPicker> {
       getDisplayText: (cat) => cat.toTitle,
 
       onMultiChanged: (values) {
-        if (values.filterAny('unknown')) {
+        if (values.filterAny('unknown') || values.filterAny('category')) {
           _handleNoDataFound(context);
           return;
         }
@@ -149,7 +149,7 @@ class _CategoryPickerState extends State<CategoryPicker> {
         widget.onMultiChanged?.call([value]);
       },
 
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
 
       inputDecoration: InputDecoration(
         labelText: 'Category name',

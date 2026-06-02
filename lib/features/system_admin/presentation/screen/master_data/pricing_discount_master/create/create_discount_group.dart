@@ -190,10 +190,10 @@ class _AddDiscountGroupFormState extends State<_AddDiscountGroupForm> {
 
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Discount Group')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
       ],
     );

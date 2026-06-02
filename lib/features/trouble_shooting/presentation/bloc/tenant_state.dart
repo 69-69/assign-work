@@ -53,6 +53,8 @@ class TenantDeleted<T> extends TenantState<T> {
   List<Object?> get props => [message];
 }
 
+class TenantDeleting<T> extends TenantState<T> {}
+
 class TenantError<T> extends TenantState<T> {
   final String error;
 

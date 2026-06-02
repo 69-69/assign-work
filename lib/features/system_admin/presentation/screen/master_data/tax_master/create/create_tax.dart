@@ -202,9 +202,9 @@ class _AddTaxFormState extends State<_AddTaxForm> {
 
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Taxes')
               : (_isSubmitting ? 'Updating...' : null),
         ),

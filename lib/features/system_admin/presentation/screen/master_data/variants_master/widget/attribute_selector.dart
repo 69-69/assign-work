@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -17,17 +18,11 @@ typedef AttributeChanged =
     });
 
 class AttributePanel extends StatefulWidget {
-  final String? title;
-  final bool? isExpanded;
-  final String? subTitle;
   final Widget? actionBuilder;
   final Function(List<Map<String, Attribute>> variants)? generatedVariants;
 
   const AttributePanel({
     super.key,
-    this.title,
-    this.subTitle,
-    this.isExpanded,
     this.actionBuilder,
     this.generatedVariants,
   });
@@ -37,8 +32,6 @@ class AttributePanel extends StatefulWidget {
 }
 
 class _AttributePanelState extends State<AttributePanel> {
-  static const int maxVariants = 100;
-  bool? get _isExpanded => widget.isExpanded;
   Map<String, List<Attribute>>? _groupedAttrs;
   Map<String, Map<Attribute, bool>> _selectedAttributes = {};
 
@@ -73,15 +66,7 @@ class _AttributePanelState extends State<AttributePanel> {
 
   @override
   Widget build(BuildContext context) {
-    return FormGroupCard(
-      runSpacing: 8,
-      isExpanded: _isExpanded ?? true,
-      title: widget.title ?? 'Attribute Set',
-      showCollapseButton: _isExpanded != true,
-      contentMargin: EdgeInsets.symmetric(vertical: 10),
-      subTitle:
-          widget.subTitle ??
-          '\nSelect attribute values (e.g., Red, Large) to generate product variants.',
+    return Column(
       children: [
         if (_groupedAttrs.isNullOrEmpty) ...{
           Text('Click to reload...', style: TextStyle(color: kGrayBlueColor),),

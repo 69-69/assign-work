@@ -57,6 +57,8 @@ class ProcurementDeleted<T> extends ProcurementState<T> {
   List<Object?> get props => [message];
 }
 
+class ProcurementDeleting<T> extends ProcurementState<T> {}
+
 class ProcurementError<T> extends ProcurementState<T> {
   final String error;
 

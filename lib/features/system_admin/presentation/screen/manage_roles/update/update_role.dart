@@ -149,9 +149,9 @@ class _UpdateRoleFormState extends State<_UpdateRoleForm> {
         const SizedBox(height: 10.0),
 
         context.confirmableActionButton(
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
           isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Updating...' : null,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
         const SizedBox(height: 20.0),
       ],

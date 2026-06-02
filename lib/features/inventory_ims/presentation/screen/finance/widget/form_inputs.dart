@@ -297,7 +297,7 @@ class AmountPaidTextField extends StatelessWidget {
       label: 'Amount paid',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       validator: (v) => null,
     );
   }
@@ -328,7 +328,7 @@ class TotalAmountTextField extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           label: 'Total amount',
-          keyboardType: TextInputType.number,
+          textInputType: TextInputType.number,
         ),
         TextButton(
           onPressed: onEdited,
@@ -354,7 +354,7 @@ class RemarksTextField extends StatelessWidget {
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.multiline,
+      textInputType: TextInputType.multiline,
       maxLines: 4,
       validator: (s) => null,
     );
@@ -374,7 +374,7 @@ class QuantityTextField extends StatelessWidget {
       label: 'Quantity',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -392,7 +392,7 @@ class UnitPriceTextField extends StatelessWidget {
       label: 'Unit price',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -410,7 +410,7 @@ class SubTotalTextField extends StatelessWidget {
       label: 'Sub total',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -433,7 +433,7 @@ class DiscountPercentTextField extends StatelessWidget {
     return CustomTextField(
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
         labelText: 'Discount Percent (Optional)',
@@ -511,7 +511,7 @@ class TaxPercentAndDiscountPercentInput extends StatelessWidget {
         CustomTextField(
           controller: discountController,
           onChanged: onDiscountChanged,
-          keyboardType: TextInputType.number,
+          textInputType: TextInputType.number,
           inputDecoration: InputDecoration(
             labelText: 'Discount Percent (Optional)',
             // helperText: 'Optional',
@@ -545,7 +545,7 @@ class TaxPercentTextField extends StatelessWidget {
       label: 'Tax Percent',
       onChanged: onChanged,
       controller: controller,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: InputDecoration(
         labelText: 'Tax Percent (Optional)',
         // helperText: 'Optional',
@@ -572,7 +572,7 @@ class DeliveryAmountTextField extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       helperText: 'Optional',
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       validator: (v) => null,
     );
   }

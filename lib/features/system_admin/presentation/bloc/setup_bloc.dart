@@ -307,6 +307,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     DeleteSetup<String> event,
     Emitter<SetupState<T>> emit,
   ) async {
+    emit(SetupDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _setupRepository.deleteData(event.documentId);
@@ -326,6 +327,7 @@ class SetupBloc<T> extends Bloc<SetupEvent, SetupState<T>> {
     DeleteSetup<List<String>> event,
     Emitter<SetupState<T>> emit,
   ) async {
+    emit(SetupDeleting());
     try {
       if (event.documentId.isEmpty) {
         emit(SetupError<T>('No Data were selected to delete.'));

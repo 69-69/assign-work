@@ -289,6 +289,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     DeletePOS<String> event,
     Emitter<POSState<T>> emit,
   ) async {
+    emit(POSDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _posRepository.deleteData(event.documentId);
@@ -308,6 +309,7 @@ class POSBloc<T> extends Bloc<POSEvent, POSState<T>> {
     DeletePOS<List<String>> event,
     Emitter<POSState<T>> emit,
   ) async {
+    emit(POSDeleting());
     try {
       if (event.documentId.isEmpty) {
         emit(POSError<T>('No POS were selected to delete.'));

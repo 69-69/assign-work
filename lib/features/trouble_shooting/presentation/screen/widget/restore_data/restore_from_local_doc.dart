@@ -39,8 +39,8 @@ class _RestoreFromLocalDocState extends State<RestoreFromLocalDoc> {
           _getLocalBackupFilenames(context),
           context.confirmableActionButton(
             isDisabled: _selectedFilename.isNullOrEmpty,
-            label: 'Restore From Local',
-            onPressed: () async => await _confirmRestoreDialog(context),
+            submitLabel: 'Restore From Local',
+            onSubmit: () async => await _confirmRestoreDialog(context),
           ),
         ],
       ),

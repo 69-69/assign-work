@@ -42,6 +42,8 @@ class GetProductCategory {
       SearchSetup<Category>(
         primaryField: 'name',
         secondaryField: 'storeNumber',
+        tertiaryField: 'type',
+        optionalField: 'id',
         query: term,
       ),
     );

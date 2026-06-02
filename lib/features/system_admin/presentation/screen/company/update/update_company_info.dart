@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -46,10 +47,12 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
   final _addresses = <AddressInfo>[];
   final _formKey = GlobalKey<FormState>();
   late String? _uploadedLogoPath = _serverInfo.logo;
+
   bool get isFormValid => _formKey.currentState?.validate() ?? false;
   final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
   Employee? get _employee => context.employee;
+
   Company get _serverInfo => widget.serverInfo;
 
   @override
@@ -146,34 +149,30 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
     return FormGroupTabView(
       contents: formGroupCards,
       footers: [
-        const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
           isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Updating...' : null,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
-        const SizedBox(height: 20.0),
       ],
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Company Information',
-      'subTitle': '\nEdit company information to complete setup.',
-      'children': [_buildCompanyInfo()],
-    },
-    {
-      'title': 'Addresses',
-      'subTitle':
-          '\nEdit multiple addresses: Office, Billing, Shipping, etc.',
-      'children': [_buildAddresses()],
-    },
-    {
-      'title': 'Upload Logo',
-      'subTitle':
-          '\nEdit company logo to customize your print-outs.',
-      'children': [
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      title: 'Company Information',
+      subTitle: '\nEdit company information to complete setup.',
+      builder: () => [_buildCompanyInfo()],
+    ),
+    FormGroupCardModel(
+      title: 'Addresses',
+      subTitle: '\nEdit multiple addresses: Office, Billing, Shipping, etc.',
+      builder: () => [_buildAddresses()],
+    ),
+    FormGroupCardModel(
+      title: 'Upload Logo',
+      subTitle: '\nChange company logo to customize your print-outs.',
+      builder: () => [
         UploadCompanyLogo(
           serverFilePath: _serverInfo.logo,
           uploadedFilePath: (s) {
@@ -181,7 +180,7 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
           },
         ),
       ],
-    },
+    ),
   ];
 
   DynamicTextFields _buildCompanyInfo() {
@@ -203,8 +202,11 @@ class _UpdateCompanyFormState extends State<_UpdateCompanyForm> {
 
   // Addresses (e.g., Office, Billing, Shipping Address)
   DynamicTextFields _buildAddresses() {
+    final addressCategories = AddressTypeUtil.toStringList(false);
+    final isRepeatable = _serverInfo.addresses.length < addressCategories.length;
+
     return DynamicTextFields(
-      isRepeatable: true,
+      isRepeatable: isRepeatable,
       initialData: _serverInfo.addresses.map((e) => e.toMap()).toList(),
       fieldsConfig: CompanyFormInputs.addressFields(),
       onChanged: (List<Map<String, dynamic>> data) {

@@ -1,95 +1,36 @@
-import 'package:assign_erp/core/widgets/button/list_toolbar_buttons.dart';
-import 'package:assign_erp/core/widgets/layout/custom_scaffold.dart';
-import 'package:assign_erp/core/widgets/layout/dynamic_data_table.dart';
-import 'package:assign_erp/core/widgets/screen_helper.dart';
+import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
+import 'package:assign_erp/core/widgets/nav/tab/custom_tab.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/master_data/category_bloc.dart';
 import 'package:assign_erp/features/system_admin/presentation/bloc/setup_bloc.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/create/create_category.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ListCategories extends StatefulWidget {
+import 'category/all_categories.dart';
+
+class ListCategories extends StatelessWidget {
   const ListCategories({super.key});
 
-  @override
-  State<ListCategories> createState() => _ListCategoriesState();
-}
-
-class _ListCategoriesState extends State<ListCategories> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CategoryBloc>(
       create: (context) =>
           CategoryBloc(firestore: FirebaseFirestore.instance)
             ..add(GetSetups<Category>()),
-      child: CustomScaffold(
-        noAppBar: true,
-        body: _buildBody(),
-        bottomNavigationBar: const SizedBox.shrink(),
-      ),
+      child: _buildBody(),
     );
   }
 
-  BlocBuilder<CategoryBloc, SetupState<Category>> _buildBody() {
-    return BlocBuilder<CategoryBloc, SetupState<Category>>(
-      builder: (context, state) {
-        return switch (state) {
-          LoadingSetup<Category>() => context.loader,
-          SetupsLoaded<Category>(data: var results) =>
-            results.isEmpty
-                ? context.buildAddButton(
-                    'New Category',
-                    onPressed: () => context.openAddCategory(),
-                  )
-                : _buildCard(context, results),
-          SetupError<Category>(error: final error) => context.buildError(error),
-          _ => const SizedBox.shrink(),
-        };
-      },
+  CustomTab _buildBody() {
+    return CustomTab(
+      length: 2,
+      // isScrollable: true,
+      tabs: [
+        CustomTabModel(label: 'Material Category', icon: Icons.list_alt),
+        CustomTabModel(label: 'Service Category', icon: Icons.sell_outlined),
+      ],
+      children: [AllCategories(), AllCategories(isService: true)],
     );
-  }
-
-  Widget _buildCard(BuildContext c, List<Category> categories) {
-    return DynamicDataTable2(
-      omitAtIndex: 0,
-      headers: Category.dataHeader,
-      toolbar: _buildToolbar(categories),
-      rows: categories.map(_toTableRow).toList(),
-      onEditTap: (row) async => _onEditTap(categories, row.id),
-      onDeleteTap: (row) async => _onDeleteTap(categories, row.id),
-    );
-  }
-
-  DataTableRow _toTableRow(Category e) =>
-      DataTableRow.fromList(e.id, e.itemAsList);
-
-  _buildToolbar(List<Category> sales) {
-    return ListToolbarButtons(
-      primaryLabel: 'New Category',
-      refreshLabel: 'Refresh',
-      dataLength: sales.length,
-      onPrimary: () => context.openAddCategory(),
-      onRefresh: () =>
-          context.read<CategoryBloc>().add(RefreshSetups<Category>()),
-    );
-  }
-
-  Future<void> _onEditTap(List<Category> categories, String id) async {
-    final category = Category.findCategoriesById(categories, id).first;
-    await context.openAddCategory(serverAttribute: category);
-  }
-
-  Future<void> _onDeleteTap(List<Category> categories, String id) async {
-    final category = Category.findCategoriesById(categories, id).first;
-
-    final isConfirmed = await context.confirmUserActionDialog();
-    if (mounted && isConfirmed) {
-      /// Delete specific category
-      context.read<CategoryBloc>().add(
-        DeleteSetup<String>(documentId: category.id),
-      );
-    }
   }
 }

@@ -219,7 +219,7 @@ class _ListCurrencyMasterState extends State<ListCurrencyMaster> {
   Widget _buildSearch() {
     return CustomTextField(
       controller: _searchController,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       inputDecoration: InputDecoration(
         labelText: 'Search...',
         prefixIcon: const Icon(Icons.search, color: kGrayColor),

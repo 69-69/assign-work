@@ -57,6 +57,8 @@ class SalesDistributionDeleted<T> extends SalesDistributionState<T> {
   List<Object?> get props => [message];
 }
 
+class SalesDistributionDeleting<T> extends SalesDistributionState<T> {}
+
 class SalesDistributionError<T> extends SalesDistributionState<T> {
   final String error;
 

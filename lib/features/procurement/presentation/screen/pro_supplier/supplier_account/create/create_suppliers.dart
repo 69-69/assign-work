@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/network/data_sources/models/contact_person_model.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -36,6 +37,9 @@ class _AddSuppliersForm extends StatefulWidget {
 }
 
 class _AddSuppliersFormState extends State<_AddSuppliersForm> {
+  bool _isFormValid = false; //> _formKey.currentState!.validate();
+  bool _isSubmitting = false;
+  Key _formResetKey = UniqueKey();
   final _formKey = GlobalKey<FormState>();
   final List<Supplier> _suppliers = [];
   final List<ContactPerson> _contactPersons = [];
@@ -44,7 +48,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
 
   List<String>? get _existingCodes => widget.existingCodes;
 
-  bool get isFormValid => _formKey.currentState!.validate();
+  SupplierBloc get _bloc => context.read<SupplierBloc>();
 
   @override
   void dispose() {
@@ -81,7 +85,10 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
   }
 
   void _onSubmit() {
-    if (!isFormValid || _suppliers.isEmpty || _contactPersons.isEmpty) {
+    if (!_isFormValid || _isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
+    if (!_isFormValid || _suppliers.isEmpty || _contactPersons.isEmpty) {
       context.showAlertOverlay(
         'Please fill in all required fields',
         bgColor: kDangerColor,
@@ -89,31 +96,39 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
       return;
     }
     final newSupplier = _prepareNewSupplier();
-    context.read<SupplierBloc>().add(
-      AddProcurement<Supplier>(data: newSupplier),
-    );
+    _bloc.add(AddProcurement<Supplier>(data: newSupplier));
 
     context.showAlertOverlay(
-      'Stores successfully created',
+      'Supplier successfully created',
       onCallback: () => _resetForm(),
     );
   }
 
   void _resetForm() {
+    if (mounted) return;
+
     _formKey.currentState!.reset();
     setState(() {
       _suppliers.clear();
       _contactPersons.clear();
+      _isSubmitting = false;
+      _isFormValid = false;
+      _formResetKey = UniqueKey();
     });
     Navigator.pop(context);
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: _buildBody(context),
+      child: KeyedSubtree(key: _formResetKey,child: _buildBody(context)),
     );
   }
 
@@ -129,11 +144,10 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
               initialData: [{}],
               fieldsConfig: _supplierFieldConfig,
               onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
                 _suppliers
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(data.map((e) => Supplier.fromMap(e)));
+                _syncValidity();
               },
             ),
           ],
@@ -148,8 +162,6 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
               isRepeatable: true,
               fieldsConfig: _contactPersonFieldConfig,
               onChanged: (List<Map<String, dynamic>> data) {
-                if (isFormValid) setState(() {});
-
                 _contactPersons
                   ..clear() // Clear previous entries to prevent duplication
                   ..addAll(
@@ -162,6 +174,7 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
                       );
                     }),
                   );
+                _syncValidity();
               },
             ),
           ],
@@ -169,8 +182,9 @@ class _AddSuppliersFormState extends State<_AddSuppliersForm> {
 
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: 'Create Supplier',
-          onPressed: _onSubmit,
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create Supplier',
+          isDisabled: _isSubmitting || !_isFormValid,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

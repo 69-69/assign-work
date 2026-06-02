@@ -216,8 +216,8 @@ class _AddSalesFormState extends State<_AddSalesForm> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: 'Add Sales',
-          onPressed: _onSubmit,
+          submitLabel: 'Add Sales',
+          onSubmit: _onSubmit,
         ),
       ],
     );

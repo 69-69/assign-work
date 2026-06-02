@@ -87,7 +87,7 @@ class RemarksTextField extends StatelessWidget {
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.multiline,
+      textInputType: TextInputType.multiline,
       maxLines: 4,
       validator: (s) => null,
     );
@@ -125,7 +125,7 @@ class DeliveryPersonTextField extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       helperText: 'Optional',
-      keyboardType: TextInputType.name,
+      textInputType: TextInputType.name,
       validator: (s) => null,
     );
   }
@@ -145,7 +145,7 @@ class DeliveryPhoneTextField extends StatelessWidget {
       helperText: 'Optional',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.phone,
+      textInputType: TextInputType.phone,
       validator: (s) => null,
     );
   }

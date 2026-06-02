@@ -112,8 +112,8 @@ class _AddDeliveryBodyState extends State<_AddDeliveryBody> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: 'Add Delivery',
-          onPressed: _onSubmit,
+          submitLabel: 'Add Delivery',
+          onSubmit: _onSubmit,
         ),
       ],
     );

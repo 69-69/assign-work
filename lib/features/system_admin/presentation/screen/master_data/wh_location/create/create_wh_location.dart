@@ -277,9 +277,9 @@ class _CreateWHLocationFormState extends State<_CreateWHLocationForm> {
 
   Widget _buildButtons() {
     return context.confirmableActionButton(
-      onPressed: _onSubmit,
+      onSubmit: _onSubmit,
       isDisabled: _isSubmitting || !_isFormValid,
-      label: _isServerNull
+      submitLabel: _isServerNull
           ? (_isSubmitting ? 'Creating...' : 'Create Location')
           : (_isSubmitting ? 'Updating...' : null),
 

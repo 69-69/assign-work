@@ -55,7 +55,7 @@ class BarcodeScannerWithTextField extends StatelessWidget {
             label: 'Barcode',
             controller: controller,
             onChanged: onChanged,
-            keyboardType: TextInputType.text,
+            textInputType: TextInputType.text,
             validator: (value) => null,
           ),
         ),

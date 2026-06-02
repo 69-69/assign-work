@@ -44,11 +44,18 @@ class _VariantsPlaygroundState extends State<_VariantsPlayground> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildExploreVariants(),
-            AttributePanel(
-              isExpanded: true,
-              generatedVariants: (v) {
-                setState(() => _variants = v);
-              },
+            FormGroupCard(
+                runSpacing: 8,
+                isExpanded: true,
+              title: 'Attribute Set',
+              subTitle: '\nSelect attribute values (e.g., Red, Large) to generate product variants',
+                contentMargin: EdgeInsets.symmetric(vertical: 10),
+              children: [
+                AttributePanel(
+                generatedVariants: (v) {
+                  setState(() => _variants = v);
+                },
+              ),]
             ),
           ],
         ),

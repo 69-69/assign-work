@@ -52,6 +52,8 @@ class SetupOverridden<T> extends SetupUpdated<T> {
   const SetupOverridden({required super.message});
 }
 
+class SetupDeleting<T> extends SetupState<T> {}
+
 class SetupDeleted<T> extends SetupState<T> {
   final String? message;
 

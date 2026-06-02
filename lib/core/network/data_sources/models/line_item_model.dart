@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/util/extensions/item_category.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
@@ -52,7 +52,7 @@ abstract class LineItem {
   /// [discountPercent] Discount is in percentage
   final double discountPercent;
   final double quantity;
-  final LineItemType type;
+  final LineType type;
   final String description;
 
   /// [leadTimeDays] How long it take to get/fulfill this line item?
@@ -145,11 +145,11 @@ abstract class LineItem {
       throw ArgumentError("Missing 'type' for Line-Item");
     }
 
-    final type = LineItemTypeUtil.fromString(typeStr.toLowerCase());
+    final type = LineTypeUtil.fromString(typeStr.toLowerCase());
 
     return switch (type) {
-      LineItemType.material => MaterialLineItem.fromMap(map, id: id),
-      LineItemType.service => ServiceLineItem.fromMap(map, id: id),
+      LineType.material => MaterialLineItem.fromMap(map, id: id),
+      LineType.service => ServiceLineItem.fromMap(map, id: id),
     };
   }
 
@@ -276,7 +276,7 @@ class MaterialLineItem extends LineItem with TaxableLineItem {
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
   }) : _unitPrice = unitPrice,
-       super(type: LineItemType.material);
+       super(type: LineType.material);
 
   @override
   double get unitPrice => _unitPrice;
@@ -476,7 +476,7 @@ class ServiceLineItem extends LineItem with TaxableLineItem {
 
     /// [taxNames] UI-only, non-persistent value (derived from tax codes)
     this.taxNames = '',
-  }) : super(type: LineItemType.service);
+  }) : super(type: LineType.service);
 
   @override
   double get unitPrice => serviceRate;

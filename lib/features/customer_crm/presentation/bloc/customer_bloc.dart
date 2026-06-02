@@ -311,6 +311,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     DeleteCustomer<String> event,
     Emitter<CustomerState<T>> emit,
   ) async {
+    emit(CustomerDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _customerRepository.deleteData(event.documentId);
@@ -330,6 +331,7 @@ class CustomerBloc<T> extends Bloc<CustomerEvent, CustomerState<T>> {
     DeleteCustomer<List<String>> event,
     Emitter<CustomerState<T>> emit,
   ) async {
+    emit(CustomerDeleting());
     try {
       if (event.documentId.isEmpty) {
         emit(CustomerError<T>('No Customer were selected to delete.'));

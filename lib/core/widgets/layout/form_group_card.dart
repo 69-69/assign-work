@@ -1,5 +1,7 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/tab_model.dart';
+import 'package:assign_erp/core/widgets/horizontal_divider.dart';
 import 'package:assign_erp/core/widgets/nav/tab/entitlement_tab_view.dart';
 import 'package:flutter/material.dart';
 
@@ -46,8 +48,8 @@ class FormGroupCard extends StatefulWidget {
 }
 
 class _FormGroupCardState extends State<FormGroupCard> {
-  Color? _bgColor;
-  double _currentElevation = 1;
+  // Color? _bgColor;
+  double _currentElevation = 0.4;
 
   // Initialize cardVisibility in initState
   late Map<String, bool> cardVisibility;
@@ -67,7 +69,8 @@ class _FormGroupCardState extends State<FormGroupCard> {
 
   Color? get _textColor => widget.textColor;
 
-  // Color get _bgColor => widget.bgColor ?? context.onSecondaryColor;
+  Color get _bgColor =>
+      widget.bgColor ?? context.onSecondaryColor; // context.scaffoldBgColor
 
   double? get _cardElevation => widget.cardElevation;
 
@@ -99,6 +102,7 @@ class _FormGroupCardState extends State<FormGroupCard> {
       () => cardVisibility[title] = !(cardVisibility[title] ?? _isExpanded),
     );
   }
+
   void toggleCardVisibility(String title) {
     final newValue = !(cardVisibility[title] ?? _isExpanded);
 
@@ -124,14 +128,8 @@ class _FormGroupCardState extends State<FormGroupCard> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      onEnter: (_) => setState(() {
-        _currentElevation = 6;
-        _bgColor = widget.bgColor ?? context.onSecondaryColor;
-      }),
-      onExit: (_) => setState(() {
-        _currentElevation = 1;
-        _bgColor = null;
-      }),
+      onEnter: (_) => setState(() => _currentElevation = 6),
+      onExit: (_) => setState(() => _currentElevation = 0.4),
       child: _buildBody(context),
     );
   }
@@ -140,7 +138,6 @@ class _FormGroupCardState extends State<FormGroupCard> {
     return Card(
       elevation: _cardElevation ?? _currentElevation,
       color: _bgColor,
-      // context.scaffoldBgColor
       shape: RoundedRectangleBorder(
         borderRadius: _borderRadius,
         side: BorderSide(color: kLightBlueColor.toAlpha(0.4), width: 1),
@@ -264,15 +261,19 @@ class _FormGroupCardState extends State<FormGroupCard> {
 }
 
 class FormGroupTabView extends StatefulWidget {
+  final bool? visibleWhen;
   final Widget? header;
   final List<Widget>? footers;
-  final List<Map<String, dynamic>> contents;
+  final bool showNavigationButtons;
+  final List<FormGroupCardModel> contents;
 
   const FormGroupTabView({
     super.key,
     required this.contents,
     this.header,
     this.footers,
+    this.visibleWhen,
+    this.showNavigationButtons = false,
   });
 
   @override
@@ -282,18 +283,22 @@ class FormGroupTabView extends StatefulWidget {
 class _FormGroupTabViewState extends State<FormGroupTabView> {
   bool _isGridView = false;
 
-  List<Map<String, dynamic>> get _tabsData => widget.contents;
-
   Widget? get _header => widget.header;
 
   List<Widget>? get _footers => widget.footers;
+
+  bool get _showNavButtons => widget.showNavigationButtons;
+
+  List<FormGroupCardModel> get _tabContents => widget.contents;
+
+  bool get _showFooter => _footers != null && (!_isGridView || widget.visibleWhen != false);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_tabsData.length > 1) ...[
+        if (_tabContents.length > 1) ...[
           _buildHeaderRow(),
           const SizedBox(height: 2),
         ],
@@ -303,7 +308,10 @@ class _FormGroupTabViewState extends State<FormGroupTabView> {
         else
           ..._buildFormGroupCards(),
 
-        if (_footers != null) ..._footers!,
+        if (_showFooter) ...[
+          const HorizontalDivider(space: 20),
+          ..._footers!,
+        ],
       ],
     );
   }
@@ -312,7 +320,7 @@ class _FormGroupTabViewState extends State<FormGroupTabView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: _header ?? const SizedBox.shrink()),
+        Flexible(child: _header ?? const SizedBox.shrink()),
         IconButton(
           icon: Icon(
             _isGridView ? Icons.view_list : Icons.grid_view,
@@ -328,27 +336,31 @@ class _FormGroupTabViewState extends State<FormGroupTabView> {
   }
 
   EntitlementTabView _buildTabs() {
-    final tabs = _tabsData
-        .map((t) => CustomTabModel(label: t['title'], tooltip: t['subTitle']))
+    final tabs = _tabContents
+        .map((t) => CustomTabModel(label: t.title, tooltip: t.subTitle))
         .toList();
 
     List<Widget> children = _buildFormGroupCards();
 
-    return EntitlementTabView(tabs: tabs, children: children);
+    return EntitlementTabView(
+      showNavigationButtons: _showNavButtons,
+      tabs: tabs,
+      children: children,
+    );
   }
 
   List<Widget> _buildFormGroupCards() {
-    return _tabsData.asMap().entries.map((entry) {
+    return _tabContents.asMap().entries.map((entry) {
       final val = entry.value;
       final index = entry.key;
-      final title = _isGridView ? '' : '${index + 1}. ${val['title']}';
+      final title = _isGridView ? '' : '${index + 1}. ${val.title}';
 
       return FormGroupCard(
         isExpanded: index == 0 || _isGridView,
         title: title,
-        subTitle: val['subTitle'],
-        contentPadding: val['contentPadding'],
-        children: List<Widget>.from(val['children'] as List),
+        subTitle: val.subTitle,
+        contentPadding: val.contentPadding,
+        children: val.builder(),
       );
     }).toList();
   }

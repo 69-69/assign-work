@@ -130,9 +130,9 @@ class _CreateNewRoleFormState extends State<_CreateNewRoleForm> {
         const SizedBox(height: 10.0),
 
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Creating...' : 'Create Role',
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create Role',
           isDisabled: _isSubmitting,
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

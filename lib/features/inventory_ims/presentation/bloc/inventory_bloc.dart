@@ -276,6 +276,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     DeleteInventory<String> event,
     Emitter<InventoryState<T>> emit,
   ) async {
+    emit(InventoryDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _inventoryRepository.deleteData(event.documentId);
@@ -295,6 +296,7 @@ class InventoryBloc<T> extends Bloc<InventoryEvent, InventoryState<T>> {
     DeleteInventory<List<String>> event,
     Emitter<InventoryState<T>> emit,
   ) async {
+    emit(InventoryDeleting());
     try {
       if (event.documentId.isEmpty) {
         emit(InventoryError<T>('No Inventory were selected to delete.'));

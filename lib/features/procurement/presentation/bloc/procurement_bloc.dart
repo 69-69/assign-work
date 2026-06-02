@@ -320,6 +320,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     DeleteProcurement<String> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
+    emit(ProcurementDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _procurementRepository.deleteData(event.documentId);
@@ -339,6 +340,7 @@ class ProcurementBloc<T> extends Bloc<ProcurementEvent, ProcurementState<T>> {
     DeleteProcurement<List<String>> event,
     Emitter<ProcurementState<T>> emit,
   ) async {
+    emit(ProcurementDeleting());
     try {
       if (event.documentId.isEmpty) {
         emit(ProcurementError<T>('No Procurement were selected to delete.'));

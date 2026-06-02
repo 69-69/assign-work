@@ -53,8 +53,8 @@ class _ExportChoiceState extends State<ExportChoice> {
       body: _buildBody(context),
       actions: [
         context.confirmableActionButton(
-          label: _label,
-          onPressed: _selectedFileType == null
+          submitLabel: _label,
+          onSubmit: _selectedFileType == null
               ? null
               : () => Navigator.pop(context, _selectedFileType),
           isDisabled: _selectedFileType == null,

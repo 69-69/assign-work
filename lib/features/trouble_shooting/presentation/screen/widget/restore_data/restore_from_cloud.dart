@@ -23,8 +23,8 @@ class RestoreFromCloud extends StatelessWidget {
             ),
           ),
           context.confirmableActionButton(
-            label: 'Restore From Cloud',
-            onPressed: () async => await _confirmRestoreDialog(context),
+            submitLabel: 'Restore From Cloud',
+            onSubmit: () async => await _confirmRestoreDialog(context),
           ),
         ],
       ),

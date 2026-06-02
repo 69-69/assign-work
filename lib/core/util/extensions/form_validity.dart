@@ -40,7 +40,7 @@ extension SecFormValidityExt on Map<String, bool> {
 /// 1. `FormValidityExt`
 ///    → For normal Flutter forms using `FormState.validate()`.
 ///
-/// 2. `FormValidityExt2`
+/// 2. `SecFormValidityExt`
 ///    → For large modular forms where each section manages
 ///      its own validation independently.
 ///
@@ -177,7 +177,7 @@ extension SecFormValidityExt on Map<String, bool> {
 /// Use `FormValidityExt` when:
 /// - Flutter `Form` fully controls validation.
 ///
-/// Use `FormValidityExt2` when:
+/// Use `SecFormValidityExt` when:
 /// - validation is distributed across widgets/sections
 /// - custom widgets manage their own validation
 /// - form sections rebuild independently

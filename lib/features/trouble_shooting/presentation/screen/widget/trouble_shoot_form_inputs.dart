@@ -32,7 +32,7 @@ class SubscriptionNameAndFee extends StatelessWidget {
           label: 'Subscription name',
           onChanged: onNameChanged,
           controller: nameController,
-          keyboardType: TextInputType.name,
+          textInputType: TextInputType.name,
         ),
         SubscriptionFee(
           enable: enable,
@@ -64,7 +64,7 @@ class SubscriptionFee extends StatelessWidget {
       label: 'Subscription Fee',
       onChanged: onSubscribeFeeChanged,
       controller: subscribeFeeController,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: InputDecoration(
         hintText: 'Subscription Fee',
         label: const Text(

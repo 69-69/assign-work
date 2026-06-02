@@ -30,7 +30,7 @@ class EmailInput extends StatelessWidget {
   _emailFormField(BuildContext context, EmployeeSignInState state) {
     return CustomTextField(
       key: const Key('emp_sign_in_emailInput_textField'),
-      keyboardType: TextInputType.emailAddress,
+      textInputType: TextInputType.emailAddress,
       autofillHints: const [AutofillHints.email],
       onChanged: (email) => context.read<EmployeeSignInBloc>().add(
         EmployeeSignInEmailChanged(email.trim()),
@@ -169,7 +169,7 @@ class _EmployeePasscodeInputState extends State<EmployeePasscodeInput> {
       maxLines: 1,
       maxLength: 20,
       autofillHints: const [AutofillHints.password],
-      keyboardType: TextInputType.visiblePassword,
+      textInputType: TextInputType.visiblePassword,
       textInputAction: TextInputAction.done,
       onChanged: _dispatchPasscodeChangeEvent,
       onFieldSubmitted: _dispatchPasscodeChangeEvent,
@@ -275,8 +275,8 @@ class EmployeeSignInButton extends StatelessWidget {
     required void Function()? onPress,
   }) => context.confirmableActionButton(
     isPaired: false,
-    label: inProgress ? "Please wait..." : "Sign In",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Please wait..." : "Sign In",
+    onSubmit: onPress,
     isDisabled: isDisabled,
   );
 }
@@ -309,7 +309,7 @@ class ChangeEmployeePasscodeButton extends StatelessWidget {
     bool inProgress = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
-    label: inProgress ? "Please wait..." : "Create Passcode",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Please wait..." : "Create Passcode",
+    onSubmit: onPress,
   );
 }

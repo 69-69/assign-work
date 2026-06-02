@@ -223,6 +223,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     RevokeAuthorizedDeviceId event,
     Emitter<TenantState<T>> emit,
   ) async {
+    emit(TenantDeleting());
     try {
       final did = event.data != null
           ? FieldValue.arrayRemove([event.data])
@@ -251,6 +252,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     DeleteTenant<String> event,
     Emitter<TenantState<T>> emit,
   ) async {
+    emit(TenantDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _dataRepository.deleteData(event.documentId);
@@ -270,6 +272,7 @@ class TenantBloc<T> extends Bloc<TenantEvent, TenantState<T>> {
     DeleteTenant<List<String>> event,
     Emitter<TenantState<T>> emit,
   ) async {
+    emit(TenantDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _dataRepository.deleteManyData(event.documentId);

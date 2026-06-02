@@ -179,10 +179,10 @@ class _AddStoreBranchFormState extends State<_AddStoreBranchForm> {
         FormGroupCard(children: [_buildStoresFields()]),
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Branch')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

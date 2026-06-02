@@ -104,14 +104,14 @@ class DiscountFormInputs {
 
     FieldGroupConfig(
       key: 'categoryId',
-      label: 'Categories',
+      label: 'Category',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       visibleWhen: (data) => _isVisible(data),
       customBuilder: ({required initialData, required onChanged}) {
         return CategoryDropdown(
           isMultiSelect: true,
-          label: 'Categories',
+          label: 'Category',
           initialValues: List<Category>.from(initialData ?? []),
           onMultiChanged: onChanged,
         );

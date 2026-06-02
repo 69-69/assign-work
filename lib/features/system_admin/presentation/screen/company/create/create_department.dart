@@ -166,8 +166,8 @@ class _AddDepartmentFormState extends State<_AddDepartmentForm> {
           children: [_buildForm()],
         ),
         context.confirmableActionButton(
-          label: _isServerNull ? 'Create Department' : null,
-          onPressed: _onSubmit,
+          submitLabel: _isServerNull ? 'Create Department' : null,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

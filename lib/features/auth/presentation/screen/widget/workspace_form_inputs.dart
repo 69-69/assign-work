@@ -127,7 +127,7 @@ class WorkspaceNameInput extends StatelessWidget {
   _workspaceNameFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_Workspace_name_Form_Input_textField'),
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       onChanged: (name) => context.read<WorkspaceAuthBloc>().add(
         WorkspaceNameChanged(name.trim()),
       ),
@@ -167,7 +167,7 @@ class ClientNameInput extends StatelessWidget {
   _nameFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_client_name_Form_Input_textField'),
-      keyboardType: TextInputType.name,
+      textInputType: TextInputType.name,
       autofillHints: const [AutofillHints.name],
       onChanged: (clientName) => context.read<WorkspaceAuthBloc>().add(
         ClientNameChanged(clientName.trim()),
@@ -209,7 +209,7 @@ class AddressInput extends StatelessWidget {
   _addressFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_address_textField'),
-      keyboardType: TextInputType.multiline,
+      textInputType: TextInputType.multiline,
       autofillHints: const [AutofillHints.streetAddressLevel1],
       maxLines: 3,
       onChanged: (number) =>
@@ -255,7 +255,7 @@ class MobileNumberInput extends StatelessWidget {
   _mobileFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('reg_name_Form_Input_textField'),
-      keyboardType: TextInputType.phone,
+      textInputType: TextInputType.phone,
       autofillHints: const [AutofillHints.telephoneNumber],
       onChanged: (number) => context.read<WorkspaceAuthBloc>().add(
         SignInMobileChanged(number.trim()),
@@ -313,7 +313,7 @@ class EmailInput extends StatelessWidget {
   _emailFormField(BuildContext context, WorkspaceAuthState state) {
     return CustomTextField(
       key: const Key('sign_inForm_emailInput_textField'),
-      keyboardType: TextInputType.emailAddress,
+      textInputType: TextInputType.emailAddress,
       autofillHints: const [AutofillHints.email],
       onChanged: (email) => context.read<WorkspaceAuthBloc>().add(
         SignInEmailChanged(email.trim()),
@@ -391,7 +391,7 @@ class PasswordInputState extends State<PasswordInput> {
       maxLength: 20,
       obscureText: _secureText,
       autofillHints: const [AutofillHints.password],
-      keyboardType: TextInputType.visiblePassword,
+      textInputType: TextInputType.visiblePassword,
       textInputAction: TextInputAction.done,
       onFieldSubmitted: (password) =>
           dispatchPasswordChangeEvent(password.trim()),
@@ -505,7 +505,7 @@ class _TemporaryPasscodeInputState extends State<TemporaryPasscodeInput> {
         maxLines: 1,
         maxLength: 20,
         autofillHints: const [AutofillHints.password],
-        keyboardType: TextInputType.visiblePassword,
+        textInputType: TextInputType.visiblePassword,
         textInputAction: TextInputAction.done,
         onChanged: _dispatchPasscodeChangeEvent,
         onFieldSubmitted: _dispatchPasscodeChangeEvent,
@@ -611,8 +611,8 @@ class WorkspaceSignInButton extends StatelessWidget {
     required void Function()? onPress,
   }) => context.confirmableActionButton(
     isPaired: false,
-    label: inProgress ? "Please wait..." : "Sign In",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Please wait..." : "Sign In",
+    onSubmit: onPress,
     isDisabled: isDisabled,
   );
 }
@@ -688,8 +688,8 @@ class CreateWorkspaceButton extends StatelessWidget {
     bool isDisabled = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
-    label: inProgress ? "Please wait..." : "Create Workspace",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Please wait..." : "Create Workspace",
+    onSubmit: onPress,
     isDisabled: isDisabled,
   );
 }
@@ -726,8 +726,8 @@ class UpdateWorkspacePasswordButton extends StatelessWidget {
     bool inProgress = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
-    label: inProgress ? "Updating..." : "Save Changes",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Updating..." : "Save Changes",
+    onSubmit: onPress,
   );
 }
 
@@ -756,8 +756,8 @@ class ForgotWorkspacePasswordButton extends StatelessWidget {
     bool inProgress = false,
     required void Function()? onPress,
   }) => context.confirmableActionButton(
-    label: inProgress ? "Please wait..." : "Send Reset Link",
-    onPressed: onPress,
+    submitLabel: inProgress ? "Please wait..." : "Send Reset Link",
+    onSubmit: onPress,
   );
 }
 

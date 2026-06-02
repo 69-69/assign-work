@@ -20,7 +20,7 @@ class RoleName extends StatelessWidget {
       label: 'Role name',
       onChanged: onNameChanged,
       controller: nameController,
-      keyboardType: TextInputType.name,
+      textInputType: TextInputType.name,
       enabled: enable,
     );
   }

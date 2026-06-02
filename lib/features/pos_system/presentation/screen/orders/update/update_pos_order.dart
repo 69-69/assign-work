@@ -280,7 +280,7 @@ class _UpdateOrderFormState extends State<_UpdateOrderForm> {
           onPaymentChanged: (s) => setState(() => _selectedPayMethod = s),
         ),
         const SizedBox(height: 10.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(onSubmit: _onSubmit),
         const SizedBox(height: 20.0),
       ],
     );

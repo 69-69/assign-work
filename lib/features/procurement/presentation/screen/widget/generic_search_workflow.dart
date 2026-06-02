@@ -65,7 +65,7 @@ class _SearchWorkflowState<T> extends State<SearchWorkflow<T>> {
             helperText: widget.helperText,
             suffixIcon: _searchButton(context),
           ),
-          keyboardType: TextInputType.none,
+          textInputType: TextInputType.none,
           validator: (_) => null,
         ),
         HorizontalDivider(),

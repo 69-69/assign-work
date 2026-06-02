@@ -695,6 +695,15 @@ class _DynamicDataTableState extends State<DynamicDataTable> {
   }
 }
 
+extension FirstWhereOrNullExt<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T e) test) {
+    for (final e in this) {
+      if (test(e)) return e;
+    }
+    return null;
+  }
+}
+
 typedef SelectionChanged =
     void Function(List<String> keys, List<DataTableRow> rows);
 
@@ -865,7 +874,10 @@ class _DynamicDataTable2State extends State<DynamicDataTable2> {
     if (_selectedRowKeys.length != 1) return null;
 
     final key = _selectedRowKeys.first;
-    return _mergedRows.firstWhere((r) => r.id == key);
+
+    return _mergedRows.firstWhereOrNull(
+          (r) => r.id == key,
+    );
   }
 
   int get _rowsPerPageHeight {
@@ -1834,7 +1846,7 @@ class _DataTableSearch extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
       child: CustomTextField(
         controller: controller,
-        keyboardType: TextInputType.text,
+        textInputType: TextInputType.text,
         inputDecoration: InputDecoration(
           labelText: 'Search...by date | any...',
           prefixIcon: const Icon(Icons.search, color: kGrayColor),

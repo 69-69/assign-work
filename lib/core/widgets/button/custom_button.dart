@@ -11,112 +11,103 @@ extension Custombutton on BuildContext {
   /// before executing an action. Ideal for form submissions or critical updates.
   ///
   /// Parameters:
-  /// - [label]: The text shown on the button. If empty, a confirmation dialog will be shown before proceeding.
-  /// - [onPressed]: The callback function to execute when the button is pressed.
+  /// - [submitLabel]: The text shown on the button. If empty, a confirmation dialog will be shown before proceeding.
+  /// - [onSubmit]: The callback function to execute when the button is pressed.
   /// - [isDisabled]: Whether the button should appear disabled.
   ///
   /// Behavior:
-  /// - If the [label] is empty, the button shows a confirmation dialog before running [onPressed].
+  /// - If the [submitLabel] is empty, the button shows a confirmation dialog before running [onSubmit].
   /// - If [isDisabled] is true, the button becomes non-interactive and lowers its opacity.
   Widget confirmableActionButton({
     bool isPaired = true,
-    String? label,
-    VoidCallback? onPressed,
+    String? submitLabel,
+    String? cancelLabel,
+    String? draftLabel,
+    VoidCallback? onSubmit,
+    VoidCallback? onDraft,
+    VoidCallback? onCancel,
     bool isDisabled = false,
     String? tooltip,
     Widget? anyButton,
     ButtonStyle? style,
     Function(dynamic)? onCancelCallback,
   }) {
-    final labelText = label ?? 'Save Changes';
-    final onCancel = Navigator.canPop(this) ? () => Navigator.pop(this) : null;
+    final label = submitLabel ?? 'Update';
+    final requiresConfirmation = submitLabel == null;
+    final bColor = mainPrimaryColor.toAlpha(isDisabled ? 0.3 : 1);
 
-    double elevation = isDisabled ? 0 : 0.4;
-    final padding = const EdgeInsets.all(18);
+    Future<void> handleSubmit() async {
+      if (isDisabled) return;
+
+      if (!requiresConfirmation) {
+        onSubmit?.call();
+        return;
+      }
+
+      if (mounted && await _confirmUpdateDialog()) {
+        onSubmit?.call();
+      }
+    }
+
+    final cancelAction =
+        onCancel ?? (Navigator.canPop(this) ? () => Navigator.pop(this) : null);
 
     final cancelBtn = outlinedButton(
-      'Cancel',
+      cancelLabel ?? 'Cancel',
       onPressed: () {
-        onCancel?.call();
+        cancelAction?.call();
         onCancelCallback?.call(true);
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: kWhiteColor,
-        elevation: elevation,
-        padding: padding,
-      ),
+      txtColor: kTextColor,
+      borderColor: kGrayColor,
+    );
+
+    final draftBtn = outlinedButton(
+      draftLabel ?? 'Save Draft',
+      onPressed: isDisabled ? null : onDraft,
+      txtColor: kPrimaryColor,
+      bgColor: kWhiteColor,
+      borderColor: bColor,
     );
 
     final actionBtn = elevatedButton(
-      labelText,
-      tooltip: tooltip ?? labelText,
-      txtColor: kWhiteColor.toAlpha(isDisabled ? 0.4 : 1),
-      onPressed: isDisabled
-          ? null
-          : (label == null
-                ? () async {
-                    if (mounted && (await _confirmUpdateDialog())) {
-                      onPressed!();
-                    }
-                  }
-                : onPressed),
-      style:
-          style ??
-          ButtonStyle(
-            padding: WidgetStatePropertyAll(padding),
-            elevation: WidgetStatePropertyAll(elevation),
-            foregroundColor: WidgetStatePropertyAll(kWhiteColor),
-            backgroundColor: WidgetStatePropertyAll(
-              mainPrimaryColor.toAlpha(isDisabled ? 0.3 : 1),
-            ),
-          ),
-      /*style: style ?? ElevatedButton.styleFrom(
-        padding: padding,
-        elevation: elevation,
-        foregroundColor: kWhiteColor,
-        backgroundColor: isDisabled ? Colors.grey.shade300 : mainPrimaryColor,
-      ),*/
+      label,
+      tooltip: tooltip ?? label,
+      onPressed: isDisabled ? null : handleSubmit,
+      padding: const EdgeInsets.all(18),
+      txtColor: kWhiteColor,
+      bgColor: bColor,
     );
 
-    if (screenWidth < 600) {
-      // Mobile: stacked full-width buttons (Apple style)
-      return isPaired
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                actionBtn,
-
-                if (anyButton != null) ...[
-                  const SizedBox(height: 10),
-                  anyButton,
-                ],
-
-                const SizedBox(height: 10),
-                // Cancel/Close Button
-                cancelBtn,
-              ],
-            )
-          : Row(children: [Expanded(child: actionBtn)]);
-    } else {
-      // Desktop: side-by-side 30/70 buttons
-      return isPaired
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Cancel/Close Button
-                Expanded(flex: 3, child: cancelBtn),
-                const SizedBox(width: 10),
-
-                if (anyButton != null) ...[
-                  anyButton,
-                  const SizedBox(width: 10),
-                ],
-
-                Expanded(flex: 7, child: actionBtn),
-              ],
-            )
-          : Row(children: [Expanded(child: actionBtn)]);
+    if (!isPaired) {
+      return Row(children: [Expanded(child: actionBtn)]);
     }
+
+    final isMobile = screenWidth < 600;
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 10,
+        children: [
+          actionBtn,
+          ?anyButton,
+          if (onDraft != null) draftBtn,
+          cancelBtn,
+        ],
+      );
+    }
+
+    return Row(
+      spacing: 20,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(flex: 2, child: cancelBtn),
+        ?anyButton,
+        if (onDraft != null) Expanded(flex: 3, child: draftBtn),
+        Expanded(flex: 5, child: actionBtn),
+      ],
+    );
   }
 
   Widget elevatedIconBtn(
@@ -244,23 +235,16 @@ extension Custombutton on BuildContext {
     String? tooltip,
     ButtonStyle? style,
   }) {
-    return elevatedButton(
-      label,
-      tooltip: tooltip,
-      bgColor: bgColor,
-      txtColor: txtColor,
+    return OutlinedButton(
       onPressed: onPressed,
-      style:
-          style ??
-          ElevatedButton.styleFrom(
-            backgroundColor: bgColor ?? kOffWhiteColor,
-            elevation: 0.4,
-            padding: EdgeInsets.all(18),
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: borderColor ?? kOffWhiteColor),
-              borderRadius: _borderRadius,
-            ),
-          ),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: bgColor,
+        foregroundColor: txtColor,
+        side: BorderSide(color: borderColor ?? kPrimaryColor),
+        padding: const EdgeInsets.all(18),
+        shape: RoundedRectangleBorder(borderRadius: _borderRadius),
+      ),
+      child: Text(label),
     );
   }
 
@@ -418,3 +402,32 @@ extension Custombutton on BuildContext {
     onRejectLabel: "Cancel",
   );
 }
+
+/*Widget outlinedButton2(
+    dynamic label, {
+    VoidCallback? onPressed,
+    Color? bgColor,
+    Color? txtColor,
+    Color? borderColor,
+    String? tooltip,
+    ButtonStyle? style,
+  }) {
+    return elevatedButton(
+      label,
+      tooltip: tooltip,
+      bgColor: bgColor,
+      txtColor: txtColor,
+      onPressed: onPressed,
+      style:
+          style ??
+          ElevatedButton.styleFrom(
+            backgroundColor: bgColor ?? kOffWhiteColor,
+            elevation: 0.4,
+            padding: EdgeInsets.all(18),
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: borderColor ?? kOffWhiteColor),
+              borderRadius: _borderRadius,
+            ),
+          ),
+    );
+  }*/

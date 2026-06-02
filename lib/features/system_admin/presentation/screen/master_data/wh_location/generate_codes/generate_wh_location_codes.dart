@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -110,10 +111,7 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     final updated = _whLocationData.copyWith(updatedBy: _employeeName);
 
     _bloc.add(
-      UpdateSetup<WHLocation>(
-        documentId: _whLocationData.id,
-        data: updated,
-      ),
+      UpdateSetup<WHLocation>(documentId: _whLocationData.id, data: updated),
     );
   }
 
@@ -192,7 +190,8 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     children: [
                       TextSpan(
-                        text: 'Create a sub-location before generating location codes.',
+                        text:
+                            'Create a sub-location before generating location codes.',
                         style: const TextStyle(fontWeight: FontWeight.normal),
                       ),
                     ],
@@ -201,9 +200,9 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
               ),
               FormGroupTabView(contents: formGroupCards),
               context.confirmableActionButton(
-                onPressed: _canGenerate ? _onGenerate : null,
+                onSubmit: _canGenerate ? _onGenerate : null,
                 isDisabled: _isGenerating || !_canGenerate,
-                label: _isGenerating
+                submitLabel: _isGenerating
                     ? 'Generating...'
                     : 'Generate Sub Location',
               ),
@@ -214,20 +213,20 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Create Sub-Location Codes',
-      'subTitle':
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      title: 'Create Sub-Location Codes',
+      subTitle:
           '\nGenerate rack, level, shelf, & other code ranges used to create full bin locations.',
-      'children': [_buildHeader(), _buildGenerateCodes()],
-    },
+      builder: () => [_buildHeader(), _buildGenerateCodes()],
+    ),
 
     if (_hasCodeRanges)
-      {
-        'title': 'Edit Sub-Location Codes',
-        'subTitle': '\nManage sub-location codes.',
-        'children': [_listSubLocationCodes()],
-      },
+      FormGroupCardModel(
+        title: 'Edit Sub-Location Codes',
+        subTitle: '\nManage sub-location codes.',
+        builder: () => [_listSubLocationCodes()],
+      ),
   ];
 
   AdaptiveLayout _buildHeader() {
@@ -278,7 +277,9 @@ class _GenerateWHLocCodesFormState extends State<_GenerateWHLocCodesForm> {
 
     if (start == 0 || start == end || start > end) {
       setState(() => _canGenerate = false);
-      _showAlert('Invalid range. "Start" must be less than "End" and values cannot be zero');
+      _showAlert(
+        'Invalid range. "Start" must be less than "End" and values cannot be zero',
+      );
       return;
     }
 

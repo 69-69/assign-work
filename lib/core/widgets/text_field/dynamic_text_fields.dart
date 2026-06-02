@@ -296,7 +296,7 @@ class _DynamicTextFieldsState extends State<DynamicTextFields> {
       maxHeight: config.maxHeight,
       enabled: !config.isDisabled,
       controller: group.controllers[key],
-      keyboardType: inputType,
+      textInputType: inputType,
       onChanged: (_) => _notifyParent(),
       maxLines: maxLines,
       minLines: config.minLines ?? 1,

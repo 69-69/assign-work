@@ -58,8 +58,8 @@ class _ForgotPasscodeState extends State<ForgotPasscode> {
         body: _buildFormBody(context),
         actions: [
           context.confirmableActionButton(
-            label: 'Copy & Use Passcode',
-            onPressed: _onSubmit,
+            submitLabel: 'Copy & Use Passcode',
+            onSubmit: _onSubmit,
           ),
         ],
       ),

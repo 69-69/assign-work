@@ -293,8 +293,8 @@ class _AddItemFormState extends State<_AddItemForm> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: isMultipleOrders ? 'Create All Products' : 'Create Product',
-          onPressed: _onSubmit,
+          submitLabel: isMultipleOrders ? 'Create All Products' : 'Create Product',
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

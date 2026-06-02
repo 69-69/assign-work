@@ -195,10 +195,10 @@ class _AddAttributeFormState extends State<_AddAttributeForm> {
         ),
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Attribute')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

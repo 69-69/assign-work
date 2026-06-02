@@ -56,6 +56,8 @@ class TrainingDeleted<T> extends AppTrainingState<T> {
   List<Object?> get props => [message];
 }
 
+class TrainingDeleting<T> extends AppTrainingState<T> {}
+
 class TrainingError<T> extends AppTrainingState<T> {
   final String error;
 

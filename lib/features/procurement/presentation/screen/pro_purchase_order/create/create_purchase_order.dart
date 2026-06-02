@@ -1,12 +1,15 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -107,7 +110,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   /// Disable form fields if converting RFQ to PO & RFQ has line items
   bool get _isDisabled => _initialRFQ?.lineItems != null;
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid = false; // > _formKey.currentState!.validate();
 
   // Current employee info
   Employee? get _employee => context.employee;
@@ -123,12 +126,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   @override
   void initState() {
     super.initState();
-    _generatePONumber();
-  }
-
-  void _generatePONumber() async {
-    final id = await DocType.pOrder.getShortUID;
-    if (mounted) setState(() => _poNumber = id);
   }
 
   /// Construct ProPurchaseOrder object
@@ -213,6 +210,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return quote.copyWith(taxAmount: quote.totalTaxAmount);
   }
 
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
+
   void _resetForm() {
     if (mounted) {
       setState(() {
@@ -236,8 +238,8 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         _additionalInfo.clear();
         _poStatus = null;
         _deliveryDate = null;
+        _isFormValid = false;
       });
-      _generatePONumber(); // fresh PO number
     }
   }
 
@@ -275,64 +277,64 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        POFormInputs.buildPONumber(context, _poNumber, _generatePONumber),
-
-        FormGroupCard(
-          title: '1. Purchase Order Overview',
-          subTitle: '\nGeneral purchase order info & supplier details.',
-          children: [_buildPOStatusAndRequestedBy(), _buildSupplier()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Accounting & Cost Assignment',
-          subTitle: '\nCost center, currency, & accounting allocation details.',
-          children: [_buildCurrencyAndCostCenter(), _buildShippingAmount()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. Payment Terms & Tax',
-          subTitle: '\nPayment method, payment terms, & tax preferences.',
-          children: [_buildPayMethodAndTerms(), _buildTaxModeSelector()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '4. ${_lineItemType.toSentence} Line Items',
-          subTitle:
-              '\nYou can add more ${_lineItemType}s to the purchase order (PO).',
-          children: [_buildLineItems()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '5. Addresses',
-          subTitle:
-              '\nBuyer\'s billing, shipping, or any additional addresses.',
-          children: [_buildAddresses()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '6. Delivery, Contacts & Terms',
-          subTitle: '\nDelivery date, buyer contact, & terms.',
-          children: [_buildBuyerRepAndDeliveryDate(), _buildTermsAndNotes()],
-        ),
-
-        const SizedBox(height: 10.0),
-        context.confirmableActionButton(
-          label: 'Create PO',
-          onPressed: _onSubmit,
-        ),
-        const SizedBox(height: 20.0),
-      ],
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: AutoIDField(
+        label: 'PO Number',
+        onGenerate: () async => await DocType.pOrder.getShortUID,
+        onChanged: (id) {
+          setState(() => _poNumber = id);
+          _syncValidity();
+        },
+      ),
+      footers: _isFormValid
+          ? [
+              context.confirmableActionButton(
+                submitLabel: _isSubmitting ? 'Creating...' : 'Create PO',
+                isDisabled: !_isFormValid || _isSubmitting,
+                onSubmit: _onSubmit,
+              ),
+            ]
+          : null,
+      showNavigationButtons: true,
     );
   }
+
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      isExpanded: true,
+      title: 'Purchase Order Overview',
+      subTitle: '\nGeneral purchase order info & supplier details.',
+      builder: () => [_buildPOStatusAndRequestedBy(), _buildSupplier()],
+    ),
+    FormGroupCardModel(
+      title: 'Accounting & Cost Assignment',
+      subTitle: '\nCost center, currency, & accounting allocation details.',
+      builder: () => [_buildCurrencyAndCostCenter(), _buildShippingAmount()],
+    ),
+    FormGroupCardModel(
+      title: 'Payment Terms & Tax',
+      subTitle: '\nPayment method, payment terms, & tax preferences.',
+      builder: () => [_buildPayMethodAndTerms(), _buildTaxModeSelector()],
+    ),
+    FormGroupCardModel(
+      title: '${_lineItemType.toSentence} Line Items',
+      subTitle:
+          '\nYou can add more ${_lineItemType}s to the purchase order (PO).',
+      builder: () => [_buildLineItems()],
+    ),
+    FormGroupCardModel(
+      title: 'Addresses',
+      subTitle: '\nBuyer\'s billing, shipping, or any additional addresses.',
+      builder: () => [_buildAddresses()],
+    ),
+    FormGroupCardModel(
+      title: 'Delivery, Contacts & Terms',
+      subTitle: '\nDelivery date, buyer contact, & terms.',
+      builder: () => [_buildBuyerRepAndDeliveryDate(), _buildTermsAndNotes()],
+    ),
+  ];
 
   // -------------------------
   // Section Builders
@@ -345,14 +347,13 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       isRepeatable: true,
       fieldsConfig: POFormInputs.addressFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Update the address list
         POFormInputs.updateListFromData<AddressInfo>(
           _addresses,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
         );
+        _syncValidity();
       },
     );
   }
@@ -360,9 +361,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
   DeliveryDate _buildBuyerRepAndDeliveryDate() {
     return DeliveryDate(
       labelDelivery: "Delivery date",
-      onContactChanged: (id, name, role) =>
-          setState(() => _buyerContactPersonId = id),
-      onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
+      onContactChanged: (id, name, role) {
+        setState(() => _buyerContactPersonId = id);
+        _syncValidity();
+      },
+      onDeliveryChanged: (date) {
+        setState(() => _deliveryDate = date);
+        _syncValidity();
+      },
     );
   }
 
@@ -371,11 +377,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       initialData: [{}],
       fieldsConfig: POFormInputs.deliveryFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _additionalInfo
           ..clear() // Clear previous entries to prevent duplication
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -393,8 +398,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           .map((e) => {...e.toMap(true), 'netPrice': e.netAmount})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Update the LineItem list
         POFormInputs.updateListFromData<LineItem>(
           _lineItems,
@@ -402,15 +405,21 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           fromMap: (map, id) =>
               LineItem.fromMap(map, id: id, lineType: _lineItemType),
         );
+        _syncValidity();
       },
     );
   }
 
   CurrencyAndCostCenterDepartment _buildCurrencyAndCostCenter() {
     return CurrencyAndCostCenterDepartment(
-      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+      onCurrencyChanged: (v) {
+        setState(() => _currencyCode = v);
+        _syncValidity();
+      },
+      onCostCenterChange: (id, code, name) {
+        setState(() => _costCenterCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -426,19 +435,24 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         ),
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _shippingAmount
           ..clear()
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
 
   POStatusAndRequestedBy _buildPOStatusAndRequestedBy() {
     return POStatusAndRequestedBy(
-      onStatusChanged: (s) => setState(() => _poStatus = s),
-      onRequestedChanged: (id, code, name) => setState(() => _requestedBy = id),
+      onStatusChanged: (s) {
+        setState(() => _poStatus = s);
+        _syncValidity();
+      },
+      onRequestedChanged: (id, code, name) {
+        setState(() => _requestedBy = id);
+        _syncValidity();
+      },
     );
   }
 
@@ -450,8 +464,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       fullWidthKey: 'supplierLinks',
       fieldsConfig: POFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
           // Merge the status from the top-level map
@@ -465,14 +477,21 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
         );
+        _syncValidity();
       },
     );
   }
 
   PayMethodAndTermsDropdown _buildPayMethodAndTerms() {
     return PayMethodAndTermsDropdown(
-      onPayTermsChanged: (t) => setState(() => _paymentTerm = t),
-      onPayMethodChanged: (m) => setState(() => _paymentMethod = m),
+      onPayTermsChanged: (t) {
+        setState(() => _paymentTerm = t);
+        _syncValidity();
+      },
+      onPayMethodChanged: (m) {
+        setState(() => _paymentMethod = m);
+        _syncValidity();
+      },
     );
   }
 
@@ -480,8 +499,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return POFormInputs.buildTaxModeSelector(
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
-      selectedTaxMode: (TaxMode? mode) =>
-          setState(() => _taxModeToApply = mode),
+      selectedTaxMode: (TaxMode? mode) {
+        setState(() => _taxModeToApply = mode);
+        _syncValidity();
+      },
     );
   }
 
@@ -537,3 +558,72 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     _bloc.add(up);
   }
 }
+
+/*
+  Column _buildBody2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        AutoIDField(
+          label: 'PO Number',
+          onGenerate: () async => await DocType.pOrder.getShortUID,
+          onChanged: (id) {
+            setState(() => _poNumber = id);
+            _syncValidity();
+          },
+        ),
+
+        FormGroupCard(
+          title: '1. Purchase Order Overview',
+          subTitle: '\nGeneral purchase order info & supplier details.',
+          children: [_buildPOStatusAndRequestedBy(), _buildSupplier()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '2. Accounting & Cost Assignment',
+          subTitle: '\nCost center, currency, & accounting allocation details.',
+          children: [_buildCurrencyAndCostCenter(), _buildShippingAmount()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '3. Payment Terms & Tax',
+          subTitle: '\nPayment method, payment terms, & tax preferences.',
+          children: [_buildPayMethodAndTerms(), _buildTaxModeSelector()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '4. ${_lineItemType.toSentence} Line Items',
+          subTitle:
+              '\nYou can add more ${_lineItemType}s to the purchase order (PO).',
+          children: [_buildLineItems()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '5. Addresses',
+          subTitle:
+              '\nBuyer\'s billing, shipping, or any additional addresses.',
+          children: [_buildAddresses()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '6. Delivery, Contacts & Terms',
+          subTitle: '\nDelivery date, buyer contact, & terms.',
+          children: [_buildBuyerRepAndDeliveryDate(), _buildTermsAndNotes()],
+        ),
+
+        const SizedBox(height: 10.0),
+        context.confirmableActionButton(
+          label: _isSubmitting ? 'Creating...' : 'Create PO',
+          isDisabled: !_isFormValid || _isSubmitting,
+          onPressed: _onSubmit,
+        ),
+        const SizedBox(height: 20.0),
+      ],
+    );
+  }*/

@@ -6,7 +6,7 @@ import 'package:assign_erp/core/widgets/button/custom_dropdown_field.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:assign_erp/core/widgets/text_field/custom_text_field.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_role.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/department_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_stores.dart';
 import 'package:flutter/material.dart';
 
@@ -34,13 +34,13 @@ class NameAndMobile extends StatelessWidget {
           label: 'Full name',
           onChanged: onNameChanged,
           controller: nameController,
-          keyboardType: TextInputType.name,
+          textInputType: TextInputType.name,
         ),
         CustomTextField(
           label: 'Mobile number',
           onChanged: onMobileChanged,
           controller: mobileController,
-          keyboardType: TextInputType.number,
+          textInputType: TextInputType.phone,
         ),
       ],
     );
@@ -92,7 +92,7 @@ class EmailAndPasscode extends StatelessWidget {
           label: 'Employee email',
           onChanged: onEmailChanged,
           controller: emailController,
-          keyboardType: TextInputType.emailAddress,
+          textInputType: TextInputType.emailAddress,
         ),
         if (passcodeController != null) ...{
           TemporaryPasscode(
@@ -179,7 +179,7 @@ class _TemporaryPasscodeState extends State<TemporaryPasscode> {
       maxLines: 1,
       maxLength: 20,
       autofillHints: const [AutofillHints.password],
-      keyboardType: TextInputType.visiblePassword,
+      textInputType: TextInputType.visiblePassword,
       inputDecoration: InputDecoration(
         isDense: true,
         alignLabelWithHint: true,
@@ -280,25 +280,6 @@ class AccountStatusDropdown extends StatelessWidget {
   }
 }
 
-/// Company's Departments [DepartmentDropdown]
-class DepartmentDropdown extends StatelessWidget {
-  final String? initialValue;
-  final Function(String, String, String) onChanged;
-
-  const DepartmentDropdown({
-    super.key,
-    this.initialValue,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SearchDepartments(
-      initialValue: initialValue,
-      onChanged: (id, code, name) => onChanged(id, code, name),
-    );
-  }
-}
 
 /*
 /// Role & Email [RoleAndStores]

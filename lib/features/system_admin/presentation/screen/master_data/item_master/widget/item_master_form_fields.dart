@@ -1,13 +1,15 @@
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/dialog/prompt_user_for_action.dart';
 import 'package:assign_erp/core/widgets/form/costing_method_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/dynamic_checkbox_list.dart';
-import 'package:assign_erp/core/widgets/form/category_picker.dart';
+import 'package:assign_erp/core/widgets/form/item_master_status_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/uom_dropdown.dart';
 import 'package:assign_erp/core/widgets/text_field/dynamic_text_fields.dart';
 import 'package:assign_erp/features/inventory_ims/presentation/screen/widget/inventory_form_fields.dart';
+import 'package:assign_erp/features/system_admin/data/models/master_data/category_model.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/master_data/ref_master/widget/category_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/widget/search_taxes.dart';
 import 'package:flutter/material.dart';
 
@@ -37,25 +39,24 @@ class ItemMasterFormFields {
     selectedTaxCodes: selectedTaxCodes,
   );
 
-  static List<FieldGroupConfig> nameAndDescFields({LineItemType? itemType}) => [
+  static List<FieldGroupConfig> get metadataFields => [
     /// 1. Identification
     FieldGroupConfig(key: 'name', label: 'Name', type: TextInputType.text),
 
-    /// 2. Classification
-    /// @TODO - remove and replace with remote categories
     FieldGroupConfig(
-      key: 'category',
-      label: '${itemType?.getLabel ?? 'Item'} Category',
+      key: 'status',
+      label: 'Status',
       type: TextInputType.text,
       widgetType: FieldWidgetType.custom,
       customBuilder: ({required initialData, required onChanged}) {
-        return CategoryPicker(
-          isService: itemType?.isService ?? false,
+        return IMStatusDropdown(
           initialValue: initialData,
           onChanged: (String? selected) => onChanged(selected),
         );
       },
     ),
+    FieldGroupConfig(key: 'upc', label: 'UPC', type: TextInputType.text),
+
     FieldGroupConfig(
       key: 'description',
       label: 'Description (if any)...',
@@ -65,6 +66,7 @@ class ItemMasterFormFields {
       minLines: null,
       // validator: (_) => null,
     ),
+
     /* FieldGroupConfig(
       key: 'itemType',
       label: 'Item Type',
@@ -100,7 +102,25 @@ class ItemMasterFormFields {
     ),*/
   ];
 
-  static List<FieldGroupConfig> get baseUomFields => [
+  static List<FieldGroupConfig> baseUomFields({LineType? itemType}) => [
+
+    /// 2. Classification
+    FieldGroupConfig(
+      key: 'category',
+      label: '${itemType?.getLabel ?? 'Item'} Category',
+      type: TextInputType.text,
+      widgetType: FieldWidgetType.custom,
+      customBuilder: ({required initialData, required onChanged}) {
+        return CategoryDropdown(
+          isMultiSelect: true,
+          // isService: itemType?.isService ?? false,
+          initialValue: initialData,
+          initialValues: List<Category>.from(initialData ?? []),
+          onMultiChanged: onChanged,
+        );
+      },
+    ),
+
     /// 3. Units of Measure
     FieldGroupConfig(
       key: 'baseUom',

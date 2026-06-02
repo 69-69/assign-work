@@ -103,7 +103,7 @@ class _SearchCustomerState extends State<SearchCustomer> {
   Widget _buildManualEntryField(BuildContext context) {
     return CustomTextField(
       onChanged: (value) => widget.onChanged.call(value, value),
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       inputDecoration: InputDecoration(
         labelText: 'Customer name',
         suffixIcon: Padding(

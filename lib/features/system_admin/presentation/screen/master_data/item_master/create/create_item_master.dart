@@ -1,12 +1,14 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/bottom_sheet_scaffold.dart';
@@ -30,14 +32,21 @@ extension IMFormExtensions on BuildContext {
     ItemMaster? serverItem,
     String? itemType,
     void Function()? onBackPress,
-  }) => openBottomSheet(
-    isExpand: false,
-    child: BottomSheetScaffold(
-      onBackPress: onBackPress,
-      title: serverItem != null ? serverItem.name.toTitle : 'New Item Master',
-      body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
-    ),
-  );
+  }) {
+    final type = (itemType?.contains('material') ?? false
+        ? 'item'
+        : itemType).toTitle;
+    return openBottomSheet(
+      isExpand: false,
+      child: BottomSheetScaffold(
+        onBackPress: onBackPress,
+        title: serverItem != null
+            ? serverItem.name.toTitle
+            : 'New $type Master',
+        body: _CreateItemMasterForm(itemType: itemType, serverItem: serverItem),
+      ),
+    );
+  }
 }
 
 class _CreateItemMasterForm extends StatefulWidget {
@@ -166,13 +175,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
         _isSubmitting = false;
         _itemMaster = ItemMaster.empty;
       });
-      _generateIMNumber(); // fresh IM number
     }
-  }
-
-  void _generateIMNumber() async {
-    final id = await DocType.itemMaster.getShortUID;
-    if (mounted) setState(() => _imNumber = id);
   }
 
   List<AuditLog> history([action = AuditAction.created]) => [
@@ -202,7 +205,6 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   @override
   void initState() {
     super.initState();
-    _generateIMNumber();
   }
 
   @override
@@ -217,75 +219,77 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ItemMasterFormFields.buildIMNumber(
-          context,
-          _imNumber,
-          _generateIMNumber,
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: AutoIDField(
+        label: 'Item Code',
+        allowManualEntry: true,
+        onGenerate: () async => await DocType.itemMaster.getShortUID,
+        onChanged: (id) {
+          setState(() => _imNumber = id);
+          _syncValidity();
+        },
+      ),
+      visibleWhen: _isFormValid,
+      footers: [
+        context.confirmableActionButton(
+          submitLabel: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Create')
+              : (_isSubmitting ? 'Updating...' : null),
+          isDisabled: _isSubmitting || !_isFormValid,
+          onDraft: () {},
+          onSubmit: _onSubmit,
         ),
+      ],
+      showNavigationButtons: true,
+    );
+  }
 
-        /// 1️⃣ Basic Item Information + 2️⃣ Classification & Type
-        FormGroupCard(
-          title: '1. Basic Item Information',
-          subTitle:
-              '\nKey identification details and description of the $_itemType.',
-          children: [_buildNameAndDesc()],
-        ),
-
-        /// 3️⃣ Units & Stock Rules
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. Units & Stock Rules',
-          subTitle: '\nBase unit of measure and Setup control rules.',
-          children: [_baseUOM(), _buildUsageAndAvailability()],
-        ),
-
-        /// 4️⃣ Planning & Procurement
-        FormGroupCard(
-          isExpanded: false,
-          title: '4. Planning & Procurement',
-          subTitle:
-              '\nDefault reorder settings, lead times, and procurement rules.',
-          children: [_buildPlanningAndProcurement()],
-        ),
-
-        /// 5️⃣ Costing
-        FormGroupCard(
-          isExpanded: false,
-          title: '5. Costing',
-          subTitle: '\nStandard costing and valuation method.',
-          children: [_buildCosting()],
-        ),
-
-        /// Taxes
-        FormGroupCard(
-          isExpanded: false,
-          title: '6.Taxes & Pricing',
-          subTitle: '\nSelect applicable taxes',
-          children: [_buildTaxModeSelector()],
-        ),
-
-        /// Warehouse + Sub-location + Bin address
-        FormGroupCard(
-          isExpanded: false,
-          title: '7.Warehouse + Bins & Stock',
-          subTitle:
-              '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
-          children: [/*Widget here*/],
-        ),
-
-        /// Attributes & Variants
-        Visibility(
-          visible: _isFormValid,
-          maintainState: true,
-          child: AttributePanel(
-            isExpanded: false,
-            title: '8. Attributes & Variants',
-            subTitle:
-                '\nCreate multiple versions of this $_itemType using attributes like size or color.',
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      isExpanded: true,
+      title: 'Identification & Metadata',
+      subTitle:
+          '\nKey identification details and description of the $_itemType.',
+      builder: () => [_buildNameAndDesc()],
+    ),
+    FormGroupCardModel(
+      title: 'Units & Stock Rules',
+      subTitle: '\nBase unit of measure and Setup control rules.',
+      builder: () => [_baseUOM(), _buildUsageAndAvailability()],
+    ),
+    FormGroupCardModel(
+      title: 'Planning & Procurement',
+      subTitle:
+          '\nDefault reorder settings, lead times, and procurement rules.',
+      builder: () => [_buildPlanningAndProcurement()],
+    ),
+    FormGroupCardModel(
+      title: 'Costing',
+      subTitle: '\nStandard costing and valuation method.',
+      builder: () => [_buildCosting()],
+    ),
+    FormGroupCardModel(
+      title: 'Taxes & Pricing',
+      subTitle: '\nSelect applicable taxes',
+      builder: () => [_buildTaxModeSelector()],
+    ),
+    FormGroupCardModel(
+      title: 'Warehouse + Bins & Stock',
+      subTitle:
+          '\nSet the default warehouse, sub-location, and bin for this $_itemType',
+      builder: () => [
+        // Widget here
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'Attributes & Variants',
+      subTitle:
+          '\nCreate multiple versions of this $_itemType using attributes like size or color.',
+      builder: () => [
+        if (_isFormValid)
+          AttributePanel(
             generatedVariants: (v) {
               setState(() => _variants = v);
             },
@@ -299,35 +303,16 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
                 ),
               ),
             ),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-        Text(
-          'Needed & Optional Fields'
-          'Optional / default warehouse fields (for ease of transactions):\n'
-          'Default Warehouse\n'
-          'Default Storage Location (shelf, aisle, BIN)\n',
-        ),
-
-        context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
-              ? (_isSubmitting ? 'Creating...' : 'Continue')
-              : (_isSubmitting ? 'Updating...' : null),
-        ),
-
-        const SizedBox(height: 20),
+          )
+        else
+          const Center(child: Text('Complete previous required fields first')),
       ],
-    );
-  }
+    ),
+  ];
 
   Widget _buildNameAndDesc() {
-    final itemType = LineItemTypeUtil.fromString(_itemType);
-
     return DynamicTextFields(
-      fieldsConfig: ItemMasterFormFields.nameAndDescFields(itemType: itemType),
+      fieldsConfig: ItemMasterFormFields.metadataFields,
       initialData: [_serverItem?.toMap() ?? {}],
       onChanged: (List<Map<String, dynamic>> data) {
         final i = ItemMaster.fromMap(data.first);
@@ -343,8 +328,10 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   Widget _baseUOM() {
+    final itemType = LineTypeUtil.fromString(_itemType);
+
     return DynamicTextFields(
-      fieldsConfig: ItemMasterFormFields.baseUomFields,
+      fieldsConfig: ItemMasterFormFields.baseUomFields(itemType: itemType),
       initialData: [
         {'baseUom': _serverItem?.baseUom.getName},
       ],
@@ -357,7 +344,7 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
   }
 
   Widget _buildUsageAndAvailability() {
-    final itemType = LineItemTypeUtil.fromString(_itemType);
+    final itemType = LineTypeUtil.fromString(_itemType);
 
     return DynamicTextFields(
       fieldsConfig: ItemMasterFormFields.unitRuleFields(
@@ -425,6 +412,91 @@ class _CreateItemMasterFormState extends State<_CreateItemMasterForm> {
     );
   }
 }
+
+/*Column _buildBody2() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AutoIDField(
+          label: 'Item Code',
+          allowManualEntry: true,
+          onGenerate: () async => await DocType.itemMaster.getShortUID,
+          onChanged: (id) {
+            setState(() => _imNumber = id);
+            _syncValidity();
+          },
+        ),
+
+        /// 1️⃣ Basic Item Information + 2️⃣ Classification & Type
+        FormGroupCard(
+          title: '1. Basic Item Information',
+          subTitle:
+          '\nKey identification details and description of the $_itemType.',
+          children: [_buildNameAndDesc()],
+        ),
+
+        /// 3️⃣ Units & Stock Rules
+        FormGroupCard(
+          isExpanded: false,
+          title: '3. Units & Stock Rules',
+          subTitle: '\nBase unit of measure and Setup control rules.',
+          children: [_baseUOM(), _buildUsageAndAvailability()],
+        ),
+
+        /// 4️⃣ Planning & Procurement
+        FormGroupCard(
+          isExpanded: false,
+          title: '4. Planning & Procurement',
+          subTitle:
+          '\nDefault reorder settings, lead times, and procurement rules.',
+          children: [_buildPlanningAndProcurement()],
+        ),
+
+        /// 5️⃣ Costing
+        FormGroupCard(
+          isExpanded: false,
+          title: '5. Costing',
+          subTitle: '\nStandard costing and valuation method.',
+          children: [_buildCosting()],
+        ),
+
+        /// Taxes
+        FormGroupCard(
+          isExpanded: false,
+          title: '6.Taxes & Pricing',
+          subTitle: '\nSelect applicable taxes',
+          children: [_buildTaxModeSelector()],
+        ),
+
+        /// Warehouse + Sub-location + Bin address
+        FormGroupCard(
+          isExpanded: false,
+          title: '7.Warehouse + Bins & Stock',
+          subTitle:
+          '\nSet the default warehouse, sub-location, and bin for this $_itemType.',
+          children: [/*Widget here*/],
+        ),
+
+        const SizedBox(height: 20),
+        Text(
+          'Needed & Optional Fields'
+              'Optional / default warehouse fields (for ease of transactions):\n'
+              'Default Warehouse\n'
+              'Default Storage Location (shelf, aisle, BIN)\n',
+        ),
+
+        context.confirmableActionButton(
+          onPressed: _onSubmit,
+          isDisabled: _isSubmitting || !_isFormValid,
+          label: _isServerNull
+              ? (_isSubmitting ? 'Creating...' : 'Continue')
+              : (_isSubmitting ? 'Updating...' : null),
+        ),
+
+        const SizedBox(height: 20),
+      ],
+    );
+  }*/
 
 /*Here’s a clean **ERP-style grouping using your `FormGroupCard` pattern**, structured so it scales well and stays readable in Flutter.
 

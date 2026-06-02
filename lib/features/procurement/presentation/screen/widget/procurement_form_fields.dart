@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
 import 'package:assign_erp/core/util/date_time_picker.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/widgets/form/address_type_dropdown.dart';
 import 'package:assign_erp/core/widgets/form/category_picker.dart';
@@ -38,7 +38,7 @@ class ProcurementFormFields {
     bool isDisabled = false, // Should certain fields be disabled?
     List<String>? keysToExclude, // Should certain fields be excluded?
   }) {
-    final match = LineItemTypeUtil.isMaterial(type);
+    final match = LineTypeUtil.isMaterial(type);
 
     List<FieldGroupConfig> list = match
         ? _materialLineItemsFields(isDisabled)

@@ -194,7 +194,7 @@ class SpotlightSearchBarState extends State<SpotlightSearchBar> {
               prefixIcon: Icon(Icons.search, color: kPrimaryColor),
               suffixIcon: _switchDisplay(isEmpty2),
             ),
-            keyboardType: TextInputType.none,
+            textInputType: TextInputType.none,
             onChanged: _onSearchChanged,
           ),
         ),

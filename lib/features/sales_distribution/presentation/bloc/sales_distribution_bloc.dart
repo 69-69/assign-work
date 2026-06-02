@@ -320,6 +320,7 @@ class SalesDistributionBloc<T>
     DeleteSalesDistribution<String> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
+    emit(SalesDistributionDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _salesQuoteRepository.deleteData(event.documentId);
@@ -339,6 +340,7 @@ class SalesDistributionBloc<T>
     DeleteSalesDistribution<List<String>> event,
     Emitter<SalesDistributionState<T>> emit,
   ) async {
+    emit(SalesDistributionDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _salesQuoteRepository.deleteManyData(event.documentId);

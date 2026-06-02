@@ -24,8 +24,8 @@ class RestoreFromDrive extends StatelessWidget {
             ),
           ),
           context.confirmableActionButton(
-            label: 'Restore From Drive',
-            onPressed: () async => await _confirmRestoreDialog(context),
+            submitLabel: 'Restore From Drive',
+            onSubmit: () async => await _confirmRestoreDialog(context),
           ),
         ],
       ),

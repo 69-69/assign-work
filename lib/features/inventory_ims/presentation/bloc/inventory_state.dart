@@ -57,6 +57,8 @@ class InventoryDeleted<T> extends InventoryState<T> {
   List<Object?> get props => [message];
 }
 
+class InventoryDeleting<T> extends InventoryState<T> {}
+
 class InventoryError<T> extends InventoryState<T> {
   final String error;
 

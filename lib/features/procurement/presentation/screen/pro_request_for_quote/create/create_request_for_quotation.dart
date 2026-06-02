@@ -1,13 +1,16 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -100,19 +103,16 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
   /// Disable form fields if converting PR to RFQ & PR has line items
   bool get _isDisabled => _initialPR?.lineItems != null;
 
-  bool get isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid = false; //> _formKey.currentState!.validate();
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
+
   String get _employeeName => context.employee!.fullName;
+
   String get _employeeStore => context.employee!.storeNumber;
 
   ProRequestForQuoteBloc get _bloc => context.read<ProRequestForQuoteBloc>();
-
-  void _generateRFQNumber() async {
-    final id = await DocType.rfq.getShortUID;
-    if (mounted) setState(() => _rfqNumber = id);
-  }
 
   Future<void> _getDefaultShippingAddress() async {
     if (!_useDefaultAddress) {
@@ -165,7 +165,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    if (!isFormValid || _newRFQ.isEmpty) {
+    if (!_isFormValid || _newRFQ.isEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -178,6 +178,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _formKey.currentState?.reset();
       _formResetKey = UniqueKey(); // 💥 full rebuild
 
+      _isFormValid = false;
       _isSubmitting = false;
       _rfqTitle = '';
       _autoConvertRfq = false;
@@ -196,9 +197,12 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       _shippingAddress.clear();
       _useDefaultAddress = false;
     });
-
-    _generateRFQNumber();
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
@@ -221,8 +225,6 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   @override
   void initState() {
-    _generateRFQNumber();
-
     _getDefaultShippingAddress();
     super.initState();
   }
@@ -242,84 +244,85 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        RFQFormInputs.buildRFQNumber(context, _rfqNumber, _generateRFQNumber),
-        FormGroupCard(
-          title: '1. Quotation Overview',
-          subTitle: '\nGeneral RFQ info, requester details, & document status.',
-          children: [
-            _buildAutoCreateAndStatus(),
-            const HorizontalDivider(space: 0.4),
-            _buildTitleField(),
-            _buildRequesterAndDepartment(),
-          ],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Accounting & Cost Assignment',
-          subTitle: '\nCost center, currency, & financial allocation details.',
-          children: [_buildCurrencyAndCostCenter()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. ${_lineItemType.toSentence} Line Items',
-          subTitle:
-              '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
-          children: [_buildLineItems()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '4. Suppliers Invitation',
-          subTitle: '\nSelect & invite vendors to submit quotations.',
-          children: [_buildSuppliers()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '5. Shipping Address',
-          subTitle:
-              '\nSpecify the delivery location for quoted ${_lineItemType}s.',
-          children: [
-            SizedBox(
-              width: context.dynamicWidth(0.48),
-              child: UseDefaultAddress(
-                isChecked: _useDefaultAddress,
-                onChanged: (v) async {
-                  if (!mounted) return;
-
-                  setState(() => _useDefaultAddress = v);
-                  await _getDefaultShippingAddress();
-                },
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: AutoIDField(
+        label: 'RFQ Number',
+        onGenerate: () async => await DocType.rfq.getShortUID,
+        onChanged: (id) {
+          setState(() => _rfqNumber = id);
+          _syncValidity();
+        },
+      ),
+      footers: _isFormValid
+          ? [
+              context.confirmableActionButton(
+                submitLabel: _isSubmitting ? 'Submitting...' : 'Create RFQ',
+                isDisabled: !_isFormValid || _isSubmitting,
+                onSubmit: _onSubmit,
               ),
-            ),
-            const HorizontalDivider(isORSeparator: true, space: 0.4),
-
-            _buildShippingAddress(),
-          ],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '6. Contacts & Submission Deadlines',
-          subTitle: '\nBuyer contact information & quotation submission dates.',
-          children: [_buildContactAndDeadlines()],
-        ),
-
-        context.confirmableActionButton(
-          label: _isSubmitting ? 'Submitting...' : 'Create RFQ',
-          isDisabled: _isSubmitting,
-          onPressed: _onSubmit,
-        ),
-        const SizedBox(height: 20.0),
-      ],
+            ]
+          : null,
+      visibleWhen: _isFormValid,
+      showNavigationButtons: true,
     );
   }
+
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      isExpanded: true,
+      title: 'Quotation Overview',
+      subTitle: '\nGeneral RFQ info, requester details, & document status.',
+      builder: () => [
+        _buildAutoCreateAndStatus(),
+        const HorizontalDivider(space: 0.4),
+        _buildTitleField(),
+        _buildRequesterAndDepartment(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'Accounting & Cost Assignment',
+      subTitle: '\nCost center, currency, & financial allocation details.',
+      builder: () => [_buildCurrencyAndCostCenter()],
+    ),
+    FormGroupCardModel(
+      title: '${_lineItemType.toSentence} Line Items',
+      subTitle: '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
+      builder: () => [_buildLineItems()],
+    ),
+    FormGroupCardModel(
+      title: 'Suppliers Invitation',
+      subTitle: '\nSelect & invite vendors to submit quotations.',
+      builder: () => [_buildSuppliers()],
+    ),
+    FormGroupCardModel(
+      title: 'Shipping Address',
+      subTitle: '\nSpecify the delivery location for quoted ${_lineItemType}s.',
+      builder: () => [
+        SizedBox(
+          width: context.dynamicWidth(0.48),
+          child: UseDefaultAddress(
+            isChecked: _useDefaultAddress,
+            onChanged: (v) async {
+              if (!mounted) return;
+
+              setState(() => _useDefaultAddress = v);
+              await _getDefaultShippingAddress();
+              _syncValidity();
+            },
+          ),
+        ),
+        const HorizontalDivider(isORSeparator: true, space: 0.4),
+        _buildShippingAddress(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'Contacts & Submission Deadlines',
+      subTitle: '\nBuyer contact information & quotation submission dates.',
+      builder: () => [_buildContactAndDeadlines()],
+    ),
+  ];
 
   // -------------------------
   // Section Builders
@@ -336,7 +339,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       initialData:
           _initialPR?.lineItems.map((e) => e.toMap(true)).toList() ?? [{}],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the ProLineItem list
         RFQFormInputs.updateListFromData<LineItem>(
@@ -358,7 +361,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
           : [{}], // empty form
       fieldsConfig: RFQFormInputs.shippingAddressFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         // Update the address list
         RFQFormInputs.updateListFromData<AddressInfo>(
@@ -376,7 +379,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       fullWidthKey: 'buyerContactPerson',
       fieldsConfig: RFQFormInputs.buyerTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         _buyerTerms
           ..clear()
@@ -392,7 +395,7 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
       fullWidthKey: 'supplierLinks',
       fieldsConfig: RFQFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        if (_isFormValid) setState(() {});
 
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
@@ -421,10 +424,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
 
   AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndRFQStatus(
-      onStatusChanged: (s) => setState(() => _rfqStatus = s),
+      onStatusChanged: (s) {
+        setState(() => _rfqStatus = s);
+        _syncValidity();
+      },
       isSelected: _autoConvertRfq,
       onAutoConvertChanged: (bool? v) {
         setState(() => _autoConvertRfq = v ?? false);
+        _syncValidity();
       },
     );
   }
@@ -433,10 +440,14 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     return RequestedByAndDepartments(
       initialRequestedBy: _initialPR?.requestedBy,
       initialDepartment: _initialPR?.departmentCode,
-      onRequestedChanged: (id, code, name) =>
-          setState(() => _requestedBy = name),
-      onDepartmentChange: (id, code, name) =>
-          setState(() => _departmentCode = code),
+      onRequestedChanged: (id, code, name) {
+        setState(() => _requestedBy = name);
+        _syncValidity();
+      },
+      onDepartmentChange: (id, code, name) {
+        setState(() => _departmentCode = code);
+        _syncValidity();
+      },
       isDisabled: _initialPR != null,
     );
   }
@@ -453,9 +464,8 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
         ),
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         _rfqTitle = data.first['title'];
+        _syncValidity();
       },
     );
   }
@@ -512,3 +522,93 @@ class _CreateRFQFormState extends State<_CreateRFQForm> {
     _bloc.add(up);
   }
 }
+
+/*
+  Column _buildBody2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        AutoIDField(
+          label: 'Quote Number',
+          onGenerate: () async => await DocType.rfq.getShortUID,
+          onChanged: (id) {
+            setState(() => _rfqNumber = id);
+            _syncValidity();
+          },
+        ),
+        FormGroupCard(
+          title: '1. Quotation Overview',
+          subTitle: '\nGeneral RFQ info, requester details, & document status.',
+          children: [
+            _buildAutoCreateAndStatus(),
+            const HorizontalDivider(space: 0.4),
+            _buildTitleField(),
+            _buildRequesterAndDepartment(),
+          ],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '2. Accounting & Cost Assignment',
+          subTitle: '\nCost center, currency, & financial allocation details.',
+          children: [_buildCurrencyAndCostCenter()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '3. ${_lineItemType.toSentence} Line Items',
+          subTitle:
+              '\nYou can add more ${_lineItemType}s to the Quotation (RFQ).',
+          children: [_buildLineItems()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '4. Suppliers Invitation',
+          subTitle: '\nSelect & invite vendors to submit quotations.',
+          children: [_buildSuppliers()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '5. Shipping Address',
+          subTitle:
+              '\nSpecify the delivery location for quoted ${_lineItemType}s.',
+          children: [
+            SizedBox(
+              width: context.dynamicWidth(0.48),
+              child: UseDefaultAddress(
+                isChecked: _useDefaultAddress,
+                onChanged: (v) async {
+                  if (!mounted) return;
+
+                  setState(() => _useDefaultAddress = v);
+                  await _getDefaultShippingAddress();
+                  _syncValidity();
+                },
+              ),
+            ),
+            const HorizontalDivider(isORSeparator: true, space: 0.4),
+
+            _buildShippingAddress(),
+          ],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '6. Contacts & Submission Deadlines',
+          subTitle: '\nBuyer contact information & quotation submission dates.',
+          children: [_buildContactAndDeadlines()],
+        ),
+
+        context.confirmableActionButton(
+          label: _isSubmitting ? 'Submitting...' : 'Create RFQ',
+          isDisabled: !_isFormValid||_isSubmitting,
+          onPressed: _onSubmit,
+        ),
+        const SizedBox(height: 20.0),
+      ],
+    );
+  }
+*/

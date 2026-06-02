@@ -188,10 +188,10 @@ class _AddPriceListFormState extends State<_AddPriceListForm> {
 
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Price List')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
       ],
     );

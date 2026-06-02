@@ -1,3 +1,4 @@
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -40,7 +41,7 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
 
   bool _isSubmitting = false;
   final _formKey = GlobalKey<FormState>();
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid =false; //> _formKey.currentState!.validate();
   late final _nameController = TextEditingController(text: _employee.fullName);
   late final _emailController = TextEditingController(text: _employee.email);
   late final _phoneController = TextEditingController(
@@ -85,6 +86,11 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
       ),
     );
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => Navigator.pop(context));
@@ -136,27 +142,21 @@ class _UpdateEmployeeFormState extends State<_UpdateEmployeeForm> {
             NameAndMobile(
               nameController: _nameController,
               mobileController: _phoneController,
-              onNameChanged: (s) {
-                if (_isFormValid) setState(() {});
-              },
-              onMobileChanged: (s) {
-                if (_isFormValid) setState(() {});
-              },
+              onNameChanged: (s)  => _syncValidity(),
+              onMobileChanged: (s)  => _syncValidity(),
             ),
             const SizedBox(height: 20.0),
             EmailAndPasscode(
               emailController: _emailController,
-              onEmailChanged: (s) {
-                if (_isFormValid) setState(() {});
-              },
+              onEmailChanged: (s) => _syncValidity(),
             ),
           ],
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
           isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Updating...' : null,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
       ],
     );

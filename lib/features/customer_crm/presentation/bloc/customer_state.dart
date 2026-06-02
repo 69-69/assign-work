@@ -57,6 +57,8 @@ class CustomerDeleted<T> extends CustomerState<T> {
   List<Object?> get props => [message];
 }
 
+class CustomerDeleting<T> extends CustomerState<T> {}
+
 class CustomerError<T> extends CustomerState<T> {
   final String error;
 

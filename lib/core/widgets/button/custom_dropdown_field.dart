@@ -347,6 +347,7 @@ String? _selectionValidator(
     'method',
     'group',
     'mode',
+    'choose',
     'category',
     'status',
     'term',

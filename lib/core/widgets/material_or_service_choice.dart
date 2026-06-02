@@ -1,5 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/size_config.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -7,6 +7,8 @@ import 'package:assign_erp/core/widgets/dialog/bottom_sheet_header.dart';
 import 'package:assign_erp/core/widgets/dialog/custom_dialog.dart';
 import 'package:assign_erp/core/widgets/layout/adaptive_layout.dart';
 import 'package:flutter/material.dart';
+
+import 'button/custom_dropdown_field.dart';
 
 extension LineItemChoicePopUp on BuildContext {
   Future openMaterialOrServiceToggle([
@@ -40,15 +42,15 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
     return CustomDialog(
       bgColor: context.scaffoldBgColor,
       title: DialogTitle(
-        title: 'Product or Service?',
+        title: 'Material or Service?',
         subtitle:
-            'Select whether this $_procureType is a Material (Product) or Service (Labor)?',
+            'Select whether this $_procureType is a physical goods or Service(work or labor)?',
       ),
       body: _buildBody(context),
       actions: [
         context.confirmableActionButton(
-          label: "Continue",
-          onPressed: selectedType.isNullOrEmpty
+          submitLabel: "Continue",
+          onSubmit: selectedType.isNullOrEmpty
               ? null
               : () => Navigator.pop(context, selectedType),
           isDisabled: selectedType == null,
@@ -58,7 +60,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
   }
 
   Widget _buildBody(BuildContext context) {
-    final types = LineItemTypeUtil.toStringList(false);
+    final types = LineTypeUtil.toStringList(false);
 
     return Container(
       width: context.screenWidth,
@@ -67,7 +69,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
         children: types.map((type) {
           final isSelected = selectedType == type;
 
-          final material = LineItemTypeUtil.isMaterial(type);
+          final material = LineTypeUtil.isMaterial(type);
 
           final baseColor = _baseColor(material);
           final color = isSelected ? baseColor : context.outlineColor;
@@ -83,7 +85,7 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(
-                  material ? Icons.shopping_cart : Icons.work,
+                  material ? Icons.inventory : Icons.work,
                   color: color,
                   size: 20,
                   semanticLabel: 'line item type: $type',
@@ -91,12 +93,12 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
                 SizedBox(width: 4),
                 RichText(
                   text: TextSpan(
-                    text: type.toUpperAll,
+                    text: type.toTitle,
                     style: TextStyle(color: color, fontWeight: FontWeight.bold),
                     children: [
                       TextSpan(
-                        text: material ? '\n(Product)' : '\n(Labor)',
-                        style: TextStyle(fontWeight: FontWeight.normal),
+                        text: material ? '\n(Item)' : '\n(Labor)',
+                        style: TextStyle(fontWeight: FontWeight.normal,overflow: TextOverflow.ellipsis),
                       ),
                     ],
                   ),
@@ -114,7 +116,38 @@ class _MaterialOrServiceChoiceState extends State<MaterialOrServiceChoice> {
   Color _baseColor(bool isMaterial) {
     return switch (isMaterial) {
       true => kPrimaryAccentColor,
-      false => kDangerColor,
+      false => kWarningColor,
     };
+  }
+}
+
+
+/// Line Types [LineTypeDropdown]
+class LineTypeDropdown extends StatelessWidget {
+  final String? label;
+  final String? initialValue;
+  final void Function(String? s) onChanged;
+
+  const LineTypeDropdown({
+    super.key,
+    required this.onChanged,
+    this.initialValue,
+    this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final strList = LineTypeUtil.toStringList();
+    // If label is provided, replace it with the first in the list
+    if (label != null) strList.first = label!;
+
+    return StaticDropdown<String>(
+      key: key,
+      label: strList.first,
+      initialValue: initialValue,
+      items: strList,
+      getDisplayText: (status) => status.toTitle,
+      onChanged: onChanged,
+    );
   }
 }

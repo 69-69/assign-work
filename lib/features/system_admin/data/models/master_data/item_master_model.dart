@@ -1,6 +1,6 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/enum_util.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/unit_of_measure.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
@@ -224,7 +224,7 @@ class ItemMaster extends Equatable {
   /// 2. Classification
   // Electronics, Furniture, Raw Materials, Finished Goods, Services, Packaging, Consumables.
   final String category;
-  final LineItemType itemType; // raw, material/product, service
+  final LineType itemType; // raw, material/product, service
   // final List<String> barcodes; // Optional multiple barcodes
   final List<String> taxCodes;
 
@@ -300,7 +300,7 @@ class ItemMaster extends Equatable {
     required this.sku,
     required this.name,
     this.description = '',
-    this.itemType = LineItemType.material,
+    this.itemType = LineType.material,
     required this.category,
     required this.baseUom,
     this.isStockItem = false,
@@ -330,7 +330,7 @@ class ItemMaster extends Equatable {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       category: map['category'] ?? '',
-      itemType: LineItemTypeUtil.fromString(map['itemType']),
+      itemType: LineTypeUtil.fromString(map['itemType']),
       baseUom: UOMUtil.fromString(map['baseUom']),
       isStockItem: map['isStockItem'] ?? false,
       isPurchasable: map['isPurchasable'] ?? false,
@@ -445,7 +445,7 @@ class ItemMaster extends Equatable {
     String? name,
     String? description,
     String? category,
-    LineItemType? itemType,
+    LineType? itemType,
     UnitOfMeasure? baseUom,
     bool? isActive,
     bool? isStockItem,

@@ -304,10 +304,11 @@ class _AddPriceEntryFormState extends State<_AddPriceEntryForm> {
 
         context.confirmableActionButton(
           isDisabled: _isDisabled,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Setting...' : 'Set All Prices$_missing')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onDraft: (){},
+          onSubmit: _onSubmit,
         ),
       ],
     );

@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/constants/app_colors.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/size_config.dart';
@@ -181,7 +182,8 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     children: [
                       TextSpan(
-                        text: 'Create sub-location codes before generating full bin-locations.',
+                        text:
+                            'Create sub-location codes before generating full bin-locations.',
                         style: const TextStyle(fontWeight: FontWeight.normal),
                       ),
                     ],
@@ -193,9 +195,9 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
               if (_subLocations.hasValue) ...[
                 const SizedBox(height: 10),
                 context.confirmableActionButton(
-                  onPressed: _onSavePressed,
+                  onSubmit: _onSavePressed,
                   isDisabled: _isGenerating || !_isFormValid,
-                  label: _isGenerating
+                  submitLabel: _isGenerating
                       ? 'Generating...Please wait'
                       : 'Generate Bin Locations',
                 ),
@@ -207,13 +209,13 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Create Full Bin Locations',
-      'subTitle':
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      title: 'Create Full Bin Locations',
+      subTitle:
           '\nGenerate fully qualified bin location codes for the selected warehouse.'
           '\ne.g., Z01-A01-R01-L01-S01',
-      'children': [
+      builder: () => [
         SizedBox(
           width: context.dynamicWidth(0.25),
           child: SearchWarehouses(
@@ -228,14 +230,14 @@ class _CreateWHBinLocationsFormState extends State<_CreateWHBinLocationsForm> {
         ),
         if (_subLocations.hasValue) ...{_fullBinLocFormFields()},
       ],
-    },
+    ),
 
     if (_hasFullBinLoc)
-      {
-        'title': 'Edit Full Bin Locations',
-        'subTitle': '\nManage bin locations.',
-        'children': [_listBinLocations()],
-      },
+      FormGroupCardModel(
+        title: 'Edit Full Bin Locations',
+        subTitle: '\nManage bin locations.',
+        builder: () => [_listBinLocations()],
+      ),
   ];
 
   DynamicTextFields _fullBinLocFormFields() {

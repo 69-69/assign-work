@@ -23,7 +23,7 @@ import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_co
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_taxes.dart';
 import 'package:assign_erp/features/system_admin/data/models/master_data/tax_model.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/department_dropdown.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/master_data/tax_master/widget/search_taxes.dart';
 import 'package:flutter/material.dart';
 
@@ -228,7 +228,7 @@ class CurrencyAndCostCenterDepartment extends StatelessWidget {
           onChanged: (({String code, String symbol, String country})? s) =>
               onCurrencyChanged(s!.code),
         ),
-        SearchDepartments(
+        DepartmentDropdown(
           label: 'Cost Center...',
           initialValue: initialCostCenter,
           onChanged: (id, code, name) => onCostCenterChange(id, code, name),

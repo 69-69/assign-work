@@ -25,7 +25,7 @@ class ChatInput extends StatelessWidget {
       autofocus: true,
       focusNode: focusNode,
       controller: controller,
-      keyboardType: TextInputType.none,
+      textInputType: TextInputType.none,
       textInputAction: TextInputAction.send,
       onFieldSubmitted: (_) => onFieldSubmitted?.call(),
       inputDecoration: InputDecoration(

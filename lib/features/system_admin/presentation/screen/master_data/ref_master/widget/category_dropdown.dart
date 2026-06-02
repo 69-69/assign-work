@@ -61,9 +61,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
     final categories = await _fetchCategories(filter);
 
     if (mounted && categories.hasValue) {
-      setState(() {
-        _selectedCategory = categories.first;
-      });
+      setState(() => _selectedCategory = categories.first);
     }
   }
 

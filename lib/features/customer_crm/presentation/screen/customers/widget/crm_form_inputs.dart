@@ -184,7 +184,7 @@ class AddressTextField extends StatelessWidget {
       onChanged: onAddressChanged,
       label: 'Address / Location...',
       helperText: 'Optional',
-      keyboardType: TextInputType.multiline,
+      textInputType: TextInputType.multiline,
       maxLines: 4,
       validator: (s) => null,
     );
@@ -207,7 +207,7 @@ class AltPhoneTextField extends StatelessWidget {
     return CustomTextField(
       controller: altPhoneController,
       onChanged: onAltPhoneChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: const InputDecoration(
         labelText: 'Alternative phone number (if any)',
       ),
@@ -228,7 +228,7 @@ class EmailTextField extends StatelessWidget {
     return CustomTextField(
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.emailAddress,
+      textInputType: TextInputType.emailAddress,
       label: 'Email address',
       helperText: 'Optional',
       validator: (s) => null,
@@ -249,7 +249,7 @@ class CompanyNameTextField extends StatelessWidget {
       label: 'Company name',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       helperText: 'Optional',
       validator: (s) => null,
     );
@@ -269,7 +269,7 @@ class NameTextField extends StatelessWidget {
       label: 'Full name',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
     );
   }
 }
@@ -299,7 +299,7 @@ class CustomerIdTextField extends StatelessWidget {
           label: 'Customer ID',
           controller: controller,
           onChanged: onChanged,
-          keyboardType: TextInputType.text,
+          textInputType: TextInputType.text,
         ),
         TextButton(
           onPressed: onEdited,
@@ -323,7 +323,7 @@ class PhoneTextField extends StatelessWidget {
     return CustomTextField(
       controller: phoneController,
       onChanged: onPhoneChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: const InputDecoration(
         labelText: 'Phone number',
         // helperText: '',

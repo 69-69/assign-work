@@ -323,7 +323,7 @@ class FilterEntitlements extends StatelessWidget {
     return CustomTextField(
       controller: controller,
       validator: (_) => null,
-      keyboardType: TextInputType.none,
+      textInputType: TextInputType.none,
       inputDecoration: InputDecoration(
         filled: true,
         labelText: 'Search $title...',

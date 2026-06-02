@@ -103,6 +103,7 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
   void _updateExistingCategory() {
     final updated = _categories.first.copyWith(
       id: _serverCategory!.id,
+      createdBy: _serverCategory?.createdBy,
       updatedBy: _employeeName,
       history: history(AuditAction.updated),
     );
@@ -177,10 +178,10 @@ class _AddCategoryFormState extends State<_AddCategoryForm> {
         ),
         context.confirmableActionButton(
           isDisabled: _isSubmitting || !_isFormValid,
-          label: _isServerNull
+          submitLabel: _isServerNull
               ? (_isSubmitting ? 'Creating...' : 'Create Category')
               : (_isSubmitting ? 'Updating...' : null),
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

@@ -1,4 +1,5 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:equatable/equatable.dart';
@@ -8,6 +9,7 @@ class Category extends Equatable {
 
   final String id;
   final String name;
+  final LineType type; // material(item) service(work/labor)
   final String storeNumber; // FK CompanyStore.storeNumber
   final String createdBy;
   final DateTime createdAt;
@@ -18,6 +20,7 @@ class Category extends Equatable {
   Category({
     this.id = '',
     required this.name,
+    this.type = LineType.material,
     required this.storeNumber,
     required this.createdBy,
     DateTime? createdAt,
@@ -33,6 +36,7 @@ class Category extends Equatable {
     return Category(
       id: id ?? map['id'] ?? '',
       name: map['name'] ?? '',
+      type: LineTypeUtil.fromString(map['type']),
       storeNumber: map['storeNumber'] ?? '',
       createdBy: map['createdBy'] ?? '',
       createdAt: toDateTimeFn(map['createdAt']),
@@ -46,6 +50,7 @@ class Category extends Equatable {
   Map<String, dynamic> _mapTemp() => {
     'id': id,
     'name': name,
+    'type': getType,
     'storeNumber': storeNumber,
     'createdBy': createdBy,
     'updatedBy': updatedBy,
@@ -84,11 +89,15 @@ class Category extends Equatable {
 
   bool get isNotEmpty => !isEmpty;
 
+  String get getType => type.getName;
+
   /// Formatted to Standard-DateTime in String [getCreatedAt]
   String get getCreatedAt => createdAt.toStandardDT;
 
   /// Formatted to Standard-DateTime in String [getUpdatedAt]
   String get getUpdatedAt => updatedAt.toStandardDT;
+
+  bool get isService => type.isService;
 
   /// Current / Today's Products/Stocks
   bool get isToday {
@@ -104,6 +113,12 @@ class Category extends Equatable {
   /// Filter/Search
   bool filterByAny(String filter) => {name, id, storeNumber}.filterAny(filter);
 
+  static List<Category> filterServiceCategories(List<Category> cats) =>
+      cats.where((q) => q.isService).toList();
+
+  static List<Category> filterMaterialCategories(List<Category> cats) =>
+      cats.where((q) => !q.isService).toList();
+
   /// [findCategoriesById]
   static Iterable<Category> findCategoriesById(
     List<Category> categories,
@@ -114,6 +129,7 @@ class Category extends Equatable {
   Category copyWith({
     String? id,
     String? name,
+    LineType? type,
     String? storeNumber,
     String? createdBy,
     DateTime? createdAt,
@@ -124,6 +140,7 @@ class Category extends Equatable {
     return Category(
       id: id ?? this.id,
       name: name ?? this.name,
+      type: type ?? this.type,
       storeNumber: storeNumber ?? this.storeNumber,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
@@ -137,6 +154,7 @@ class Category extends Equatable {
   List<Object?> get props => [
     id,
     name,
+    type,
     storeNumber,
     createdBy,
     createdAt,

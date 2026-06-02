@@ -154,8 +154,8 @@ class _AddCustomerBodyState extends State<_AddCustomerBody> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: 'Add New Customer',
-          onPressed: _onSubmit,
+          submitLabel: 'Add New Customer',
+          onSubmit: _onSubmit,
         ),
       ],
     );

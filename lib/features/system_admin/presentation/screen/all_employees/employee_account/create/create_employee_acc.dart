@@ -1,6 +1,7 @@
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/util/extensions/account_status.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/secret_hasher.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -49,10 +50,8 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
   final _phoneController = TextEditingController();
   final _passcodeController = TextEditingController();
 
-  bool get _isFormValid => _formKey.currentState?.validate() ?? false;
-
-  Future<String> _generateEmployeeId() async =>
-      await DocType.employee.getShortUID;
+  bool _isFormValid = false; // _formKey.currentState?.validate() ?? false;
+  EmployeeBloc get _bloc => context.read<EmployeeBloc>();
 
   Employee get _employee => Employee(
     employeeId: _newEmployeeId,
@@ -75,6 +74,11 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
     ],
   );
 
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
+
   void _onSubmit() {
     if (!_isFormValid || _isSubmitting) return;
     setState(() => _isSubmitting = true);
@@ -82,7 +86,7 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
     /// Create employee account
     final item = _employee;
 
-    context.read<EmployeeBloc>().add(AddSetup<Employee>(data: item));
+    _bloc.add(AddSetup<Employee>(data: item));
   }
 
   void _resetForm() {
@@ -91,8 +95,8 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
         _formKey.currentState?.reset();
         _formResetKey = UniqueKey();
         _isSubmitting = false;
+        _isFormValid = false;
       });
-      _generateEmployeeId();
     }
   }
 
@@ -112,7 +116,6 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
 
   @override
   void initState() {
-    _generateEmployeeId();
     super.initState();
   }
 
@@ -143,9 +146,11 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
       children: <Widget>[
         AutoIDField(
           label: 'Employee ID',
-          allowManualEntry: true,
-          onGenerate: () async => await _generateEmployeeId(),
-          onChanged: (id) => setState(() => _newEmployeeId = id),
+          onGenerate: () async => await DocType.employee.getShortUID,
+          onChanged: (id) {
+            setState(() => _newEmployeeId = id);
+            _syncValidity();
+          },
         ),
         FormGroupCard(
           title: 'Employee\'s Details',
@@ -164,12 +169,8 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
             EmailAndPasscode(
               emailController: _emailController,
               passcodeController: _passcodeController,
-              onEmailChanged: (s) {
-                if (_isFormValid) setState(() {});
-              },
-              onPasscodeChanged: (s) {
-                if (_isFormValid) setState(() {});
-              },
+              onEmailChanged: (s) => _syncValidity(),
+              onPasscodeChanged: (s) => _syncValidity(),
             ),
           ],
         ),
@@ -179,25 +180,31 @@ class _CreateEmployeeFormState extends State<_CreateEmployeeForm> {
           children: [
             StoreBranchesAndDepartment(
               onDepartChanged: (id, code, name) {
-                if (_isFormValid) setState(() => _selectedDepartCode = code);
+                setState(() => _selectedDepartCode = code);
+                _syncValidity();
               },
-              onStoresChange: (id, store) =>
-                  setState(() => _selectedStoreNumber = id),
+              onStoresChange: (id, store) {
+                setState(() => _selectedStoreNumber = id);
+                _syncValidity();
+              },
             ),
             const SizedBox(height: 20.0),
             EmployeeRoleDropdown(
-              onRoleChanged: (id, role) => setState(() {
-                _selectedRoleId = id ?? '';
-                _selectedRole = role ?? '';
-              }),
+              onRoleChanged: (id, role) {
+                setState(() {
+                  _selectedRoleId = id ?? '';
+                  _selectedRole = role ?? '';
+                });
+                _syncValidity();
+              },
             ),
           ],
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Submitting...' : 'Create Employee',
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create Employee',
           isDisabled: _isSubmitting || !_isFormValid,
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

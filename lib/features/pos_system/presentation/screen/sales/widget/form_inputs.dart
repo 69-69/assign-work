@@ -160,7 +160,7 @@ class DiscountPercentTextField extends StatelessWidget {
     return CustomTextField(
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: InputDecoration(
         labelText: 'Discount Percent (Optional)',
         suffixText: '= $ghanaCedis $discountAmount',
@@ -237,7 +237,7 @@ class TaxPercentAndDiscountPercent extends StatelessWidget {
         CustomTextField(
           controller: discountController,
           onChanged: onDiscountChanged,
-          keyboardType: TextInputType.number,
+          textInputType: TextInputType.number,
           inputDecoration: InputDecoration(
             labelText: 'Discount Percent (Optional)',
             // helperText: 'Optional',
@@ -288,7 +288,7 @@ class TotalAmountTextField extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       label: 'Total amount',
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -338,7 +338,7 @@ class TaxPercentTextField extends StatelessWidget {
       label: 'Tax Percent',
       onChanged: onChanged,
       controller: controller,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
       inputDecoration: InputDecoration(
         // helperText: 'Optional',
         labelText: 'Tax Percent (Optional)',
@@ -376,7 +376,7 @@ class OrderNumberTextField extends StatelessWidget {
           label: 'Order Number',
           controller: controller,
           onChanged: onChanged,
-          keyboardType: TextInputType.text,
+          textInputType: TextInputType.text,
         ),
         TextButton(
           onPressed: onEdited,
@@ -413,7 +413,7 @@ class ItemIdTextField extends StatelessWidget {
           label: 'Product ID',
           controller: controller,
           onChanged: onChanged,
-          keyboardType: TextInputType.text,
+          textInputType: TextInputType.text,
         ),
         TextButton(
           onPressed: onEdited,
@@ -438,7 +438,7 @@ class QuantityTextField extends StatelessWidget {
       label: 'Quantity',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -456,7 +456,7 @@ class UnitPriceTextField extends StatelessWidget {
       label: 'Unit price',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.number,
+      textInputType: TextInputType.number,
     );
   }
 }
@@ -474,7 +474,7 @@ class ReceiptNumberTextField extends StatelessWidget {
       label: 'Receipt Number',
       controller: controller,
       onChanged: onChanged,
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
     );
   }
 }

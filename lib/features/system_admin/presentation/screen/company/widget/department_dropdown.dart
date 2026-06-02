@@ -4,13 +4,13 @@ import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_de
 import 'package:assign_erp/features/system_admin/data/models/department_model.dart';
 import 'package:flutter/material.dart';
 
-/// Search Departments [SearchDepartments]
-class SearchDepartments extends StatefulWidget {
+/// Search Departments [DepartmentDropdown]
+class DepartmentDropdown extends StatefulWidget {
   final String? label;
   final String? initialValue;
   final Function(String, String, String) onChanged;
 
-  const SearchDepartments({
+  const DepartmentDropdown({
     super.key,
     this.label,
     this.initialValue,
@@ -18,14 +18,14 @@ class SearchDepartments extends StatefulWidget {
   });
 
   @override
-  State<SearchDepartments> createState() => _SearchDepartmentsState();
+  State<DepartmentDropdown> createState() => _DepartmentDropdownState();
 }
 
-class _SearchDepartmentsState extends State<SearchDepartments> {
+class _DepartmentDropdownState extends State<DepartmentDropdown> {
   String? _initialValue;
   Department? _department;
 
-  String get _labelText => widget.label ?? 'Select Department...';
+  String get _labelText => widget.label ?? 'Department...';
 
   @override
   void initState() {

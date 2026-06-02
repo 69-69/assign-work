@@ -1,15 +1,18 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/debug_printify.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/sales_channel.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -79,7 +82,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   TaxMode? _taxModeToApply;
   late SalesQuotation _finalizedQuote;
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid = false; // _formKey.currentState!.validate();
 
   /// Current employee info
   Employee? get _employee => context.employee;
@@ -87,11 +90,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   String get _employeeId => _employee!.employeeId;
 
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
-
-  void _generateSQNumber() async {
-    final id = await DocType.sQuote.getShortUID;
-    if (mounted) setState(() => _quoteNumber = id);
-  }
 
   /// Construct Sales Quote object
   SalesQuotation get _newQuote => SalesQuotation(
@@ -177,6 +175,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _formKey.currentState?.reset();
       _formResetKey = UniqueKey(); // 💥 full rebuild
 
+      _isFormValid = false;
       _isSubmitting = false;
       _autoConvertSO = false;
       _salesRepId = '';
@@ -197,9 +196,12 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       _addresses.clear();
       _validityDate.clear();
     });
-
-    _generateSQNumber();
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
@@ -222,7 +224,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
 
   @override
   void initState() {
-    _generateSQNumber();
     super.initState();
   }
 
@@ -244,69 +245,91 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   Widget _buildBody() {
     return FormGroupTabView(
       contents: formGroupCards,
-      header: SQFormInputs.buildSQNumber(
-        context,
-        _quoteNumber,
-        _generateSQNumber,
+      header: AutoIDField(
+        label: 'Quote Number',
+        onGenerate: () async => await DocType.sQuote.getShortUID,
+        onChanged: (id) {
+          setState(() => _quoteNumber = id);
+          _syncValidity();
+        },
       ),
-      footers: [
-        const SizedBox(height: 10.0),
+      footers:[
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Creating...' : 'Create Quote',
-          isDisabled: _isSubmitting,
-          onPressed: _onSubmit,
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create Quote',
+          isDisabled: !_isFormValid || _isSubmitting,
+          onSubmit: _onSubmit,
         ),
-        const SizedBox(height: 20.0),
       ],
+      visibleWhen: _isFormValid,
+      showNavigationButtons: true,
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Quotation Overview',
-      'subTitle': '\nGeneral quotation info & document status.',
-      'children': [_buildAutoCreateAndStatus()],
-    },
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      title: 'Quotation Overview',
+      subTitle: '\nGeneral quotation info & document status.',
+      builder: () => [
+        _buildAutoCreateAndStatus(),
+      ],
+    ),
 
-    {
-      'title': 'Customer & Sales',
-      'subTitle': '\nCustomer details, sales channel, & sales representative.',
-      'children': [_buildSalesChannel(), _buildSalesRepAndCustomer()],
-    },
+    FormGroupCardModel(
+      title: 'Customer & Sales',
+      subTitle:
+      '\nCustomer details, sales channel, & sales representative.',
+      builder: () => [
+        _buildSalesChannel(),
+        _buildSalesRepAndCustomer(),
+      ],
+    ),
 
-    {
-      'title': 'Pricing & Tax Determination',
-      'subTitle': '\nCurrency, pricing conditions, & tax preferences.',
-      'children': [
+    FormGroupCardModel(
+      title: 'Pricing & Tax Determination',
+      subTitle:
+      '\nCurrency, pricing conditions, & tax preferences.',
+      builder: () => [
         _buildCurrencyPricing(),
-        HorizontalDivider(space: 0.4),
+        const HorizontalDivider(space: 0.4),
         _buildTaxModeSelector(),
       ],
-    },
+    ),
 
-    {
-      'title': '${_lineItemType.toSentence} Line Items',
-      'subTitle': '\nYou can add more ${_lineItemType}s to the Quotation.',
-      'children': [_buildLineItems()],
-    },
+    FormGroupCardModel(
+      title: '${_lineItemType.toSentence} Line Items',
+      subTitle:
+      '\nYou can add more ${_lineItemType}s to the Quotation.',
+      builder: () => [
+        _buildLineItems(),
+      ],
+    ),
 
-    {
-      'title': 'Dates & Validity',
-      'subTitle': '\nQuotation date, validity period, & delivery timeline.',
-      'children': [_buildDateValidity()],
-    },
+    FormGroupCardModel(
+      title: 'Dates & Validity',
+      subTitle:
+      '\nQuotation date, validity period, & delivery timeline.',
+      builder: () => [
+        _buildDateValidity(),
+      ],
+    ),
 
-    {
-      'title': 'Addresses',
-      'subTitle': '\nCustomer Bill-to, Ship-to, & other address details.',
-      'children': [_buildAddresses()],
-    },
+    FormGroupCardModel(
+      title: 'Addresses',
+      subTitle:
+      '\nCustomer Bill-to, Ship-to, & other address details.',
+      builder: () => [
+        _buildAddresses(),
+      ],
+    ),
 
-    {
-      'title': 'Terms & Conditions',
-      'subTitle': '\nPayment terms, warranty, & commercial conditions.',
-      'children': [_buildTermsConditions()],
-    },
+    FormGroupCardModel(
+      title: 'Terms & Conditions',
+      subTitle:
+      '\nPayment terms, warranty, & commercial conditions.',
+      builder: () => [
+        _buildTermsConditions(),
+      ],
+    ),
   ];
 
   // -------------------------
@@ -314,27 +337,40 @@ class _CreateSQFormState extends State<_CreateSQForm> {
   // -------------------------
   AutoCreateAndSQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndSQStatus(
-      onStatusChanged: (s) => setState(() => _sqStatus = s),
+      onStatusChanged: (s) {
+        setState(() => _sqStatus = s);
+        _syncValidity();
+      },
       isSelected: _autoConvertSO,
       onAutoConvertChanged: (bool? v) {
         setState(() => _autoConvertSO = v ?? false);
+        _syncValidity();
       },
     );
   }
 
   SalesChannelChoice _buildSalesChannel() {
     return SalesChannelChoice(
-      onChannelChange: (s) => setState(() => _salesChannelId = s),
+      onChannelChange: (s) {
+        setState(() => _salesChannelId = s);
+        _syncValidity();
+      },
     );
   }
 
   SalesRepAndCustomer _buildSalesRepAndCustomer() {
     return SalesRepAndCustomer(
-      onSalesRepChanged: (id, code, name) => setState(() => _salesRepId = name),
-      onCustomerChange: (id, name) => setState(() {
+      onSalesRepChanged: (id, code, name) {
+        setState(() => _salesRepId = name);
+        _syncValidity();
+      },
+      onCustomerChange: (id, name) {
+        setState(() {
         _customerId = id;
         _customerName = name;
-      }),
+      });
+        _syncValidity();
+      },
     );
   }
 
@@ -342,8 +378,10 @@ class _CreateSQFormState extends State<_CreateSQForm> {
     return SQFormInputs.buildTaxModeSelector(
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
-      selectedTaxMode: (TaxMode? mode) =>
-          setState(() => _taxModeToApply = mode),
+      selectedTaxMode: (TaxMode? mode) {
+        setState(() => _taxModeToApply = mode);
+        _syncValidity();
+      },
     );
   }
 
@@ -356,8 +394,6 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       ),
       initialData: [{}],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Update the ProLineItem list
         SQFormInputs.updateListFromData<LineItem>(
           _lineItems,
@@ -365,6 +401,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
           fromMap: (map, id) =>
               LineItem.fromMap(map, id: id, lineType: _lineItemType),
         );
+        _syncValidity();
       },
     );
   }
@@ -375,11 +412,11 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fullWidthKey: 'currencyPricing',
       fieldsConfig: SQFormInputs.currencyPricingFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _currencyPricing
           ..clear()
           ..addAll(data.first);
+
+        _syncValidity();
       },
     );
   }
@@ -389,11 +426,11 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       initialData: [{}],
       fieldsConfig: SQFormInputs.validityDateFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _validityDate
           ..clear()
           ..addAll(data.first);
+
+        _syncValidity();
       },
     );
   }
@@ -406,7 +443,7 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fieldGroupsLimit: 2,
       fieldsConfig: SQFormInputs.addressesFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Update the address list
         SQFormInputs.updateListFromData<AddressInfo>(
@@ -414,6 +451,8 @@ class _CreateSQFormState extends State<_CreateSQForm> {
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
         );
+
+        _syncValidity();
       },
     );
   }
@@ -424,11 +463,10 @@ class _CreateSQFormState extends State<_CreateSQForm> {
       fullWidthKey: 'supplierTerms',
       fieldsConfig: SQFormInputs.supplierTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _termsConditions
           ..clear()
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }

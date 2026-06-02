@@ -30,7 +30,7 @@ class ListSalesQuotations extends StatefulWidget {
 }
 
 class _ListSalesQuotationsState extends State<ListSalesQuotations> {
-  bool _inProgress = false;
+  bool _inDeleting = false;
   List<String> _selectedIds = [];
 
   bool get _isApproved => widget.isApproved;
@@ -38,7 +38,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
   SalesQuotationBloc get _bloc => context.read<SalesQuotationBloc>();
 
   void _isDeleting(bool status) {
-    setState(() => _inProgress = status);
+    setState(() => _inDeleting = status);
     if (!status) _selectedIds.clear(); // Clear selected items
   }
 
@@ -80,7 +80,7 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
           SalesDistributionsLoaded<SalesQuotation>(data: var results) =>
             results.isEmpty
                 ? context.buildAddButton(
-                    'Create Sales Quote',
+                    'New Sales Quote',
                     onPressed: () => _openCreateSQ(context),
                   )
                 : _buildCard(context, results),
@@ -143,12 +143,12 @@ class _ListSalesQuotationsState extends State<ListSalesQuotations> {
 
   _buildToolbar(List<SalesQuotation> quotes) {
     return ListToolbarButtons(
+      dataLength: quotes.length,
       refreshLabel: 'Refresh',
       primaryLabel: 'Create',
       secondaryLabel: 'Edit',
       secondaryIcon: Icons.edit,
-      dangerLabel: _inProgress ? 'Deleting...' : 'Delete',
-      dataLength: quotes.length,
+      dangerLabel: _inDeleting ? 'Deleting...' : 'Delete',
       onPrimary: () => _openCreateSQ(context),
       onRefresh: () => _bloc.add(RefreshSalesDistributions<SalesQuotation>()),
       onSecondary: _selectedIds.length == 1

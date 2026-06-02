@@ -236,9 +236,9 @@ class _CreateWHBinFormState extends State<_CreateWHBinForm> {
 
   Widget _buildButtons() {
     return context.confirmableActionButton(
-      onPressed: _onSubmit,
+      onSubmit: _onSubmit,
       isDisabled: _isSubmitting || !_isFormValid,
-      label: _isServerNull
+      submitLabel: _isServerNull
           ? (_isSubmitting ? 'Creating...' : 'Create Bin')
           : (_isSubmitting ? 'Updating...' : null),
       anyButton: context.outlinedButton(

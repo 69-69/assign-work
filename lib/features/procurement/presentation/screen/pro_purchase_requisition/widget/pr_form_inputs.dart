@@ -11,7 +11,7 @@ import 'package:assign_erp/features/procurement/presentation/bloc/procurement_bl
 import 'package:assign_erp/features/procurement/presentation/screen/widget/procurement_form_fields.dart';
 import 'package:assign_erp/features/system_admin/data/data_sources/remote/get_employees.dart';
 import 'package:assign_erp/features/system_admin/presentation/screen/all_employees/employee_account/widget/search_employees.dart';
-import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/search_departments.dart';
+import 'package:assign_erp/features/system_admin/presentation/screen/company/widget/department_dropdown.dart';
 import 'package:flutter/material.dart';
 
 class PRFormInputs {
@@ -113,7 +113,7 @@ class RequestedByAndDepartments extends StatelessWidget {
           initialValue: initialRequestedBy,
           onChanged: onRequestedBy,
         ),
-        SearchDepartments(
+        DepartmentDropdown(
           initialValue: initialDepartment,
           onChanged: (id, code, name) => onDepartmentChange(id, code, name),
         ),
@@ -161,7 +161,7 @@ class AutoAndCostCenterDepartment extends StatelessWidget {
           isSelected: isSelected,
           onChanged: onAutoConvertChanged,
         ),
-        SearchDepartments(
+        DepartmentDropdown(
           label: 'Cost Center...',
           initialValue: initialCostCenter,
           onChanged: (id, code, name) => onCostCenterChange(id, code, name),

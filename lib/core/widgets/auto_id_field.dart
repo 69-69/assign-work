@@ -50,7 +50,7 @@ class _AutoIDFieldState extends State<AutoIDField> {
     _autoGenerate = _controller.text.isEmpty;
 
     /// Only auto-generate for new entities
-    if (_autoGenerate) {
+    if (mounted && _autoGenerate) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _generateID());
     }
   }
@@ -70,6 +70,9 @@ class _AutoIDFieldState extends State<AutoIDField> {
 
     try {
       final id = await widget.onGenerate.call();
+
+      if (!mounted) return;
+
       _controller.value = TextEditingValue(
         text: id,
         selection: TextSelection.collapsed(offset: id.length),
@@ -99,40 +102,54 @@ class _AutoIDFieldState extends State<AutoIDField> {
         controller: _controller,
         maxLines: 1,
         maxLength: 20,
-        keyboardType: TextInputType.text,
+        textInputType: TextInputType.text,
         readOnly: _autoGenerate || _loading,
         onChanged: widget.onChanged,
         inputDecoration: InputDecoration(
           isDense: true,
+          counterText: '',
+          filled: _autoGenerate,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(k2BorderRadius),
+            borderSide: BorderSide(color: context.colorScheme.outlineVariant),
+          ),
           labelText: _autoGenerate ? '$_label (Auto)' : 'Enter $_label',
           hintText: _autoGenerate
               ? '$_label auto-generated'
               : 'Enter custom $_label',
-          prefixIcon: _autoGenerate
-              ? IconButton(
-                  tooltip: 'Generate new $_label',
-                  onPressed: _loading ? null : _generateID,
-                  icon: _loading
-                      ? SizedBox(width: 14, height: 14, child: context.loader)
-                      : const Icon(Icons.refresh),
-                )
-              : Icon(Icons.edit_note),
+          prefixIcon: _prefixIcon(context),
 
-          suffixIcon: _allowManualEntry
-              ? IconButton(
-                  tooltip: _autoGenerate
-                      ? 'Switch to Manual Entry'
-                      : 'Use Auto Generated $_label',
-                  onPressed: _confirmManualEntry,
-                  icon: Icon(
-                    color: kDangerColor,
-                    _autoGenerate ? Icons.edit_outlined : Icons.auto_awesome,
-                  ),
-                )
-              : null,
+          suffixIcon: _suffixIcon(),
         ),
       ),
     );
+  }
+
+  IconButton? _suffixIcon() {
+    return _allowManualEntry
+        ? IconButton(
+            tooltip: _autoGenerate
+                ? 'Switch to Manual Entry'
+                : 'Use Auto Generated $_label',
+            onPressed: _confirmManualEntry,
+            icon: Icon(
+              color: kDangerColor,
+              _autoGenerate ? Icons.edit_outlined : Icons.auto_awesome,
+            ),
+          )
+        : null;
+  }
+
+  StatelessWidget _prefixIcon(BuildContext context) {
+    return _autoGenerate
+        ? IconButton(
+            tooltip: 'Generate new $_label',
+            onPressed: _loading ? null : _generateID,
+            icon: _loading
+                ? SizedBox(width: 14, height: 14, child: context.loader)
+                : const Icon(Icons.refresh),
+          )
+        : Icon(Icons.edit_note);
   }
 
   Future<void> _confirmManualEntry() async {
@@ -150,11 +167,3 @@ class _AutoIDFieldState extends State<AutoIDField> {
     }
   }
 }
-
-/*final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: context.colorScheme.outlineVariant),
-    );
-    border: border,
-    enabledBorder: border,
-    focusedBorder: border,*/

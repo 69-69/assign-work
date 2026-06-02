@@ -48,6 +48,8 @@ class POSUpdated<T> extends POSState<T> {
   List<Object?> get props => [message];
 }
 
+class POSDeleting<T> extends POSState<T> {}
+
 class POSDeleted<T> extends POSState<T> {
   final String? message;
 

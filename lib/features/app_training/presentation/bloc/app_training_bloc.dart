@@ -219,6 +219,7 @@ class AppTrainingBloc<T> extends Bloc<AppTrainingEvent, AppTrainingState<T>> {
     DeleteTraining<String> event,
     Emitter<AppTrainingState<T>> emit,
   ) async {
+    emit(TrainingDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _guideRepository.deleteData(event.documentId);
@@ -237,6 +238,7 @@ class AppTrainingBloc<T> extends Bloc<AppTrainingEvent, AppTrainingState<T>> {
     DeleteTraining<List<String>> event,
     Emitter<AppTrainingState<T>> emit,
   ) async {
+    emit(TrainingDeleting());
     try {
       // Delete data from Firestore and update local storage
       await _guideRepository.deleteManyData(event.documentId);

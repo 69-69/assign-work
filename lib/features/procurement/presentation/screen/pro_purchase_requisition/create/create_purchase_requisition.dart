@@ -1,11 +1,14 @@
 import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
 import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/generate_new_uid.dart';
 import 'package:assign_erp/core/util/str_util.dart';
+import 'package:assign_erp/core/widgets/auto_id_field.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
 import 'package:assign_erp/core/widgets/dialog/async_progress_dialog.dart';
@@ -78,7 +81,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
 
-  bool get isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid =false; // > _formKey.currentState!.validate();
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
@@ -93,17 +96,11 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
   @override
   void initState() {
     super.initState();
-    _generatePRNumber();
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void _generatePRNumber() async {
-    final id = await DocType.prs.getShortUID;
-    if (mounted) setState(() => _prNumber = id);
   }
 
   /// Construct PurchaseRequisite object
@@ -135,7 +132,7 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
 
     setState(() => _isSubmitting = true);
 
-    if (!isFormValid || _newPR.isNullOrEmpty) {
+    if (!_isFormValid || _newPR.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -159,10 +156,15 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         _requestDate = null;
         _lineItems.clear();
         _purposeForPR.clear();
+        _isFormValid=false;
       });
-      _generatePRNumber(); // fresh PR number
     }
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg, onCallback: () => _resetForm());
@@ -198,62 +200,74 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     );
   }
 
-  Column _buildBody() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        PRFormInputs.buildPRNumber(context, _prNumber, _generatePRNumber),
-
-        FormGroupCard(
-          isExpanded: true,
-          title: '1. Requisition Overview',
-          subTitle:
-              '\nRequisition details, requester information, & document status.',
-          children: [
-            _buildRequesterAndDepartment(),
-            _buildPriorityAndPRStatus(),
-          ],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '2. Account Assignment & Sourcing',
-          subTitle: '\nCost center assignment and RFQ creation settings.',
-          children: [_buildAutoCreateAndCostCenter()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '3. ${_lineItemType.toSentence} Line Items',
-          subTitle:
-              '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
-          children: [_buildLineItems()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '4. Request & Delivery Dates',
-          subTitle: '\nRequest-by and expected delivery timelines.',
-          children: [_buildDates()],
-        ),
-
-        FormGroupCard(
-          isExpanded: false,
-          title: '5. PR Justification',
-          subTitle: '\nBusiness justification or purpose of the request.',
-          children: [_buildJustification()],
-        ),
-
-        const SizedBox(height: 10.0),
+  Widget _buildBody() {
+    return FormGroupTabView(
+      contents: formGroupCards,
+      header: AutoIDField(
+        label: 'PR Number',
+        onGenerate: () async => await DocType.prs.getShortUID,
+        onChanged: (id) {
+          setState(() => _prNumber = id);
+          _syncValidity();
+        },
+      ),
+      footers: [
         context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Creating...' : 'Create PR',
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create PR',
+          isDisabled: !_isFormValid || _isSubmitting,
+          onDraft: (){},
+          onSubmit: _onSubmit,
         ),
-        const SizedBox(height: 20.0),
       ],
+      visibleWhen: _isFormValid,
+      showNavigationButtons: true,
     );
   }
+
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      isExpanded: true,
+      title: 'Requisition Overview',
+      subTitle:
+      '\nRequisition details, requester information, & document status.',
+      builder: () => [
+        _buildRequesterAndDepartment(),
+        _buildPriorityAndPRStatus(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'Account Assignment & Sourcing',
+      subTitle:
+      '\nCost center assignment and RFQ creation settings.',
+      builder: () => [
+        _buildAutoCreateAndCostCenter(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: '${_lineItemType.toSentence} Line Items',
+      subTitle:
+      '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
+      builder: () => [
+        _buildLineItems(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'Request & Delivery Dates',
+      subTitle:
+      '\nRequest-by and expected delivery timelines.',
+      builder: () => [
+        _buildDates(),
+      ],
+    ),
+    FormGroupCardModel(
+      title: 'PR Justification',
+      subTitle:
+      '\nBusiness justification or purpose of the request.',
+      builder: () => [
+        _buildJustification(),
+      ],
+    ),
+  ];
 
   // -------------------------
   // Section Builders
@@ -263,11 +277,10 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       initialData: [{}],
       fieldsConfig: PRFormInputs.justificationFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-        // prettyPrint('justice', data.first);
         _purposeForPR
           ..clear() // Clear previous entries to prevent duplication
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -276,8 +289,14 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     return RequestAndExpectedDate(
       labelRequest: "Request date",
       labelExpected: "Expected date",
-      onRequestChanged: (date) => setState(() => _requestDate = date),
-      onExpectedChanged: (date) => setState(() => _expectedDate = date),
+      onRequestChanged: (date) {
+        setState(() => _requestDate = date);
+        _syncValidity();
+      },
+      onExpectedChanged: (date) {
+        setState(() => _expectedDate = date);
+        _syncValidity();
+      },
     );
   }
 
@@ -291,8 +310,6 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
         keysToExclude: ['limitAmount', 'limitQuantity'],
       ),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         // Update the ProLineItem list
         PRFormInputs.updateListFromData<LineItem>(
           _lineItems,
@@ -300,22 +317,34 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
           fromMap: (map, id) =>
               LineItem.fromMap(map, id: id, lineType: _lineItemType),
         );
+        _syncValidity();
       },
     );
   }
 
   PriorityAndPRStatusDropdown _buildPriorityAndPRStatus() {
     return PriorityAndPRStatusDropdown(
-      onPriorityChanged: (s) => setState(() => _priority = s),
-      onStatusChanged: (s) => setState(() => _prStatus = s),
+      onPriorityChanged: (s) {
+        setState(() => _priority = s);
+        _syncValidity();
+      },
+      onStatusChanged: (s) {
+        setState(() => _prStatus = s);
+        _syncValidity();
+      },
     );
   }
 
   RequestedByAndDepartments _buildRequesterAndDepartment() {
     return RequestedByAndDepartments(
-      onRequestedBy: (id, code, name) => setState(() => _requestedBy = name),
-      onDepartmentChange: (id, code, name) =>
-          setState(() => _departmentCode = code),
+      onRequestedBy: (id, code, name) {
+        setState(() => _requestedBy = name);
+        _syncValidity();
+      },
+      onDepartmentChange: (id, code, name) {
+        setState(() => _departmentCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -324,9 +353,12 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
       isSelected: _autoConvertPr,
       onAutoConvertChanged: (bool? v) {
         setState(() => _autoConvertPr = v ?? false);
+        _syncValidity();
       },
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+      onCostCenterChange: (id, code, name) {
+        setState(() => _costCenterCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -379,3 +411,69 @@ class _PurchaseRequisiteFormState extends State<_PurchaseRequisiteForm> {
     _bloc.add(up);
   }
 }
+
+/*
+  Column _buildBody2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        // PRFormInputs.buildPRNumber(context, _prNumber, _generatePRNumber),
+        AutoIDField(
+          label: 'PR Number',
+          onGenerate: () async => await DocType.prs.getShortUID,
+          onChanged: (id) {
+            setState(() => _prNumber = id);
+            _syncValidity();
+          },
+        ),
+
+        FormGroupCard(
+          title: '1. Requisition Overview',
+          subTitle:
+              '\nRequisition details, requester information, & document status.',
+          children: [
+            _buildRequesterAndDepartment(),
+            _buildPriorityAndPRStatus(),
+          ],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '2. Account Assignment & Sourcing',
+          subTitle: '\nCost center assignment and RFQ creation settings.',
+          children: [_buildAutoCreateAndCostCenter()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '3. ${_lineItemType.toSentence} Line Items',
+          subTitle:
+              '\nYou can add more ${_lineItemType}s to the Requisition (PR).',
+          children: [_buildLineItems()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '4. Request & Delivery Dates',
+          subTitle: '\nRequest-by and expected delivery timelines.',
+          children: [_buildDates()],
+        ),
+
+        FormGroupCard(
+          isExpanded: false,
+          title: '5. PR Justification',
+          subTitle: '\nBusiness justification or purpose of the request.',
+          children: [_buildJustification()],
+        ),
+
+        const SizedBox(height: 10.0),
+        context.confirmableActionButton(
+          label: _isSubmitting ? 'Creating...' : 'Create PR',
+          isDisabled: !_isFormValid || _isSubmitting,
+          onPressed: _onSubmit,
+        ),
+        const SizedBox(height: 20.0),
+      ],
+    );
+  }*/

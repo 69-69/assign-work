@@ -25,7 +25,7 @@ class CustomTextField extends StatefulWidget {
   final String? initialValue;
   final bool? canRequestFocus;
   final FocusNode? focusNode;
-  final TextInputType keyboardType;
+  final TextInputType textInputType;
   final Iterable<String>? autofillHints;
   final InputDecoration? inputDecoration;
   final void Function(String)? onChanged;
@@ -36,7 +36,7 @@ class CustomTextField extends StatefulWidget {
 
   const CustomTextField({
     super.key,
-    required this.keyboardType,
+    required this.textInputType,
     this.label,
     this.enabled,
     this.readOnly,
@@ -69,10 +69,21 @@ class CustomTextField extends StatefulWidget {
 class _CustomTextFieldState extends State<CustomTextField> {
   bool capsLockOn = false;
   late final TextEditingController _controller;
+
   bool get _readOnly => widget.readOnly ?? false;
   late final TextEditingController _internalController;
+
   bool get _canRequestFocus => widget.canRequestFocus ?? true;
   final ScrollController _scrollController = ScrollController();
+
+  TextInputType get _textInputType => widget.textInputType;
+
+  int? get _maxLength {
+    if ((widget.maxLength ?? 0) > 0) return widget.maxLength;
+    // For Validating Phone numbers, if maxLength is not specified
+    if (_textInputType == TextInputType.phone) return 10;
+    return null;
+  }
 
   @override
   void initState() {
@@ -168,14 +179,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLines: widget.maxLines,
       minLines: widget.minLines,
       focusNode: widget.focusNode,
-      maxLength: widget.maxLength,
+      maxLength: _maxLength,
       onChanged: widget.onChanged,
       textColor: widget.textColor,
       autofocus: widget.autofocus,
       obscureText: widget.obscureText,
       canRequestFocus: _canRequestFocus,
       // initialValue: widget.initialValue,
-      keyboardType: widget.keyboardType,
+      keyboardType: _textInputType,
       autofillHints: widget.autofillHints,
       textInputAction: widget.textInputAction,
       onFieldSubmitted: widget.onFieldSubmitted,
@@ -198,7 +209,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLines: widget.maxLines,
       minLines: widget.minLines,
       focusNode: widget.focusNode,
-      maxLength: widget.maxLength,
+      maxLength: _maxLength,
       textColor: widget.textColor,
       inputDecoration: decoration,
       autofocus: widget.autofocus,
@@ -245,7 +256,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       TextInputType.phone,
       TextInputType.numberWithOptions,
     };
-    return textTypes.contains(widget.keyboardType);
+    return textTypes.contains(_textInputType);
   }
 
   bool isInputTypeText() {
@@ -254,7 +265,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       TextInputType.name,
       TextInputType.streetAddress,
     };
-    return textTypes.contains(widget.keyboardType);
+    return textTypes.contains(_textInputType);
   }
 }
 
@@ -277,6 +288,7 @@ class _StandardTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
+
   // final Color? fillColor;
   // final String? initialValue;
   // final String? label;
@@ -285,7 +297,7 @@ class _StandardTextField extends StatelessWidget {
   const _StandardTextField({
     required this.keyboardType,
     this.enabled,
-    this.readOnly=false,
+    this.readOnly = false,
     this.maxLines,
     this.minLines,
     this.maxLength,
@@ -323,7 +335,7 @@ class _StandardTextField extends StatelessWidget {
       keyboardType: keyboardType,
       autofillHints: autofillHints,
       textInputAction: textInputAction,
-      canRequestFocus:canRequestFocus,
+      canRequestFocus: canRequestFocus,
       onFieldSubmitted: (v) => onFieldSubmitted?.call(v),
       style: TextStyle(
         color: enabled == false ? context.onSurfaceColor : textColor,
@@ -354,13 +366,14 @@ class _LowercaseTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
   final void Function(String)? onActionTriggered;
+
   // final String? initialValue;
   // final String? labelText;
   // final String? helperText;
 
   const _LowercaseTextField({
     this.enabled,
-    this.readOnly=false,
+    this.readOnly = false,
     this.maxLines,
     this.minLines,
     this.maxLength,
@@ -382,6 +395,7 @@ class _LowercaseTextField extends StatelessWidget {
   });
 
   TextEditingController? get _controller => controller;
+
   bool get _capsLockOn => capsLockOn;
 
   @override
@@ -397,7 +411,7 @@ class _LowercaseTextField extends StatelessWidget {
       enabled: enabled,
       readOnly: readOnly,
       focusNode: focusNode,
-      canRequestFocus:canRequestFocus,
+      canRequestFocus: canRequestFocus,
       maxLines: maxLines,
       minLines: minLines,
       maxLength: maxLength,

@@ -450,8 +450,8 @@ class _AddFinanceBodyState extends State<_AddFinanceBody> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: isMultipleOrders ? 'Create All Orders' : 'Create Order',
-          onPressed: _onSubmit,
+          submitLabel: isMultipleOrders ? 'Create All Orders' : 'Create Order',
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

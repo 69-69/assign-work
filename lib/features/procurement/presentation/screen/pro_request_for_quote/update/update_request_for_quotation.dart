@@ -3,6 +3,7 @@ import 'package:assign_erp/core/network/data_sources/models/address_info_model.d
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/format_date_utl.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -74,7 +75,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
   String get _lineItemType => _serverRFQ.lineItems.first.getType;
 
-  bool get isFormValid => _formKey.currentState?.validate() ?? false;
+  bool _isFormValid =false;//> _formKey.currentState?.validate() ?? false;
 
   /// Current employee info
   String get _employeeId => context.employee!.employeeId;
@@ -122,7 +123,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
-    if (!isFormValid || _lineItems.isNullOrEmpty) return;
+    if (!_isFormValid || _lineItems.isNullOrEmpty) return;
 
     _bloc.add(
       UpdateProcurement<RequestForQuote>(
@@ -131,6 +132,11 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       ),
     );
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg);
@@ -220,9 +226,9 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
 
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Submitting...' : null,
+          onSubmit: _onSubmit,
+          isDisabled: !_isFormValid||_isSubmitting,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
         const SizedBox(height: 20.0),
       ],
@@ -232,10 +238,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
   AutoCreateAndRFQStatus _buildAutoCreateAndStatus() {
     return AutoCreateAndRFQStatus(
       initialStatus: _serverRFQ.getRFQStatus,
-      onStatusChanged: (s) => setState(() => _rfqStatus = s),
+      onStatusChanged: (s) {
+        setState(() => _rfqStatus = s);
+        _syncValidity();
+      },
       isSelected: _autoConvertRfq ?? _serverRFQ.autoConvertRfq,
       onAutoConvertChanged: (bool? v) {
         setState(() => _autoConvertRfq = v ?? false);
+        _syncValidity();
       },
     );
   }
@@ -257,9 +267,8 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
         ),
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         _rfqTitle = data.first['title'];
+        _syncValidity();
       },
     );
   }
@@ -268,10 +277,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     return RequestedByAndDepartments(
       initialRequestedBy: _serverRFQ.requestedBy,
       initialDepartment: _serverRFQ.departmentCode,
-      onRequestedChanged: (id, code, name) =>
-          setState(() => _requestedBy = name),
-      onDepartmentChange: (id, code, name) =>
-          setState(() => _departmentCode = code),
+      onRequestedChanged: (id, code, name) {
+        setState(() => _requestedBy = name);
+        _syncValidity();
+      },
+      onDepartmentChange: (id, code, name) {
+        setState(() => _departmentCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -279,9 +292,14 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
     return CurrencyAndCostCenterDepartment(
       initialCurrency: _serverRFQ.currencyCode,
       initialCostCenter: _serverRFQ.costCenterCode,
-      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+      onCurrencyChanged: (v) {
+        setState(() => _currencyCode = v);
+        _syncValidity();
+      },
+      onCostCenterChange: (id, code, name) {
+        setState(() => _costCenterCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -292,7 +310,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       fieldsConfig: RFQFormInputs.fields(_lineItemType),
       initialData: _serverRFQ.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Update the ProLineItem list
         RFQFormInputs.updateListFromData<LineItem>(
@@ -300,6 +318,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
           map: data,
           fromMap: (map, id) => LineItem.fromMap(map),
         );
+        _syncValidity();
       },
     );
   }
@@ -313,8 +332,6 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
           .map((e) => {'supplierLinks': e.toMap(), 'status': e.getStatus})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
           // Merge the supplier status(like: invited, declined) from the top-level map
@@ -328,6 +345,7 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map),
         );
+        _syncValidity();
       },
     );
   }
@@ -345,11 +363,11 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       fullWidthKey: 'buyerContactPerson',
       fieldsConfig: RFQFormInputs.buyerTermsFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
 
         _buyerTerms
           ..clear()
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -360,14 +378,13 @@ class _UpdateRequestForQuoteState extends State<_UpdateRequestForQuote> {
       initialData: [_serverRFQ.shippingAddress?.toMap() ?? {}], // empty form
       fieldsConfig: RFQFormInputs.shippingAddressFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         // Update the address list
         RFQFormInputs.updateListFromData<AddressInfo>(
           _shippingAddress,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map),
         );
+        _syncValidity();
       },
     );
   }

@@ -146,9 +146,9 @@ class _CreateNewSubscriptionFormState
         const SizedBox(height: 10.0),
 
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Submitting...' : 'Create Subscription',
+          submitLabel: _isSubmitting ? 'Submitting...' : 'Create Subscription',
           isDisabled: _isSubmitting,
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

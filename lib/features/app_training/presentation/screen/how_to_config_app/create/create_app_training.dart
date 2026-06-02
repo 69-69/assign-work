@@ -174,8 +174,8 @@ class _AppTrainingFormState extends State<_AppTrainingForm> {
         ),
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: _isServerNull ? 'Create Training' : null,
-          onPressed: _onSubmit,
+          submitLabel: _isServerNull ? 'Create Training' : null,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],

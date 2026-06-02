@@ -10,7 +10,7 @@ class AdaptiveLayout extends StatelessWidget {
   final MainAxisSize mainAxisSize;
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
-  final Function(double)? layoutWidth;
+  // final Function(double)? layoutWidth;
 
   /// [preventLastWrap] Don't wrap the last child with Expanded
   final bool preventLastWrap;
@@ -23,7 +23,7 @@ class AdaptiveLayout extends StatelessWidget {
     this.mainAxisSize = MainAxisSize.max,
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.layoutWidth,
+    // this.layoutWidth,
     this.firstFlex,
     this.preventLastWrap = false,
   });
@@ -48,7 +48,11 @@ class AdaptiveLayout extends StatelessWidget {
   LayoutBuilder _buildLayoutBuilderAdaptive() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        layoutWidth?.call(constraints.maxWidth);
+        /*if (layoutWidth != null) {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => layoutWidth?.call(constraints.maxWidth),
+          );
+        }*/
 
         /// Height > Width
         final isMoreTallThanWide = constraints.maxHeight > constraints.maxWidth;

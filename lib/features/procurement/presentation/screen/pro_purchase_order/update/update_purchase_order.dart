@@ -5,6 +5,7 @@ import 'package:assign_erp/core/network/data_sources/models/address_info_model.d
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/doc_type_enum.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
 import 'package:assign_erp/core/util/extensions/tax_mode.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
@@ -57,7 +58,7 @@ class _CreatePOForm extends StatefulWidget {
 class _CreatePOFormState extends State<_CreatePOForm> {
   final _formKey = GlobalKey<FormState>();
 
-  bool get _isFormValid => _formKey.currentState!.validate();
+  bool _isFormValid = false;// > _formKey.currentState!.validate();
 
   // Basic fields
   bool _isSubmitting = false;
@@ -184,6 +185,11 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return quote;
   }
 
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
+
   void _showAlert(String msg) {
     context.showAlertOverlay(msg);
     setState(() => _isSubmitting = false);
@@ -293,9 +299,9 @@ class _CreatePOFormState extends State<_CreatePOForm> {
 
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Updating...' : null,
+          onSubmit: _onSubmit,
+          isDisabled:!_isFormValid ||  _isSubmitting,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
         const SizedBox(height: 20.0),
       ],
@@ -313,14 +319,13 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       fieldsConfig: POFormInputs.addressFields,
       initialData: _serverPO.addresses?.map((e) => e.toMap()).toList() ?? [{}],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Update the address list
         POFormInputs.updateListFromData<AddressInfo>(
           _addresses,
           map: data,
           fromMap: (map, id) => AddressInfo.fromMap(map, id: id),
         );
+        _syncValidity();
       },
     );
   }
@@ -330,9 +335,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       labelDelivery: "Delivery date",
       initialContact: _serverPO.buyerContactPersonId,
       initialDeliveryDate: _serverPO.getDeliveryDate,
-      onContactChanged: (id, _, _) =>
-          setState(() => _buyerContactPersonId = id),
-      onDeliveryChanged: (date) => setState(() => _deliveryDate = date),
+      onContactChanged: (id, _, _) {
+        setState(() => _buyerContactPersonId = id);
+        _syncValidity();
+      },
+      onDeliveryChanged: (date) {
+        setState(() => _deliveryDate = date);
+        _syncValidity();
+      },
     );
   }
 
@@ -346,11 +356,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       ],
       fieldsConfig: POFormInputs.deliveryFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _additionalInfo
           ..clear() // Clear previous entries to prevent duplication
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -367,8 +376,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           .map((e) => {...e.toMap(true), 'netPrice': '${e.netAmount}'})
           .toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         // Update the LineItem list
         POFormInputs.updateListFromData<LineItem>(
           _lineItems,
@@ -376,6 +383,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           fromMap: (map, id) =>
               LineItem.fromMap(map, id: id, lineType: _lineItemType),
         );
+        _syncValidity();
       },
     );
   }
@@ -384,9 +392,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return CurrencyAndCostCenterDepartment(
       initialCurrency: _serverPO.currencyCode,
       initialCostCenter: _serverPO.costCenterCode,
-      onCurrencyChanged: (v) => setState(() => _currencyCode = v),
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+      onCurrencyChanged: (v) {
+        setState(() => _currencyCode = v);
+        _syncValidity();
+      },
+      onCostCenterChange: (id, code, name) {
+        setState(() => _costCenterCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -404,11 +417,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
         ),
       ],
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         _shippingAmount
           ..clear()
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -417,8 +429,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return POStatusAndRequestedBy(
       initialStatus: _serverPO.getPOStatus,
       initialRequestedBy: _serverPO.requestedBy,
-      onStatusChanged: (s) => setState(() => _poStatus = s),
-      onRequestedChanged: (id, code, name) => setState(() => _requestedBy = id),
+      onStatusChanged: (s) {
+        setState(() => _poStatus = s);
+        _syncValidity();
+      },
+      onRequestedChanged: (id, code, name) {
+        setState(() => _requestedBy = id);
+        _syncValidity();
+      },
     );
   }
 
@@ -434,8 +452,6 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       fullWidthKey: 'supplierLinks',
       fieldsConfig: POFormInputs.suppliersFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (_isFormValid) setState(() {});
-
         final supplierLinks = data.map((e) {
           final copy = Map<String, dynamic>.from(e['supplierLinks'] ?? {});
           // Merge the status from the top-level map
@@ -449,6 +465,7 @@ class _CreatePOFormState extends State<_CreatePOForm> {
           map: supplierLinks,
           fromMap: (map, id) => SupplierLink.fromMap(map, id: id),
         );
+        _syncValidity();
       },
     );
   }
@@ -457,8 +474,14 @@ class _CreatePOFormState extends State<_CreatePOForm> {
     return PayMethodAndTermsDropdown(
       initialPayTerms: _serverPO.paymentTerm,
       initialPayMethod: _serverPO.paymentMethod,
-      onPayTermsChanged: (t) => setState(() => _paymentTerm = t),
-      onPayMethodChanged: (m) => setState(() => _paymentMethod = m),
+      onPayTermsChanged: (t) {
+        setState(() => _paymentTerm = t);
+        _syncValidity();
+      },
+      onPayMethodChanged: (m) {
+        setState(() => _paymentMethod = m);
+        _syncValidity();
+      },
     );
   }
 
@@ -467,8 +490,10 @@ class _CreatePOFormState extends State<_CreatePOForm> {
       initialValues: List.from(_serverPO.lineItems.first.taxCodes),
       selectedTaxCodes: _taxCodes,
       defaultTaxMode: _taxModeToApply,
-      selectedTaxMode: (TaxMode? mode) =>
-          setState(() => _taxModeToApply = mode),
+      selectedTaxMode: (TaxMode? mode) {
+        setState(() => _taxModeToApply = mode);
+        _syncValidity();
+      },
     );
   }
 

@@ -86,7 +86,7 @@ class _SearchItemsState extends State<SearchItems> {
   Widget _buildManualEntryField(BuildContext context) {
     return CustomTextField(
       onChanged: (value) => widget.onChanged?.call(value),
-      keyboardType: TextInputType.text,
+      textInputType: TextInputType.text,
       inputDecoration: InputDecoration(
         labelText: 'Item name',
         suffixIcon: Padding(

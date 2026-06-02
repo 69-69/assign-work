@@ -3,7 +3,8 @@ import 'package:assign_erp/core/constants/app_constant.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/line_item_model.dart';
 import 'package:assign_erp/core/util/extensions/erp_priority_enum.dart';
-import 'package:assign_erp/core/util/extensions/line_item_type.dart';
+import 'package:assign_erp/core/util/extensions/form_validity.dart';
+import 'package:assign_erp/core/util/extensions/line_type.dart';
 import 'package:assign_erp/core/util/extensions/workflow_status.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
@@ -69,7 +70,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
   /// Line Items & purpose/reason for PR
   final List<LineItem> _lineItems = [];
   final Map<String, dynamic> _purposeForPR = {};
-  bool get isFormValid => _formKey.currentState?.validate() ?? false;
+  bool _isFormValid =false; // > _formKey.currentState?.validate() ?? false;
 
   PurchaseRequisition get _serverPR => widget.requisite;
   String get _lineItemType => _serverPR.lineItems.first.getType;
@@ -120,7 +121,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
     setState(() => _isSubmitting = true);
 
-    if (!isFormValid || _lineItems.isNullOrEmpty) {
+    if (!_isFormValid || _lineItems.isNullOrEmpty) {
       _showAlert('Please enter all required fields');
       return;
     }
@@ -132,6 +133,11 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       ),
     );
   }
+
+  void _syncValidity() => _formKey.syncValidity(
+    currentValidity: _isFormValid,
+    onChanged: (v) => setState(() => _isFormValid = v),
+  );
 
   void _showAlert(String msg) {
     context.showAlertOverlay(msg);
@@ -219,9 +225,9 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
 
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          onPressed: _onSubmit,
-          isDisabled: _isSubmitting,
-          label: _isSubmitting ? 'Updating...' : null,
+          onSubmit: _onSubmit,
+          isDisabled: !_isFormValid || _isSubmitting,
+          submitLabel: _isSubmitting ? 'Updating...' : null,
         ),
         const SizedBox(height: 20.0),
       ],
@@ -235,9 +241,14 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     return RequestedByAndDepartments(
       initialDepartment: _serverPR.departmentCode,
       initialRequestedBy: _serverPR.requestedBy,
-      onRequestedBy: (id, code, name) => setState(() => _requestedBy = name),
-      onDepartmentChange: (id, code, name) =>
-          setState(() => _departmentCode = code),
+      onRequestedBy: (id, code, name) {
+        setState(() => _requestedBy = name);
+        _syncValidity();
+      },
+      onDepartmentChange: (id, code, name) {
+        setState(() => _departmentCode = code);
+        _syncValidity();
+      },
     );
   }
 
@@ -245,13 +256,19 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
     return PriorityAndPRStatusDropdown(
       initialPriority: _serverPR.priority.getName,
       initialStatus: _serverPR.status.getName,
-      onPriorityChanged: (s) => setState(() => _priority = s),
-      onStatusChanged: (s) => setState(() => _prStatus = s),
+      onPriorityChanged: (s) {
+        setState(() => _priority = s);
+        _syncValidity();
+      },
+      onStatusChanged: (s) {
+        setState(() => _prStatus = s);
+        _syncValidity();
+      },
     );
   }
 
   DynamicTextFields _buildLineItems(String lineItemType) {
-    final fwk = LineItemTypeUtil.isMaterial(lineItemType)
+    final fwk = LineTypeUtil.isMaterial(lineItemType)
         ? 'description'
         : null;
 
@@ -261,7 +278,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       fieldsConfig: PRFormInputs.fields(lineItemType),
       initialData: _serverPR.lineItems.map((e) => e.toMap(true)).toList(),
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
+        // if (_isFormValid) setState(() {});
 
         // Update the LineItem list
         PRFormInputs.updateListFromData<LineItem>(
@@ -269,6 +286,7 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
           map: data,
           fromMap: (map, id) => LineItem.fromMap(map),
         );
+        _syncValidity();
       },
     );
   }
@@ -279,8 +297,14 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       labelExpected: "Expected date",
       initialExpectedDate: _serverPR.getExpectedDate,
       initialRequestDate: _serverPR.getRequestDate,
-      onRequestChanged: (date) => setState(() => _requestDate = date),
-      onExpectedChanged: (date) => setState(() => _expectedDate = date),
+      onRequestChanged: (date) {
+        setState(() => _requestDate = date);
+        _syncValidity();
+      },
+      onExpectedChanged: (date) {
+        setState(() => _expectedDate = date);
+        _syncValidity();
+      },
     );
   }
 
@@ -291,11 +315,10 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       ],
       fieldsConfig: PRFormInputs.justificationFields,
       onChanged: (List<Map<String, dynamic>> data) {
-        if (isFormValid) setState(() {});
-
         _purposeForPR
           ..clear() // Clear previous entries to prevent duplication
           ..addAll(data.first);
+        _syncValidity();
       },
     );
   }
@@ -305,10 +328,13 @@ class _PurchaseRequisiteState extends State<_PurchaseRequisite> {
       isSelected: _autoConvertPr ?? _serverPR.autoConvertPr,
       onAutoConvertChanged: (bool? v) {
         setState(() => _autoConvertPr = v ?? false);
+        _syncValidity();
       },
       initialCostCenter: _serverPR.costCenterCode,
-      onCostCenterChange: (id, code, name) =>
-          setState(() => _costCenterCode = code),
+      onCostCenterChange: (id, code, name) {
+        setState(() => _costCenterCode = code);
+        _syncValidity();
+      },
     );
   }
 

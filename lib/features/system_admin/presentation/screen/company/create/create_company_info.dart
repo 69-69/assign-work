@@ -1,5 +1,6 @@
 import 'package:assign_erp/core/network/data_sources/models/address_info_model.dart';
 import 'package:assign_erp/core/network/data_sources/models/audit_log_model.dart';
+import 'package:assign_erp/core/network/data_sources/models/form_group_card_model.dart';
 import 'package:assign_erp/core/util/str_util.dart';
 import 'package:assign_erp/core/widgets/button/custom_button.dart';
 import 'package:assign_erp/core/widgets/custom_snack_bar.dart';
@@ -43,6 +44,7 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
   final _formKey = GlobalKey<FormState>();
 
   Employee? get _employee => context.employee;
+
   bool get _isFormValid => _formKey.currentState!.validate();
   final PrintSetupCacheService _printoutService = PrintSetupCacheService();
 
@@ -135,39 +137,40 @@ class _AddCompanyInfoFormState extends State<_AddCompanyInfoForm> {
       footers: [
         const SizedBox(height: 10.0),
         context.confirmableActionButton(
-          label: _isSubmitting ? 'Creating...' : 'Create Info',
+          submitLabel: _isSubmitting ? 'Creating...' : 'Create Info',
           isDisabled: _isSubmitting,
-          onPressed: _onSubmit,
+          onSubmit: _onSubmit,
         ),
         const SizedBox(height: 20.0),
       ],
     );
   }
 
-  List<Map<String, dynamic>> get formGroupCards => [
-    {
-      'title': 'Company Information',
-      'subTitle': '\nEnter your company information to complete setup.',
-      'children': [_buildCompanyInfo()],
-    },
-    {
-      'title': 'Addresses',
-      'subTitle':
+  List<FormGroupCardModel> get formGroupCards => [
+    FormGroupCardModel(
+      title: 'Company Information',
+      subTitle: '\nEnter your company information to complete setup.',
+      builder: () => [_buildCompanyInfo()],
+    ),
+
+    FormGroupCardModel(
+      title: 'Addresses',
+      subTitle:
           '\nYou can add multiple addresses: Office, Billing, Shipping, etc.',
-      'children': [_buildAddresses(),],
-    },
-    {
-      'title': 'Upload Logo',
-      'subTitle':
-      '\nAdd company logo to customize your print-outs.',
-      'children': [
+      builder: () => [_buildAddresses()],
+    ),
+
+    FormGroupCardModel(
+      title: 'Upload Logo',
+      subTitle: '\nAdd company logo to customize your print-outs.',
+      builder: () => [
         UploadCompanyLogo(
           uploadedFilePath: (s) {
             setState(() => _uploadedLogoPath = s);
           },
         ),
       ],
-    },
+    ),
   ];
 
   DynamicTextFields _buildCompanyInfo() {

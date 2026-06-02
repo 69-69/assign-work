@@ -146,7 +146,7 @@ class _UpdateCustomerBodyState extends State<_UpdateCustomerBody> {
           },
         ),
         const SizedBox(height: 10.0),
-        context.confirmableActionButton(onPressed: _onSubmit),
+        context.confirmableActionButton(onSubmit: _onSubmit),
       ],
     );
   }
